@@ -5,7 +5,7 @@ use opencv::{
     prelude::Mat,
 };
 
-use super::{Angle2D, Draw, RelPos, RelPosAngle};
+use super::{Angle2D, Draw, RelPosAngle};
 
 #[derive(Debug, Clone)]
 pub struct PosVector {
@@ -26,7 +26,7 @@ impl Draw for PosVector {
         println!("PosVector: {:?}", self);
         imgproc::circle(
             canvas,
-            Point::new(self.x as i32, self.y as i32 + 300),
+            Point::new(self.x as i32, self.y as i32),
             10,
             Scalar::from((0.0, 255.0, 0.0)),
             2,

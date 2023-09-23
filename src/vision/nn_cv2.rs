@@ -1,19 +1,58 @@
 use anyhow::Result;
 use derive_getters::Getters;
 use opencv::{
-    core::{
-        min_max_loc, no_array, Point, Rect2d, Scalar, Size, VecN, Vector, CV_32F, CV_8U, CV_8UC4,
-    },
+    core::{min_max_loc, no_array, Point, Rect2d, Scalar, Size, VecN, Vector, CV_32F},
     dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
 use std::fmt::Debug;
+use std::hash::Hash;
 
-#[derive(Debug, Getters)]
+#[derive(Debug, Clone, Getters)]
 pub struct YoloDetection {
     class_id: i32,
     confidence: f64,
     bounding_box: Rect2d,
+}
+
+#[derive(Debug, Clone, Getters)]
+pub struct YoloClass<T> {
+    pub identifier: T,
+    pub confidence: f64,
+}
+
+impl<T: PartialEq> PartialEq<T> for YoloClass<T> {
+    fn eq(&self, other: &T) -> bool {
+        self.identifier == *other
+    }
+}
+
+impl<T: PartialEq> PartialEq for YoloClass<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.identifier == other.identifier
+    }
+}
+
+impl<T: PartialEq> Eq for YoloClass<T> {}
+
+impl<T: Hash> Hash for YoloClass<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.identifier.hash(state)
+    }
+}
+
+impl<T> TryFrom<YoloDetection> for YoloClass<T>
+where
+    T: TryFrom<i32>,
+    <T as TryFrom<i32>>::Error: std::error::Error + Send + Sync,
+{
+    type Error = T::Error;
+    fn try_from(val: YoloDetection) -> Result<Self, Self::Error> {
+        Ok(YoloClass {
+            identifier: val.class_id.try_into()?,
+            confidence: val.confidence,
+        })
+    }
 }
 
 pub trait VisionModel: Debug {

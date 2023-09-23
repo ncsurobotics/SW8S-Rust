@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Result};
 use derive_getters::Getters;
 use itertools::Itertools;
-use num_traits::{CheckedDiv, Num};
+use num_traits::Num;
 use opencv::{
-    core::{Point, Rect2d, Scalar},
+    core::{Rect2d, Scalar},
     imgproc::{self, LINE_8},
     prelude::Mat,
 };
@@ -102,11 +102,11 @@ impl<T: Num + From<usize>> Div<usize> for Angle2D<T> {
     }
 }
 
-impl<T: Num> Into<Offset2D<T>> for Angle2D<T> {
-    fn into(self) -> Offset2D<T> {
+impl<T: Num> From<Angle2D<T>> for Offset2D<T> {
+    fn from(val: Angle2D<T>) -> Self {
         Offset2D {
-            x: self.x,
-            y: self.y,
+            x: val.x,
+            y: val.y,
         }
     }
 }
@@ -166,7 +166,6 @@ pub trait VisualDetector<T: Num>: Debug {
 #[derive(Debug, Clone, Getters)]
 pub struct VisualDetection<T, U> {
     class: T,
-    confidence: f64,
     position: U,
 }
 

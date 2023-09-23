@@ -4,9 +4,8 @@ use std::ops::Deref;
 use itertools::Itertools;
 use opencv::{
     core::{
-        copy_to, pca_compute2, DataType, Mat_, Point, Point_, Scalar, Size, TermCriteria, VecN,
-        Vector, CMP_EQ, CV_32F, CV_32FC3, CV_64F, CV_8U, CV_8UC3, KMEANS_PP_CENTERS, ROTATE_180,
-        ROTATE_90_CLOCKWISE, ROTATE_90_COUNTERCLOCKWISE,
+        pca_compute2, DataType, Mat_, Point_, Scalar, Size, TermCriteria, VecN, Vector, CMP_EQ,
+        CV_32F, CV_32FC3, CV_64F, CV_8U, KMEANS_PP_CENTERS, ROTATE_90_COUNTERCLOCKWISE,
     },
     imgproc::{self},
     prelude::{Mat, MatSizeTraitConst, MatTrait, MatTraitConst},
@@ -130,31 +129,12 @@ impl PcaData {
 /// * `points` - Points from image for PCA analysis
 /// * `max_components` - Maximum number of PCA regions to return, 0 for unbounded
 pub fn binary_pca(points: &Vec<Point_<f64>>, max_components: i32) -> Result<PcaData> {
-    /*
-    * 		List<Point> pts = image_on_points.toList();
-       Mat image_data = new Mat(pts.size(), 2, CvType.CV_64F);
-       double[] dataPtsData = new double[(int) (image_data.total() * image_data.channels())];
-       for (int i = 0; i < image_data.rows(); i++) {
-           dataPtsData[i * image_data.cols()] = pts.get(i).x;
-           dataPtsData[i * image_data.cols() + 1] = pts.get(i).y;
-       }
-       image_data.put(0, 0, dataPtsData);
-
-    */
     let mut image_data =
         Mat::new_rows_cols_with_default(points.len() as i32, 2, CV_64F, Scalar::default())?;
-    //let mut pts_data: Vec<f64> = vec![0.0; image_data.total() * image_data.channels() as usize];
     (0..image_data.rows()).for_each(|idx| {
-        *image_data.at_mut(idx * image_data.cols()).unwrap() = points[idx as usize].x
-        //pts_data[idx as usize * image_data.cols() as usize] = points[idx as usize].x
+        *image_data.at_mut(idx * image_data.cols()).unwrap() = points[idx as usize].x;
+        *image_data.at_mut(idx * image_data.cols() + 1).unwrap() = points[idx as usize].y;
     });
-    //copy_to(
-    //   &Vector::from_slice(&pts_data),
-    //  &mut image_data,
-    // &Mat::default(),
-    //)
-    //.unwrap();
-    //println!("image_data: {:?}", image_data);
 
     let (mut mean, mut pca_vector, mut pca_value) =
         (Mat::default(), Mat::default(), Mat::default());
@@ -167,9 +147,6 @@ pub fn binary_pca(points: &Vec<Point_<f64>>, max_components: i32) -> Result<PcaD
     )
     .unwrap();
 
-    //println!("mean_temp: {:#?}", mean_temp);
-    //println!("vec_temp: {:#?}", vec_temp);
-    //println!("val_temp: {:#?}", val_temp);
     Ok(PcaData {
         mean: mean
             .iter()
@@ -312,43 +289,12 @@ where
         .collect())
 }
 
-/*
-    public Mat kmeans(int n_clusters, Mat img) {
-        Mat data = img.reshape(1, (int) img.total());
-        Mat data_32f = new Mat();
-        data.convertTo(data_32f, CvType.CV_32F);
-        Mat bestLabels = new Mat();
-        TermCriteria criteria = new TermCriteria(TermCriteria.COUNT, 100, 1);
-        int attempts = 3;
-        int flags = Core.KMEANS_PP_CENTERS;
-        Mat center = new Mat();
-
-        Core.kmeans(data_32f, n_clusters, bestLabels, criteria, attempts, flags, center);
-        Mat draw = new Mat((int) img.total(), 1, CvType.CV_32FC3);
-        Mat colors = center.reshape(3, n_clusters);
-
-        for (int i = 0; i < n_clusters; i++) {
-            Mat mask = new Mat();
-            Core.compare(bestLabels, new Scalar(i), mask, Core.CMP_EQ);
-            Mat col = colors.row(i);
-            double d[] = col.get(0, 0);
-            draw.setTo(new Scalar(d[0], d[1], d[2]), mask);
-        }
-
-        draw = draw.reshape(3, img.rows());
-        draw.convertTo(draw, CvType.CV_8U);
-        return draw;
-    }
-*/
-
-pub fn kmeans(img: &Mat) -> Mat {
-    let n_clusters = 4;
+pub fn kmeans(img: &Mat, n_clusters: i32, attempts: i32) -> Mat {
     let data = img.reshape(1, img.total() as i32).unwrap();
     let mut data_32f = Mat::default();
     data.convert_to(&mut data_32f, CV_32F, 1.0, 0.0).unwrap();
     let mut best_labels = Mat::default();
     let criteria = TermCriteria::new(1, 100, 1.0).unwrap(); // 1 -> COUNT
-    let attempts = 3;
     let flags = KMEANS_PP_CENTERS;
     let mut center = Mat::default();
 
