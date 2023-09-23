@@ -5,7 +5,7 @@ use crate::load_onnx;
 
 use super::{
     nn_cv2::{OnnxModel, VisionModel, YoloDetection},
-    yolo_model::{YoloProcessor, YoloTarget},
+    yolo_model::YoloProcessor,
 };
 
 use core::hash::Hash;
@@ -32,8 +32,6 @@ impl Display for TargetError {
 
 impl Error for TargetError {}
 
-impl YoloTarget for Target {}
-
 impl TryFrom<i32> for Target {
     type Error = TargetError;
     fn try_from(value: i32) -> std::result::Result<Self, Self::Error> {
@@ -47,13 +45,17 @@ impl TryFrom<i32> for Target {
     }
 }
 
+impl Display for Target {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[derive(Debug)]
 pub struct Buoy<T: VisionModel> {
     model: T,
     threshold: f64,
 }
-
-impl<T: VisionModel> Buoy<T> {}
 
 impl Buoy<OnnxModel> {
     pub fn new(model_name: &str, model_size: i32, threshold: f64) -> Result<Self> {
@@ -113,7 +115,7 @@ mod tests {
 
         detect_unique
             .iter()
-            .for_each(|result| result.position().draw(&mut image).unwrap());
+            .for_each(|result| result.draw(&mut image).unwrap());
 
         println!("Detections: {:#?}", detect_unique);
         imwrite(

@@ -104,10 +104,7 @@ impl<T: Num + From<usize>> Div<usize> for Angle2D<T> {
 
 impl<T: Num> From<Angle2D<T>> for Offset2D<T> {
     fn from(val: Angle2D<T>) -> Self {
-        Offset2D {
-            x: val.x,
-            y: val.y,
-        }
+        Offset2D { x: val.x, y: val.y }
     }
 }
 
@@ -183,12 +180,6 @@ impl<T: PartialEq, U> PartialEq<Self> for VisualDetection<T, U> {
 
 impl<T: PartialEq, U> Eq for VisualDetection<T, U> {}
 
-impl<T, U: Draw> Draw for VisualDetection<T, U> {
-    fn draw(&self, canvas: &mut Mat) -> Result<()> {
-        self.position.draw(canvas)
-    }
-}
-
 impl<T: Hash, U> Hash for VisualDetection<T, U> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.class.hash(state)
@@ -231,24 +222,6 @@ impl Draw for DrawRect2d {
             LINE_8,
             0,
         )?;
-        /*
-        let center_point = self.offset();
-        imgproc::put_text(
-            canvas,
-            "X",
-            Point::new(
-                // Adjust x to 1/4 from left b/c draw starts bottom left
-                ((self.inner.x + center_point.x) / 2.0) as i32,
-                center_point.y as i32,
-            ),
-            imgproc::FONT_HERSHEY_COMPLEX,
-            1.0,
-            Scalar::from((0.0, 255.0, 0.0)),
-            2,
-            LINE_8,
-            false,
-        )?;
-        */
         Ok(())
     }
 }
