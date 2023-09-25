@@ -133,7 +133,7 @@ where
 
 pub trait VisualDetector<T: Num>: Debug {
     type ClassEnum: PartialEq + Eq + Hash + Clone;
-    type Position: Draw + RelPos + Clone;
+    type Position: RelPos + Clone;
 
     fn detect(
         &mut self,

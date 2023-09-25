@@ -10,7 +10,7 @@ use super::{
 use anyhow::Result;
 use opencv::{
     core::{Point, Scalar},
-    imgproc::{self, LINE_8, LINE_AA},
+    imgproc::{self, LINE_AA},
     prelude::Mat,
 };
 
