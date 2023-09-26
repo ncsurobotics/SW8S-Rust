@@ -2,12 +2,9 @@ use core::fmt::Debug;
 use std::sync::Mutex;
 
 use tokio::io::{AsyncWrite, AsyncWriteExt};
-use tokio_serial::{DataBits, Parity, SerialPortBuilder, SerialStream, StopBits};
+use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
 
-use self::{
-    response::ResponseMap,
-    util::{AcknowledgeErr, Thruster},
-};
+use self::{response::ResponseMap, util::Thruster};
 
 pub mod response;
 pub mod util;
@@ -28,7 +25,7 @@ impl Default for MessageId {
 impl MessageId {
     async fn get(&mut self) -> u16 {
         let mut id = self.id.lock().unwrap();
-        let ret = id.clone();
+        let ret = *id;
         *id += 1;
         if *id > ID_LIMIT {
             *id = 0
@@ -72,7 +69,7 @@ impl ControlBoard<SerialStream> {
 impl<T: AsyncWrite + Unpin> ControlBoard<T> {
     /// Adds protocol requirements (e.g. message id, escapes) to a message body
     /// Returns the id assigned to the message
-    fn add_metadata(&mut self, message: &mut Vec<u8>) -> u16 {
+    fn add_metadata(&mut self, _message: &mut Vec<u8>) -> u16 {
         unimplemented!();
     }
 

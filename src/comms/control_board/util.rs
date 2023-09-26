@@ -50,7 +50,7 @@ impl TryFrom<u8> for Thruster {
     type Error = anyhow::Error;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        if value >= 1 && value <= 8 {
+        if (1..=8).contains(&value) {
             Ok(Thruster { inner: value })
         } else {
             bail!("{value} is not in range 1-8")
