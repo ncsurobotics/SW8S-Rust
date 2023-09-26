@@ -85,8 +85,11 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         roll: f32,
         yaw: f32,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        const MOTOR_MATRIX_SET: [u8; 5] = *b"MMATS";
         // Oversized to avoid reallocations
         let mut message: Vec<u8> = Vec::with_capacity(32 * 8);
+        message.extend(MOTOR_MATRIX_SET);
+
         message.extend(thruster.to_be_bytes());
         message.extend(x.to_be_bytes());
         message.extend(y.to_be_bytes());
