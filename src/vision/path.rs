@@ -1,14 +1,10 @@
-use std::ops::{Range, RangeBounds, RangeInclusive};
+use std::ops::RangeInclusive;
 
 use itertools::Itertools;
 use opencv::{
-    core::{
-        in_range, KmeansFlags, MatIter, Mat_, Scalar, Size, TermCriteria, VecN, Vector, CV_32FC1,
-        CV_32FC3, CV_8UC3,
-    },
-    imgcodecs::imwrite,
-    imgproc::{circle, cvt_color, COLOR_RGB2YUV, LINE_8},
-    prelude::{DataType, Mat, MatTraitConst, MatTraitConstManual},
+    core::{in_range, Size, VecN},
+    imgproc::{cvt_color, COLOR_RGB2YUV},
+    prelude::{Mat, MatTraitConst},
 };
 
 use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
@@ -62,6 +58,7 @@ pub struct Path {
     num_regions: i32,
     size: Size,
     attempts: i32,
+    image: Mat,
 }
 
 impl Path {
@@ -78,6 +75,7 @@ impl Path {
             num_regions,
             size,
             attempts,
+            image: Mat::default(),
         }
     }
 }
@@ -93,7 +91,7 @@ impl Default for Path {
             20.0..=800.0,
             4,
             Size::from((400, 300)),
-            0,
+            3,
         )
     }
 }
@@ -111,56 +109,13 @@ impl VisualDetector<i32> for Path {
 
     fn detect(
         &mut self,
-        image: &Mat,
+        input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
-        let original_size = image.size().unwrap();
-        let mut image = resize(image, &self.size)?;
-        imwrite("resized.jpeg", &image, &Vector::default()).unwrap();
+        self.image = resize(input_image, &self.size)?;
         let mut yuv_image = Mat::default();
 
-        let post_kmeans = kmeans(&image);
-        imwrite("test.jpeg", &post_kmeans, &Vector::default()).unwrap();
+        let post_kmeans = kmeans(&self.image, self.num_regions, self.attempts);
         cvt_color(&post_kmeans, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
-        /*
-        let mut post_kmeans = Mat::default();
-        let mut yuv_image = Mat::default();
-
-        let original_rows = image.rows();
-        let original_channels = image.channels();
-        let image = image.reshape(3, 0).unwrap();
-        println!("{:?}", image.size().unwrap());
-        let mut converted_image = Mat::default();
-        image.convert_to(&mut converted_image, CV_32FC3, 1.0 / 255.0, 0.0)?;
-
-        //let unshaped = image.reshape(original_shape)?;
-        //imwrite("reshaped.jpeg", &unshaped, &Vector::default()).unwrap();
-        //let mut reconv = Mat::default();
-
-        println!("POS 9");
-        kmeans(
-            &converted_image,
-            self.num_regions,
-            &mut post_kmeans,
-            TermCriteria::default().unwrap(),
-            self.attempts,
-            KmeansFlags::KMEANS_PP_CENTERS as i32,
-            &mut Mat::default(),
-        )?;
-        println!("POS 1");
-        let mut post_kmeans_converted = Mat::default();
-        //post_kmeans
-        //    .convert_to(&mut post_kmeans_converted, CV_8UC3, 255.0, 0.0)
-        //    .unwrap();
-        //let post_kmeans = post_kmeans.reshape(original_channels, 0).unwrap();
-        let mut post_kmeans_converted = Mat::default();
-        post_kmeans
-            .convert_to(&mut post_kmeans_converted, CV_8UC3, 255.0, 0.0)
-            .unwrap();
-        let post_kmeans_converted = post_kmeans_converted.reshape(original_channels, 0).unwrap();
-        imwrite("test.jpeg", &post_kmeans_converted, &Vector::default()).unwrap();
-        cvt_color(&post_kmeans_converted, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
-
-        */
         let image_center = (
             (post_kmeans.cols() / 2) as f64,
             (post_kmeans.rows() / 2) as f64,
@@ -175,33 +130,7 @@ impl VisualDetector<i32> for Path {
                 let mut bin_image = Mat::default();
                 in_range(&yuv_image, &val, &val, &mut bin_image).unwrap();
                 let on_points = cvt_binary_to_points(&bin_image.try_into_typed().unwrap());
-
-                on_points.iter().for_each(|p| {
-                    circle(
-                        &mut image,
-                        opencv::core::Point_ {
-                            x: p.x as i32,
-                            y: p.y as i32,
-                        },
-                        5,
-                        Scalar::from((0.0, 255.0, 0.0)),
-                        -1,
-                        LINE_8,
-                        0,
-                    )
-                    .unwrap()
-                });
-                println!("Points len: {}", on_points.len());
-                imwrite(
-                    "tests/vision/output/path_images/1.jpeg",
-                    &image,
-                    &Vector::default(),
-                );
-
                 let pca_output = binary_pca(&on_points, 0).unwrap();
-
-                println!("PCA Output: {:#?}", pca_output);
-                //println!("PCA Values: {:#?}", pca_output.pca_value());
 
                 let (length_idx, width_idx) = if pca_output.pca_value().get(1).unwrap()
                     > pca_output.pca_value().get(0).unwrap()
@@ -216,10 +145,10 @@ impl VisualDetector<i32> for Path {
                     && Yuv::from(&val).in_range(&self.color_bounds);
 
                 let p_vec = PosVector::new(
-                    (pca_output.mean().get(0).unwrap())
-                        * (original_size.width / self.size.width) as f64,
-                    (pca_output.mean().get(1).unwrap())
-                        * (original_size.height / self.size.height) as f64,
+                    ((pca_output.mean().get(0).unwrap()) - image_center.0)
+                        + (self.image.size().unwrap().width as f64) / 2.0,
+                    (pca_output.mean().get(1).unwrap()) - image_center.1
+                        + (self.image.size().unwrap().height as f64) / 2.0,
                     compute_angle(
                         (
                             pca_output.pca_vector().get(length_idx).unwrap(),
@@ -232,7 +161,6 @@ impl VisualDetector<i32> for Path {
 
                 Ok(VisualDetection {
                     class: valid,
-                    confidence: 1.0,
                     position: p_vec,
                 })
             })
@@ -261,7 +189,6 @@ mod tests {
             .for_each(|result| result.position().draw(&mut image).unwrap());
 
         println!("Detections: {:#?}", detections);
-        panic!();
         imwrite(
             "tests/vision/output/path_images/1.jpeg",
             &image,

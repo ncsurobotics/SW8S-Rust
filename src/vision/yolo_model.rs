@@ -1,17 +1,26 @@
 use std::{fmt::Debug, hash::Hash};
 
-use super::{nn_cv2::YoloDetection, DrawRect2d, VisualDetection, VisualDetector};
+use super::{
+    nn_cv2::{YoloClass, YoloDetection},
+    DrawRect2d, VisualDetection, VisualDetector,
+};
 use anyhow::Result;
 use opencv::prelude::Mat;
 
+pub trait YoloTarget: PartialEq + Eq + Hash + Clone + Debug + TryFrom<i32> {}
+
 pub trait YoloProcessor: Debug {
-    type Target: PartialEq + Eq + Hash + Clone + TryFrom<i32, Error = anyhow::Error> + Debug;
+    type Target: PartialEq + Eq + Hash + Clone + Debug + TryFrom<i32>;
 
     fn detect_yolo_v5(&mut self, image: &Mat) -> Result<Vec<YoloDetection>>;
 }
 
-impl<T: YoloProcessor> VisualDetector<f64> for T {
-    type ClassEnum = T::Target;
+impl<T: YoloProcessor> VisualDetector<f64> for T
+where
+    <<T as YoloProcessor>::Target as TryFrom<i32>>::Error:
+        std::error::Error + Sync + Send + 'static,
+{
+    type ClassEnum = YoloClass<T::Target>;
     type Position = DrawRect2d;
 
     fn detect(
@@ -19,11 +28,13 @@ impl<T: YoloProcessor> VisualDetector<f64> for T {
         image: &Mat,
     ) -> Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
         self.detect_yolo_v5(image)?
-            .iter()
+            .into_iter()
             .map(|detection| {
                 Ok(VisualDetection {
-                    class: T::Target::try_from(*detection.class_id())?,
-                    confidence: *detection.confidence(),
+                    class: YoloClass {
+                        identifier: detection.class_id().to_owned().try_into()?,
+                        confidence: *detection.confidence(),
+                    },
                     position: DrawRect2d {
                         inner: *detection.bounding_box(),
                     },

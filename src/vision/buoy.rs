@@ -1,12 +1,15 @@
-use anyhow::{bail, Result};
+use anyhow::Result;
 use opencv::prelude::Mat;
 
 use crate::load_onnx;
 
 use super::{
     nn_cv2::{OnnxModel, VisionModel, YoloDetection},
-    yolo_model::YoloProcessor,
+    yolo_model::{YoloProcessor, YoloTarget},
 };
+
+use core::hash::Hash;
+use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
@@ -16,15 +19,30 @@ pub enum Target {
     Abydos2,
 }
 
+#[derive(Debug)]
+pub struct TargetError {
+    x: i32,
+}
+
+impl Display for TargetError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} is outside known classIDs [0, 3]", self.x)
+    }
+}
+
+impl Error for TargetError {}
+
+impl YoloTarget for Target {}
+
 impl TryFrom<i32> for Target {
-    type Error = anyhow::Error;
+    type Error = TargetError;
     fn try_from(value: i32) -> std::result::Result<Self, Self::Error> {
         match value {
             0 => Ok(Self::Earth1),
             1 => Ok(Self::Earth2),
             2 => Ok(Self::Abydos1),
             3 => Ok(Self::Abydos2),
-            x => bail!("{x} is outside known classIDs [0, 3]"),
+            x => Err(TargetError { x }),
         }
     }
 }
@@ -34,6 +52,8 @@ pub struct Buoy<T: VisionModel> {
     model: T,
     threshold: f64,
 }
+
+impl<T: VisionModel> Buoy<T> {}
 
 impl Buoy<OnnxModel> {
     pub fn new(model_name: &str, model_size: i32, threshold: f64) -> Result<Self> {
