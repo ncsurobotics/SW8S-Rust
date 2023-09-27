@@ -20,7 +20,7 @@ jobs:
     - name: Install system requirements
       run:  |
         sudo apt-get update
-        sudo apt-get install -y --fix-missing libgstreamer1.0-dev
+        sudo aptitude install -y libgstreamer1.0-dev
         sudo apt-get install -y  llvm \
                                  libclang-dev \
 
