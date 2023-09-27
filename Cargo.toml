@@ -13,16 +13,19 @@ path = "src/lib.rs"
 name = "sw8s_rust"
 path = "src/main.rs"
 
+[features]
+jetson = []
+
 [dependencies]
-opencv = "0.84.4"
-tokio-serial = "5.4.1"
-tokio = { version = "1.29.1", features = ["full"] }
-gstreamer = "0.20.7"
-anyhow = "1.0.72"
-itertools = "0.11.0"
-num-traits = "0.2.16"
-derive-getters = "0.3.0"
-async-trait = "0.1.73"
+opencv = "0.84.4" # Vision processing
+tokio-serial = "5.4.1" # Async serial comms
+tokio = { version = "1.29.1", features = ["full"] } # Async runtime
+gstreamer = "0.20.7" # Camera streaming
+anyhow = "1.0.72" # Error handling
+itertools = "0.11.0" # Enhance iterators
+num-traits = "0.2.16" # Numeric generics
+derive-getters = "0.3.0" # Getter macro
+async-trait = "0.1.73" # Async fns in trait definitions
 
 [dev-dependencies]
-assert_approx_eq = "1.1.0"
+assert_approx_eq = "1.1.0" # Floating point eq
