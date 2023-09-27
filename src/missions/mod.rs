@@ -1,0 +1,234 @@
+use async_trait::async_trait;
+use core::fmt::Debug;
+use std::marker::PhantomData;
+use tokio::{join, try_join};
+
+#[async_trait]
+pub trait Action<Output: Debug + Send + Sync>: Debug + Send + Sync + Sync {
+    async fn execute(self) -> Output;
+}
+
+pub trait ActionMod<Input: Debug + Send + Sync, Output: Debug + Send + Sync>:
+    Action<Output>
+{
+    fn modify(&mut self, input: Input);
+}
+
+#[derive(Debug)]
+pub struct ActionConditional<U: Debug + Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> {
+    condition: V,
+    true_branch: W,
+    false_branch: X,
+    _phantom_u: PhantomData<U>,
+}
+
+impl<U: Debug + Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>>
+    ActionConditional<U, V, W, X>
+{
+    const fn new(condition: V, true_branch: W, false_branch: X) -> Self {
+        Self {
+            condition,
+            true_branch,
+            false_branch,
+            _phantom_u: PhantomData,
+        }
+    }
+}
+
+#[async_trait]
+impl<U: Debug + Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> Action<U>
+    for ActionConditional<U, V, W, X>
+{
+    async fn execute(self) -> U {
+        if self.condition.execute().await {
+            self.true_branch.execute().await
+        } else {
+            self.false_branch.execute().await
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct ActionAnyPair<T: Action<bool>, U: Action<bool>> {
+    first: T,
+    second: U,
+}
+
+impl<T: Action<bool>, U: Action<bool>> ActionAnyPair<T, U> {
+    const fn new(first: T, second: U) -> Self {
+        Self { first, second }
+    }
+}
+
+#[async_trait]
+impl<T: Action<bool>, U: Action<bool>> Action<bool> for ActionAnyPair<T, U> {
+    async fn execute(self) -> bool {
+        self.first.execute().await || self.second.execute().await
+    }
+}
+
+#[derive(Debug)]
+pub struct ActionAllPair<T: Action<bool>, U: Action<bool>> {
+    first: T,
+    second: U,
+}
+
+impl<T: Action<bool>, U: Action<bool>> ActionAllPair<T, U> {
+    const fn new(first: T, second: U) -> Self {
+        Self { first, second }
+    }
+}
+
+#[async_trait]
+impl<T: Action<bool>, U: Action<bool>> Action<bool> for ActionAllPair<T, U> {
+    async fn execute(self) -> bool {
+        self.first.execute().await && self.second.execute().await
+    }
+}
+
+#[derive(Debug)]
+pub struct ActionChain<
+    T: Debug + Send + Sync,
+    U: Debug + Send + Sync,
+    V: Action<T>,
+    W: ActionMod<T, U>,
+> {
+    first: V,
+    second: W,
+    _phantom_t: PhantomData<T>,
+    _phantom_u: PhantomData<U>,
+}
+
+impl<T: Debug + Send + Sync, U: Debug + Send + Sync, V: Action<T>, W: ActionMod<T, U>>
+    ActionChain<T, U, V, W>
+{
+    const fn new(first: V, second: W) -> Self {
+        Self {
+            first,
+            second,
+            _phantom_t: PhantomData,
+            _phantom_u: PhantomData,
+        }
+    }
+}
+
+#[async_trait]
+impl<T: Debug + Send + Sync, U: Debug + Send + Sync, V: Action<T>, W: ActionMod<T, U>> Action<U>
+    for ActionChain<T, U, V, W>
+{
+    async fn execute(mut self) -> U {
+        self.second.modify(self.first.execute().await);
+        self.second.execute().await
+    }
+}
+
+#[derive(Debug)]
+pub struct ActionSequence<
+    T: Debug + Send + Sync,
+    U: Debug + Send + Sync,
+    V: Action<T>,
+    W: Action<U>,
+> {
+    first: V,
+    second: W,
+    _phantom_t: PhantomData<T>,
+    _phantom_u: PhantomData<U>,
+}
+
+impl<T: Debug + Send + Sync, U: Debug + Send + Sync, V: Action<T>, W: Action<U>>
+    ActionSequence<T, U, V, W>
+{
+    const fn new(first: V, second: W) -> Self {
+        Self {
+            first,
+            second,
+            _phantom_t: PhantomData,
+            _phantom_u: PhantomData,
+        }
+    }
+}
+
+#[async_trait]
+impl<T: Debug + Send + Sync, U: Debug + Send + Sync, V: Action<T>, W: Action<U>> Action<(T, U)>
+    for ActionSequence<T, U, V, W>
+{
+    async fn execute(self) -> (T, U) {
+        (self.first.execute().await, self.second.execute().await)
+    }
+}
+
+#[derive(Debug)]
+pub struct ActionParallel<
+    T: Debug + Send + Sync,
+    U: Debug + Send + Sync,
+    V: Action<T>,
+    W: Action<U>,
+> {
+    first: V,
+    second: W,
+    _phantom_t: PhantomData<T>,
+    _phantom_u: PhantomData<U>,
+}
+
+impl<T: Debug + Send + Sync, U: Debug + Send + Sync, V: Action<T>, W: Action<U>>
+    ActionParallel<T, U, V, W>
+{
+    const fn new(first: V, second: W) -> Self {
+        Self {
+            first,
+            second,
+            _phantom_t: PhantomData,
+            _phantom_u: PhantomData,
+        }
+    }
+}
+
+#[async_trait]
+impl<
+        T: 'static + Debug + Send + Sync,
+        U: 'static + Debug + Send + Sync,
+        V: 'static + Action<T>,
+        W: 'static + Action<U>,
+    > Action<(T, U)> for ActionParallel<T, U, V, W>
+{
+    async fn execute(self) -> (T, U) {
+        let fut1 = tokio::spawn(self.first.execute());
+        let fut2 = tokio::spawn(self.second.execute());
+        try_join!(fut1, fut2).unwrap()
+    }
+}
+
+#[derive(Debug)]
+pub struct ActionConcurrent<
+    T: Debug + Send + Sync,
+    U: Debug + Send + Sync,
+    V: Action<T>,
+    W: Action<U>,
+> {
+    first: V,
+    second: W,
+    _phantom_t: PhantomData<T>,
+    _phantom_u: PhantomData<U>,
+}
+
+impl<T: Debug + Send + Sync, U: Debug + Send + Sync, V: Action<T>, W: Action<U>>
+    ActionConcurrent<T, U, V, W>
+{
+    const fn new(first: V, second: W) -> Self {
+        Self {
+            first,
+            second,
+            _phantom_t: PhantomData,
+            _phantom_u: PhantomData,
+        }
+    }
+}
+
+#[async_trait]
+impl<T: Debug + Send + Sync, U: Debug + Send + Sync, V: Action<T>, W: Action<U>> Action<(T, U)>
+    for ActionConcurrent<T, U, V, W>
+{
+    async fn execute(self) -> (T, U) {
+        join!(self.first.execute(), self.second.execute())
+    }
+}
