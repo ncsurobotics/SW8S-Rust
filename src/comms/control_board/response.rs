@@ -18,9 +18,11 @@ const MS5837D: [u8; 7] = *b"MS5837D";
 const DEBUG: [u8; 5] = *b"DEBUG";
 const DBGDAT: [u8; 6] = *b"DBGDAT";
 
+type KeyedAcknowledges = HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>;
+
 #[derive(Debug)]
 pub struct ResponseMap {
-    ack_map: Arc<Mutex<HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>>>,
+    ack_map: Arc<Mutex<KeyedAcknowledges>>,
     watchdog_status: Arc<Mutex<Option<bool>>>,
     bno055_status: Arc<Mutex<Option<[u8; 8 * 7]>>>,
     ms5837_status: Arc<Mutex<Option<[u8; 8 * 3]>>>,
@@ -74,7 +76,7 @@ impl ResponseMap {
         }
     }
 
-    pub async fn get_ack(&mut self, id: u16) -> Result<Vec<u8>, AcknowledgeErr> {
+    pub async fn get_ack(&self, id: u16) -> Result<Vec<u8>, AcknowledgeErr> {
         loop {
             if let Some(x) = self.ack_map.lock().await.remove(&id) {
                 return x;
@@ -87,7 +89,7 @@ impl ResponseMap {
     async fn update_maps<T>(
         buffer: &mut Vec<u8>,
         serial_conn: &mut T,
-        ack_map: &Mutex<HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>>,
+        ack_map: &Mutex<KeyedAcknowledges>,
         watchdog_status: &Mutex<Option<bool>>,
         bno055_status: &Mutex<Option<[u8; 8 * 7]>>,
         ms5837_status: &Mutex<Option<[u8; 8 * 3]>>,
