@@ -30,3 +30,11 @@ futures = "0.3.28" # Futures utilities
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
+reqwest = "0.11.20" # Downloading godot sim
+
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+flate2 = "1.0.27" # Decompressing gz
+tar = "0.4.40" # Unpacking tar
+
+[target.'cfg(not(target_os = "linux"))'.dev-dependencies]
+zip-extract = "0.1.2" # Decompressing zip
