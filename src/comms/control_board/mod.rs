@@ -7,7 +7,7 @@ use std::{
 
 use anyhow::{bail, Result};
 use tokio::{
-    io::{AsyncWrite, AsyncWriteExt},
+    io::{self, AsyncWrite, AsyncWriteExt, WriteHalf},
     net::TcpStream,
     sync::Mutex,
     time::sleep,
@@ -26,11 +26,11 @@ pub struct ControlBoard<T>
 where
     T: AsyncWriteExt + Unpin,
 {
-    inner: AUVControlBoard<T, ResponseMap>,
+    inner: AUVControlBoard<WriteHalf<T>, ResponseMap>,
 }
 
 impl<T: AsyncWriteExt + Unpin> Deref for ControlBoard<T> {
-    type Target = AUVControlBoard<T, ResponseMap>;
+    type Target = AUVControlBoard<WriteHalf<T>, ResponseMap>;
     fn deref(&self) -> &Self::Target {
         &self.inner
     }
@@ -43,7 +43,11 @@ impl<T: AsyncWriteExt + Unpin> DerefMut for ControlBoard<T> {
 }
 
 impl<T: 'static + AsyncWrite + Unpin + Send> ControlBoard<T> {
-    async fn new(comm_out: T, responses: ResponseMap, msg_id: MessageId) -> Result<Self> {
+    async fn new(
+        comm_out: WriteHalf<T>,
+        responses: ResponseMap,
+        msg_id: MessageId,
+    ) -> Result<Self> {
         const THRUSTER_INVS: [bool; 8] = [true, true, false, false, true, false, false, true];
         #[allow(clippy::approx_constant)]
         const DOF_SPEEDS: [f32; 6] = [0.7071, 0.7071, 1.0, 0.4413, 1.0, 0.8139];
@@ -116,8 +120,8 @@ impl ControlBoard<SerialStream> {
             .data_bits(DATA_BITS)
             .parity(PARITY)
             .stop_bits(STOP_BITS);
-        let responses = ResponseMap::new(SerialStream::open(&port_builder)?);
-        let comm_out = SerialStream::open(&port_builder)?;
+        let (read, comm_out) = io::split(SerialStream::open(&port_builder)?);
+        let responses = ResponseMap::new(read);
 
         Self::new(comm_out, responses.await, MessageId::default()).await
     }
