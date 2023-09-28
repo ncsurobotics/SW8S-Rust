@@ -7,9 +7,14 @@ use std::{
     time::Duration,
 };
 
+use async_trait::async_trait;
+use futures::stream;
+use futures::StreamExt;
 use tokio::{io::AsyncReadExt, sync::Mutex, time::sleep};
 
-use super::util::{crc, AcknowledgeErr, END_BYTE, ESCAPE_BYTE, START_BYTE};
+use crate::comms::auv_control_board::{util::crc, response::get_messages, GetAck};
+
+use crate::comms::auv_control_board::util::AcknowledgeErr;
 
 const ACK: [u8; 3] = *b"ACK";
 const WDGS: [u8; 4] = *b"WDGS";
@@ -76,15 +81,6 @@ impl ResponseMap {
         }
     }
 
-    pub async fn get_ack(&self, id: u16) -> Result<Vec<u8>, AcknowledgeErr> {
-        loop {
-            if let Some(x) = self.ack_map.lock().await.remove(&id) {
-                return x;
-            }
-            sleep(MAP_POLL_SLEEP).await; // Allow for new data from serial
-        }
-    }
-
     /// Reads from serial resource, updating ack_map
     async fn update_maps<T>(
         buffer: &mut Vec<u8>,
@@ -96,63 +92,7 @@ impl ResponseMap {
     ) where
         T: AsyncReadExt + Unpin,
     {
-        let buf_len = buffer.len();
-        // Read bytes up to buffer capacity
-        let _ = serial_conn.read(&mut buffer[buf_len..]).await.unwrap();
-
-        while let Some(end) = buffer
-            .iter()
-            .enumerate()
-            .skip(1)
-            .find(|(idx, val)| **val == END_BYTE && buffer[idx - 1] != ESCAPE_BYTE)
-        {
-            let mut end_idx = end.0;
-
-            // Adjust for starting without start byte (malformed comms)
-            // TODO: log feature for these events -- serious issues!!!
-            match buffer
-                .iter()
-                .enumerate()
-                .find(|(idx, val)| **val == START_BYTE && buffer[idx - 1] != ESCAPE_BYTE)
-            {
-                Some((0, _)) => (), // Expected condition
-                None => {
-                    eprintln!(
-                        "Buffer has end byte but no start byte, discarding {:?}",
-                        &buffer[0..=end_idx]
-                    );
-                    buffer.drain(0..=end_idx);
-                    continue; // Escape and try again on next value
-                }
-                Some((start_idx, _)) => {
-                    eprintln!(
-                        "Buffer does not begin with start byte, discarding {:?}",
-                        &buffer[0..start_idx]
-                    );
-                    buffer.drain(0..start_idx);
-
-                    if end_idx < start_idx {
-                        eprintln!(
-                            "First buffer start byte is behind end byte, discarding {:?}",
-                            &buffer[0..start_idx]
-                        );
-                        buffer.drain(0..start_idx);
-                        continue; // Escape and try again on next value
-                    } else {
-                        // end_idx > x, end_idx == x is impossible
-                        end_idx -= start_idx;
-                    }
-                }
-            };
-
-            // Discard start, end, and escape bytes
-            let message: Vec<_> = buffer
-                .drain(0..=end_idx)
-                .skip(1)
-                .filter(|&byte| byte != ESCAPE_BYTE)
-                .collect();
-            let message = &message[0..message.len() - 1];
-
+       stream::iter(get_messages(buffer, serial_conn).await).for_each_concurrent(None, |message| async move { 
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());
             let message_body = &message[2..(message.len() - 2)];
             let payload = &message[0..(message.len() - 2)];
@@ -185,6 +125,18 @@ impl ResponseMap {
                 message_body
             );
             }
+        }).await
+    }
+}
+
+#[async_trait]
+impl GetAck for ResponseMap {
+    async fn get_ack(&self, id: u16) -> Result<Vec<u8>, AcknowledgeErr> {
+        loop {
+            if let Some(x) = self.ack_map.lock().await.remove(&id) {
+                return x;
+            }
+            sleep(MAP_POLL_SLEEP).await; // Allow for new data from serial
         }
     }
 }

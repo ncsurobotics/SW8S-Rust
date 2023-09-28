@@ -1,57 +1,45 @@
 use core::fmt::Debug;
-use std::{sync::Arc, time::Duration};
+use std::{
+    ops::{Deref, DerefMut},
+    sync::Arc,
+    time::Duration,
+};
 
 use anyhow::{bail, Result};
 use tokio::{
     io::{AsyncWrite, AsyncWriteExt},
+    net::TcpStream,
     sync::Mutex,
     time::sleep,
 };
 use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
 
-use crate::comms::control_board::util::crc;
+use self::{response::ResponseMap, util::BNO055AxisConfig};
 
-use self::{
-    response::ResponseMap,
-    util::{BNO055AxisConfig, END_BYTE, ESCAPE_BYTE, START_BYTE},
-};
+use super::auv_control_board::{AUVControlBoard, MessageId};
 
 pub mod response;
 pub mod util;
-
-const ID_LIMIT: u16 = 59999;
-
-#[derive(Debug)]
-struct MessageId {
-    id: Mutex<u16>,
-}
-
-impl Default for MessageId {
-    fn default() -> Self {
-        MessageId { id: 0.into() }
-    }
-}
-
-impl MessageId {
-    async fn get(&self) -> u16 {
-        let mut id = self.id.lock().await;
-        let ret = *id;
-        *id += 1;
-        if *id > ID_LIMIT {
-            *id = 0
-        }
-        ret
-    }
-}
 
 #[derive(Debug)]
 pub struct ControlBoard<T>
 where
     T: AsyncWriteExt + Unpin,
 {
-    comm_out: Arc<Mutex<T>>,
-    responses: ResponseMap,
-    msg_id: MessageId,
+    inner: AUVControlBoard<T, ResponseMap>,
+}
+
+impl<T: AsyncWriteExt + Unpin> Deref for ControlBoard<T> {
+    type Target = AUVControlBoard<T, ResponseMap>;
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl<T: AsyncWriteExt + Unpin> DerefMut for ControlBoard<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
 }
 
 impl<T: 'static + AsyncWrite + Unpin + Send> ControlBoard<T> {
@@ -61,9 +49,7 @@ impl<T: 'static + AsyncWrite + Unpin + Send> ControlBoard<T> {
         const DOF_SPEEDS: [f32; 6] = [0.7071, 0.7071, 1.0, 0.4413, 1.0, 0.8139];
 
         let mut this = Self {
-            comm_out: Mutex::from(comm_out).into(),
-            responses,
-            msg_id,
+            inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id),
         };
 
         this.init_matrices().await?;
@@ -138,52 +124,6 @@ impl ControlBoard<SerialStream> {
 }
 
 impl<T: AsyncWrite + Unpin> ControlBoard<T> {
-    /// Adds protocol requirements (e.g. message id, escapes) to a message body
-    /// Returns the id assigned to the message and the message
-    async fn add_metadata(&self, message: Vec<u8>) -> (u16, Vec<u8>) {
-        let add_escape = |byte| {
-            if [START_BYTE, END_BYTE, ESCAPE_BYTE].contains(&byte) {
-                vec![ESCAPE_BYTE, byte]
-            } else {
-                vec![byte]
-            }
-        };
-
-        let id = self.msg_id.get().await;
-        // Vecs isn't optimal, check if can reconcile one and two element arrays instead
-        let mut message: Vec<u8> = [START_BYTE]
-            .into_iter()
-            .chain(
-                // Add escapes to id and message body
-                id.to_be_bytes()
-                    .into_iter()
-                    .chain(message.into_iter())
-                    .flat_map(add_escape),
-            )
-            .collect();
-
-        // Add CRC and escape it
-        message.extend(
-            crc(&message)
-                .to_be_bytes()
-                .into_iter()
-                .flat_map(add_escape)
-                .collect::<Vec<_>>(),
-        );
-
-        message.push(END_BYTE);
-        (id, message)
-    }
-
-    /// Writes out a message body and only gives acknowledge status
-    /// Only for communications that return no data with acknowledge
-    async fn write_out_basic(&self, message_body: Vec<u8>) -> Result<()> {
-        let (id, message) = self.add_metadata(message_body).await;
-        self.comm_out.lock().await.write_all(&message).await?;
-        // Spec guarantees empty response
-        Ok(self.responses.get_ack(id).await.map(|_| ())?)
-    }
-
     pub async fn feed_watchdog(&self) -> Result<()> {
         const WATCHDOG_FEED: [u8; 4] = *b"WDGF";
         let message = Vec::from(WATCHDOG_FEED);
