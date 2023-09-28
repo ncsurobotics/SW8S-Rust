@@ -7,7 +7,7 @@ use std::{
 
 use anyhow::{bail, Result};
 use tokio::{
-    io::{self, AsyncWrite, AsyncWriteExt, WriteHalf},
+    io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf},
     net::TcpStream,
     sync::Mutex,
     time::sleep,
@@ -42,16 +42,13 @@ impl<T: AsyncWriteExt + Unpin> DerefMut for ControlBoard<T> {
     }
 }
 
-impl<T: 'static + AsyncWrite + Unpin + Send> ControlBoard<T> {
-    async fn new(
-        comm_out: WriteHalf<T>,
-        responses: ResponseMap,
-        msg_id: MessageId,
-    ) -> Result<Self> {
+impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
+    async fn new(comm_out: WriteHalf<T>, comm_in: ReadHalf<T>, msg_id: MessageId) -> Result<Self> {
         const THRUSTER_INVS: [bool; 8] = [true, true, false, false, true, false, false, true];
         #[allow(clippy::approx_constant)]
         const DOF_SPEEDS: [f32; 6] = [0.7071, 0.7071, 1.0, 0.4413, 1.0, 0.8139];
 
+        let responses = ResponseMap::new(comm_in).await;
         let mut this = Self {
             inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id),
         };
@@ -120,10 +117,8 @@ impl ControlBoard<SerialStream> {
             .data_bits(DATA_BITS)
             .parity(PARITY)
             .stop_bits(STOP_BITS);
-        let (read, comm_out) = io::split(SerialStream::open(&port_builder)?);
-        let responses = ResponseMap::new(read);
-
-        Self::new(comm_out, responses.await, MessageId::default()).await
+        let (comm_in, comm_out) = io::split(SerialStream::open(&port_builder)?);
+        Self::new(comm_out, comm_in, MessageId::default()).await
     }
 }
 
