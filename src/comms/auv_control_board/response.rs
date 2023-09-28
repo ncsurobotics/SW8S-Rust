@@ -1,4 +1,6 @@
-use tokio::io::AsyncReadExt;
+use std::time::Duration;
+
+use tokio::{io::AsyncReadExt, time::sleep};
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 
@@ -64,5 +66,7 @@ where
         };
         messages.push(clean_message(buffer, end_idx));
     }
+
+    println!("Unprocessed Length: {}", buffer.len());
     messages
 }

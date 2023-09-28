@@ -61,11 +61,15 @@ async fn open_sim(godot: String) -> Result<()> {
     Ok(())
 }
 
+#[ignore = "Requires a UI, is long"]
 #[tokio::test]
 pub async fn tcp_connect() {
     const LOCALHOST: &str = "127.0.0.1";
-    const SIM_PORT: &str = "5011";
+    const SIM_PORT: &str = "5012";
+    const SIM_DUMMY_PORT: &str = "5011";
 
     open_sim(GODOT.lock().await.to_string()).await.unwrap();
-    let _ = ControlBoard::tcp(LOCALHOST, SIM_PORT).await.unwrap();
+    let _ = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
 }

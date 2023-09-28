@@ -104,6 +104,7 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
     pub async fn write_out_basic(&self, message_body: Vec<u8>) -> Result<()> {
         let (id, message) = self.add_metadata(message_body).await;
         self.comm_out.lock().await.write_all(&message).await?;
+        println!("WRITE OUT THE MESSAGE WITH ID {id}");
         // Spec guarantees empty response
         Ok(self.responses.get_ack(id).await.map(|_| ())?)
     }

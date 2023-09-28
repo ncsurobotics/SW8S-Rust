@@ -7,7 +7,7 @@ use std::{
 
 use anyhow::{bail, Result};
 use tokio::{
-    io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf},
+    io::{self, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf},
     net::TcpStream,
     sync::Mutex,
     time::sleep,
@@ -123,9 +123,30 @@ impl ControlBoard<SerialStream> {
 }
 
 impl ControlBoard<TcpStream> {
-    pub async fn tcp(host: &str, port: &str) -> Result<Self> {
-        let (comm_in, comm_out) =
-            io::split(TcpStream::connect(host.to_owned() + ":" + port).await?);
+    /// Both connections are necessary for the simulator to run,
+    /// but the one that doesn't feed forward to control board is unnecessary
+    pub async fn tcp(host: &str, port: &str, dummy_port: String) -> Result<Self> {
+        let host = host.to_string();
+        let host_clone = host.clone();
+        tokio::spawn(async move {
+            let mut stream = TcpStream::connect(host_clone + ":" + &dummy_port)
+                .await
+                .unwrap();
+            stream.set_nodelay(true).unwrap();
+            // Have to avoid dropping the TCP stream
+            loop {
+                stream.write_all(b"set_pos 1 1 1").await.unwrap();
+                //println!("CHECK READY FOR READ");
+                //stream.readable().await.unwrap();
+                //println!("CONFIRMED READY FOR READ");
+                println!("RECEIVE: {}", stream.read_u8().await.unwrap());
+                sleep(Duration::MAX).await
+            }
+        });
+
+        let stream = TcpStream::connect(host.to_string() + ":" + port).await?;
+        stream.set_nodelay(true)?;
+        let (comm_in, comm_out) = io::split(stream);
         Self::new(comm_out, comm_in, MessageId::default()).await
     }
 }
