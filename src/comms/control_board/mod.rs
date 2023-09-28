@@ -43,7 +43,11 @@ impl<T: AsyncWriteExt + Unpin> DerefMut for ControlBoard<T> {
 }
 
 impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
-    async fn new(comm_out: WriteHalf<T>, comm_in: ReadHalf<T>, msg_id: MessageId) -> Result<Self> {
+    pub async fn new(
+        comm_out: WriteHalf<T>,
+        comm_in: ReadHalf<T>,
+        msg_id: MessageId,
+    ) -> Result<Self> {
         const THRUSTER_INVS: [bool; 8] = [true, true, false, false, true, false, false, true];
         #[allow(clippy::approx_constant)]
         const DOF_SPEEDS: [f32; 6] = [0.7071, 0.7071, 1.0, 0.4413, 1.0, 0.8139];
@@ -118,6 +122,14 @@ impl ControlBoard<SerialStream> {
             .parity(PARITY)
             .stop_bits(STOP_BITS);
         let (comm_in, comm_out) = io::split(SerialStream::open(&port_builder)?);
+        Self::new(comm_out, comm_in, MessageId::default()).await
+    }
+}
+
+impl ControlBoard<TcpStream> {
+    pub async fn tcp(host: &str, port: &str) -> Result<Self> {
+        let (comm_in, comm_out) =
+            io::split(TcpStream::connect(host.to_owned() + ":" + port).await?);
         Self::new(comm_out, comm_in, MessageId::default()).await
     }
 }
