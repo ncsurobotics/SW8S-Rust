@@ -26,19 +26,13 @@ pub struct ControlBoard<T>
 where
     T: AsyncWriteExt + Unpin,
 {
-    inner: AUVControlBoard<WriteHalf<T>, ResponseMap>,
+    inner: Arc<AUVControlBoard<WriteHalf<T>, ResponseMap>>,
 }
 
 impl<T: AsyncWriteExt + Unpin> Deref for ControlBoard<T> {
     type Target = AUVControlBoard<WriteHalf<T>, ResponseMap>;
     fn deref(&self) -> &Self::Target {
         &self.inner
-    }
-}
-
-impl<T: AsyncWriteExt + Unpin> DerefMut for ControlBoard<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.inner
     }
 }
 
@@ -54,7 +48,7 @@ impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
 
         let responses = ResponseMap::new(comm_in).await;
         let mut this = Self {
-            inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id),
+            inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id).into(),
         };
 
         this.init_matrices().await?;
@@ -67,14 +61,16 @@ impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
 
         this.stab_tune().await?;
 
+        let inner_clone = this.inner.clone();
+
         tokio::spawn(async move {
             loop {
-                this.feed_watchdog().await.unwrap();
+                Self::feed_watchdog(&inner_clone).await.unwrap();
                 sleep(Duration::from_millis(200)).await;
             }
         });
 
-        unimplemented!();
+        Ok(this)
     }
 
     async fn init_matrices(&mut self) -> Result<()> {
@@ -135,10 +131,12 @@ impl ControlBoard<TcpStream> {
 }
 
 impl<T: AsyncWrite + Unpin> ControlBoard<T> {
-    pub async fn feed_watchdog(&self) -> Result<()> {
+    pub async fn feed_watchdog(
+        control_board: &Arc<AUVControlBoard<WriteHalf<T>, ResponseMap>>,
+    ) -> Result<()> {
         const WATCHDOG_FEED: [u8; 4] = *b"WDGF";
         let message = Vec::from(WATCHDOG_FEED);
-        self.write_out_basic(message).await
+        control_board.write_out_basic(message).await
     }
 
     /// https://mb3hel.github.io/AUVControlBoard/user_guide/messages/#configuration-commands
