@@ -57,7 +57,7 @@ async fn open_sim(godot: String) -> Result<()> {
             .unwrap()
     });
     // Give simulator time to spawn, magic number
-    sleep(Duration::from_secs(1)).await;
+    sleep(Duration::from_secs(3)).await;
     Ok(())
 }
 
