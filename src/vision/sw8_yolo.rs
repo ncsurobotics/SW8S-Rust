@@ -10,16 +10,28 @@
 
 // OpenCV build after clean
 // export VCPKGRS_DYNAMIC=1
-// cargo clean and build if still doesn't work
+// cargo clean and build until it works
+#[cfg(test)]
+mod tests {
+    use assert_approx_eq::assert_approx_eq;
 
-use rusty_yolo;
-use tch;
-#[test]
-pub fn inference() {
-    let device = tch::Device::cuda_if_available();
-    let model = rusty_yolo::YOLO::new("/home/lixin/Projects/RustProjects/SW8S-Rust/src/vision/models/yolo.torchscript", 320, 320, device);
-    let mut orig_image = tch::vision::image::load("/home/lixin/Projects/RustProjects/SW8S-Rust/tests/vision/resources/buoy_images/1.jpeg").unwrap();
-    let results = model.predict(&orig_image, 0.5, 0.35);
-    model.draw_rectangle(&mut orig_image, &results);
-    tch::vision::image::save(&orig_image, "/home/lixin/Projects/RustProjects/SW8S-Rust/tests/vision/output/buoy_images/torch_test.jpeg").expect("Failed to save");
+    use rusty_yolo;
+    use tch;
+    #[test]
+    fn inference() {
+        // check cuda options (cpu or gpu)
+        let device = tch::Device::cuda_if_available();
+
+        // load converted model (torchscript without tuple, see https://github.com/Nic-Gould/rusty-yolo/tree/main/models for instruction)
+        let model = rusty_yolo::YOLO::new("/home/lixin/Projects/RustProjects/SW8S-Rust/src/vision/models/yolo.torchscript", 320, 320, device);
+
+        let mut orig_image = tch::vision::image::load("/home/lixin/Projects/RustProjects/SW8S-Rust/tests/vision/resources/buoy_images/1.jpeg").unwrap();
+
+        let results = model.predict(&orig_image, 0.5, 0.35);    // inference (img, conf, iou)
+
+        assert_approx_eq!(results.get(0).unwrap().xmin, 98.051513671875);
+
+        model.draw_rectangle(&mut orig_image, &results);
+        tch::vision::image::save(&orig_image, "/home/lixin/Projects/RustProjects/SW8S-Rust/tests/vision/output/buoy_images/torch_test.jpeg").expect("Failed to save");
+    }
 }
