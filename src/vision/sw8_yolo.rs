@@ -40,7 +40,7 @@ mod tests {
 
         let results = model.predict(&orig_image, 0.5, 0.35);    // inference (img, conf, iou)
 
-        //assert_approx_eq!(results.get(0).unwrap().xmin, 98.051513671875);
+        assert_approx_eq!(results.get(0).unwrap().xmin, 98.5, 0.5);
 
         model.draw_rectangle(&mut orig_image, &results);
         tch::vision::image::save(&orig_image, out_path).expect("Failed to save");
