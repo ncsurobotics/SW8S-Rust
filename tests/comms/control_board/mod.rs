@@ -68,7 +68,8 @@ pub async fn tcp_connect() {
     const SIM_PORT: &str = "5012";
     const SIM_DUMMY_PORT: &str = "5011";
 
-    open_sim(GODOT.lock().await.to_string()).await.unwrap();
+    let godot = GODOT.lock().await;
+    open_sim(godot.to_string()).await.unwrap();
     let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
         .await
         .unwrap();
@@ -77,4 +78,27 @@ pub async fn tcp_connect() {
     while control_board.watchdog_status().await.is_none() {}
     // Confirm watchdog keeps motors alive
     assert_eq!(control_board.watchdog_status().await, Some(true));
+}
+
+#[ignore = "requires a UI, is long"]
+#[tokio::test]
+pub async fn tcp_move() {
+    const LOCALHOST: &str = "127.0.0.1";
+    const SIM_PORT: &str = "5012";
+    const SIM_DUMMY_PORT: &str = "5011";
+
+    let godot = GODOT.lock().await;
+    open_sim(godot.to_string()).await.unwrap();
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+
+    control_board
+        .relative_dof_speed_set(0.0, 0.5, 0.0, 0.5, 0.5, 0.5)
+        .await
+        .unwrap();
+
+    // Will be broken until get IMU data read
+    sleep(Duration::from_secs(10)).await;
+    todo!();
 }

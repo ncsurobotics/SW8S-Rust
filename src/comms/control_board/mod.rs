@@ -66,6 +66,10 @@ impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
             }
         });
 
+        // Wait for watchdog to register
+        while this.watchdog_status().await != Some(true) {
+            sleep(Duration::from_millis(10)).await;
+        }
         Ok(this)
     }
 
