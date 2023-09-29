@@ -25,7 +25,9 @@ const ACK: [u8; 3] = *b"ACK";
 const WDGS: [u8; 4] = *b"WDGS";
 const BNO055D: [u8; 7] = *b"BNO055D";
 const MS5837D: [u8; 7] = *b"MS5837D";
+#[allow(dead_code)]
 const DEBUG: [u8; 5] = *b"DEBUG";
+#[allow(dead_code)]
 const DBGDAT: [u8; 6] = *b"DBGDAT";
 
 type KeyedAcknowledges = HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>;

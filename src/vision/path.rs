@@ -62,7 +62,7 @@ pub struct Path {
 }
 
 impl Path {
-    fn image(&self) -> &Mat {
+    pub fn image(&self) -> &Mat {
         &self.image
     }
 }
