@@ -69,7 +69,7 @@ impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
         Ok(this)
     }
 
-    async fn init_matrices(&mut self) -> Result<()> {
+    async fn init_matrices(&self) -> Result<()> {
         self.motor_matrix_set(3, -1.0, -1.0, 0.0, 0.0, 0.0, 1.0)
             .await?;
         self.motor_matrix_set(4, 1.0, -1.0, 0.0, 0.0, 0.0, -1.0)
@@ -90,7 +90,7 @@ impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
         self.motor_matrix_update().await
     }
 
-    async fn stab_tune(&mut self) -> Result<()> {
+    async fn stab_tune(&self) -> Result<()> {
         self.stability_assist_pid_tune('X', 0.8, 0.0, 0.0, 0.6, false)
             .await?;
         self.stability_assist_pid_tune('Y', 0.15, 0.0, 0.0, 0.1, false)
@@ -152,7 +152,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
     /// https://mb3hel.github.io/AUVControlBoard/user_guide/messages/#configuration-commands
     #[allow(clippy::too_many_arguments)]
     pub async fn motor_matrix_set(
-        &mut self,
+        &self,
         thruster: u8,
         x: f32,
         y: f32,
@@ -178,7 +178,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         self.write_out_basic(message).await
     }
 
-    pub async fn motor_matrix_update(&mut self) -> Result<()> {
+    pub async fn motor_matrix_update(&self) -> Result<()> {
         const MOTOR_MATRIX_UPDATE: [u8; 5] = *b"MMATU";
         self.write_out_basic(Vec::from(MOTOR_MATRIX_UPDATE)).await
     }
@@ -187,7 +187,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
     ///
     /// # Arguments:
     /// * `inversions` - Array of invert statuses, with motor 1 at index 0
-    pub async fn thruster_inversion_set(&mut self, inversions: &[bool; 8]) -> Result<()> {
+    pub async fn thruster_inversion_set(&self, inversions: &[bool; 8]) -> Result<()> {
         const THRUSTER_INVERSION_SET: [u8; 4] = *b"TINV";
         let mut message = Vec::from(THRUSTER_INVERSION_SET);
 
@@ -203,7 +203,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
     }
 
     pub async fn relative_dof_speed_set(
-        &mut self,
+        &self,
         x: f32,
         y: f32,
         z: f32,
@@ -215,7 +215,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
             .await
     }
 
-    pub async fn relative_dof_speed_set_batch(&mut self, values: &[f32; 6]) -> Result<()> {
+    pub async fn relative_dof_speed_set_batch(&self, values: &[f32; 6]) -> Result<()> {
         const DOF_SET: [u8; 6] = *b"RELDOF";
         // Oversized to avoid reallocations
         let mut message = Vec::with_capacity(32 * 8);
@@ -228,7 +228,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         self.write_out_basic(message).await
     }
 
-    pub async fn bno055_imu_axis_config(&mut self, config: BNO055AxisConfig) -> Result<()> {
+    pub async fn bno055_imu_axis_config(&self, config: BNO055AxisConfig) -> Result<()> {
         const BNO055A_CONFIG: [u8; 7] = *b"BNO055A";
 
         let mut message = Vec::from(BNO055A_CONFIG);
@@ -238,7 +238,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
     }
 
     pub async fn stability_assist_pid_tune(
-        &mut self,
+        &self,
         which: char,
         kp: f32,
         ki: f32,

@@ -1,6 +1,12 @@
 use config::Configuration;
 use sw8s_rust_lib::comms::control_board::ControlBoard;
-use tokio::sync::OnceCell;
+use tokio::{
+    signal,
+    sync::{
+        mpsc::{self, UnboundedSender},
+        OnceCell,
+    },
+};
 use tokio_serial::SerialStream;
 
 mod config;
@@ -18,6 +24,27 @@ async fn control_board() -> &'static ControlBoard<SerialStream> {
 
 #[tokio::main]
 async fn main() {
+    let shutdown_tx = shutdown_handler().await;
     let mut config = Configuration::default();
-    println!("Hello, world!");
+
+    // Send shutdown signal
+    shutdown_tx.send(()).unwrap();
+}
+
+/// Graceful shutdown, see https://tokio.rs/tokio/topics/shutdown
+async fn shutdown_handler() -> UnboundedSender<()> {
+    let (shutdown_tx, mut shutdown_rx) = mpsc::unbounded_channel::<()>();
+    tokio::spawn(async move {
+        // Wait for shutdown signal
+        tokio::select! {_ = signal::ctrl_c() => {}, _ = shutdown_rx.recv() => {}};
+
+        // Stop motors
+        if let Some(control_board) = CONTROL_BOARD_CELL.get() {
+            control_board
+                .relative_dof_speed_set_batch(&[0.0; 6])
+                .await
+                .unwrap();
+        };
+    });
+    shutdown_tx
 }
