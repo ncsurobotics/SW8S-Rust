@@ -31,7 +31,10 @@ pub struct Configuration {
 impl Default for Configuration {
     fn default() -> Self {
         let inner = if let Ok(config_string) = read_to_string(CONFIG_FILE) {
-            toml::from_str(&config_string).unwrap()
+            match toml::from_str(&config_string) {
+                Ok(x) => x,
+                Err(x) => panic!("Config file parsing: {:#?}", x),
+            }
         } else {
             ConfigFile::default()
         };
