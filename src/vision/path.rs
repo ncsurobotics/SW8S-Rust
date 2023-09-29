@@ -3,7 +3,7 @@ use std::ops::RangeInclusive;
 use itertools::Itertools;
 use opencv::{
     core::{in_range, Size, VecN},
-    imgproc::{cvt_color, COLOR_RGB2YUV},
+    imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
     prelude::{Mat, MatTraitConst},
 };
 
@@ -62,6 +62,12 @@ pub struct Path {
 }
 
 impl Path {
+    fn image(&self) -> &Mat {
+        &self.image
+    }
+}
+
+impl Path {
     pub fn new(
         color_bounds: RangeInclusive<Yuv>,
         width_bounds: RangeInclusive<f64>,
@@ -83,9 +89,9 @@ impl Path {
 impl Default for Path {
     fn default() -> Self {
         Path::new(
-            (Yuv { y: 0, u: 0, v: 152 })..=(Yuv {
+            (Yuv { y: 0, u: 0, v: 127 })..=(Yuv {
                 y: 255,
-                u: 152,
+                u: 127,
                 v: 255,
             }),
             20.0..=800.0,
@@ -111,15 +117,14 @@ impl VisualDetector<i32> for Path {
         &mut self,
         input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
-        self.image = resize(input_image, &self.size)?;
+        let image = resize(input_image, &self.size)?;
         let mut yuv_image = Mat::default();
 
-        let post_kmeans = kmeans(&self.image, self.num_regions, self.attempts);
-        cvt_color(&post_kmeans, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
-        let image_center = (
-            (post_kmeans.cols() / 2) as f64,
-            (post_kmeans.rows() / 2) as f64,
-        );
+        cvt_color(&image, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
+        yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
+        let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
+
+        cvt_color(&yuv_image, &mut self.image, COLOR_YUV2RGB, 0).unwrap();
 
         yuv_image
             .iter::<VecN<u8, 3>>()
@@ -139,7 +144,26 @@ impl VisualDetector<i32> for Path {
                 } else {
                     (0, 1)
                 };
-                let width = pca_output.pca_value().get(width_idx).unwrap();
+                // width bounds have a temp fix -- not sure why output is so large
+                let width = pca_output.pca_value().get(width_idx).unwrap() / 100.0;
+                let length = pca_output.pca_value().get(length_idx).unwrap();
+                let length_2 = pca_output.pca_vector().get(length_idx + 1).unwrap();
+
+                println!("Testing for valid...");
+                println!("\tself.width_bounds = {:?}", self.width_bounds);
+                println!("\tself.width = {:?}", width);
+                println!(
+                    "\tcontained_width = {:?}",
+                    self.width_bounds.contains(&width)
+                );
+                println!();
+                println!("\tYUV range = {:?}", self.color_bounds);
+                println!("\tYUV val = {:?}", Yuv::from(&val));
+                println!(
+                    "\tcontained_color = {:?}",
+                    Yuv::from(&val).in_range(&self.color_bounds)
+                );
+                println!();
 
                 let valid = self.width_bounds.contains(&width)
                     && Yuv::from(&val).in_range(&self.color_bounds);
@@ -157,6 +181,8 @@ impl VisualDetector<i32> for Path {
                         FORWARD,
                     ),
                     width,
+                    length / 300.0,
+                    length_2,
                 );
 
                 Ok(VisualDetection {
@@ -170,6 +196,8 @@ impl VisualDetector<i32> for Path {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::create_dir_all;
+
     use opencv::{
         core::Vector,
         imgcodecs::{imread, imwrite, IMREAD_COLOR},
@@ -181,17 +209,21 @@ mod tests {
 
     #[test]
     fn detect_single() {
-        let mut image = imread("tests/vision/resources/path_images/1.jpeg", IMREAD_COLOR).unwrap();
-        let detections = Path::default().detect(&image).unwrap();
+        let image = imread("tests/vision/resources/path_images/1.jpeg", IMREAD_COLOR).unwrap();
+        let mut path = Path::default();
+        let detections = path.detect(&image).unwrap();
+        let mut shrunk_image = path.image().clone();
 
         detections
             .iter()
-            .for_each(|result| result.position().draw(&mut image).unwrap());
+            .for_each(|result| result.draw(&mut shrunk_image).unwrap());
 
         println!("Detections: {:#?}", detections);
+
+        create_dir_all("tests/vision/output/path_images").unwrap();
         imwrite(
             "tests/vision/output/path_images/1.jpeg",
-            &image,
+            &shrunk_image,
             &Vector::default(),
         )
         .unwrap();
