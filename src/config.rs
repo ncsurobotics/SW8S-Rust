@@ -9,12 +9,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigFile {
     pub control_board_path: String,
+    pub meb_path: String,
 }
 
 impl Default for ConfigFile {
     fn default() -> Self {
         Self {
             control_board_path: "/dev/ttyACM0".to_string(),
+            meb_path: "/dev/ttyACM2".to_string(),
         }
     }
 }
