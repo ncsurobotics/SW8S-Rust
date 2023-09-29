@@ -1,6 +1,7 @@
 use std::{
+    fs::read_to_string,
+    fs::write,
     ops::{Deref, DerefMut},
-    sync::{OnceLock, RwLock},
 };
 
 use serde::{Deserialize, Serialize};
@@ -13,27 +14,32 @@ pub struct ConfigFile {
 impl Default for ConfigFile {
     fn default() -> Self {
         Self {
-            control_board_path: "".to_string(),
+            control_board_path: "/dev/ttyACM0".to_string(),
         }
     }
 }
+
+const CONFIG_FILE: &str = "config.toml";
 
 #[derive(Debug)]
 pub struct Configuration {
     inner: ConfigFile,
 }
 
-impl Configuration {
+impl Default for Configuration {
     fn default() -> Self {
-        Self {
-            inner: confy::load("sw8s").unwrap(),
-        }
+        let inner = if let Ok(config_string) = read_to_string(CONFIG_FILE) {
+            toml::from_str(&config_string).unwrap()
+        } else {
+            ConfigFile::default()
+        };
+        Self { inner }
     }
 }
 
 impl Drop for Configuration {
     fn drop(&mut self) {
-        confy::store("sw8s", &self.inner).unwrap();
+        write(CONFIG_FILE, toml::to_string(&self.inner).unwrap()).unwrap();
     }
 }
 
@@ -48,9 +54,4 @@ impl DerefMut for Configuration {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.inner
     }
-}
-
-static CONFIG_CELL: OnceLock<RwLock<Configuration>> = OnceLock::new();
-pub fn configuration() -> &'static RwLock<Configuration> {
-    CONFIG_CELL.get_or_init(|| RwLock::new(Configuration::default()))
 }

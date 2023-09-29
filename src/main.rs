@@ -1,4 +1,4 @@
-use config::configuration;
+use config::Configuration;
 use sw8s_rust_lib::comms::control_board::ControlBoard;
 use tokio::sync::OnceCell;
 use tokio_serial::SerialStream;
@@ -9,7 +9,7 @@ static CONTROL_BOARD_CELL: OnceCell<ControlBoard<SerialStream>> = OnceCell::cons
 async fn control_board() -> &'static ControlBoard<SerialStream> {
     CONTROL_BOARD_CELL
         .get_or_init(|| async {
-            ControlBoard::serial(&configuration().read().unwrap().control_board_path)
+            ControlBoard::serial(&Configuration::default().control_board_path)
                 .await
                 .unwrap()
         })
@@ -18,5 +18,6 @@ async fn control_board() -> &'static ControlBoard<SerialStream> {
 
 #[tokio::main]
 async fn main() {
+    let mut config = Configuration::default();
     println!("Hello, world!");
 }
