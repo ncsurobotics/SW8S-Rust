@@ -1,11 +1,18 @@
-use std::{fmt::Debug, hash::Hash};
+use std::{
+    fmt::{Debug, Display},
+    hash::Hash,
+};
 
 use super::{
     nn_cv2::{YoloClass, YoloDetection},
-    DrawRect2d, VisualDetection, VisualDetector,
+    Draw, DrawRect2d, RelPos, VisualDetection, VisualDetector,
 };
 use anyhow::Result;
-use opencv::prelude::Mat;
+use opencv::{
+    core::{Point, Scalar},
+    imgproc::{self, LINE_AA},
+    prelude::Mat,
+};
 
 pub trait YoloTarget: PartialEq + Eq + Hash + Clone + Debug + TryFrom<i32> {}
 
@@ -41,5 +48,29 @@ where
                 })
             })
             .collect::<Result<Vec<_>>>()
+    }
+}
+
+impl<T: Display> Draw for VisualDetection<YoloClass<T>, DrawRect2d> {
+    fn draw(&self, canvas: &mut Mat) -> Result<()> {
+        self.position.draw(canvas)?;
+
+        let center_point = self.position.offset();
+        imgproc::put_text(
+            canvas,
+            &self.class.identifier.to_string(),
+            Point::new(
+                // Adjust x to 1/4 from left b/c draw starts bottom left
+                ((self.position.x + center_point.x) / 2.0) as i32,
+                center_point.y as i32,
+            ),
+            imgproc::FONT_HERSHEY_COMPLEX,
+            0.75,
+            Scalar::from((255.0, 122.5, 0.0)),
+            1,
+            LINE_AA,
+            false,
+        )?;
+        Ok(())
     }
 }
