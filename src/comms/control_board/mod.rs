@@ -6,7 +6,7 @@ use tokio::{
     io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf},
     net::TcpStream,
     sync::Mutex,
-    time::sleep,
+    time::{sleep, timeout},
 };
 use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
 
@@ -61,7 +61,17 @@ impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
 
         tokio::spawn(async move {
             loop {
-                Self::feed_watchdog(&inner_clone).await.unwrap();
+                if let Ok(inner) = timeout(
+                    Duration::from_millis(100),
+                    Self::feed_watchdog(&inner_clone),
+                )
+                .await
+                {
+                    inner.unwrap();
+                } else {
+                    eprintln!("Watchdog ACK timed out.");
+                }
+
                 sleep(Duration::from_millis(200)).await;
             }
         });

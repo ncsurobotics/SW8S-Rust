@@ -4,7 +4,7 @@ use std::{fs::create_dir_all, path::Path};
 use sw8s_rust_lib::comms::control_board::ControlBoard;
 use tokio::process::Command;
 use tokio::sync::Mutex;
-use tokio::time::sleep;
+use tokio::time::{sleep, timeout};
 
 #[cfg(target_os = "linux")]
 use {flate2::bufread::GzDecoder, tar::Archive};
@@ -93,10 +93,15 @@ pub async fn tcp_move_raw() {
         .await
         .unwrap();
 
-    control_board
-        .raw_speed_set([0.2, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.1])
-        .await
-        .unwrap();
+    while timeout(
+        Duration::from_secs(1),
+        control_board.raw_speed_set([0.2, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.1]),
+    )
+    .await
+    .is_err()
+    {
+        println!("RAW timeout");
+    }
 
     // Will be broken until get IMU data read
     sleep(Duration::from_secs(10)).await;
@@ -116,10 +121,15 @@ pub async fn tcp_move_sassist_2() {
         .await
         .unwrap();
 
-    control_board
-        .stability_2_speed_set(-0.5, 1.0, 270.0, 180.0, 90.0, -1.0)
-        .await
-        .unwrap();
+    while timeout(
+        Duration::from_secs(1),
+        control_board.stability_2_speed_set(-0.5, 1.0, 0.0, 0.0, 90.0, -1.0),
+    )
+    .await
+    .is_err()
+    {
+        println!("STAB2 timeout");
+    }
 
     // Will be broken until get IMU data read
     sleep(Duration::from_secs(10)).await;

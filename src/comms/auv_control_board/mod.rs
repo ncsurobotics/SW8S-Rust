@@ -1,9 +1,9 @@
 use core::fmt::Debug;
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use tokio::{io::AsyncWriteExt, sync::Mutex, time::timeout};
+use tokio::{io::AsyncWriteExt, sync::Mutex};
 
 use self::util::{crc_itt16_false, AcknowledgeErr};
 
@@ -101,31 +101,22 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
         (id, formatted_message)
     }
 
-    const ACK_TIMEOUT: Duration = Duration::from_millis(500);
-
     /// Writes out a message body and only gives acknowledge status
     /// Only for communications that return no data with acknowledge
     pub async fn write_out_basic(&self, message_body: Vec<u8>) -> Result<()> {
-        loop {
-            let (id, message) = self.add_metadata(&message_body).await;
-            self.comm_out.lock().await.write_all(&message).await?;
-            // Spec guarantees empty response
-            if let Ok(_ack) = timeout(Self::ACK_TIMEOUT, self.responses.get_ack(id)).await {
-                return Ok(());
-            }
-        }
+        let (id, message) = self.add_metadata(&message_body).await;
+        self.comm_out.lock().await.write_all(&message).await?;
+        // Spec guarantees empty response
+        self.responses.get_ack(id).await?;
+        Ok(())
     }
 
     /// Writes out a message body and only gives acknowledge status
     /// Only for communications that return no data with acknowledge
     pub async fn write_out(&self, message_body: Vec<u8>) -> Result<Vec<u8>> {
-        loop {
-            let (id, message) = self.add_metadata(&message_body).await;
-            self.comm_out.lock().await.write_all(&message).await?;
-            // Spec guarantees empty response
-            if let Ok(ack) = timeout(Self::ACK_TIMEOUT, self.responses.get_ack(id)).await {
-                return Ok(ack?);
-            }
-        }
+        let (id, message) = self.add_metadata(&message_body).await;
+        self.comm_out.lock().await.write_all(&message).await?;
+        // Spec guarantees empty response
+        Ok(self.responses.get_ack(id).await?)
     }
 }
