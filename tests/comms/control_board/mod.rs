@@ -82,7 +82,7 @@ pub async fn tcp_connect() {
 
 #[ignore = "requires a UI, is long"]
 #[tokio::test]
-pub async fn tcp_move() {
+pub async fn tcp_move_raw() {
     const LOCALHOST: &str = "127.0.0.1";
     const SIM_PORT: &str = "5012";
     const SIM_DUMMY_PORT: &str = "5011";
@@ -95,6 +95,29 @@ pub async fn tcp_move() {
 
     control_board
         .raw_speed_set([0.2, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.1])
+        .await
+        .unwrap();
+
+    // Will be broken until get IMU data read
+    sleep(Duration::from_secs(10)).await;
+    todo!();
+}
+
+#[ignore = "requires a UI, is long"]
+#[tokio::test]
+pub async fn tcp_move_sassist_2() {
+    const LOCALHOST: &str = "127.0.0.1";
+    const SIM_PORT: &str = "5012";
+    const SIM_DUMMY_PORT: &str = "5011";
+
+    let godot = GODOT.lock().await;
+    open_sim(godot.to_string()).await.unwrap();
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+
+    control_board
+        .stability_2_speed_set(-0.5, 1.0, 270.0, 180.0, 90.0, -1.0)
         .await
         .unwrap();
 

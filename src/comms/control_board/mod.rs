@@ -245,6 +245,27 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         self.write_out_basic(message).await
     }
 
+    pub async fn stability_2_speed_set(
+        &self,
+        x: f32,
+        y: f32,
+        target_pitch: f32,
+        target_roll: f32,
+        target_yaw: f32,
+        target_depth: f32,
+    ) -> Result<()> {
+        const SASSIST_2: [u8; 8] = *b"SASSIST2";
+        // Oversized to avoid reallocations
+        let mut message = Vec::with_capacity(32 * 8);
+        message.extend(SASSIST_2);
+
+        [x, y, target_pitch, target_roll, target_yaw, target_depth]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+
+        self.write_out_basic(message).await
+    }
+
     pub async fn bno055_imu_axis_config(&self, config: BNO055AxisConfig) -> Result<()> {
         const BNO055A_CONFIG: [u8; 7] = *b"BNO055A";
 
