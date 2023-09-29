@@ -1,7 +1,7 @@
 use std::process::exit;
 
 use config::Configuration;
-use sw8s_rust_lib::comms::control_board::ControlBoard;
+use sw8s_rust_lib::comms::{control_board::ControlBoard, meb::MainElectronicsBoard};
 use tokio::{
     signal,
     sync::{
@@ -18,6 +18,17 @@ async fn control_board() -> &'static ControlBoard<SerialStream> {
     CONTROL_BOARD_CELL
         .get_or_init(|| async {
             ControlBoard::serial(&Configuration::default().control_board_path)
+                .await
+                .unwrap()
+        })
+        .await
+}
+
+static MEB_CELL: OnceCell<MainElectronicsBoard> = OnceCell::const_new();
+async fn meb() -> &'static MainElectronicsBoard {
+    MEB_CELL
+        .get_or_init(|| async {
+            MainElectronicsBoard::serial(&Configuration::default().meb_path)
                 .await
                 .unwrap()
         })
