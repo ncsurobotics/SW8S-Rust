@@ -43,7 +43,7 @@ impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
         const DOF_SPEEDS: [f32; 6] = [0.7071, 0.7071, 1.0, 0.4413, 1.0, 0.8139];
 
         let responses = ResponseMap::new(comm_in).await;
-        let mut this = Self {
+        let this = Self {
             inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id).into(),
         };
 

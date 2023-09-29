@@ -1,9 +1,9 @@
 use core::fmt::Debug;
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use anyhow::Result;
 use async_trait::async_trait;
-use tokio::{io::AsyncWriteExt, sync::Mutex};
+use tokio::{io::AsyncWriteExt, sync::Mutex, time::timeout};
 
 use self::util::{crc_itt16_false, AcknowledgeErr};
 
@@ -68,7 +68,7 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
 
     /// Adds protocol requirements (e.g. message id, escapes) to a message body
     /// Returns the id assigned to the message and the message
-    async fn add_metadata(&self, message: Vec<u8>) -> (u16, Vec<u8>) {
+    async fn add_metadata(&self, message: &[u8]) -> (u16, Vec<u8>) {
         let add_escape = |byte| {
             if [START_BYTE, END_BYTE, ESCAPE_BYTE].contains(&byte) {
                 vec![ESCAPE_BYTE, byte]
@@ -82,7 +82,7 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
         let id_and_body: Vec<u8> = id
             .to_be_bytes()
             .into_iter()
-            .chain(message.clone().into_iter())
+            .chain(message.iter().copied())
             .collect();
 
         // Vecs isn't optimal, check if can reconcile one and two element arrays instead
@@ -91,7 +91,7 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
             // Add escapes to id and message body
             id.to_be_bytes()
                 .into_iter()
-                .chain(message.into_iter())
+                .chain(message.iter().cloned())
                 // Add CRC
                 .chain(crc_itt16_false(&id_and_body).to_be_bytes().into_iter())
                 .flat_map(add_escape),
@@ -101,21 +101,31 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
         (id, formatted_message)
     }
 
+    const ACK_TIMEOUT: Duration = Duration::from_millis(500);
+
     /// Writes out a message body and only gives acknowledge status
     /// Only for communications that return no data with acknowledge
     pub async fn write_out_basic(&self, message_body: Vec<u8>) -> Result<()> {
-        let (id, message) = self.add_metadata(message_body).await;
-        self.comm_out.lock().await.write_all(&message).await?;
-        // Spec guarantees empty response
-        Ok(self.responses.get_ack(id).await.map(|_| ())?)
+        loop {
+            let (id, message) = self.add_metadata(&message_body).await;
+            self.comm_out.lock().await.write_all(&message).await?;
+            // Spec guarantees empty response
+            if let Ok(_ack) = timeout(Self::ACK_TIMEOUT, self.responses.get_ack(id)).await {
+                return Ok(());
+            }
+        }
     }
 
     /// Writes out a message body and only gives acknowledge status
     /// Only for communications that return no data with acknowledge
     pub async fn write_out(&self, message_body: Vec<u8>) -> Result<Vec<u8>> {
-        let (id, message) = self.add_metadata(message_body).await;
-        self.comm_out.lock().await.write_all(&message).await?;
-        // Spec guarantees empty response
-        Ok(self.responses.get_ack(id).await?)
+        loop {
+            let (id, message) = self.add_metadata(&message_body).await;
+            self.comm_out.lock().await.write_all(&message).await?;
+            // Spec guarantees empty response
+            if let Ok(ack) = timeout(Self::ACK_TIMEOUT, self.responses.get_ack(id)).await {
+                return Ok(ack?);
+            }
+        }
     }
 }

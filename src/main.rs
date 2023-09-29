@@ -27,7 +27,7 @@ async fn control_board() -> &'static ControlBoard<SerialStream> {
 #[tokio::main]
 async fn main() {
     let shutdown_tx = shutdown_handler().await;
-    let mut config = Configuration::default();
+    let _config = Configuration::default();
 
     // Send shutdown signal
     shutdown_tx.send(()).unwrap();
