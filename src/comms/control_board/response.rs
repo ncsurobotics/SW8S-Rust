@@ -12,7 +12,7 @@ use futures::stream;
 use futures::StreamExt;
 use tokio::{io::AsyncReadExt, sync::Mutex, time::sleep};
 
-use crate::comms::auv_control_board::{response::get_messages, util::crc, GetAck};
+use crate::comms::auv_control_board::{response::get_messages, util::crc_itt16_false, GetAck};
 
 use crate::comms::auv_control_board::util::AcknowledgeErr;
 
@@ -97,7 +97,7 @@ impl ResponseMap {
             let message_body = &message[2..(message.len() - 2)];
             let payload = &message[0..(message.len() - 2)];
             let given_crc = u16::from_be_bytes(message[(message.len() - 2)..].try_into().unwrap());
-            let calculated_crc = crc(payload);
+            let calculated_crc = crc_itt16_false(payload);
 
             if given_crc == calculated_crc {
                 if message_body[0..3] == ACK {

@@ -5,9 +5,9 @@ use anyhow::Result;
 use async_trait::async_trait;
 use tokio::{io::AsyncWriteExt, sync::Mutex};
 
-use self::util::AcknowledgeErr;
+use self::util::{crc_itt16_false, AcknowledgeErr};
 
-use super::auv_control_board::util::{crc, END_BYTE, ESCAPE_BYTE, START_BYTE};
+use super::auv_control_board::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 
 pub mod response;
 pub mod util;
@@ -89,7 +89,7 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
                 .into_iter()
                 .chain(message.into_iter())
                 // Add CRC
-                .chain(crc(&id_and_body).to_be_bytes().into_iter())
+                .chain(crc_itt16_false(&id_and_body).to_be_bytes().into_iter())
                 .flat_map(add_escape),
         );
         formatted_message.push(END_BYTE);

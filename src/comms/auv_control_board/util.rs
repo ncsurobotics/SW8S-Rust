@@ -7,7 +7,7 @@ pub const END_BYTE: u8 = 254;
 pub const ESCAPE_BYTE: u8 = 255;
 
 /// See https://github.com/ncsurobotics/SW8S-Java/blob/main/app/src/main/java/org/aquapackrobotics/sw8s/comms/CRC.java
-pub fn crc(bytes: &[u8]) -> u16 {
+pub fn crc_itt16_false_bitmath(bytes: &[u8]) -> u16 {
     let mut crc = 0xFFFF;
     bytes.iter().for_each(|byte| {
         (0..8).for_each(|idx| {
@@ -15,6 +15,23 @@ pub fn crc(bytes: &[u8]) -> u16 {
             let c15: u8 = ((crc >> 15 & 1) == 1).into();
             crc <<= 1;
             if (c15 ^ bit) != 0 {
+                crc ^= 0x1021;
+            }
+        })
+    });
+    crc
+}
+
+/// Based on https://github.com/ncsurobotics/SW8S-Java/blob/main/app/src/main/java/org/aquapackrobotics/sw8s/comms/CRC.java
+pub fn crc_itt16_false(bytes: &[u8]) -> u16 {
+    let mut crc = 0xFFFF;
+    bytes.iter().for_each(|byte| {
+        (0..8).for_each(|idx| {
+            let bit = (byte >> (7 - idx) & 1) == 1;
+            let c15 = (crc >> 15 & 1) == 1;
+
+            crc <<= 1;
+            if c15 != bit {
                 crc ^= 0x1021;
             }
         })
