@@ -1,13 +1,9 @@
 use core::fmt::Debug;
-use std::{
-    ops::{Deref, DerefMut},
-    sync::Arc,
-    time::Duration,
-};
+use std::{ops::Deref, sync::Arc, time::Duration};
 
 use anyhow::{bail, Result};
 use tokio::{
-    io::{self, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf},
+    io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf},
     net::TcpStream,
     sync::Mutex,
     time::sleep,
@@ -129,23 +125,16 @@ impl ControlBoard<TcpStream> {
         let host = host.to_string();
         let host_clone = host.clone();
         tokio::spawn(async move {
-            let mut stream = TcpStream::connect(host_clone + ":" + &dummy_port)
+            let _stream = TcpStream::connect(host_clone + ":" + &dummy_port)
                 .await
                 .unwrap();
-            stream.set_nodelay(true).unwrap();
             // Have to avoid dropping the TCP stream
             loop {
-                stream.write_all(b"set_pos 1 1 1").await.unwrap();
-                //println!("CHECK READY FOR READ");
-                //stream.readable().await.unwrap();
-                //println!("CONFIRMED READY FOR READ");
-                println!("RECEIVE: {}", stream.read_u8().await.unwrap());
                 sleep(Duration::MAX).await
             }
         });
 
         let stream = TcpStream::connect(host.to_string() + ":" + port).await?;
-        stream.set_nodelay(true)?;
         let (comm_in, comm_out) = io::split(stream);
         Self::new(comm_out, comm_in, MessageId::default()).await
     }
@@ -181,10 +170,10 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
             bail!("{thruster} is outside the allowed range 1-8.")
         };
 
-        message.extend(thruster.to_be_bytes());
+        message.extend(thruster.to_le_bytes());
         [x, y, z, pitch, roll, yaw]
             .iter()
-            .for_each(|val| message.extend(val.to_be_bytes()));
+            .for_each(|val| message.extend(val.to_le_bytes()));
 
         self.write_out_basic(message).await
     }
@@ -234,7 +223,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
 
         values
             .iter()
-            .for_each(|val| message.extend(val.to_be_bytes()));
+            .for_each(|val| message.extend(val.to_le_bytes()));
 
         self.write_out_basic(message).await
     }
@@ -265,10 +254,11 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         if !['X', 'Y', 'Z', 'D'].contains(&which) {
             bail!("{which} is not a valid PID tune, pick from [X, Y, Z, D]")
         }
+        message.push(which as u8);
 
         [kp, ki, kd, limit]
             .iter()
-            .for_each(|val| message.extend(val.to_be_bytes()));
+            .for_each(|val| message.extend(val.to_le_bytes()));
         message.push(invert as u8);
 
         self.write_out_basic(message).await

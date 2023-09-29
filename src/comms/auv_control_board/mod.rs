@@ -74,29 +74,27 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
         };
 
         let id = self.msg_id.get().await;
-        // Vecs isn't optimal, check if can reconcile one and two element arrays instead
-        let mut message: Vec<u8> = [START_BYTE]
+
+        let id_and_body: Vec<u8> = id
+            .to_be_bytes()
             .into_iter()
-            .chain(
-                // Add escapes to id and message body
-                id.to_be_bytes()
-                    .into_iter()
-                    .chain(message.into_iter())
-                    .flat_map(add_escape),
-            )
+            .chain(message.clone().into_iter())
             .collect();
 
-        // Add CRC and escape it
-        message.extend(
-            crc(&message)
-                .to_be_bytes()
+        // Vecs isn't optimal, check if can reconcile one and two element arrays instead
+        let mut formatted_message: Vec<u8> = Vec::from([START_BYTE]);
+        formatted_message.extend(
+            // Add escapes to id and message body
+            id.to_be_bytes()
                 .into_iter()
-                .flat_map(add_escape)
-                .collect::<Vec<_>>(),
+                .chain(message.into_iter())
+                // Add CRC
+                .chain(crc(&id_and_body).to_be_bytes().into_iter())
+                .flat_map(add_escape),
         );
+        formatted_message.push(END_BYTE);
 
-        message.push(END_BYTE);
-        (id, message)
+        (id, formatted_message)
     }
 
     /// Writes out a message body and only gives acknowledge status
@@ -104,7 +102,6 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
     pub async fn write_out_basic(&self, message_body: Vec<u8>) -> Result<()> {
         let (id, message) = self.add_metadata(message_body).await;
         self.comm_out.lock().await.write_all(&message).await?;
-        println!("WRITE OUT THE MESSAGE WITH ID {id}");
         // Spec guarantees empty response
         Ok(self.responses.get_ack(id).await.map(|_| ())?)
     }

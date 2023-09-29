@@ -1,6 +1,4 @@
-use std::time::Duration;
-
-use tokio::{io::AsyncReadExt, time::sleep};
+use tokio::io::AsyncReadExt;
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 
@@ -18,7 +16,7 @@ pub fn check_start(buffer: &mut Vec<u8>, end_idx: usize) -> bool {
     match buffer
         .iter()
         .enumerate()
-        .find(|(idx, val)| **val == START_BYTE && buffer[idx - 1] != ESCAPE_BYTE)
+        .find(|(_, val)| **val == START_BYTE)
     {
         Some((0, _)) => true, // Expected condition
         None => {
@@ -30,12 +28,21 @@ pub fn check_start(buffer: &mut Vec<u8>, end_idx: usize) -> bool {
             false // Escape and try again on next value
         }
         Some((start_idx, _)) => {
-            eprintln!(
-                "Buffer does not begin with start byte, discarding {:?}",
-                &buffer[0..start_idx]
-            );
-            buffer.drain(0..start_idx);
-            true
+            if buffer[start_idx - 1] == ESCAPE_BYTE {
+                eprintln!(
+                    "First start byte in buffer was escaped, discarding {:?}",
+                    &buffer[0..=start_idx]
+                );
+                buffer.drain(0..=start_idx);
+                false
+            } else {
+                eprintln!(
+                    "Buffer does not begin with start byte, discarding {:?}",
+                    &buffer[0..start_idx]
+                );
+                buffer.drain(0..start_idx);
+                true
+            }
         }
     }
 }
@@ -55,9 +62,13 @@ pub async fn get_messages<T>(buffer: &mut Vec<u8>, serial_conn: &mut T) -> Vec<V
 where
     T: AsyncReadExt + Unpin,
 {
-    let buf_len = buffer.len();
+    buffer.push(serial_conn.read_u8().await.unwrap());
+    //let buf_len = buffer.len();
     // Read bytes up to buffer capacity
-    let _ = serial_conn.read(&mut buffer[buf_len..]).await.unwrap();
+    //let count = serial_conn.read(&mut buffer[buf_len..]).await.unwrap();
+    //println!("Read count: {count}");
+    //println!("Read byte: {}", serial_conn.read_u8().await.unwrap());
+    //sleep(Duration::from_secs(1)).await;
     let mut messages = Vec::new();
 
     while let Some((end_idx, _)) = find_end(buffer) {
@@ -67,6 +78,6 @@ where
         messages.push(clean_message(buffer, end_idx));
     }
 
-    println!("Unprocessed Length: {}", buffer.len());
+    //println!("Unprocessed Length: {}", buffer.len());
     messages
 }

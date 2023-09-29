@@ -12,7 +12,7 @@ use futures::stream;
 use futures::StreamExt;
 use tokio::{io::AsyncReadExt, sync::Mutex, time::sleep};
 
-use crate::comms::auv_control_board::{util::crc, response::get_messages, GetAck};
+use crate::comms::auv_control_board::{response::get_messages, util::crc, GetAck};
 
 use crate::comms::auv_control_board::util::AcknowledgeErr;
 
@@ -92,7 +92,7 @@ impl ResponseMap {
     ) where
         T: AsyncReadExt + Unpin,
     {
-       stream::iter(get_messages(buffer, serial_conn).await).for_each_concurrent(None, |message| async move { 
+        stream::iter(get_messages(buffer, serial_conn).await).for_each_concurrent(None, |message| async move {
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());
             let message_body = &message[2..(message.len() - 2)];
             let payload = &message[0..(message.len() - 2)];
@@ -111,7 +111,7 @@ impl ResponseMap {
                     };
                     ack_map.lock().await.insert(id, val);
                 } else if message_body[0..4] == WDGS {
-                    *watchdog_status.lock().await = Some(message_body[5] != 0);
+                    *watchdog_status.lock().await = Some(message_body[4] != 0);
                 } else if message_body[0..7] == BNO055D {
                     *bno055_status.lock().await = Some(message_body[7..].try_into().unwrap());
                 } else if message_body[0..7] == MS5837D {

@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::time::Duration;
 use std::{fs::create_dir_all, path::Path};
 use sw8s_rust_lib::comms::control_board::ControlBoard;
-use tokio::process::{Child, Command};
+use tokio::process::Command;
 use tokio::sync::Mutex;
 use tokio::time::sleep;
 
@@ -61,7 +61,7 @@ async fn open_sim(godot: String) -> Result<()> {
     Ok(())
 }
 
-#[ignore = "Requires a UI, is long"]
+#[ignore = "requires a UI, is long"]
 #[tokio::test]
 pub async fn tcp_connect() {
     const LOCALHOST: &str = "127.0.0.1";
@@ -72,4 +72,5 @@ pub async fn tcp_connect() {
     let _ = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
         .await
         .unwrap();
+    sleep(Duration::from_millis(300)).await; // Check watchdog runs
 }
