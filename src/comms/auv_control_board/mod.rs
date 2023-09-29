@@ -62,6 +62,10 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
         }
     }
 
+    pub fn responses(&self) -> &U {
+        &self.responses
+    }
+
     /// Adds protocol requirements (e.g. message id, escapes) to a message body
     /// Returns the id assigned to the message and the message
     async fn add_metadata(&self, message: Vec<u8>) -> (u16, Vec<u8>) {

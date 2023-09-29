@@ -69,8 +69,12 @@ pub async fn tcp_connect() {
     const SIM_DUMMY_PORT: &str = "5011";
 
     open_sim(GODOT.lock().await.to_string()).await.unwrap();
-    let _ = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
         .await
         .unwrap();
-    sleep(Duration::from_millis(300)).await; // Check watchdog runs
+
+    // Spam claim read lock to prove Rwlock allows write under read pressure
+    while control_board.watchdog_status().await.is_none() {}
+    // Confirm watchdog keeps motors alive
+    assert_eq!(control_board.watchdog_status().await, Some(true));
 }

@@ -8,9 +8,14 @@ use std::{
 };
 
 use async_trait::async_trait;
+use derive_getters::Getters;
 use futures::stream;
 use futures::StreamExt;
-use tokio::{io::AsyncReadExt, sync::Mutex, time::sleep};
+use tokio::{
+    io::AsyncReadExt,
+    sync::{Mutex, RwLock},
+    time::sleep,
+};
 
 use crate::comms::auv_control_board::{response::get_messages, util::crc_itt16_false, GetAck};
 
@@ -25,12 +30,12 @@ const DBGDAT: [u8; 6] = *b"DBGDAT";
 
 type KeyedAcknowledges = HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>;
 
-#[derive(Debug)]
+#[derive(Debug, Getters)]
 pub struct ResponseMap {
     ack_map: Arc<Mutex<KeyedAcknowledges>>,
-    watchdog_status: Arc<Mutex<Option<bool>>>,
-    bno055_status: Arc<Mutex<Option<[u8; 8 * 7]>>>,
-    ms5837_status: Arc<Mutex<Option<[u8; 8 * 3]>>>,
+    watchdog_status: Arc<RwLock<Option<bool>>>,
+    bno055_status: Arc<RwLock<Option<[u8; 8 * 7]>>>,
+    ms5837_status: Arc<RwLock<Option<[u8; 8 * 3]>>>,
     _tx: Sender<()>,
 }
 
@@ -44,9 +49,9 @@ impl ResponseMap {
         T: 'static + AsyncReadExt + Unpin + Send,
     {
         let ack_map: Arc<Mutex<_>> = Arc::default();
-        let watchdog_status: Arc<Mutex<_>> = Arc::default();
-        let bno055_status: Arc<Mutex<_>> = Arc::default();
-        let ms5837_status: Arc<Mutex<_>> = Arc::default();
+        let watchdog_status: Arc<RwLock<_>> = Arc::default();
+        let bno055_status: Arc<RwLock<_>> = Arc::default();
+        let ms5837_status: Arc<RwLock<_>> = Arc::default();
         let (_tx, rx) = channel::<()>(); // Signals struct destruction to thread
 
         // Independent thread that live updates maps forever
@@ -86,9 +91,9 @@ impl ResponseMap {
         buffer: &mut Vec<u8>,
         serial_conn: &mut T,
         ack_map: &Mutex<KeyedAcknowledges>,
-        watchdog_status: &Mutex<Option<bool>>,
-        bno055_status: &Mutex<Option<[u8; 8 * 7]>>,
-        ms5837_status: &Mutex<Option<[u8; 8 * 3]>>,
+        watchdog_status: &RwLock<Option<bool>>,
+        bno055_status: &RwLock<Option<[u8; 8 * 7]>>,
+        ms5837_status: &RwLock<Option<[u8; 8 * 3]>>,
     ) where
         T: AsyncReadExt + Unpin,
     {
@@ -111,11 +116,11 @@ impl ResponseMap {
                     };
                     ack_map.lock().await.insert(id, val);
                 } else if message_body[0..4] == WDGS {
-                    *watchdog_status.lock().await = Some(message_body[4] != 0);
+                    *watchdog_status.write().await = Some(message_body[4] != 0);
                 } else if message_body[0..7] == BNO055D {
-                    *bno055_status.lock().await = Some(message_body[7..].try_into().unwrap());
+                    *bno055_status.write().await = Some(message_body[7..].try_into().unwrap());
                 } else if message_body[0..7] == MS5837D {
-                    *ms5837_status.lock().await = Some(message_body[7..].try_into().unwrap());
+                    *ms5837_status.write().await = Some(message_body[7..].try_into().unwrap());
                 } else {
                     eprintln!("Unknown message (id: {id}) {:?}", message_body);
                 }

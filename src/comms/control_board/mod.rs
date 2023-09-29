@@ -263,4 +263,8 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
 
         self.write_out_basic(message).await
     }
+
+    pub async fn watchdog_status(&self) -> Option<bool> {
+        *self.responses().watchdog_status().read().await
+    }
 }
