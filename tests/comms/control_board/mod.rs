@@ -94,7 +94,7 @@ pub async fn tcp_move() {
         .unwrap();
 
     control_board
-        .relative_dof_speed_set(0.0, 0.5, 0.0, 0.5, 0.5, 0.5)
+        .raw_speed_set([0.2, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.1])
         .await
         .unwrap();
 

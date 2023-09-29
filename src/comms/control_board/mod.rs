@@ -232,6 +232,19 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         self.write_out_basic(message).await
     }
 
+    pub async fn raw_speed_set(&self, speeds: [f32; 8]) -> Result<()> {
+        const RAW_SET: [u8; 3] = *b"RAW";
+        // Oversized to avoid reallocations
+        let mut message = Vec::with_capacity(32 * 8);
+        message.extend(RAW_SET);
+
+        speeds
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+
+        self.write_out_basic(message).await
+    }
+
     pub async fn bno055_imu_axis_config(&self, config: BNO055AxisConfig) -> Result<()> {
         const BNO055A_CONFIG: [u8; 7] = *b"BNO055A";
 
