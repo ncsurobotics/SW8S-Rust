@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use config::Configuration;
 use sw8s_rust_lib::comms::control_board::ControlBoard;
 use tokio::{
@@ -36,7 +38,8 @@ async fn shutdown_handler() -> UnboundedSender<()> {
     let (shutdown_tx, mut shutdown_rx) = mpsc::unbounded_channel::<()>();
     tokio::spawn(async move {
         // Wait for shutdown signal
-        tokio::select! {_ = signal::ctrl_c() => {}, _ = shutdown_rx.recv() => {}};
+        let exit_status =
+            tokio::select! {_ = signal::ctrl_c() => { 1 }, _ = shutdown_rx.recv() => { 0 }};
 
         // Stop motors
         if let Some(control_board) = CONTROL_BOARD_CELL.get() {
@@ -44,6 +47,11 @@ async fn shutdown_handler() -> UnboundedSender<()> {
                 .relative_dof_speed_set_batch(&[0.0; 6])
                 .await
                 .unwrap();
+        };
+
+        // If shutdown is unexpected, immediately exit nonzero
+        if exit_status != 0 {
+            exit(exit_status)
         };
     });
     shutdown_tx
