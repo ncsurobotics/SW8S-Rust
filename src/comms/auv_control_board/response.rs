@@ -68,17 +68,10 @@ where
     }
     // Read bytes up to buffer capacity
     let mut messages = Vec::new();
-    println!("CURRENT BUFFER: {:?}", buffer);
 
     while let Some((end_idx, _)) = find_end(buffer) {
-        match check_start(buffer, end_idx) {
-            None => {
-                println!("Failed start check");
-            }
-            Some(end_idx) => {
-                println!("Passed start check");
-                messages.push(clean_message(buffer, end_idx));
-            }
+        if let Some(end_idx) = check_start(buffer, end_idx) {
+            messages.push(clean_message(buffer, end_idx));
         }
     }
 
