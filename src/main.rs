@@ -1,4 +1,4 @@
-use std::{process::exit, time::Duration};
+use std::{env, process::exit, time::Duration};
 
 use anyhow::{bail, Result};
 use config::Configuration;
@@ -41,6 +41,10 @@ async fn meb() -> &'static MainElectronicsBoard {
 async fn main() {
     let shutdown_tx = shutdown_handler().await;
     let _config = Configuration::default();
+
+    for arg in env::args().collect::<Vec<String>>() {
+        run_mission(&arg).await.unwrap();
+    }
 
     // Send shutdown signal
     shutdown_tx.send(()).unwrap();
