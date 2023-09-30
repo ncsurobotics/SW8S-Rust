@@ -87,7 +87,7 @@ impl Statuses {
         vsys: &RwLock<Option<[u8; 4]>>,
         sdown: &RwLock<Option<u8>>,
     ) where
-        T: AsyncReadExt + Unpin,
+        T: AsyncReadExt + Unpin + Send,
     {
         stream::iter(get_messages(buffer, serial_conn).await).for_each_concurrent(None, |message| async move {
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());

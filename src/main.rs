@@ -42,7 +42,7 @@ async fn main() {
     let shutdown_tx = shutdown_handler().await;
     let _config = Configuration::default();
 
-    for arg in env::args().collect::<Vec<String>>() {
+    for arg in env::args().skip(1).collect::<Vec<String>>() {
         run_mission(&arg).await.unwrap();
     }
 
