@@ -96,8 +96,8 @@ impl ResponseMap {
         serial_conn: &mut T,
         ack_map: &Mutex<KeyedAcknowledges>,
         watchdog_status: &RwLock<Option<bool>>,
-        bno055_status: &RwLock<Option<[u8; 8 * 7]>>,
-        ms5837_status: &RwLock<Option<[u8; 8 * 3]>>,
+        bno055_status: &RwLock<Option<[u8; 4 * 7]>>,
+        ms5837_status: &RwLock<Option<[u8; 4 * 3]>>,
     ) where
         T: AsyncReadExt + Unpin + Send,
     {
