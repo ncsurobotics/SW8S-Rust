@@ -78,9 +78,11 @@ async fn run_mission(mission: &str) -> Result<()> {
     match mission.to_lowercase().as_str() {
         "arm" => {
             let cntrl_ready = tokio::spawn(async { control_board().await });
+            println!("Waiting on MEB");
             while meb().await.thruster_arm().await != Some(true) {
                 sleep(Duration::from_millis(10)).await;
             }
+            println!("Got MEB");
             let _ = cntrl_ready.await;
             Ok(())
         }
@@ -88,7 +90,7 @@ async fn run_mission(mission: &str) -> Result<()> {
             println!("Starting depth hold...");
             control_board()
                 .await
-                .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, -1.0)
+                .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, -0.8)
                 .await?;
             sleep(Duration::from_secs(15)).await;
             println!("Finished depth hold");
@@ -98,7 +100,7 @@ async fn run_mission(mission: &str) -> Result<()> {
             println!("Starting travel...");
             control_board()
                 .await
-                .stability_2_speed_set(0.0, 0.5, 30.0, 30.0, 30.0, -1.0)
+                .stability_2_speed_set(0.0, 0.5, 30.0, 30.0, 30.0, -0.8)
                 .await?;
             sleep(Duration::from_secs(15)).await;
             println!("Finished travel");

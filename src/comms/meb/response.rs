@@ -107,13 +107,11 @@ impl Statuses {
                 u16::from_be_bytes(message[(message.len() - 2)..].try_into().unwrap());
             let calculated_crc = crc_itt16_false_bitmath(payload);
 
-            //if given_crc == calculated_crc {
+            if given_crc == calculated_crc {
                 if message_body.get(0..5) == Some(&AHT10) {
-                    println!("AHT10 len: {}", message_body[4..].len());
                     *temp.write().await = Some(message_body[5..9].try_into().unwrap());
                     *humid.write().await = Some(message_body[(5 + 4)..].try_into().unwrap());
                 } else if message_body.get(0..4) == Some(&TEMP) {
-                    println!("TEMP len: {}", message_body[4..].len());
                     *temp.write().await = Some(message_body[4..8].try_into().unwrap());
                     *humid.write().await = Some(message_body[(4 + 4)..].try_into().unwrap());
                 } else if message_body.get(0..4) == Some(&LEAK) {
@@ -121,15 +119,13 @@ impl Statuses {
                 } else if message_body.get(0..4) == Some(&TARM) {
                     *tarm.write().await = Some(message_body[4] == 1);
                 } else if message_body.get(0..4) == Some(&VSYS) {
-                    println!("VSYS len: {}", message_body[4..].len());
                     *vsys.write().await = Some(message_body[4..].try_into().unwrap());
                 } else if message_body.get(0..4) == Some(&SDOWN) {
                     *sdown.write().await = Some(message_body[4]);
                 } else {
                     eprintln!("Unknown MEB message (id: {id}) {:?}", message_body);
                 }
-            //} else {
-            if given_crc != calculated_crc {
+            } else {
                 eprintln!(
                 "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?}",
                 given_crc.to_ne_bytes(),

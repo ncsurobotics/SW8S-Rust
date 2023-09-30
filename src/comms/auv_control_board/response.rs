@@ -3,11 +3,12 @@ use tokio::io::AsyncReadExt;
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 
 pub fn find_end(buffer: &[u8]) -> Option<(usize, &u8)> {
-    buffer
-        .iter()
-        .enumerate()
-        .skip(1)
-        .find(|(idx, val)| **val == END_BYTE && buffer[idx - 1] != ESCAPE_BYTE)
+    let mut prev_escaped = false;
+    buffer.iter().enumerate().skip(1).find(|(_, byte)| {
+        let ret = **byte == END_BYTE && !prev_escaped;
+        prev_escaped = !prev_escaped && **byte == ESCAPE_BYTE;
+        ret
+    })
 }
 
 /// Returns adjust end_idx
@@ -51,18 +52,17 @@ pub fn check_start(buffer: &mut Vec<u8>, end_idx: usize) -> Option<usize> {
 /// Discard start, end, and escape bytes
 pub fn clean_message(buffer: &mut Vec<u8>, end_idx: usize) -> Vec<u8> {
     let message: Vec<u8> = buffer.drain(0..=end_idx).collect();
-    println!("MESSAGE: {:?}", message);
-    if message.is_empty() {
-        return message;
-    };
-    println!("MESSAGE NOT EMPTY");
+
+    let mut prev_escaped = false;
     let message: Vec<_> = message
         .clone()
         .into_iter()
-        .enumerate()
         .skip(1)
-        .filter(|(idx, byte)| *byte != ESCAPE_BYTE && message[idx - 1] != ESCAPE_BYTE)
-        .map(|(_, byte)| byte)
+        .filter(|byte| {
+            let ret = *byte != ESCAPE_BYTE || prev_escaped;
+            prev_escaped = !prev_escaped && *byte == ESCAPE_BYTE;
+            ret
+        })
         .collect();
     message[0..message.len() - 1].to_vec()
 }
@@ -75,7 +75,6 @@ where
     while find_end(buffer).is_none() {
         buffer.push(serial_conn.read_u8().await.unwrap());
     }
-    println!("BUFFER: {:?}", buffer);
     // Read bytes up to buffer capacity
     let mut messages = Vec::new();
 
