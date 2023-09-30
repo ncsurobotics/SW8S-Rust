@@ -1,5 +1,6 @@
-use std::process::exit;
+use std::{process::exit, time::Duration};
 
+use anyhow::{bail, Result};
 use config::Configuration;
 use sw8s_rust_lib::comms::{control_board::ControlBoard, meb::MainElectronicsBoard};
 use tokio::{
@@ -8,6 +9,7 @@ use tokio::{
         mpsc::{self, UnboundedSender},
         OnceCell,
     },
+    time::sleep,
 };
 use tokio_serial::SerialStream;
 
@@ -66,4 +68,38 @@ async fn shutdown_handler() -> UnboundedSender<()> {
         };
     });
     shutdown_tx
+}
+
+async fn run_mission(mission: &str) -> Result<()> {
+    match mission.to_lowercase().as_str() {
+        "arm" => {
+            let cntrl_ready = tokio::spawn(async { control_board().await });
+            while meb().await.thruster_arm().await != Some(true) {
+                sleep(Duration::from_millis(10)).await;
+            }
+            let _ = cntrl_ready.await;
+            Ok(())
+        }
+        "depth_test" | "depth-test" => {
+            println!("Starting depth hold...");
+            control_board()
+                .await
+                .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, -1.0)
+                .await?;
+            sleep(Duration::from_secs(15)).await;
+            println!("Finished depth hold");
+            Ok(())
+        }
+        "travel_test" | "travel-test" => {
+            println!("Starting travel...");
+            control_board()
+                .await
+                .stability_2_speed_set(0.0, 0.5, 30.0, 30.0, 30.0, -1.0)
+                .await?;
+            sleep(Duration::from_secs(15)).await;
+            println!("Finished travel");
+            Ok(())
+        }
+        x => bail!("Invalid argument: [{x}]"),
+    }
 }
