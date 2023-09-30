@@ -12,6 +12,7 @@ use tokio::{io::AsyncReadExt, sync::RwLock};
 type Lock<T> = Arc<RwLock<Option<T>>>;
 
 const AHT10: [u8; 5] = *b"AHT10";
+const TEMP: [u8; 4] = *b"TEMP";
 const LEAK: [u8; 4] = *b"LEAK";
 const TARM: [u8; 4] = *b"TARM";
 const VSYS: [u8; 4] = *b"VSYS";
@@ -100,6 +101,8 @@ impl Statuses {
             if given_crc == calculated_crc {
                 if message_body[0..5] == AHT10 {
                     *aht10.write().await = Some(message_body[5..].try_into().unwrap());
+                } else if message_body[0..4] == TEMP {
+                    *aht10.write().await = Some(message_body[4..].try_into().unwrap());
                 } else if message_body[0..4] == LEAK {
                     *leak.write().await = Some(message_body[4] == 1);
                 } else if message_body[0..4] == TARM {
