@@ -101,13 +101,13 @@ impl Statuses {
                 if message_body[0..5] == AHT10 {
                     *aht10.write().await = Some(message_body[5..].try_into().unwrap());
                 } else if message_body[0..4] == LEAK {
-                    *leak.write().await = Some(message_body[5] == 1);
+                    *leak.write().await = Some(message_body[4] == 1);
                 } else if message_body[0..4] == TARM {
-                    *tarm.write().await = Some(message_body[5] == 1);
+                    *tarm.write().await = Some(message_body[4] == 1);
                 } else if message_body[0..4] == VSYS {
-                    *vsys.write().await = Some(message_body[5..].try_into().unwrap());
+                    *vsys.write().await = Some(message_body[4..].try_into().unwrap());
                 } else if message_body[0..4] == SDOWN {
-                    *sdown.write().await = Some(message_body[5]);
+                    *sdown.write().await = Some(message_body[4]);
                 } else {
                     eprintln!("Unknown MEB message (id: {id}) {:?}", message_body);
                 }
