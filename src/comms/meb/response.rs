@@ -1,13 +1,16 @@
-use std::sync::{
-    mpsc::{channel, Sender, TryRecvError},
-    Arc,
+use std::{
+    sync::{
+        mpsc::{channel, Sender, TryRecvError},
+        Arc,
+    },
+    time::Duration,
 };
 
 use crate::comms::auv_control_board::{response::get_messages, util::crc_itt16_false_bitmath};
 
 use derive_getters::Getters;
 use futures::{stream, StreamExt};
-use tokio::{io::AsyncReadExt, sync::RwLock};
+use tokio::{io::AsyncReadExt, sync::RwLock, time::sleep};
 
 type Lock<T> = Arc<RwLock<Option<T>>>;
 
@@ -91,13 +94,13 @@ impl Statuses {
         temp: &RwLock<Option<[u8; 4]>>,
         humid: &RwLock<Option<[u8; 4]>>,
         leak: &RwLock<Option<bool>>,
-        tarm: &RwLock<Option<bool>>,
+        tarm: &Arc<RwLock<Option<bool>>>,
         vsys: &RwLock<Option<[u8; 4]>>,
         sdown: &RwLock<Option<u8>>,
     ) where
         T: AsyncReadExt + Unpin + Send,
     {
-        stream::iter(get_messages(buffer, serial_conn).await).for_each_concurrent(None, |message| async move {
+        stream::iter(get_messages(buffer, serial_conn, #[cfg(feature = "logging")] "meb_in").await).for_each_concurrent(None, |message| async move {
             if message.len() < 4 { println!("Message len < 4: {:?}", message); return; };
 
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());
@@ -117,7 +120,12 @@ impl Statuses {
                 } else if message_body.get(0..4) == Some(&LEAK) {
                     *leak.write().await = Some(message_body[4] == 1);
                 } else if message_body.get(0..4) == Some(&TARM) {
-                    *tarm.write().await = Some(message_body[4] == 1);
+                    let tarm_clone = tarm.clone();
+                    let tarm_status = Some(message_body[4] == 1);
+                    tokio::spawn(async move {
+                        sleep(Duration::from_millis(3500)).await;
+                        *tarm_clone.write().await = tarm_status;
+                    });
                 } else if message_body.get(0..4) == Some(&VSYS) {
                     *vsys.write().await = Some(message_body[4..].try_into().unwrap());
                 } else if message_body.get(0..4) == Some(&SDOWN) {

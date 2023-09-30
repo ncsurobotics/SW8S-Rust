@@ -9,7 +9,7 @@ use tokio::{
         mpsc::{self, UnboundedSender},
         OnceCell,
     },
-    time::sleep,
+    time::{sleep, timeout},
 };
 use tokio_serial::SerialStream;
 
@@ -88,21 +88,58 @@ async fn run_mission(mission: &str) -> Result<()> {
         }
         "depth_test" | "depth-test" => {
             println!("Starting depth hold...");
-            control_board()
+            loop {
+                if let Ok(ret) = timeout(
+                    Duration::from_secs(1),
+                    control_board()
+                        .await
+                        .stability_1_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, -1.3),
+                )
                 .await
-                .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, -0.8)
-                .await?;
-            sleep(Duration::from_secs(15)).await;
+                {
+                    ret?;
+                    break;
+                }
+            }
+            sleep(Duration::from_secs(5)).await;
             println!("Finished depth hold");
             Ok(())
         }
         "travel_test" | "travel-test" => {
             println!("Starting travel...");
-            control_board()
+            loop {
+                if let Ok(ret) = timeout(
+                    Duration::from_secs(1),
+                    control_board()
+                        .await
+                        .stability_2_speed_set(0.0, 0.5, 0.0, 0.0, 70.0, -1.3),
+                )
                 .await
-                .stability_2_speed_set(0.0, 0.5, 30.0, 30.0, 30.0, -0.8)
-                .await?;
-            sleep(Duration::from_secs(15)).await;
+                {
+                    ret?;
+                    break;
+                }
+            }
+            sleep(Duration::from_secs(10)).await;
+            println!("Finished travel");
+            Ok(())
+        }
+        "surface_" | "surface-test" => {
+            println!("Starting travel...");
+            loop {
+                if let Ok(ret) = timeout(
+                    Duration::from_secs(1),
+                    control_board()
+                        .await
+                        .stability_1_speed_set(0.0, 0.5, 0.0, 0.0, 0.0, 0.0),
+                )
+                .await
+                {
+                    ret?;
+                    break;
+                }
+            }
+            sleep(Duration::from_secs(10)).await;
             println!("Finished travel");
             Ok(())
         }

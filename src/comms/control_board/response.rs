@@ -101,7 +101,7 @@ impl ResponseMap {
     ) where
         T: AsyncReadExt + Unpin + Send,
     {
-        stream::iter(get_messages(buffer, serial_conn).await).for_each_concurrent(None, |message| async move {
+        stream::iter(get_messages(buffer, serial_conn, #[cfg(feature = "logging")] "control_board_in").await).for_each_concurrent(None, |message| async move {
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());
             let message_body = &message[2..(message.len() - 2)];
             let payload = &message[0..(message.len() - 2)];

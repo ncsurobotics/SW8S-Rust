@@ -1,4 +1,6 @@
 use tokio::io::AsyncReadExt;
+#[cfg(feature = "logging")]
+use tokio::{fs::OpenOptions, io::AsyncWriteExt};
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 
@@ -68,12 +70,27 @@ pub fn clean_message(buffer: &mut Vec<u8>, end_idx: usize) -> Vec<u8> {
 }
 
 /// Reads from serial resource, updating ack_map
-pub async fn get_messages<T>(buffer: &mut Vec<u8>, serial_conn: &mut T) -> Vec<Vec<u8>>
+pub async fn get_messages<T>(
+    buffer: &mut Vec<u8>,
+    serial_conn: &mut T,
+    #[cfg(feature = "logging")] dump_file: &str,
+) -> Vec<Vec<u8>>
 where
     T: AsyncReadExt + Unpin + Send,
 {
     while find_end(buffer).is_none() {
-        buffer.push(serial_conn.read_u8().await.unwrap());
+        let byte = serial_conn.read_u8().await.unwrap();
+        buffer.push(byte);
+        #[cfg(feature = "logging")]
+        OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(dump_file)
+            .await
+            .unwrap()
+            .write_all(&[byte])
+            .await
+            .unwrap();
     }
     // Read bytes up to buffer capacity
     let mut messages = Vec::new();

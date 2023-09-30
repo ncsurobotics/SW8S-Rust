@@ -52,6 +52,13 @@ impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
         this.relative_dof_speed_set_batch(&DOF_SPEEDS).await?;
         this.bno055_imu_axis_config(BNO055AxisConfig::P6).await?;
 
+        loop {
+            if let Ok(ret) = timeout(Duration::from_secs(1), this.raw_speed_set([0.0; 8])).await {
+                ret?;
+                break;
+            }
+        }
+
         // Control board needs time to get its life together
         sleep(Duration::from_secs(5)).await;
 
@@ -270,6 +277,27 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         message.extend(SASSIST_2);
 
         [x, y, target_pitch, target_roll, target_yaw, target_depth]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+
+        self.write_out_basic(message).await
+    }
+
+    pub async fn stability_1_speed_set(
+        &self,
+        x: f32,
+        y: f32,
+        yaw_speed: f32,
+        target_pitch: f32,
+        target_roll: f32,
+        target_depth: f32,
+    ) -> Result<()> {
+        const SASSIST_2: [u8; 8] = *b"SASSIST1";
+        // Oversized to avoid reallocations
+        let mut message = Vec::with_capacity(32 * 8);
+        message.extend(SASSIST_2);
+
+        [x, y, yaw_speed, target_pitch, target_roll, target_depth]
             .iter()
             .for_each(|val| message.extend(val.to_le_bytes()));
 
