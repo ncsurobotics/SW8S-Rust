@@ -3,7 +3,7 @@ use std::sync::{
     Arc,
 };
 
-use crate::comms::auv_control_board::{response::get_messages, util::crc_itt16_false};
+use crate::comms::auv_control_board::{response::get_messages, util::crc_itt16_false_bitmath};
 
 use derive_getters::Getters;
 use futures::{stream, StreamExt};
@@ -20,7 +20,8 @@ const SDOWN: [u8; 5] = *b"SDOWN";
 
 #[derive(Debug, Getters)]
 pub struct Statuses {
-    aht10: Lock<[u8; 4 * 2]>,
+    temp: Lock<[u8; 4]>,
+    humid: Lock<[u8; 4]>,
     leak: Lock<bool>,
     thruster_arm: Lock<bool>,
     system_voltage: Lock<[u8; 4]>,
@@ -36,14 +37,16 @@ impl Statuses {
     where
         T: 'static + AsyncReadExt + Unpin + Send,
     {
-        let aht10: Lock<_> = Arc::default();
+        let temp: Lock<_> = Arc::default();
+        let humid: Lock<_> = Arc::default();
         let leak: Lock<_> = Arc::default();
         let thruster_arm: Lock<_> = Arc::default();
         let system_voltage: Lock<_> = Arc::default();
         let shutdown: Lock<_> = Arc::default();
         let (_tx, rx) = channel::<()>(); // Signals struct destruction to thread
                                          //
-        let aht10_clone = aht10.clone();
+        let temp_clone = temp.clone();
+        let humid_clone = humid.clone();
         let leak_clone = leak.clone();
         let thruster_arm_clone = thruster_arm.clone();
         let system_voltage_clone = system_voltage.clone();
@@ -57,7 +60,8 @@ impl Statuses {
                 Self::update_status(
                     &mut buffer,
                     &mut serial_conn,
-                    &aht10_clone,
+                    &temp_clone,
+                    &humid_clone,
                     &leak_clone,
                     &thruster_arm_clone,
                     &system_voltage_clone,
@@ -68,7 +72,8 @@ impl Statuses {
         });
 
         Self {
-            aht10,
+            temp,
+            humid,
             leak,
             thruster_arm,
             system_voltage,
@@ -79,10 +84,12 @@ impl Statuses {
 }
 
 impl Statuses {
+    #[allow(clippy::too_many_arguments)]
     async fn update_status<T>(
         buffer: &mut Vec<u8>,
         serial_conn: &mut T,
-        aht10: &RwLock<Option<[u8; 4 * 2]>>,
+        temp: &RwLock<Option<[u8; 4]>>,
+        humid: &RwLock<Option<[u8; 4]>>,
         leak: &RwLock<Option<bool>>,
         tarm: &RwLock<Option<bool>>,
         vsys: &RwLock<Option<[u8; 4]>>,
@@ -91,32 +98,42 @@ impl Statuses {
         T: AsyncReadExt + Unpin + Send,
     {
         stream::iter(get_messages(buffer, serial_conn).await).for_each_concurrent(None, |message| async move {
+            if message.len() < 4 { println!("Message len < 4: {:?}", message); return; };
+
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());
             let message_body = &message[2..(message.len() - 2)];
             let payload = &message[0..(message.len() - 2)];
             let given_crc =
                 u16::from_be_bytes(message[(message.len() - 2)..].try_into().unwrap());
-            let calculated_crc = crc_itt16_false(payload);
+            let calculated_crc = crc_itt16_false_bitmath(payload);
 
-            if given_crc == calculated_crc {
-                if message_body[0..5] == AHT10 {
-                    *aht10.write().await = Some(message_body[5..].try_into().unwrap());
-                } else if message_body[0..4] == TEMP {
-                    *aht10.write().await = Some(message_body[4..].try_into().unwrap());
-                } else if message_body[0..4] == LEAK {
+            //if given_crc == calculated_crc {
+                if message_body.get(0..5) == Some(&AHT10) {
+                    println!("AHT10 len: {}", message_body[4..].len());
+                    *temp.write().await = Some(message_body[5..9].try_into().unwrap());
+                    *humid.write().await = Some(message_body[(5 + 4)..].try_into().unwrap());
+                } else if message_body.get(0..4) == Some(&TEMP) {
+                    println!("TEMP len: {}", message_body[4..].len());
+                    *temp.write().await = Some(message_body[4..8].try_into().unwrap());
+                    *humid.write().await = Some(message_body[(4 + 4)..].try_into().unwrap());
+                } else if message_body.get(0..4) == Some(&LEAK) {
                     *leak.write().await = Some(message_body[4] == 1);
-                } else if message_body[0..4] == TARM {
+                } else if message_body.get(0..4) == Some(&TARM) {
                     *tarm.write().await = Some(message_body[4] == 1);
-                } else if message_body[0..4] == VSYS {
+                } else if message_body.get(0..4) == Some(&VSYS) {
+                    println!("VSYS len: {}", message_body[4..].len());
                     *vsys.write().await = Some(message_body[4..].try_into().unwrap());
-                } else if message_body[0..4] == SDOWN {
+                } else if message_body.get(0..4) == Some(&SDOWN) {
                     *sdown.write().await = Some(message_body[4]);
                 } else {
                     eprintln!("Unknown MEB message (id: {id}) {:?}", message_body);
                 }
-            } else {
+            //} else {
+            if given_crc != calculated_crc {
                 eprintln!(
-                "Given CRC ({given_crc}) != calculated CRC ({calculated_crc}) for MEB message (id: {id}) {:?}",
+                "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?}",
+                given_crc.to_ne_bytes(),
+                calculated_crc.to_ne_bytes(),
                 message_body
             );
             }

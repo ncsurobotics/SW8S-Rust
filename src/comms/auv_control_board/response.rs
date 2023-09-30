@@ -17,7 +17,7 @@ pub fn check_start(buffer: &mut Vec<u8>, end_idx: usize) -> Option<usize> {
     match buffer
         .iter()
         .enumerate()
-        .find(|(_, val)| **val == START_BYTE)
+        .find(|(idx, val)| **val == START_BYTE && (*idx == 0 || buffer[idx - 1] != ESCAPE_BYTE))
     {
         Some((0, _)) => Some(end_idx), // Expected condition
         None => {
@@ -50,10 +50,19 @@ pub fn check_start(buffer: &mut Vec<u8>, end_idx: usize) -> Option<usize> {
 
 /// Discard start, end, and escape bytes
 pub fn clean_message(buffer: &mut Vec<u8>, end_idx: usize) -> Vec<u8> {
-    let message: Vec<_> = buffer
-        .drain(0..=end_idx)
+    let message: Vec<u8> = buffer.drain(0..=end_idx).collect();
+    println!("MESSAGE: {:?}", message);
+    if message.is_empty() {
+        return message;
+    };
+    println!("MESSAGE NOT EMPTY");
+    let message: Vec<_> = message
+        .clone()
+        .into_iter()
+        .enumerate()
         .skip(1)
-        .filter(|&byte| byte != ESCAPE_BYTE)
+        .filter(|(idx, byte)| *byte != ESCAPE_BYTE && message[idx - 1] != ESCAPE_BYTE)
+        .map(|(_, byte)| byte)
         .collect();
     message[0..message.len() - 1].to_vec()
 }
@@ -66,6 +75,7 @@ where
     while find_end(buffer).is_none() {
         buffer.push(serial_conn.read_u8().await.unwrap());
     }
+    println!("BUFFER: {:?}", buffer);
     // Read bytes up to buffer capacity
     let mut messages = Vec::new();
 

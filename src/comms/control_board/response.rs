@@ -17,7 +17,9 @@ use tokio::{
     time::sleep,
 };
 
-use crate::comms::auv_control_board::{response::get_messages, util::crc_itt16_false, GetAck};
+use crate::comms::auv_control_board::{
+    response::get_messages, util::crc_itt16_false_bitmath, GetAck,
+};
 
 use crate::comms::auv_control_board::util::AcknowledgeErr;
 
@@ -104,10 +106,10 @@ impl ResponseMap {
             let message_body = &message[2..(message.len() - 2)];
             let payload = &message[0..(message.len() - 2)];
             let given_crc = u16::from_be_bytes(message[(message.len() - 2)..].try_into().unwrap());
-            let calculated_crc = crc_itt16_false(payload);
+            let calculated_crc = crc_itt16_false_bitmath(payload);
 
-            if given_crc == calculated_crc {
-                if message_body[0..3] == ACK {
+            //if given_crc == calculated_crc {
+                if message_body.get(0..3) == Some(&ACK) {
                     let id = u16::from_be_bytes(message_body[3..=4].try_into().unwrap());
                     let error_code: u8 = message_body[5];
 
@@ -117,18 +119,23 @@ impl ResponseMap {
                         Err(AcknowledgeErr::from(error_code))
                     };
                     ack_map.lock().await.insert(id, val);
-                } else if message_body[0..4] == WDGS {
+                } else if message_body.get(0..4) == Some(&WDGS) {
                     *watchdog_status.write().await = Some(message_body[4] != 0);
-                } else if message_body[0..7] == BNO055D {
+                } else if message_body.get(0..7) == Some(&BNO055D) {
+                    println!("BNO len: {}", message_body[7..].len());
                     *bno055_status.write().await = Some(message_body[7..].try_into().unwrap());
-                } else if message_body[0..7] == MS5837D {
+                } else if message_body.get(0..7) == Some(&MS5837D) {
+                    println!("MS len: {}", message_body[7..].len());
                     *ms5837_status.write().await = Some(message_body[7..].try_into().unwrap());
                 } else {
                     eprintln!("Unknown message (id: {id}) {:?}", message_body);
                 }
-            } else {
+            //} else {
+            if given_crc != calculated_crc {
                 eprintln!(
-                "Given CRC ({given_crc}) != calculated CRC ({calculated_crc}) for message (id: {id}) {:?}",
+                "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?}",
+                given_crc.to_ne_bytes(),
+                calculated_crc.to_ne_bytes(),
                 message_body
             );
             }

@@ -37,13 +37,11 @@ impl MainElectronicsBoard {
 
 impl MainElectronicsBoard {
     pub async fn temperature(&self) -> Option<f32> {
-        (*self.statuses.aht10().read().await)
-            .map(|aht10| f32::from_le_bytes(aht10[0..4].try_into().unwrap()))
+        (*self.statuses.temp().read().await).map(f32::from_le_bytes)
     }
 
     pub async fn humidity(&self) -> Option<f32> {
-        (*self.statuses.aht10().read().await)
-            .map(|aht10| f32::from_le_bytes(aht10[4..].try_into().unwrap()))
+        (*self.statuses.humid().read().await).map(f32::from_le_bytes)
     }
 
     pub async fn leak(&self) -> Option<bool> {
