@@ -4,6 +4,7 @@ use anyhow::{bail, Result};
 use config::Configuration;
 use sw8s_rust_lib::comms::{control_board::ControlBoard, meb::MainElectronicsBoard};
 use tokio::{
+    io::WriteHalf,
     signal,
     sync::{
         mpsc::{self, UnboundedSender},
@@ -15,8 +16,8 @@ use tokio_serial::SerialStream;
 
 mod config;
 
-static CONTROL_BOARD_CELL: OnceCell<ControlBoard<SerialStream>> = OnceCell::const_new();
-async fn control_board() -> &'static ControlBoard<SerialStream> {
+static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<SerialStream>>> = OnceCell::const_new();
+async fn control_board() -> &'static ControlBoard<WriteHalf<SerialStream>> {
     CONTROL_BOARD_CELL
         .get_or_init(|| async {
             ControlBoard::serial(&Configuration::default().control_board_path)

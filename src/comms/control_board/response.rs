@@ -12,14 +12,14 @@ use derive_getters::Getters;
 use futures::stream;
 use futures::StreamExt;
 use tokio::{
-    io::AsyncReadExt,
+    io::{stderr, AsyncReadExt, AsyncWriteExt},
     sync::{Mutex, RwLock},
     time::sleep,
 };
 
-use crate::comms::auv_control_board::{
+use crate::{comms::auv_control_board::{
     response::get_messages, util::crc_itt16_false_bitmath, GetAck,
-};
+}, write_stream_mutexed};
 
 use crate::comms::auv_control_board::util::AcknowledgeErr;
 
@@ -76,6 +76,7 @@ impl ResponseMap {
                     &watchdog_status_clone,
                     &bno055_status_clone,
                     &ms5837_status_clone,
+                    &mut stderr(),
                 )
                 .await;
             }
@@ -91,17 +92,20 @@ impl ResponseMap {
     }
 
     /// Reads from serial resource, updating ack_map
-    async fn update_maps<T>(
+    pub async fn update_maps<T, U>(
         buffer: &mut Vec<u8>,
         serial_conn: &mut T,
         ack_map: &Mutex<KeyedAcknowledges>,
         watchdog_status: &RwLock<Option<bool>>,
         bno055_status: &RwLock<Option<[u8; 4 * 7]>>,
         ms5837_status: &RwLock<Option<[u8; 4 * 3]>>,
+        err_stream: &mut U,
     ) where
         T: AsyncReadExt + Unpin + Send,
+        U: AsyncWriteExt + Unpin + Send,
     {
-        stream::iter(get_messages(buffer, serial_conn, #[cfg(feature = "logging")] "control_board_in").await).for_each_concurrent(None, |message| async move {
+        let err_stream = &Mutex::new(err_stream);
+        stream::iter(get_messages(buffer, serial_conn, #[cfg(feature = "logging")] "control_board_in.dat").await).for_each_concurrent(None, |message| async move {
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());
             let message_body = &message[2..(message.len() - 2)];
             let payload = &message[0..(message.len() - 2)];
@@ -126,15 +130,16 @@ impl ResponseMap {
                 } else if message_body.get(0..7) == Some(&MS5837D) {
                     *ms5837_status.write().await = Some(message_body[7..].try_into().unwrap());
                 } else {
-                    eprintln!("Unknown message (id: {id}) {:?}", message_body);
+                    write_stream_mutexed!(err_stream, format!("Unknown message (id: {id}) {:?}\n", message_body));
                 }
             } else {
-                eprintln!(
-                "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?}",
+                write_stream_mutexed!(err_stream, 
+                format!(
+                "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?}\n",
                 given_crc.to_ne_bytes(),
                 calculated_crc.to_ne_bytes(),
                 message_body
-            );
+            ));
             }
         }).await
     }

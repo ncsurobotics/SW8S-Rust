@@ -4,7 +4,7 @@ use anyhow::Result;
 use tokio::io::AsyncReadExt;
 use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
 
-mod response;
+pub mod response;
 
 #[derive(Debug)]
 pub struct MainElectronicsBoard {

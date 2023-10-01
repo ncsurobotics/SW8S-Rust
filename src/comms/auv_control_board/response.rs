@@ -1,3 +1,4 @@
+use bytes::BufMut;
 use tokio::io::AsyncReadExt;
 #[cfg(feature = "logging")]
 use tokio::{fs::OpenOptions, io::AsyncWriteExt};
@@ -45,7 +46,11 @@ pub fn check_start(buffer: &mut Vec<u8>, end_idx: usize) -> Option<usize> {
                     &buffer[0..start_idx]
                 );
                 buffer.drain(0..start_idx);
-                Some(end_idx - start_idx)
+                if end_idx >= start_idx {
+                    Some(end_idx - start_idx)
+                } else {
+                    None
+                }
             }
         }
     }
@@ -78,30 +83,21 @@ pub async fn get_messages<T>(
 where
     T: AsyncReadExt + Unpin + Send,
 {
-    while find_end(buffer).is_none() {
-        let byte = serial_conn.read_u8().await.unwrap();
-        buffer.push(byte);
-        #[cfg(feature = "logging")]
-        OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(dump_file)
-            .await
-            .unwrap()
-            .write_all(&[byte])
-            .await
-            .unwrap();
-    }
-    // Read bytes up to buffer capacity
-    let mut messages = Vec::new();
+    if serial_conn.read_buf(buffer).await.unwrap() != 0 {
+        let mut messages = Vec::new();
 
-    while let Some((end_idx, _)) = find_end(buffer) {
-        if let Some(end_idx) = check_start(buffer, end_idx) {
-            messages.push(clean_message(buffer, end_idx));
+        while let Some((end_idx, _)) = find_end(buffer) {
+            if let Some(end_idx) = check_start(buffer, end_idx) {
+                messages.push(clean_message(buffer, end_idx));
+            }
         }
-    }
 
-    messages
+        messages
+    } else if buffer.has_remaining_mut() {
+        Vec::new()
+    } else {
+        panic!("Buffer capacity filled!");
+    }
 }
 
 #[cfg(test)]

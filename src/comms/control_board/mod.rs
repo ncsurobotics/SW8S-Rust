@@ -3,7 +3,7 @@ use std::{ops::Deref, sync::Arc, time::Duration};
 
 use anyhow::{bail, Result};
 use tokio::{
-    io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, ReadHalf, WriteHalf},
+    io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, WriteHalf},
     net::TcpStream,
     sync::Mutex,
     time::{sleep, timeout},
@@ -22,26 +22,26 @@ pub struct ControlBoard<T>
 where
     T: AsyncWriteExt + Unpin,
 {
-    inner: Arc<AUVControlBoard<WriteHalf<T>, ResponseMap>>,
+    inner: Arc<AUVControlBoard<T, ResponseMap>>,
 }
 
 impl<T: AsyncWriteExt + Unpin> Deref for ControlBoard<T> {
-    type Target = AUVControlBoard<WriteHalf<T>, ResponseMap>;
+    type Target = AUVControlBoard<T, ResponseMap>;
     fn deref(&self) -> &Self::Target {
         &self.inner
     }
 }
 
-impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
-    pub async fn new(
-        comm_out: WriteHalf<T>,
-        comm_in: ReadHalf<T>,
-        msg_id: MessageId,
-    ) -> Result<Self> {
+impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
+    pub async fn new<U>(comm_out: T, comm_in: U, msg_id: Option<MessageId>) -> Result<Self>
+    where
+        U: 'static + AsyncRead + Unpin + Send,
+    {
         const THRUSTER_INVS: [bool; 8] = [true, true, false, false, true, false, false, true];
         #[allow(clippy::approx_constant)]
         const DOF_SPEEDS: [f32; 6] = [0.7071, 0.7071, 1.0, 0.4413, 1.0, 0.8139];
 
+        let msg_id = msg_id.unwrap_or(MessageId::default());
         let responses = ResponseMap::new(comm_in).await;
         let this = Self {
             inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id).into(),
@@ -123,7 +123,7 @@ impl<T: 'static + AsyncWrite + AsyncRead + Unpin + Send> ControlBoard<T> {
     }
 }
 
-impl ControlBoard<SerialStream> {
+impl ControlBoard<WriteHalf<SerialStream>> {
     pub async fn serial(port_name: &str) -> Result<Self> {
         const BAUD_RATE: u32 = 9600;
         const DATA_BITS: DataBits = DataBits::Eight;
@@ -135,11 +135,11 @@ impl ControlBoard<SerialStream> {
             .parity(PARITY)
             .stop_bits(STOP_BITS);
         let (comm_in, comm_out) = io::split(SerialStream::open(&port_builder)?);
-        Self::new(comm_out, comm_in, MessageId::default()).await
+        Self::new(comm_out, comm_in, None).await
     }
 }
 
-impl ControlBoard<TcpStream> {
+impl ControlBoard<WriteHalf<TcpStream>> {
     /// Both connections are necessary for the simulator to run,
     /// but the one that doesn't feed forward to control board is unnecessary
     pub async fn tcp(host: &str, port: &str, dummy_port: String) -> Result<Self> {
@@ -157,14 +157,12 @@ impl ControlBoard<TcpStream> {
 
         let stream = TcpStream::connect(host.to_string() + ":" + port).await?;
         let (comm_in, comm_out) = io::split(stream);
-        Self::new(comm_out, comm_in, MessageId::default()).await
+        Self::new(comm_out, comm_in, None).await
     }
 }
 
 impl<T: AsyncWrite + Unpin> ControlBoard<T> {
-    pub async fn feed_watchdog(
-        control_board: &Arc<AUVControlBoard<WriteHalf<T>, ResponseMap>>,
-    ) -> Result<()> {
+    pub async fn feed_watchdog(control_board: &Arc<AUVControlBoard<T, ResponseMap>>) -> Result<()> {
         const WATCHDOG_FEED: [u8; 4] = *b"WDGF";
         let message = Vec::from(WATCHDOG_FEED);
         control_board.write_out_basic(message).await

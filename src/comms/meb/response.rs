@@ -6,11 +6,18 @@ use std::{
     time::Duration,
 };
 
-use crate::comms::auv_control_board::{response::get_messages, util::crc_itt16_false_bitmath};
+use crate::{
+    comms::auv_control_board::{response::get_messages, util::crc_itt16_false_bitmath},
+    write_stream_mutexed,
+};
 
 use derive_getters::Getters;
 use futures::{stream, StreamExt};
-use tokio::{io::AsyncReadExt, sync::RwLock, time::sleep};
+use tokio::{
+    io::{stderr, AsyncReadExt, AsyncWriteExt},
+    sync::{Mutex, RwLock},
+    time::sleep,
+};
 
 type Lock<T> = Arc<RwLock<Option<T>>>;
 
@@ -69,6 +76,7 @@ impl Statuses {
                     &thruster_arm_clone,
                     &system_voltage_clone,
                     &shutdown_clone,
+                    &mut stderr(),
                 )
                 .await;
             }
@@ -88,7 +96,7 @@ impl Statuses {
 
 impl Statuses {
     #[allow(clippy::too_many_arguments)]
-    async fn update_status<T>(
+    pub async fn update_status<T, U>(
         buffer: &mut Vec<u8>,
         serial_conn: &mut T,
         temp: &RwLock<Option<[u8; 4]>>,
@@ -97,10 +105,20 @@ impl Statuses {
         tarm: &Arc<RwLock<Option<bool>>>,
         vsys: &RwLock<Option<[u8; 4]>>,
         sdown: &RwLock<Option<u8>>,
+        err_stream: &mut U,
     ) where
         T: AsyncReadExt + Unpin + Send,
+        U: AsyncWriteExt + Unpin + Send,
     {
-        stream::iter(get_messages(buffer, serial_conn, #[cfg(feature = "logging")] "meb_in").await).for_each_concurrent(None, |message| async move {
+        let err_stream = &Mutex::new(err_stream);
+        let messages = get_messages(
+            buffer,
+            serial_conn,
+            #[cfg(feature = "logging")]
+            "meb_in",
+        )
+        .await;
+        stream::iter(messages).for_each_concurrent(None, |message| async move {
             if message.len() < 4 { println!("Message len < 4: {:?}", message); return; };
 
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());
@@ -131,15 +149,15 @@ impl Statuses {
                 } else if message_body.get(0..4) == Some(&SDOWN) {
                     *sdown.write().await = Some(message_body[4]);
                 } else {
-                    eprintln!("Unknown MEB message (id: {id}) {:?}", message_body);
+                    write_stream_mutexed!(err_stream, format!("Unknown MEB message (id: {id}) {:?}\n", message_body));
                 }
             } else {
-                eprintln!(
-                "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?}",
+                write_stream_mutexed!(err_stream, format!(
+                "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?}\n",
                 given_crc.to_ne_bytes(),
                 calculated_crc.to_ne_bytes(),
                 message_body
-            );
+            ));
             }
         }).await;
     }
