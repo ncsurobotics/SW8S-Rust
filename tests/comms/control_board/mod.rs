@@ -1,9 +1,14 @@
 use anyhow::Result;
+use std::str::from_utf8;
 use std::time::Duration;
 use std::{fs::create_dir_all, path::Path};
+use sw8s_rust_lib::comms::control_board::response::ResponseMap;
 use sw8s_rust_lib::comms::control_board::ControlBoard;
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
+use tokio::io::{sink, AsyncReadExt};
 use tokio::process::Command;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, RwLock};
 use tokio::time::{sleep, timeout};
 
 #[cfg(target_os = "linux")]
@@ -59,6 +64,27 @@ async fn open_sim(godot: String) -> Result<()> {
     // Give simulator time to spawn, magic number
     sleep(Duration::from_secs(3)).await;
     Ok(())
+}
+
+#[tokio::test]
+async fn real_comms_read_no_error() {
+    let mut err_msgs = Vec::new();
+
+    ResponseMap::update_maps(
+        &mut Vec::with_capacity(512),
+        &mut File::open("tests/comms/control_board/control_board_in.dat")
+            .await
+            .unwrap(),
+        &Mutex::default(),
+        &RwLock::<Option<bool>>::default(),
+        &RwLock::default(),
+        &RwLock::default(),
+        &mut err_msgs,
+    )
+    .await;
+
+    print!("{}", from_utf8(&err_msgs).unwrap());
+    assert!(err_msgs.is_empty());
 }
 
 #[ignore = "requires a UI, is long"]

@@ -153,10 +153,11 @@ impl Statuses {
                 }
             } else {
                 write_stream_mutexed!(err_stream, format!(
-                "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?}\n",
+                "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?} (0x{})\n",
                 given_crc.to_ne_bytes(),
                 calculated_crc.to_ne_bytes(),
-                message_body
+                message_body,
+                message_body.iter().map(|byte| format!("{:02x}", byte).to_string()).reduce(|acc, x| acc + &x).unwrap()
             ));
             }
         }).await;
