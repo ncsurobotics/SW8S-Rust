@@ -17,9 +17,10 @@ use tokio::{
     time::sleep,
 };
 
-use crate::{comms::auv_control_board::{
-    response::get_messages, util::crc_itt16_false_bitmath, GetAck,
-}, write_stream_mutexed};
+use crate::{
+    comms::auv_control_board::{response::get_messages, util::crc_itt16_false_bitmath, GetAck},
+    write_stream_mutexed,
+};
 
 use crate::comms::auv_control_board::util::AcknowledgeErr;
 
@@ -130,16 +131,16 @@ impl ResponseMap {
                 } else if message_body.get(0..7) == Some(&MS5837D) {
                     *ms5837_status.write().await = Some(message_body[7..].try_into().unwrap());
                 } else {
-                    write_stream_mutexed!(err_stream, format!("Unknown message (id: {id}) {:?}\n", message_body));
+                    write_stream_mutexed!(err_stream, format!("Unknown message (id: {id}) {:?}\n", payload));
                 }
             } else {
-                write_stream_mutexed!(err_stream, 
+                write_stream_mutexed!(err_stream,
                 format!(
                 "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?} (0x{})\n",
                 given_crc.to_ne_bytes(),
                 calculated_crc.to_ne_bytes(),
-                message_body,
-                message_body.iter().map(|byte| format!("{:02x}", byte).to_string()).reduce(|acc, x| acc + &x).unwrap()
+                payload,
+                payload.iter().map(|byte| format!("{:02x}", byte).to_string()).reduce(|acc, x| acc + &x).unwrap_or("".to_string())
             ));
             }
         }).await

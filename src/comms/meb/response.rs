@@ -111,14 +111,7 @@ impl Statuses {
         U: AsyncWriteExt + Unpin + Send,
     {
         let err_stream = &Mutex::new(err_stream);
-        let messages = get_messages(
-            buffer,
-            serial_conn,
-            #[cfg(feature = "logging")]
-            "meb_in",
-        )
-        .await;
-        stream::iter(messages).for_each_concurrent(None, |message| async move {
+        stream::iter(get_messages(buffer, serial_conn, #[cfg(feature = "logging")] "meb_in").await).for_each_concurrent(None, |message| async move {
             if message.len() < 4 { println!("Message len < 4: {:?}", message); return; };
 
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());
@@ -149,15 +142,15 @@ impl Statuses {
                 } else if message_body.get(0..4) == Some(&SDOWN) {
                     *sdown.write().await = Some(message_body[4]);
                 } else {
-                    write_stream_mutexed!(err_stream, format!("Unknown MEB message (id: {id}) {:?}\n", message_body));
+                    write_stream_mutexed!(err_stream, format!("Unknown MEB message (id: {id}) {:?}\n", payload));
                 }
             } else {
                 write_stream_mutexed!(err_stream, format!(
                 "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?} (0x{})\n",
                 given_crc.to_ne_bytes(),
                 calculated_crc.to_ne_bytes(),
-                message_body,
-                message_body.iter().map(|byte| format!("{:02x}", byte).to_string()).reduce(|acc, x| acc + &x).unwrap()
+                payload,
+                payload.iter().map(|byte| format!("{:02x}", byte).to_string()).reduce(|acc, x| acc + &x).unwrap_or("".to_string())
             ));
             }
         }).await;

@@ -2,11 +2,10 @@ use anyhow::Result;
 use std::str::from_utf8;
 use std::time::Duration;
 use std::{fs::create_dir_all, path::Path};
+use sw8s_rust_lib::comms::auv_control_board::response::find_end;
 use sw8s_rust_lib::comms::control_board::response::ResponseMap;
 use sw8s_rust_lib::comms::control_board::ControlBoard;
-use tokio::fs::File;
-use tokio::io::AsyncWriteExt;
-use tokio::io::{sink, AsyncReadExt};
+
 use tokio::process::Command;
 use tokio::sync::{Mutex, RwLock};
 use tokio::time::{sleep, timeout};
@@ -68,23 +67,47 @@ async fn open_sim(godot: String) -> Result<()> {
 
 #[tokio::test]
 async fn real_comms_read_no_error() {
-    let mut err_msgs = Vec::new();
+    let mut buffer = Vec::with_capacity(512);
+    let mut bytes: Vec<u8> = include_bytes!("control_board_in.dat").to_vec();
+    let mut errors: Vec<(u8, Vec<u8>, Vec<u8>)> = Vec::new();
+    let mut prev_byte = 254;
+    let mut total_chunks = 0;
 
-    ResponseMap::update_maps(
-        &mut Vec::with_capacity(512),
-        &mut File::open("tests/comms/control_board/control_board_in.dat")
-            .await
-            .unwrap(),
-        &Mutex::default(),
-        &RwLock::<Option<bool>>::default(),
-        &RwLock::default(),
-        &RwLock::default(),
-        &mut err_msgs,
-    )
-    .await;
+    while let Some((end_idx, _)) = find_end(&bytes) {
+        total_chunks += 1;
+        let mut err_msg = Vec::new();
+        let byte_chunk: Vec<u8> = bytes.drain(0..=end_idx).collect();
 
-    print!("{}", from_utf8(&err_msgs).unwrap());
-    assert!(err_msgs.is_empty());
+        ResponseMap::update_maps(
+            &mut buffer,
+            &mut &*byte_chunk,
+            &Mutex::default(),
+            &RwLock::<Option<bool>>::default(),
+            &RwLock::default(),
+            &RwLock::default(),
+            &mut err_msg,
+        )
+        .await;
+
+        if !err_msg.is_empty() {
+            errors.push((prev_byte, byte_chunk.clone(), err_msg));
+        }
+        prev_byte = *byte_chunk.last().unwrap_or(&0);
+    }
+
+    errors.clone().into_iter().for_each(|entry| {
+        println!("Prev byte: {}", entry.0);
+        println!("Chunk: {:?}", entry.1);
+        print!("{}", from_utf8(&entry.2).unwrap());
+    });
+    println!(
+        "\n{} errors in {} entries, {}% error",
+        errors.len(),
+        total_chunks,
+        ((errors.len() as f32) / (total_chunks as f32)) * 100.0
+    );
+
+    assert!(errors.is_empty());
 }
 
 #[ignore = "requires a UI, is long"]
