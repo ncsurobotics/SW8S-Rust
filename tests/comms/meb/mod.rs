@@ -1,5 +1,6 @@
 use std::{str::from_utf8, sync::Arc};
 
+use num_traits::Zero;
 use sw8s_rust_lib::comms::{auv_control_board::response::find_end, meb::response::Statuses};
 use tokio::sync::RwLock;
 
@@ -7,9 +8,9 @@ use tokio::sync::RwLock;
 async fn real_comms_read_no_error() {
     let mut buffer = Vec::with_capacity(512);
     let mut bytes: Vec<u8> = include_bytes!("meb_in.dat").to_vec();
-    let mut errors: Vec<(u8, Vec<u8>, Vec<u8>)> = Vec::new();
     let mut prev_byte = 254;
-    let mut total_chunks = 0;
+    let mut errors: usize = 0;
+    let mut total_chunks: usize = 0;
 
     while let Some((end_idx, _)) = find_end(&bytes) {
         total_chunks += 1;
@@ -30,22 +31,20 @@ async fn real_comms_read_no_error() {
         .await;
 
         if !err_msg.is_empty() {
-            errors.push((prev_byte, byte_chunk.clone(), err_msg));
+            errors += 1;
+            println!("Prev byte: {}", prev_byte);
+            println!("Chunk: {:?}", byte_chunk);
+            println!("{}", from_utf8(&err_msg).unwrap());
         }
         prev_byte = *byte_chunk.last().unwrap_or(&0);
     }
 
-    errors.clone().into_iter().for_each(|entry| {
-        println!("Prev byte: {}", entry.0);
-        println!("Chunk: {:?}", entry.1);
-        print!("{}", from_utf8(&entry.2).unwrap());
-    });
     println!(
         "\n{} errors in {} entries, {}% error",
-        errors.len(),
+        errors,
         total_chunks,
-        ((errors.len() as f32) / (total_chunks as f32)) * 100.0
+        ((errors as f32) / (total_chunks as f32)) * 100.0
     );
 
-    assert!(errors.is_empty());
+    assert!(errors.is_zero());
 }
