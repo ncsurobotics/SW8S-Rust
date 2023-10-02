@@ -12,12 +12,15 @@ use derive_getters::Getters;
 use futures::stream;
 use futures::StreamExt;
 use tokio::{
-    io::AsyncReadExt,
+    io::{stderr, AsyncReadExt, AsyncWriteExt},
     sync::{Mutex, RwLock},
     time::sleep,
 };
 
-use crate::comms::auv_control_board::{response::get_messages, util::crc_itt16_false, GetAck};
+use crate::{
+    comms::auv_control_board::{response::get_messages, util::crc_itt16_false_bitmath, GetAck},
+    write_stream_mutexed,
+};
 
 use crate::comms::auv_control_board::util::AcknowledgeErr;
 
@@ -25,7 +28,9 @@ const ACK: [u8; 3] = *b"ACK";
 const WDGS: [u8; 4] = *b"WDGS";
 const BNO055D: [u8; 7] = *b"BNO055D";
 const MS5837D: [u8; 7] = *b"MS5837D";
+#[allow(dead_code)]
 const DEBUG: [u8; 5] = *b"DEBUG";
+#[allow(dead_code)]
 const DBGDAT: [u8; 6] = *b"DBGDAT";
 
 type KeyedAcknowledges = HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>;
@@ -34,8 +39,8 @@ type KeyedAcknowledges = HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>;
 pub struct ResponseMap {
     ack_map: Arc<Mutex<KeyedAcknowledges>>,
     watchdog_status: Arc<RwLock<Option<bool>>>,
-    bno055_status: Arc<RwLock<Option<[u8; 8 * 7]>>>,
-    ms5837_status: Arc<RwLock<Option<[u8; 8 * 3]>>>,
+    bno055_status: Arc<RwLock<Option<[u8; 4 * 7]>>>,
+    ms5837_status: Arc<RwLock<Option<[u8; 4 * 3]>>>,
     _tx: Sender<()>,
 }
 
@@ -72,6 +77,7 @@ impl ResponseMap {
                     &watchdog_status_clone,
                     &bno055_status_clone,
                     &ms5837_status_clone,
+                    &mut stderr(),
                 )
                 .await;
             }
@@ -87,25 +93,28 @@ impl ResponseMap {
     }
 
     /// Reads from serial resource, updating ack_map
-    async fn update_maps<T>(
+    pub async fn update_maps<T, U>(
         buffer: &mut Vec<u8>,
         serial_conn: &mut T,
         ack_map: &Mutex<KeyedAcknowledges>,
         watchdog_status: &RwLock<Option<bool>>,
-        bno055_status: &RwLock<Option<[u8; 8 * 7]>>,
-        ms5837_status: &RwLock<Option<[u8; 8 * 3]>>,
+        bno055_status: &RwLock<Option<[u8; 4 * 7]>>,
+        ms5837_status: &RwLock<Option<[u8; 4 * 3]>>,
+        err_stream: &mut U,
     ) where
-        T: AsyncReadExt + Unpin,
+        T: AsyncReadExt + Unpin + Send,
+        U: AsyncWriteExt + Unpin + Send,
     {
-        stream::iter(get_messages(buffer, serial_conn).await).for_each_concurrent(None, |message| async move {
+        let err_stream = &Mutex::new(err_stream);
+        stream::iter(get_messages(buffer, serial_conn, #[cfg(feature = "logging")] "control_board_in.dat").await).for_each_concurrent(None, |message| async move {
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());
             let message_body = &message[2..(message.len() - 2)];
             let payload = &message[0..(message.len() - 2)];
             let given_crc = u16::from_be_bytes(message[(message.len() - 2)..].try_into().unwrap());
-            let calculated_crc = crc_itt16_false(payload);
+            let calculated_crc = crc_itt16_false_bitmath(payload);
 
             if given_crc == calculated_crc {
-                if message_body[0..3] == ACK {
+                if message_body.get(0..3) == Some(&ACK) {
                     let id = u16::from_be_bytes(message_body[3..=4].try_into().unwrap());
                     let error_code: u8 = message_body[5];
 
@@ -115,20 +124,24 @@ impl ResponseMap {
                         Err(AcknowledgeErr::from(error_code))
                     };
                     ack_map.lock().await.insert(id, val);
-                } else if message_body[0..4] == WDGS {
+                } else if message_body.get(0..4) == Some(&WDGS) {
                     *watchdog_status.write().await = Some(message_body[4] != 0);
-                } else if message_body[0..7] == BNO055D {
+                } else if message_body.get(0..7) == Some(&BNO055D) {
                     *bno055_status.write().await = Some(message_body[7..].try_into().unwrap());
-                } else if message_body[0..7] == MS5837D {
+                } else if message_body.get(0..7) == Some(&MS5837D) {
                     *ms5837_status.write().await = Some(message_body[7..].try_into().unwrap());
                 } else {
-                    eprintln!("Unknown message (id: {id}) {:?}", message_body);
+                    write_stream_mutexed!(err_stream, format!("Unknown message (id: {id}) {:?}\n", payload));
                 }
             } else {
-                eprintln!(
-                "Given CRC ({given_crc}) != calculated CRC ({calculated_crc}) for message (id: {id}) {:?}",
-                message_body
-            );
+                write_stream_mutexed!(err_stream,
+                format!(
+                "Given CRC ({given_crc} {:?}) != calculated CRC ({calculated_crc} {:?}) for message (id: {id}) {:?} (0x{})\n",
+                given_crc.to_ne_bytes(),
+                calculated_crc.to_ne_bytes(),
+                payload,
+                payload.iter().map(|byte| format!("{:02x}", byte).to_string()).reduce(|acc, x| acc + &x).unwrap_or("".to_string())
+            ));
             }
         }).await
     }

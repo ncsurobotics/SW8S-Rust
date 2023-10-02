@@ -1,10 +1,15 @@
 use anyhow::Result;
+
+use std::str::from_utf8;
 use std::time::Duration;
 use std::{fs::create_dir_all, path::Path};
+use sw8s_rust_lib::comms::auv_control_board::response::find_end;
+use sw8s_rust_lib::comms::control_board::response::ResponseMap;
 use sw8s_rust_lib::comms::control_board::ControlBoard;
+
 use tokio::process::Command;
-use tokio::sync::Mutex;
-use tokio::time::sleep;
+use tokio::sync::{Mutex, RwLock};
+use tokio::time::{sleep, timeout};
 
 #[cfg(target_os = "linux")]
 use {flate2::bufread::GzDecoder, tar::Archive};
@@ -61,6 +66,50 @@ async fn open_sim(godot: String) -> Result<()> {
     Ok(())
 }
 
+#[tokio::test]
+async fn real_comms_read_no_error() {
+    let mut buffer = Vec::with_capacity(512);
+    let mut bytes: Vec<u8> = include_bytes!("control_board_in.dat").to_vec();
+    let mut prev_byte = 254;
+    let mut errors: usize = 0;
+    let mut total_chunks = 0;
+
+    while let Some((end_idx, _)) = find_end(&bytes) {
+        total_chunks += 1;
+        let mut err_msg = Vec::new();
+        let byte_chunk: Vec<u8> = bytes.drain(0..=end_idx).collect();
+
+        ResponseMap::update_maps(
+            &mut buffer,
+            &mut &*byte_chunk,
+            &Mutex::default(),
+            &RwLock::<Option<bool>>::default(),
+            &RwLock::default(),
+            &RwLock::default(),
+            &mut err_msg,
+        )
+        .await;
+
+        if !err_msg.is_empty() {
+            errors += 1;
+            println!("Prev byte: {}", prev_byte);
+            println!("Chunk: {:?}", byte_chunk);
+            println!("{}", from_utf8(&err_msg).unwrap());
+        }
+
+        prev_byte = *byte_chunk.last().unwrap_or(&0);
+    }
+
+    let percent_error = ((errors as f32) / (total_chunks as f32)) * 100.0;
+
+    println!(
+        "\n{} errors in {} entries, {}% error",
+        errors, total_chunks, percent_error
+    );
+
+    assert!(percent_error < 1.0);
+}
+
 #[ignore = "requires a UI, is long"]
 #[tokio::test]
 pub async fn tcp_connect() {
@@ -68,7 +117,8 @@ pub async fn tcp_connect() {
     const SIM_PORT: &str = "5012";
     const SIM_DUMMY_PORT: &str = "5011";
 
-    open_sim(GODOT.lock().await.to_string()).await.unwrap();
+    let godot = GODOT.lock().await;
+    open_sim(godot.to_string()).await.unwrap();
     let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
         .await
         .unwrap();
@@ -77,4 +127,60 @@ pub async fn tcp_connect() {
     while control_board.watchdog_status().await.is_none() {}
     // Confirm watchdog keeps motors alive
     assert_eq!(control_board.watchdog_status().await, Some(true));
+}
+
+#[ignore = "requires a UI, is long"]
+#[tokio::test]
+pub async fn tcp_move_raw() {
+    const LOCALHOST: &str = "127.0.0.1";
+    const SIM_PORT: &str = "5012";
+    const SIM_DUMMY_PORT: &str = "5011";
+
+    let godot = GODOT.lock().await;
+    open_sim(godot.to_string()).await.unwrap();
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+
+    while timeout(
+        Duration::from_secs(1),
+        control_board.raw_speed_set([0.2, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.1]),
+    )
+    .await
+    .is_err()
+    {
+        println!("RAW timeout");
+    }
+
+    // Will be broken until get IMU data read
+    sleep(Duration::from_secs(10)).await;
+    todo!();
+}
+
+#[ignore = "requires a UI, is long"]
+#[tokio::test]
+pub async fn tcp_move_sassist_2() {
+    const LOCALHOST: &str = "127.0.0.1";
+    const SIM_PORT: &str = "5012";
+    const SIM_DUMMY_PORT: &str = "5011";
+
+    let godot = GODOT.lock().await;
+    open_sim(godot.to_string()).await.unwrap();
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+
+    while timeout(
+        Duration::from_secs(1),
+        control_board.stability_2_speed_set(-0.5, 1.0, 0.0, 0.0, 90.0, -1.0),
+    )
+    .await
+    .is_err()
+    {
+        println!("STAB2 timeout");
+    }
+
+    // Will be broken until get IMU data read
+    sleep(Duration::from_secs(10)).await;
+    todo!();
 }
