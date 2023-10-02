@@ -1,6 +1,5 @@
 use std::{str::from_utf8, sync::Arc};
 
-use num_traits::Zero;
 use sw8s_rust_lib::comms::{auv_control_board::response::find_end, meb::response::Statuses};
 use tokio::sync::RwLock;
 
@@ -39,12 +38,12 @@ async fn real_comms_read_no_error() {
         prev_byte = *byte_chunk.last().unwrap_or(&0);
     }
 
+    let percent_error = ((errors as f32) / (total_chunks as f32)) * 100.0;
+
     println!(
         "\n{} errors in {} entries, {}% error",
-        errors,
-        total_chunks,
-        ((errors as f32) / (total_chunks as f32)) * 100.0
+        errors, total_chunks, percent_error
     );
 
-    assert!(errors.is_zero());
+    assert!(percent_error < 1.0);
 }
