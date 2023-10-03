@@ -101,6 +101,9 @@ pub struct DualAction<T: Action<bool>, U: Action<bool>> {
     second: U,
 }
 
+/**
+ * Constructor for the dual action 
+ */
 impl<T: Action<bool>, U: Action<bool>> DualAction<T, U> {
     const fn new(first: T, second: U) -> Self {
         Self { first, second }
