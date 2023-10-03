@@ -4,16 +4,25 @@ use std::marker::PhantomData;
 use tokio::{join, try_join};
 
 #[async_trait]
+/**
+ * A trait for an action that can be executed.
+ */
 pub trait Action<Output: Debug + Send + Sync>: Debug + Send + Sync + Sync {
     async fn execute(self) -> Output;
 }
 
+/**
+ * A trait that can be executed and modified at runtime.  
+ */
 pub trait ActionMod<Input: Debug + Send + Sync, Output: Debug + Send + Sync>:
     Action<Output>
 {
     fn modify(&mut self, input: Input);
 }
 
+/**
+ * An action that runs one of two actions depending on if its conditional reference is true or false.  
+ */
 #[derive(Debug)]
 pub struct ActionConditional<U: Debug + Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> {
     condition: V,
@@ -22,6 +31,9 @@ pub struct ActionConditional<U: Debug + Send + Sync, V: Action<bool>, W: Action<
     _phantom_u: PhantomData<U>,
 }
 
+/**
+ * Implementation for the ActionConditional struct.  
+ */
 impl<U: Debug + Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>>
     ActionConditional<U, V, W, X>
 {
@@ -35,6 +47,9 @@ impl<U: Debug + Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>>
     }
 }
 
+/**
+ * Implement the conditional logic for the ActionConditional action.
+ */
 #[async_trait]
 impl<U: Debug + Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> Action<U>
     for ActionConditional<U, V, W, X>
@@ -49,38 +64,54 @@ impl<U: Debug + Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> Action
 }
 
 #[derive(Debug)]
-pub struct ActionAnyPair<T: Action<bool>, U: Action<bool>> {
+/**
+ * Action that runs two actions at the same time and exits both when one exits 
+ */
+pub struct RaceAction<T: Action<bool>, U: Action<bool>> {
     first: T,
     second: U,
 }
 
-impl<T: Action<bool>, U: Action<bool>> ActionAnyPair<T, U> {
+/**
+ * Construct race action 
+ */
+impl<T: Action<bool>, U: Action<bool>> RaceAction<T, U> {
     const fn new(first: T, second: U) -> Self {
         Self { first, second }
     }
 }
 
+/**
+ * Implement race logic where both actions are scheduled until one finishes.  
+ */
 #[async_trait]
-impl<T: Action<bool>, U: Action<bool>> Action<bool> for ActionAnyPair<T, U> {
+impl<T: Action<bool>, U: Action<bool>> Action<bool> for RaceAction<T, U> {
     async fn execute(self) -> bool {
         self.first.execute().await || self.second.execute().await
     }
 }
 
+
+/**
+ * Run two actions at once, and only exit when all actions have exited.
+ */
 #[derive(Debug)]
-pub struct ActionAllPair<T: Action<bool>, U: Action<bool>> {
+pub struct DualAction<T: Action<bool>, U: Action<bool>> {
     first: T,
     second: U,
 }
 
-impl<T: Action<bool>, U: Action<bool>> ActionAllPair<T, U> {
+impl<T: Action<bool>, U: Action<bool>> DualAction<T, U> {
     const fn new(first: T, second: U) -> Self {
         Self { first, second }
     }
 }
 
+/**
+ * Implement multiple logic where both actions are scheduled until both finish.  
+ */
 #[async_trait]
-impl<T: Action<bool>, U: Action<bool>> Action<bool> for ActionAllPair<T, U> {
+impl<T: Action<bool>, U: Action<bool>> Action<bool> for DualAction<T, U> {
     async fn execute(self) -> bool {
         self.first.execute().await && self.second.execute().await
     }
@@ -232,3 +263,5 @@ impl<T: Debug + Send + Sync, U: Debug + Send + Sync, V: Action<T>, W: Action<U>>
         join!(self.first.execute(), self.second.execute())
     }
 }
+
+
