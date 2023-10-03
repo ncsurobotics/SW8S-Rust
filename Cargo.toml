@@ -15,6 +15,7 @@ path = "src/main.rs"
 
 [features]
 jetson = []
+logging = []
 
 [dependencies]
 opencv = "0.84.4" # Vision processing
@@ -26,6 +27,18 @@ itertools = "0.11.0" # Enhance iterators
 num-traits = "0.2.16" # Numeric generics
 derive-getters = "0.3.0" # Getter macro
 async-trait = "0.1.73" # Async fns in trait definitions
+futures = "0.3.28" # Futures utilities
+toml = "0.8.1" # Configuration file
+serde = { version = "1.0.188", features = ["derive"] } # Config serial handling
+bytes = "1.5.0" # Byte buffering
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
+reqwest = "0.11.20" # Downloading godot sim
+
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+flate2 = "1.0.27" # Decompressing gz
+tar = "0.4.40" # Unpacking tar
+
+[target.'cfg(not(target_os = "linux"))'.dev-dependencies]
+zip-extract = "0.1.2" # Decompressing zip
