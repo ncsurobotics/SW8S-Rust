@@ -14,7 +14,7 @@ pub trait Action<Output: Send + Sync>: Send + Sync {
 /**
  * A trait that can be executed and modified at runtime.  
  */
-pub trait ActionMod<Input: Send + Sync, Output: Send + Sync>: Action<Output> {
+pub trait ActionMod<Input: Send + Sync> {
     fn modify(&mut self, input: Input);
 }
 
@@ -116,27 +116,25 @@ impl<T: Action<bool>, U: Action<bool>> Action<bool> for DualAction<T, U> {
 }
 
 #[derive(Debug)]
-pub struct ActionChain<T: Send + Sync, U: Send + Sync, V: Action<T>, W: ActionMod<T, U>> {
+pub struct ActionChain<T: Send + Sync, V: Action<T>, W: ActionMod<T>> {
     first: V,
     second: W,
     _phantom_t: PhantomData<T>,
-    _phantom_u: PhantomData<U>,
 }
 
-impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: ActionMod<T, U>> ActionChain<T, U, V, W> {
+impl<T: Send + Sync, V: Action<T>, W: ActionMod<T>> ActionChain<T, V, W> {
     const fn new(first: V, second: W) -> Self {
         Self {
             first,
             second,
             _phantom_t: PhantomData,
-            _phantom_u: PhantomData,
         }
     }
 }
 
 #[async_trait]
-impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: ActionMod<T, U>> Action<U>
-    for ActionChain<T, U, V, W>
+impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: ActionMod<T> + Action<U>> Action<U>
+    for ActionChain<T, V, W>
 {
     async fn execute(mut self) -> U {
         self.second.modify(self.first.execute().await);

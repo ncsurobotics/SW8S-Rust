@@ -6,14 +6,14 @@ use crate::comms::{control_board::ControlBoard, meb::MainElectronicsBoard};
 /**
  * Inherit this trait if you have a control board
  */
-pub trait GetControlBoard<T: AsyncWriteExt + Unpin> {
+pub trait GetControlBoard<T: AsyncWriteExt + Unpin>: Send + Sync {
     fn get_control_board(&self) -> &ControlBoard<T>;
 }
 
 /**
  * Inherit this trait if you have a MEB
  */
-pub trait GetMainElectronicsBoard {
+pub trait GetMainElectronicsBoard: Send + Sync {
     fn get_main_electronics_board(&self) -> &MainElectronicsBoard;
 }
 
