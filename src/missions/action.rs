@@ -3,6 +3,8 @@ use core::fmt::Debug;
 use std::marker::PhantomData;
 use tokio::{join, try_join};
 
+pub trait DrawGraph {}
+
 /**
  * A trait for an action that can be executed.
  */
@@ -33,7 +35,7 @@ pub struct ActionConditional<U: Send + Sync, V: Action<bool>, W: Action<U>, X: A
  * Implementation for the ActionConditional struct.  
  */
 impl<U: Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> ActionConditional<U, V, W, X> {
-    const fn new(condition: V, true_branch: W, false_branch: X) -> Self {
+    pub const fn new(condition: V, true_branch: W, false_branch: X) -> Self {
         Self {
             condition,
             true_branch,
@@ -72,7 +74,7 @@ pub struct RaceAction<T: Action<bool>, U: Action<bool>> {
  * Construct race action
  */
 impl<T: Action<bool>, U: Action<bool>> RaceAction<T, U> {
-    const fn new(first: T, second: U) -> Self {
+    pub const fn new(first: T, second: U) -> Self {
         Self { first, second }
     }
 }
@@ -100,7 +102,7 @@ pub struct DualAction<T: Action<bool>, U: Action<bool>> {
  * Constructor for the dual action
  */
 impl<T: Action<bool>, U: Action<bool>> DualAction<T, U> {
-    const fn new(first: T, second: U) -> Self {
+    pub const fn new(first: T, second: U) -> Self {
         Self { first, second }
     }
 }
@@ -123,7 +125,7 @@ pub struct ActionChain<T: Send + Sync, V: Action<T>, W: ActionMod<T>> {
 }
 
 impl<T: Send + Sync, V: Action<T>, W: ActionMod<T>> ActionChain<T, V, W> {
-    const fn new(first: V, second: W) -> Self {
+    pub const fn new(first: V, second: W) -> Self {
         Self {
             first,
             second,
@@ -143,15 +145,15 @@ impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: ActionMod<T> + Action<U>> 
 }
 
 #[derive(Debug)]
-pub struct ActionSequence<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> {
+pub struct ActionSequence<T, U, V, W> {
     first: V,
     second: W,
     _phantom_t: PhantomData<T>,
     _phantom_u: PhantomData<U>,
 }
 
-impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> ActionSequence<T, U, V, W> {
-    const fn new(first: V, second: W) -> Self {
+impl<T, U, V, W> ActionSequence<T, U, V, W> {
+    pub const fn new(first: V, second: W) -> Self {
         Self {
             first,
             second,
@@ -179,7 +181,7 @@ pub struct ActionParallel<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Actio
 }
 
 impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> ActionParallel<T, U, V, W> {
-    const fn new(first: V, second: W) -> Self {
+    pub const fn new(first: V, second: W) -> Self {
         Self {
             first,
             second,
@@ -213,7 +215,7 @@ pub struct ActionConcurrent<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Act
 }
 
 impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> ActionConcurrent<T, U, V, W> {
-    const fn new(first: V, second: W) -> Self {
+    pub const fn new(first: V, second: W) -> Self {
         Self {
             first,
             second,
