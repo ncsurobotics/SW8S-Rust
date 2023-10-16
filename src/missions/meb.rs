@@ -3,7 +3,10 @@ use std::time::Duration;
 use async_trait::async_trait;
 use tokio::time::sleep;
 
-use super::{action::Action, action_context::GetMainElectronicsBoard};
+use super::{
+    action::{Action, ActionExec},
+    action_context::GetMainElectronicsBoard,
+};
 
 #[derive(Debug)]
 pub struct WaitArm<'a, T> {
@@ -16,8 +19,10 @@ impl<'a, T> WaitArm<'a, T> {
     }
 }
 
+impl<T> Action for WaitArm<'_, T> {}
+
 #[async_trait]
-impl<T: GetMainElectronicsBoard> Action<()> for WaitArm<'_, T> {
+impl<T: GetMainElectronicsBoard> ActionExec<()> for WaitArm<'_, T> {
     /// Wait for system to be armed
     async fn execute(self) {
         while !self

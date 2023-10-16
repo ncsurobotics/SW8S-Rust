@@ -8,15 +8,20 @@ pub trait DrawGraph {}
 /**
  * A trait for an action that can be executed.
  */
+pub trait Action {}
+
+/**
+ * A trait for an action that can be executed.
+ */
 #[async_trait]
-pub trait Action<Output: Send + Sync>: Send + Sync {
+pub trait ActionExec<Output: Send + Sync>: Action + Send + Sync {
     async fn execute(self) -> Output;
 }
 
 /**
  * A trait that can be executed and modified at runtime.  
  */
-pub trait ActionMod<Input: Send + Sync> {
+pub trait ActionMod<Input: Send + Sync>: Action {
     fn modify(&mut self, input: Input);
 }
 
@@ -24,17 +29,19 @@ pub trait ActionMod<Input: Send + Sync> {
  * An action that runs one of two actions depending on if its conditional reference is true or false.  
  */
 #[derive(Debug)]
-pub struct ActionConditional<U: Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> {
+pub struct ActionConditional<U, V: Action, W: Action, X: Action> {
     condition: V,
     true_branch: W,
     false_branch: X,
     _phantom_u: PhantomData<U>,
 }
 
+impl<U, V: Action, W: Action, X: Action> Action for ActionConditional<U, V, W, X> {}
+
 /**
  * Implementation for the ActionConditional struct.  
  */
-impl<U: Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> ActionConditional<U, V, W, X> {
+impl<U, V: Action, W: Action, X: Action> ActionConditional<U, V, W, X> {
     pub const fn new(condition: V, true_branch: W, false_branch: X) -> Self {
         Self {
             condition,
@@ -49,7 +56,7 @@ impl<U: Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> ActionConditio
  * Implement the conditional logic for the ActionConditional action.
  */
 #[async_trait]
-impl<U: Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> Action<U>
+impl<U: Send + Sync, V: ActionExec<bool>, W: ActionExec<U>, X: ActionExec<U>> ActionExec<U>
     for ActionConditional<U, V, W, X>
 {
     async fn execute(self) -> U {
@@ -65,15 +72,17 @@ impl<U: Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> Action<U>
 /**
  * Action that runs two actions at the same time and exits both when one exits
  */
-pub struct RaceAction<T: Action<bool>, U: Action<bool>> {
+pub struct RaceAction<T: Action, U: Action> {
     first: T,
     second: U,
 }
 
+impl<T: Action, U: Action> Action for RaceAction<T, U> {}
+
 /**
  * Construct race action
  */
-impl<T: Action<bool>, U: Action<bool>> RaceAction<T, U> {
+impl<T: Action, U: Action> RaceAction<T, U> {
     pub const fn new(first: T, second: U) -> Self {
         Self { first, second }
     }
@@ -83,7 +92,7 @@ impl<T: Action<bool>, U: Action<bool>> RaceAction<T, U> {
  * Implement race logic where both actions are scheduled until one finishes.  
  */
 #[async_trait]
-impl<T: Action<bool>, U: Action<bool>> Action<bool> for RaceAction<T, U> {
+impl<T: ActionExec<bool>, U: ActionExec<bool>> ActionExec<bool> for RaceAction<T, U> {
     async fn execute(self) -> bool {
         self.first.execute().await || self.second.execute().await
     }
@@ -93,15 +102,17 @@ impl<T: Action<bool>, U: Action<bool>> Action<bool> for RaceAction<T, U> {
  * Run two actions at once, and only exit when all actions have exited.
  */
 #[derive(Debug)]
-pub struct DualAction<T: Action<bool>, U: Action<bool>> {
+pub struct DualAction<T: Action, U: Action> {
     first: T,
     second: U,
 }
 
+impl<T: Action, U: Action> Action for DualAction<T, U> {}
+
 /**
  * Constructor for the dual action
  */
-impl<T: Action<bool>, U: Action<bool>> DualAction<T, U> {
+impl<T: Action, U: Action> DualAction<T, U> {
     pub const fn new(first: T, second: U) -> Self {
         Self { first, second }
     }
@@ -111,20 +122,22 @@ impl<T: Action<bool>, U: Action<bool>> DualAction<T, U> {
  * Implement multiple logic where both actions are scheduled until both finish.  
  */
 #[async_trait]
-impl<T: Action<bool>, U: Action<bool>> Action<bool> for DualAction<T, U> {
+impl<T: ActionExec<bool>, U: ActionExec<bool>> ActionExec<bool> for DualAction<T, U> {
     async fn execute(self) -> bool {
         self.first.execute().await && self.second.execute().await
     }
 }
 
 #[derive(Debug)]
-pub struct ActionChain<T: Send + Sync, V: Action<T>, W: ActionMod<T>> {
+pub struct ActionChain<T: Sync + Send, V: Action, W: ActionMod<T>> {
     first: V,
     second: W,
     _phantom_t: PhantomData<T>,
 }
 
-impl<T: Send + Sync, V: Action<T>, W: ActionMod<T>> ActionChain<T, V, W> {
+impl<T: Sync + Send, V: Action, W: ActionMod<T>> Action for ActionChain<T, V, W> {}
+
+impl<T: Sync + Send, V: Action, W: ActionMod<T>> ActionChain<T, V, W> {
     pub const fn new(first: V, second: W) -> Self {
         Self {
             first,
@@ -135,8 +148,8 @@ impl<T: Send + Sync, V: Action<T>, W: ActionMod<T>> ActionChain<T, V, W> {
 }
 
 #[async_trait]
-impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: ActionMod<T> + Action<U>> Action<U>
-    for ActionChain<T, V, W>
+impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionMod<T> + ActionExec<U>>
+    ActionExec<U> for ActionChain<T, V, W>
 {
     async fn execute(mut self) -> U {
         self.second.modify(self.first.execute().await);
@@ -152,6 +165,8 @@ pub struct ActionSequence<T, U, V, W> {
     _phantom_u: PhantomData<U>,
 }
 
+impl<T, U, V: Action, W: Action> Action for ActionSequence<T, U, V, W> {}
+
 impl<T, U, V, W> ActionSequence<T, U, V, W> {
     pub const fn new(first: V, second: W) -> Self {
         Self {
@@ -164,7 +179,7 @@ impl<T, U, V, W> ActionSequence<T, U, V, W> {
 }
 
 #[async_trait]
-impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> Action<(T, U)>
+impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionExec<U>> ActionExec<(T, U)>
     for ActionSequence<T, U, V, W>
 {
     async fn execute(self) -> (T, U) {
@@ -173,14 +188,16 @@ impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> Action<(T, U)>
 }
 
 #[derive(Debug)]
-pub struct ActionParallel<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> {
+pub struct ActionParallel<T: Send + Sync, U: Send + Sync, V: Action, W: Action> {
     first: V,
     second: W,
     _phantom_t: PhantomData<T>,
     _phantom_u: PhantomData<U>,
 }
 
-impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> ActionParallel<T, U, V, W> {
+impl<T: Send + Sync, U: Send + Sync, V: Action, W: Action> Action for ActionParallel<T, U, V, W> {}
+
+impl<T: Send + Sync, U: Send + Sync, V: Action, W: Action> ActionParallel<T, U, V, W> {
     pub const fn new(first: V, second: W) -> Self {
         Self {
             first,
@@ -195,9 +212,9 @@ impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> ActionParallel<
 impl<
         T: 'static + Send + Sync,
         U: 'static + Send + Sync,
-        V: 'static + Action<T>,
-        W: 'static + Action<U>,
-    > Action<(T, U)> for ActionParallel<T, U, V, W>
+        V: 'static + ActionExec<T>,
+        W: 'static + ActionExec<U>,
+    > ActionExec<(T, U)> for ActionParallel<T, U, V, W>
 {
     async fn execute(self) -> (T, U) {
         let fut1 = tokio::spawn(self.first.execute());
@@ -207,14 +224,16 @@ impl<
 }
 
 #[derive(Debug)]
-pub struct ActionConcurrent<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> {
+pub struct ActionConcurrent<T, U, V: Action, W: Action> {
     first: V,
     second: W,
     _phantom_t: PhantomData<T>,
     _phantom_u: PhantomData<U>,
 }
 
-impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> ActionConcurrent<T, U, V, W> {
+impl<T, U, V: Action, W: Action> Action for ActionConcurrent<T, U, V, W> {}
+
+impl<T, U, V: Action, W: Action> ActionConcurrent<T, U, V, W> {
     pub const fn new(first: V, second: W) -> Self {
         Self {
             first,
@@ -226,7 +245,7 @@ impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> ActionConcurren
 }
 
 #[async_trait]
-impl<T: Send + Sync, U: Send + Sync, V: Action<T>, W: Action<U>> Action<(T, U)>
+impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionExec<U>> ActionExec<(T, U)>
     for ActionConcurrent<T, U, V, W>
 {
     async fn execute(self) -> (T, U) {

@@ -3,24 +3,33 @@ use async_trait::async_trait;
 use tokio_serial::SerialStream;
 
 use super::{
-    action::{Action, ActionMod},
+    action::{Action, ActionExec, ActionMod},
     action_context::GetControlBoard,
 };
 
 #[derive(Debug)]
-struct Descend<T> {
+pub struct Descend<T> {
     context: T,
     target_depth: f32,
 }
 
 impl<T> Descend<T> {
-    const fn new(context: T) -> Self {
+    pub const fn new(context: T, target_depth: f32) -> Self {
+        Self {
+            context,
+            target_depth,
+        }
+    }
+
+    pub const fn uninitialized(context: T) -> Self {
         Self {
             context,
             target_depth: 0.0,
         }
     }
 }
+
+impl<T> Action for Descend<T> {}
 
 impl<T> ActionMod<f32> for Descend<T> {
     fn modify(&mut self, input: f32) {
@@ -29,7 +38,7 @@ impl<T> ActionMod<f32> for Descend<T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<SerialStream>> Action<Result<()>> for Descend<T> {
+impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for Descend<T> {
     async fn execute(self) -> Result<()> {
         self.context
             .get_control_board()
