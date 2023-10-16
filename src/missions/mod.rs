@@ -1,12 +1,63 @@
 use async_trait::async_trait;
 use core::fmt::Debug;
 use std::marker::PhantomData;
-use tokio::{join, try_join};
+use tokio::{join, try_join, io::AsyncWriteExt};
 
-#[async_trait]
+use crate::comms::{control_board::ControlBoard, meb::MainElectronicsBoard};
+
+
+
+/**
+ * Trait that signifies a struct is an action dependency. 
+ */
+pub trait ActionContext {}
+
+/**
+ * Inherit this trait if you have a control board
+ */
+pub trait get_control_board<T: AsyncWriteExt + Unpin> {
+    fn get_control_board(&self) -> &ControlBoard<T>;
+}
+
+/**
+ * Inherit this trait if you have a MEB
+ */
+pub trait get_main_electronics_board {
+    fn get_main_electronics_board(&self) -> &MainElectronicsBoard;
+}
+
+struct EmptyActionContext;
+
+impl ActionContext for EmptyActionContext {}
+
+struct FullActionContext<T: AsyncWriteExt + Unpin> {
+    control_board: ControlBoard<T>,
+    main_electronics_board: MainElectronicsBoard,
+}
+impl ActionContext for FullActionContext<tokio_serial::SerialStream> {}
+impl<T: AsyncWriteExt + Unpin> FullActionContext<T> {
+    const fn new(control_board: ControlBoard<T>, main_electronics_board: MainElectronicsBoard) -> Self {
+        Self {
+            control_board,
+            main_electronics_board,
+        }
+    }
+}
+impl get_control_board<tokio_serial::SerialStream> for FullActionContext<tokio_serial::SerialStream> {
+    fn get_control_board(&self) -> &ControlBoard<tokio_serial::SerialStream> {
+        &self.control_board
+    }
+}
+impl get_main_electronics_board for FullActionContext<tokio_serial::SerialStream> {
+    fn get_main_electronics_board(&self) -> &MainElectronicsBoard {
+        &self.main_electronics_board
+    }
+}
+
 /**
  * A trait for an action that can be executed.
  */
+#[async_trait]
 pub trait Action<Output: Debug + Send + Sync>: Debug + Send + Sync + Sync {
     async fn execute(self) -> Output;
 }
@@ -14,7 +65,7 @@ pub trait Action<Output: Debug + Send + Sync>: Debug + Send + Sync + Sync {
 /**
  * A trait that can be executed and modified at runtime.  
  */
-pub trait ActionMod<Input: Debug + Send + Sync, Output: Debug + Send + Sync>:
+pub trait ActionMod<Input: ActionContext, Output: Debug + Send + Sync>:
     Action<Output>
 {
     fn modify(&mut self, input: Input);
@@ -24,7 +75,7 @@ pub trait ActionMod<Input: Debug + Send + Sync, Output: Debug + Send + Sync>:
  * An action that runs one of two actions depending on if its conditional reference is true or false.  
  */
 #[derive(Debug)]
-pub struct ActionConditional<U: Debug + Send + Sync, V: Action<bool>, W: Action<U>, X: Action<U>> {
+pub struct ActionConditional<U: ActionContext, V: Action<bool>, W: Action<U>, X: Action<U>> {
     condition: V,
     true_branch: W,
     false_branch: X,
