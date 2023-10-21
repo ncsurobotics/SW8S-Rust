@@ -10,6 +10,7 @@ use opencv::{
 use std::{
     fmt::Debug,
     hash::Hash,
+    iter::Sum,
     ops::{Add, Deref, Div},
 };
 
@@ -56,6 +57,12 @@ impl<T: Num> Add for Offset2D<T> {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
         }
+    }
+}
+
+impl<T: Num> Sum for Offset2D<T> {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.reduce(|acc, cur| acc + cur).unwrap()
     }
 }
 
