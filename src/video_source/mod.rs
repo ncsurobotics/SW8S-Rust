@@ -6,7 +6,7 @@ use std::sync::Mutex;
 pub mod appsink;
 
 #[async_trait]
-trait MatSource {
+pub trait MatSource: Send + Sync {
     async fn get_mat(&self) -> Mat;
 }
 
