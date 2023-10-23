@@ -1,6 +1,6 @@
 use anyhow::bail;
 
-/// See https://cdn-shop.adafruit.com/datasheets/BST_BNO055_DS000_12.pdf,
+/// See <https://cdn-shop.adafruit.com/datasheets/BST_BNO055_DS000_12.pdf>,
 /// page 25
 #[derive(Debug)]
 pub enum BNO055AxisConfig {
