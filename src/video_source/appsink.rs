@@ -24,7 +24,6 @@ impl Camera {
         camera_dimensions: (u32, u32),
         rtsp: bool,
     ) -> Result<Self> {
-        gstreamer::init()?; // Unclear if this is necessary
         if !filesink_dir.is_dir() {
             create_dir(filesink_dir)?
         }
