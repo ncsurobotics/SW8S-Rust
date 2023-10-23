@@ -192,6 +192,18 @@ impl VisualDetector<i32> for Path {
             })
             .collect()
     }
+
+    fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
+        let img_size = self.image.size().unwrap();
+        Self::Position::new(
+            ((*pos.x() / (img_size.width as f64)) - 0.5) * 2.0,
+            ((*pos.y() / (img_size.height as f64)) - 0.5) * 2.0,
+            *pos.angle(),
+            *pos.width() / (img_size.width as f64),
+            *pos.length() / (img_size.height as f64),
+            *pos.length_2() / (img_size.height as f64),
+        )
+    }
 }
 
 #[cfg(test)]

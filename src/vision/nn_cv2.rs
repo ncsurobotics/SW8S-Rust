@@ -57,6 +57,7 @@ where
 
 pub trait VisionModel: Debug {
     fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Result<Vec<YoloDetection>>;
+    fn size(&self) -> Size;
 }
 
 /* -------------------------------------------------- */
@@ -203,6 +204,10 @@ impl VisionModel for OnnxModel {
         self.net.forward(&mut result, &result_names)?;
 
         self.process_net(result, threshold)
+    }
+
+    fn size(&self) -> Size {
+        self.model_size
     }
 }
 

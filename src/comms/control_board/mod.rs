@@ -41,7 +41,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         #[allow(clippy::approx_constant)]
         const DOF_SPEEDS: [f32; 6] = [0.7071, 0.7071, 1.0, 0.4413, 1.0, 0.8139];
 
-        let msg_id = msg_id.unwrap_or(MessageId::default());
+        let msg_id = msg_id.unwrap_or_default();
         let responses = ResponseMap::new(comm_in).await;
         let this = Self {
             inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id).into(),

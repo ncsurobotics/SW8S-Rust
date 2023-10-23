@@ -9,7 +9,7 @@ use super::{
 };
 use anyhow::Result;
 use opencv::{
-    core::{Point, Scalar},
+    core::{Point, Rect2d, Scalar, Size},
     imgproc::{self, LINE_AA},
     prelude::Mat,
 };
@@ -20,6 +20,7 @@ pub trait YoloProcessor: Debug {
     type Target: PartialEq + Eq + Hash + Clone + Debug + TryFrom<i32>;
 
     fn detect_yolo_v5(&mut self, image: &Mat) -> Result<Vec<YoloDetection>>;
+    fn model_size(&self) -> Size;
 }
 
 impl<T: YoloProcessor> VisualDetector<f64> for T
@@ -48,6 +49,18 @@ where
                 })
             })
             .collect::<Result<Vec<_>>>()
+    }
+
+    fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
+        let model_size = self.model_size();
+        Self::Position {
+            inner: Rect2d::new(
+                ((pos.inner.x / model_size.width as f64) + 0.5) * 2.0,
+                ((pos.inner.y / model_size.height as f64) + 0.5) * 2.0,
+                pos.inner.width / model_size.width as f64,
+                pos.inner.height / model_size.height as f64,
+            ),
+        }
     }
 }
 
