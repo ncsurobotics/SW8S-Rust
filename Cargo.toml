@@ -26,7 +26,7 @@ itertools = "0.11.0" # Enhance iterators
 num-traits = "0.2.16" # Numeric generics
 derive-getters = "0.3.0" # Getter macro
 async-trait = "0.1.73" # Async fns in trait definitions
-futures = "0.3.28" # Futures utilities
+futures = { version = "0.3.28", default-features = false, features = ["std"] }# Futures utilities
 toml = "0.8.1" # Configuration file
 serde = { version = "1.0.188", features = ["derive"] } # Config serial handling
 bytes = "1.5.0" # Byte buffering

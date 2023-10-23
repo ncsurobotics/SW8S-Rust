@@ -140,7 +140,7 @@ where
 
 pub trait VisualDetector<T: Num>: Debug {
     type ClassEnum: PartialEq + Eq + Hash + Clone;
-    type Position: RelPos + Clone;
+    type Position: RelPos<Number = f64> + Clone;
 
     fn detect(
         &mut self,
@@ -165,6 +165,9 @@ pub trait VisualDetector<T: Num>: Debug {
             .filter(|result| result.class == target)
             .collect())
     }
+
+    /// Adjusts position to [-1, 1] on both axes
+    fn normalize(&mut self, pos: &Self::Position) -> Self::Position;
 }
 
 #[derive(Debug, Clone, Getters)]

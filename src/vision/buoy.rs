@@ -1,5 +1,5 @@
 use anyhow::Result;
-use opencv::prelude::Mat;
+use opencv::{core::Size, prelude::Mat};
 
 use crate::load_onnx;
 
@@ -91,6 +91,10 @@ impl YoloProcessor for Buoy<OnnxModel> {
 
     fn detect_yolo_v5(&mut self, image: &Mat) -> Result<Vec<YoloDetection>> {
         self.model.detect_yolo_v5(image, self.threshold)
+    }
+
+    fn model_size(&self) -> Size {
+        self.model.size()
     }
 }
 
