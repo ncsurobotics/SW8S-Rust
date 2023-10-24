@@ -80,8 +80,8 @@ pub async fn get_messages<T>(
     serial_conn: &mut T,
     #[cfg(feature = "logging")] dump_file: &str,
 ) -> Vec<Vec<u8>>
-where
-    T: AsyncReadExt + Unpin + Send,
+    where
+        T: AsyncReadExt + Unpin + Send,
 {
     if serial_conn.read_buf(buffer).await.unwrap() != 0 {
         let mut messages = Vec::new();
@@ -92,11 +92,30 @@ where
             }
         }
 
+        #[cfg(feature = "logging")] {
+            write_log(&messages, dump_file).await;
+        }
+
         messages
     } else if buffer.has_remaining_mut() {
         Vec::new()
     } else {
         panic!("Buffer capacity filled!");
+    }
+}
+
+pub async fn write_log(messages: &Vec<Vec<u8>>, #[cfg(feature = "logging")] dump_file: &str) {
+    for msg in messages.iter() {
+        #[cfg(feature = "logging")]
+        OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(dump_file)
+            .await
+            .unwrap()
+            .write_all(&msg)
+            .await
+            .unwrap()
     }
 }
 
