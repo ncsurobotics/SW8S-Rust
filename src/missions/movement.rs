@@ -39,7 +39,7 @@ impl<T> ActionMod<f32> for Descend<T> {
 
 #[async_trait]
 impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for Descend<T> {
-    async fn execute(self) -> Result<()> {
+    async fn execute(&mut self) -> Result<()> {
         self.context
             .get_control_board()
             .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, self.target_depth)

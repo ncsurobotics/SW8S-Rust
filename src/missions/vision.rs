@@ -35,7 +35,7 @@ impl<T: MatSource, V: Num + From<usize> + Send + Sync, U: VisualDetector<V> + Se
 where
     U::Position: RelPos<Number = V>,
 {
-    async fn execute(mut self) -> Result<Offset2D<V>> {
+    async fn execute(&mut self) -> Result<Offset2D<V>> {
         let detections = self.model.detect_unique(&self.context.get_mat().await)?;
 
         let positions: Vec<_> = detections

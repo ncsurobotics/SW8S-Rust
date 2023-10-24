@@ -1,7 +1,8 @@
+use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
-use std::marker::PhantomData;
-use tokio::{join, try_join};
+use std::{marker::PhantomData, sync::Arc};
+use tokio::{join, sync::Mutex, try_join};
 
 pub trait DrawGraph {}
 
@@ -15,7 +16,7 @@ pub trait Action {}
  */
 #[async_trait]
 pub trait ActionExec<Output: Send + Sync>: Action + Send + Sync {
-    async fn execute(self) -> Output;
+    async fn execute(&mut self) -> Output;
 }
 
 /**
@@ -59,7 +60,7 @@ impl<U, V: Action, W: Action, X: Action> ActionConditional<U, V, W, X> {
 impl<U: Send + Sync, V: ActionExec<bool>, W: ActionExec<U>, X: ActionExec<U>> ActionExec<U>
     for ActionConditional<U, V, W, X>
 {
-    async fn execute(self) -> U {
+    async fn execute(&mut self) -> U {
         if self.condition.execute().await {
             self.true_branch.execute().await
         } else {
@@ -93,7 +94,7 @@ impl<T: Action, U: Action> RaceAction<T, U> {
  */
 #[async_trait]
 impl<T: ActionExec<bool>, U: ActionExec<bool>> ActionExec<bool> for RaceAction<T, U> {
-    async fn execute(self) -> bool {
+    async fn execute(&mut self) -> bool {
         self.first.execute().await || self.second.execute().await
     }
 }
@@ -123,7 +124,7 @@ impl<T: Action, U: Action> DualAction<T, U> {
  */
 #[async_trait]
 impl<T: ActionExec<bool>, U: ActionExec<bool>> ActionExec<bool> for DualAction<T, U> {
-    async fn execute(self) -> bool {
+    async fn execute(&mut self) -> bool {
         self.first.execute().await && self.second.execute().await
     }
 }
@@ -151,7 +152,7 @@ impl<T: Sync + Send, V: Action, W: ActionMod<T>> ActionChain<T, V, W> {
 impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionMod<T> + ActionExec<U>>
     ActionExec<U> for ActionChain<T, V, W>
 {
-    async fn execute(mut self) -> U {
+    async fn execute(&mut self) -> U {
         self.second.modify(self.first.execute().await);
         self.second.execute().await
     }
@@ -182,15 +183,15 @@ impl<T, U, V, W> ActionSequence<T, U, V, W> {
 impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionExec<U>> ActionExec<(T, U)>
     for ActionSequence<T, U, V, W>
 {
-    async fn execute(self) -> (T, U) {
+    async fn execute(&mut self) -> (T, U) {
         (self.first.execute().await, self.second.execute().await)
     }
 }
 
 #[derive(Debug)]
 pub struct ActionParallel<T: Send + Sync, U: Send + Sync, V: Action, W: Action> {
-    first: V,
-    second: W,
+    first: Arc<Mutex<V>>,
+    second: Arc<Mutex<W>>,
     _phantom_t: PhantomData<T>,
     _phantom_u: PhantomData<U>,
 }
@@ -198,10 +199,10 @@ pub struct ActionParallel<T: Send + Sync, U: Send + Sync, V: Action, W: Action> 
 impl<T: Send + Sync, U: Send + Sync, V: Action, W: Action> Action for ActionParallel<T, U, V, W> {}
 
 impl<T: Send + Sync, U: Send + Sync, V: Action, W: Action> ActionParallel<T, U, V, W> {
-    pub const fn new(first: V, second: W) -> Self {
+    pub fn new(first: V, second: W) -> Self {
         Self {
-            first,
-            second,
+            first: Arc::from(Mutex::from(first)),
+            second: Arc::from(Mutex::from(second)),
             _phantom_t: PhantomData,
             _phantom_u: PhantomData,
         }
@@ -216,9 +217,11 @@ impl<
         W: 'static + ActionExec<U>,
     > ActionExec<(T, U)> for ActionParallel<T, U, V, W>
 {
-    async fn execute(self) -> (T, U) {
-        let fut1 = tokio::spawn(self.first.execute());
-        let fut2 = tokio::spawn(self.second.execute());
+    async fn execute(&mut self) -> (T, U) {
+        let first = self.first.clone();
+        let second = self.second.clone();
+        let fut1 = tokio::spawn(async move { first.lock().await.execute().await });
+        let fut2 = tokio::spawn(async move { second.lock().await.execute().await });
         try_join!(fut1, fut2).unwrap()
     }
 }
@@ -248,7 +251,43 @@ impl<T, U, V: Action, W: Action> ActionConcurrent<T, U, V, W> {
 impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionExec<U>> ActionExec<(T, U)>
     for ActionConcurrent<T, U, V, W>
 {
-    async fn execute(self) -> (T, U) {
+    async fn execute(&mut self) -> (T, U) {
         join!(self.first.execute(), self.second.execute())
+    }
+}
+
+/**
+ * An action that tries `count` times for a success
+ */
+#[derive(Debug)]
+pub struct ActionUntil<T: Action> {
+    action: T,
+    limit: u32,
+}
+
+impl<T: Action> Action for ActionUntil<T> {}
+
+/**
+ * Implementation for the ActionUntil struct.  
+ */
+impl<T: Action> ActionUntil<T> {
+    pub const fn new(action: T, limit: u32) -> Self {
+        Self { action, limit }
+    }
+}
+
+/**
+ * Implement the conditional logic for the ActionUntil action.
+ */
+#[async_trait]
+impl<U: Send + Sync, T: ActionExec<Result<U>>> ActionExec<Result<U>> for ActionUntil<T> {
+    async fn execute(&mut self) -> Result<U> {
+        let mut count = 1;
+        let mut result = self.action.execute().await;
+        while result.is_err() && count < self.limit {
+            result = self.action.execute().await;
+            count += 1;
+        }
+        result
     }
 }
