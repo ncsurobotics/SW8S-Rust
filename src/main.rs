@@ -51,7 +51,7 @@ async fn main() {
     shutdown_tx.send(()).unwrap();
 }
 
-/// Graceful shutdown, see https://tokio.rs/tokio/topics/shutdown
+/// Graceful shutdown, see <https://tokio.rs/tokio/topics/shutdown>
 async fn shutdown_handler() -> UnboundedSender<()> {
     let (shutdown_tx, mut shutdown_rx) = mpsc::unbounded_channel::<()>();
     tokio::spawn(async move {

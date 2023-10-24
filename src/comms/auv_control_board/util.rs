@@ -1,12 +1,12 @@
 use std::{error::Error, fmt::Display};
 
-/// Implementing https://mb3hel.github.io/AUVControlBoard/user_guide/comm_protocol/
+/// Implementing <https://mb3hel.github.io/AUVControlBoard/user_guide/comm_protocol/>
 
 pub const START_BYTE: u8 = 253;
 pub const END_BYTE: u8 = 254;
 pub const ESCAPE_BYTE: u8 = 255;
 
-/// See https://github.com/ncsurobotics/SW8S-Java/blob/main/app/src/main/java/org/aquapackrobotics/sw8s/comms/CRC.java
+/// See <https://github.com/ncsurobotics/SW8S-Java/blob/main/app/src/main/java/org/aquapackrobotics/sw8s/comms/CRC.java>
 pub fn crc_itt16_false_bitmath(bytes: &[u8]) -> u16 {
     let mut crc = 0xFFFF;
     bytes.iter().for_each(|byte| {
@@ -22,7 +22,7 @@ pub fn crc_itt16_false_bitmath(bytes: &[u8]) -> u16 {
     crc
 }
 
-/// Based on https://github.com/ncsurobotics/SW8S-Java/blob/main/app/src/main/java/org/aquapackrobotics/sw8s/comms/CRC.java
+/// Based on <https://github.com/ncsurobotics/SW8S-Java/blob/main/app/src/main/java/org/aquapackrobotics/sw8s/comms/CRC.java>
 pub fn crc_itt16_false(bytes: &[u8]) -> u16 {
     let mut crc = 0xFFFF;
     bytes.iter().for_each(|byte| {

@@ -168,7 +168,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         control_board.write_out_basic(message).await
     }
 
-    /// https://mb3hel.github.io/AUVControlBoard/user_guide/messages/#configuration-commands
+    /// <https://mb3hel.github.io/AUVControlBoard/user_guide/messages/#configuration-commands>
     #[allow(clippy::too_many_arguments)]
     pub async fn motor_matrix_set(
         &self,
