@@ -341,4 +341,61 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
     pub async fn watchdog_status(&self) -> Option<bool> {
         *self.responses().watchdog_status().read().await
     }
+
+    pub async fn set_local_speed(&self,
+        x: f32,
+        y: f32,
+        z: f32,
+        xrot: f32,
+        yrot: f32,
+        zrot: f32) -> Result<()> {
+        const LOCAL: [u8; 5] = *b"LOCAL";
+
+        let mut message = Vec::with_capacity(32 * 8);
+        message.extend(LOCAL);
+
+        [x, y, z, xrot, yrot, zrot]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+
+        self.write_out_basic(message).await
+    }
+
+    pub async fn set_global_speed(&self,
+        x: f32,
+        y: f32,
+        z: f32,
+        pitch_spd: f32,
+        roll_spd: f32,
+        yaw_spd: f32) -> Result<()> {
+        const GLOBAL: [u8; 6] = *b"GLOBAL";
+
+        let mut message = Vec::with_capacity(32 * 8);
+        message.extend(GLOBAL);
+
+        [x, y, z, pitch_spd, roll_spd, yaw_spd]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+
+        self.write_out_basic(message).await
+    }
+
+    pub async fn orientation_hold_2(&self,
+        x: f32,
+        y: f32,
+        z: f32,
+        target_pitch: f32,
+        target_roll: f32,
+        target_yaw: f32) -> Result<()> {
+        const OHOLD2: [u8; 6] = *b"OHOLD2";
+
+        let mut message = Vec::with_capacity(32 * 8);
+        message.extend(OHOLD2);
+
+        [x, y, z, target_pitch, target_roll, target_yaw]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+
+        self.write_out_basic(message).await
+    }
 }
