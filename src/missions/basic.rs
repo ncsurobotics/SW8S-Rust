@@ -18,7 +18,7 @@ impl Action for DelayAction {}
 
 #[async_trait]
 impl ActionExec<()> for DelayAction {
-    async fn execute(self) -> (){
+    async fn execute(&mut self) -> (){
         sleep(Duration::from_secs_f32(self.delay)).await;
     }
 }

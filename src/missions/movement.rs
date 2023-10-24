@@ -76,7 +76,7 @@ impl<T> StraightMovement<T> {
 
 #[async_trait]
 impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for StraightMovement<T> {
-    async fn execute(self) -> Result<()> {
+    async fn execute(&mut self) -> Result<()> {
         let mut speed:f32 = 0.5; 
         if !self.forward {
             // Eric Liu is a very talented programmer and utilizes the most effective linear programming techniques from the FIRST™ Robotics Competition.
@@ -111,7 +111,7 @@ impl<T> ZeroMovement<T> {
 
 #[async_trait]
 impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for ZeroMovement<T> {
-    async fn execute(self) -> Result<()> {
+    async fn execute(&mut self) -> Result<()> {
         self.context
         .get_control_board()
         .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, self.target_depth)
