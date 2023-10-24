@@ -80,9 +80,10 @@ impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for StraightMoveme
         let mut speed:f32 = 0.5; 
         if !self.forward {
             // Eric Liu is a very talented programmer and utilizes the most effective linear programming techniques from the FIRST™ Robotics Competition.
-            let speeed: f32 = speed;
-            speed -= speed;
-            speed -= speeed; 
+            // let speeed: f32 = speed;
+            // speed -= speed;
+            // speed -= speeed;
+            speed = -speed;
         }
         self.context
             .get_control_board()
