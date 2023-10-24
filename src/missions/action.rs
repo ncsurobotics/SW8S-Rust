@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Error, Result};
 use async_trait::async_trait;
 use core::fmt::Debug;
 use std::{marker::PhantomData, sync::Arc};
@@ -267,18 +267,12 @@ pub struct ActionUntil<T: Action> {
 
 impl<T: Action> Action for ActionUntil<T> {}
 
-/**
- * Implementation for the ActionUntil struct.  
- */
 impl<T: Action> ActionUntil<T> {
     pub const fn new(action: T, limit: u32) -> Self {
         Self { action, limit }
     }
 }
 
-/**
- * Implement the conditional logic for the ActionUntil action.
- */
 #[async_trait]
 impl<U: Send + Sync, T: ActionExec<Result<U>>> ActionExec<Result<U>> for ActionUntil<T> {
     async fn execute(&mut self) -> Result<U> {
@@ -287,6 +281,43 @@ impl<U: Send + Sync, T: ActionExec<Result<U>>> ActionExec<Result<U>> for ActionU
         while result.is_err() && count < self.limit {
             result = self.action.execute().await;
             count += 1;
+        }
+        result
+    }
+}
+
+/**
+ * An action that runs while true
+ */
+#[derive(Debug)]
+pub struct ActionWhile<T: Action> {
+    action: T,
+}
+
+impl<T: Action> Action for ActionWhile<T> {}
+
+/**
+ * Implementation for the ActionWhile struct.  
+ */
+impl<T: Action> ActionWhile<T> {
+    pub const fn new(action: T) -> Self {
+        Self { action }
+    }
+}
+
+#[async_trait]
+impl<T: ActionExec<bool>> ActionExec<()> for ActionWhile<T> {
+    async fn execute(&mut self) -> () {
+        while self.action.execute().await {}
+    }
+}
+
+#[async_trait]
+impl<U: Send + Sync, T: ActionExec<Result<U>>> ActionExec<Result<U>> for ActionWhile<T> {
+    async fn execute(&mut self) -> Result<U> {
+        let mut result = self.action.execute().await;
+        while result.is_ok() {
+            result = self.action.execute().await;
         }
         result
     }
