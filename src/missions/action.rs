@@ -1,15 +1,26 @@
-use anyhow::{Error, Result};
+use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
 use std::{marker::PhantomData, sync::Arc};
 use tokio::{join, sync::Mutex, try_join};
+use uuid::Uuid;
 
-pub trait DrawGraph {}
+use super::graph::{stripped_type, DotString};
 
 /**
  * A trait for an action that can be executed.
  */
-pub trait Action {}
+pub trait Action {
+    /// Represent this node in dot (graphviz) notation
+    fn dot_string(&self) -> DotString {
+        let id = Uuid::new_v4();
+        DotString {
+            head_id: id,
+            tail_ids: vec![id],
+            body: format!("\"{}\" [label = \"{}\"]", id, stripped_type::<Self>()),
+        }
+    }
+}
 
 /**
  * A trait for an action that can be executed.
@@ -37,7 +48,34 @@ pub struct ActionConditional<U, V: Action, W: Action, X: Action> {
     _phantom_u: PhantomData<U>,
 }
 
-impl<U, V: Action, W: Action, X: Action> Action for ActionConditional<U, V, W, X> {}
+impl<U, V: Action, W: Action, X: Action> Action for ActionConditional<U, V, W, X> {
+    fn dot_string(&self) -> DotString {
+        let true_str = self.true_branch.dot_string();
+        let false_str = self.true_branch.dot_string();
+        let condition_str = self.condition.dot_string();
+
+        let combined_str = true_str.body
+            + "\n"
+            + &false_str.body
+            + "\n"
+            + &condition_str.body
+            + "\n"
+            + &format!("\"{}\" [shape = diamond];\n", condition_str.tail_ids[0])
+            + &format!(
+                "\"{}\" -> \"{}\" [label = \"True\"];\n",
+                condition_str.tail_ids[0], true_str.head_id,
+            )
+            + &format!(
+                "\"{}\" -> \"{}\" [label = \"False\"];",
+                condition_str.tail_ids[0], false_str.head_id,
+            );
+        DotString {
+            head_id: condition_str.head_id,
+            tail_ids: vec![true_str.head_id, false_str.head_id],
+            body: combined_str,
+        }
+    }
+}
 
 /**
  * Implementation for the ActionConditional struct.  

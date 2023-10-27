@@ -23,9 +23,9 @@ pub trait GetMainElectronicsBoard: Send + Sync {
 }
 
 #[derive(Debug)]
-struct EmptyActionContext;
+pub struct EmptyActionContext;
 
-struct FullActionContext<T: AsyncWriteExt + Unpin + Send, U: MatSource> {
+pub struct FullActionContext<T: AsyncWriteExt + Unpin + Send, U: MatSource> {
     control_board: ControlBoard<T>,
     main_electronics_board: MainElectronicsBoard,
     frame_source: U,
