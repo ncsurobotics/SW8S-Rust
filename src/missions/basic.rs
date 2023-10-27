@@ -34,7 +34,7 @@ impl DelayAction {
  *
  **/
 
-fn descend_and_go_forward<T: Send + Sync>(context: &T) -> impl Action + '_ {
+pub fn descend_and_go_forward<T: Send + Sync>(context: &T) -> impl Action + '_ {
     let depth: f32 = -1.0;
 
     // time in seconds that each action will wait until before continuing onto the next action.
@@ -57,4 +57,3 @@ fn descend_and_go_forward<T: Send + Sync>(context: &T) -> impl Action + '_ {
         ),
     )
 }
-

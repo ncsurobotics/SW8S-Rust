@@ -44,6 +44,7 @@ pub fn dot_file<T: Action>(act: &T) -> String {
 mod tests {
     use crate::missions::{
         action_context::EmptyActionContext,
+        basic::descend_and_go_forward,
         example::{always_wait, initial_descent, race_conditional, sequence_conditional},
     };
 
@@ -73,6 +74,13 @@ mod tests {
     #[test]
     fn dot_file_basic() {
         let action = initial_descent(&EmptyActionContext {});
+        let file = dot_file(&action);
+        println!("{file}");
+    }
+
+    #[test]
+    fn dot_descend_forward() {
+        let action = descend_and_go_forward(&EmptyActionContext {});
         let file = dot_file(&action);
         println!("{file}");
     }
