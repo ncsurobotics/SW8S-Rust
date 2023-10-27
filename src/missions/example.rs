@@ -3,7 +3,9 @@ use async_trait::async_trait;
 use super::{
     action::{
         Action, ActionConcurrent, ActionConditional, ActionExec, ActionParallel, ActionSequence,
+        RaceAction,
     },
+    basic::DelayAction,
     meb::WaitArm,
     movement::Descend,
 };
@@ -28,6 +30,25 @@ pub fn always_wait<T: Send + Sync>(context: &T) -> impl Action + '_ {
         AlwaysTrue::new(),
         WaitArm::new(context),
         Descend::new(context, -0.5),
+    )
+}
+
+pub fn sequence_conditional<T: Send + Sync>(context: &T) -> impl Action + '_ {
+    ActionSequence::<T, T, _, _>::new(
+        ActionSequence::<T, T, _, _>::new(WaitArm::new(context), Descend::new(context, -1.0)),
+        ActionConditional::<T, _, _, _>::new(
+            AlwaysTrue::new(),
+            WaitArm::new(context),
+            Descend::new(context, -0.5),
+        ),
+    )
+}
+
+pub fn race_conditional<T: Send + Sync>(context: &T) -> impl Action + '_ {
+    ActionConditional::<T, _, _, _>::new(
+        AlwaysTrue::new(),
+        WaitArm::new(context),
+        RaceAction::new(Descend::new(context, -0.5), DelayAction::new(1.0)),
     )
 }
 

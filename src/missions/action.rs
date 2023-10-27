@@ -15,9 +15,9 @@ pub trait Action {
     fn dot_string(&self) -> DotString {
         let id = Uuid::new_v4();
         DotString {
-            head_id: id,
+            head_ids: vec![id],
             tail_ids: vec![id],
-            body: format!("\"{}\" [label = \"{}\"]", id, stripped_type::<Self>()),
+            body: format!("\"{}\" [label = \"{}\"];\n", id, stripped_type::<Self>()),
         }
     }
 }
@@ -51,27 +51,31 @@ pub struct ActionConditional<U, V: Action, W: Action, X: Action> {
 impl<U, V: Action, W: Action, X: Action> Action for ActionConditional<U, V, W, X> {
     fn dot_string(&self) -> DotString {
         let true_str = self.true_branch.dot_string();
-        let false_str = self.true_branch.dot_string();
+        let false_str = self.false_branch.dot_string();
         let condition_str = self.condition.dot_string();
 
-        let combined_str = true_str.body
-            + "\n"
-            + &false_str.body
-            + "\n"
-            + &condition_str.body
-            + "\n"
-            + &format!("\"{}\" [shape = diamond];\n", condition_str.tail_ids[0])
-            + &format!(
-                "\"{}\" -> \"{}\" [label = \"True\"];\n",
-                condition_str.tail_ids[0], true_str.head_id,
-            )
-            + &format!(
-                "\"{}\" -> \"{}\" [label = \"False\"];",
-                condition_str.tail_ids[0], false_str.head_id,
-            );
+        let mut combined_str = true_str.body + &false_str.body + &condition_str.body;
+        for tail_id in condition_str.tail_ids {
+            combined_str.push_str(&format!("\"{}\" [shape = diamond];\n", tail_id));
+            for head_id in &true_str.head_ids {
+                combined_str.push_str(&format!(
+                    "\"{}\" -> \"{}\" [label = \"True\"];\n",
+                    tail_id, head_id,
+                ));
+            }
+            for head_id in &false_str.head_ids {
+                combined_str.push_str(&format!(
+                    "\"{}\" -> \"{}\" [label = \"False\"];\n",
+                    tail_id, head_id,
+                ));
+            }
+        }
         DotString {
-            head_id: condition_str.head_id,
-            tail_ids: vec![true_str.head_id, false_str.head_id],
+            head_ids: condition_str.head_ids,
+            tail_ids: vec![true_str.head_ids, false_str.head_ids]
+                .into_iter()
+                .flatten()
+                .collect(),
             body: combined_str,
         }
     }
@@ -116,7 +120,35 @@ pub struct RaceAction<T: Action, U: Action> {
     second: U,
 }
 
-impl<T: Action, U: Action> Action for RaceAction<T, U> {}
+impl<T: Action, U: Action> Action for RaceAction<T, U> {
+    fn dot_string(&self) -> DotString {
+        let first_str = self.first.dot_string();
+        let second_str = self.second.dot_string();
+        let race_id = Uuid::new_v4();
+
+        let mut body_str = format!(
+            "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor= red;\n\"{}\" [label = \"Race\", shape = box, fontcolor = red, style = dashed];\n",
+            Uuid::new_v4(),
+            race_id
+        ) + &first_str.body
+            + &second_str.body;
+
+        vec![first_str.head_ids.clone(), second_str.head_ids.clone()]
+            .into_iter()
+            .flatten()
+            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", race_id, id)));
+        body_str.push_str("}\n");
+
+        DotString {
+            head_ids: vec![race_id],
+            tail_ids: vec![first_str.tail_ids, second_str.tail_ids]
+                .into_iter()
+                .flatten()
+                .collect(),
+            body: body_str,
+        }
+    }
+}
 
 /**
  * Construct race action
@@ -131,9 +163,12 @@ impl<T: Action, U: Action> RaceAction<T, U> {
  * Implement race logic where both actions are scheduled until one finishes.  
  */
 #[async_trait]
-impl<T: ActionExec<bool>, U: ActionExec<bool>> ActionExec<bool> for RaceAction<T, U> {
-    async fn execute(&mut self) -> bool {
-        self.first.execute().await || self.second.execute().await
+impl<V: Sync + Send, T: ActionExec<V>, U: ActionExec<V>> ActionExec<V> for RaceAction<T, U> {
+    async fn execute(&mut self) -> V {
+        tokio::select! {
+            res = self.first.execute() => res,
+            res = self.second.execute() => res
+        }
     }
 }
 

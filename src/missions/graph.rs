@@ -19,7 +19,7 @@ pub fn stripped_type<T: ?Sized>() -> &'static str {
 /// Contains information for dot (graphviz) graphing
 #[derive(Debug)]
 pub struct DotString {
-    pub head_id: Uuid,
+    pub head_ids: Vec<Uuid>,
     pub tail_ids: Vec<Uuid>,
     pub body: String,
 }
@@ -37,14 +37,14 @@ impl DotString {
 
 pub fn dot_file<T: Action>(act: &T) -> String {
     let header = "digraph G {\nsplines = false;\n".to_string();
-    header + &act.dot_string().body + "\n}"
+    header + &act.dot_string().body + "}"
 }
 
 #[cfg(test)]
 mod tests {
     use crate::missions::{
         action_context::EmptyActionContext,
-        example::{always_wait, initial_descent},
+        example::{always_wait, initial_descent, race_conditional, sequence_conditional},
     };
 
     use super::*;
@@ -52,6 +52,20 @@ mod tests {
     #[test]
     fn dot_conditional() {
         let action = always_wait(&EmptyActionContext {});
+        let file = dot_file(&action);
+        println!("{file}");
+    }
+
+    #[test]
+    fn dot_sequence_conditional() {
+        let action = sequence_conditional(&EmptyActionContext {});
+        let file = dot_file(&action);
+        println!("{file}");
+    }
+
+    #[test]
+    fn dot_race_conditional() {
+        let action = race_conditional(&EmptyActionContext {});
         let file = dot_file(&action);
         println!("{file}");
     }

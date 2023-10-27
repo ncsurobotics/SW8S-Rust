@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use tokio::time::{sleep, Duration};
 
 #[derive(Debug)]
-struct DelayAction {
+pub struct DelayAction {
     delay: f32, // delay in seconds before the next action occurs.
 }
 
