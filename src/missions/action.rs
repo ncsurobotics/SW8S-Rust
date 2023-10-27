@@ -2,7 +2,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
 use std::{marker::PhantomData, sync::Arc, thread};
-use tokio::{join, runtime::Handle, sync::Mutex, try_join};
+use tokio::{join, runtime::Handle, sync::Mutex};
 use uuid::Uuid;
 
 use super::graph::{stripped_type, DotString};

@@ -47,12 +47,11 @@ impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for Descend<T> {
     }
 }
 
-
 #[derive(Debug)]
 pub struct StraightMovement<T> {
     context: T,
     target_depth: f32,
-    forward: bool
+    forward: bool,
 }
 impl<T> Action for StraightMovement<T> {}
 
@@ -61,7 +60,7 @@ impl<T> StraightMovement<T> {
         Self {
             context,
             target_depth,
-            forward
+            forward,
         }
     }
 
@@ -69,15 +68,15 @@ impl<T> StraightMovement<T> {
         Self {
             context,
             target_depth: 0.0,
-            forward: false
-        }   
+            forward: false,
+        }
     }
 }
 
 #[async_trait]
 impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for StraightMovement<T> {
     async fn execute(&mut self) -> Result<()> {
-        let mut speed:f32 = 0.5; 
+        let mut speed: f32 = 0.5;
         if !self.forward {
             // Eric Liu is a very talented programmer and utilizes the most effective linear programming techniques from the FIRST™ Robotics Competition.
             // let speeed: f32 = speed;
@@ -95,16 +94,15 @@ impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for StraightMoveme
 #[derive(Debug)]
 pub struct ZeroMovement<T> {
     context: T,
-    target_depth: f32
+    target_depth: f32,
 }
 impl<T> Action for ZeroMovement<T> {}
-
 
 impl<T> ZeroMovement<T> {
     pub fn new(context: T, target_depth: f32) -> Self {
         Self {
             context,
-            target_depth
+            target_depth,
         }
     }
 }
@@ -113,8 +111,8 @@ impl<T> ZeroMovement<T> {
 impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for ZeroMovement<T> {
     async fn execute(&mut self) -> Result<()> {
         self.context
-        .get_control_board()
-        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, self.target_depth)
-        .await
+            .get_control_board()
+            .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, self.target_depth)
+            .await
     }
 }
