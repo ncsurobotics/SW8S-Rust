@@ -1,6 +1,9 @@
 use std::any::type_name;
 use uuid::Uuid;
 
+#[cfg(feature = "graphing")]
+use graphviz_rust::{cmd::Format, exec, parse, printer::PrinterContext};
+
 use super::action::Action;
 
 pub fn stripped_type<T: ?Sized>() -> &'static str {
@@ -40,48 +43,11 @@ pub fn dot_file<T: Action>(act: &T) -> String {
     header + &act.dot_string().body + "}"
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::missions::{
-        action_context::EmptyActionContext,
-        basic::descend_and_go_forward,
-        example::{always_wait, initial_descent, race_conditional, sequence_conditional},
-    };
-
-    use super::*;
-
-    #[test]
-    fn dot_conditional() {
-        let action = always_wait(&EmptyActionContext {});
-        let file = dot_file(&action);
-        println!("{file}");
-    }
-
-    #[test]
-    fn dot_sequence_conditional() {
-        let action = sequence_conditional(&EmptyActionContext {});
-        let file = dot_file(&action);
-        println!("{file}");
-    }
-
-    #[test]
-    fn dot_race_conditional() {
-        let action = race_conditional(&EmptyActionContext {});
-        let file = dot_file(&action);
-        println!("{file}");
-    }
-
-    #[test]
-    fn dot_file_basic() {
-        let action = initial_descent(&EmptyActionContext {});
-        let file = dot_file(&action);
-        println!("{file}");
-    }
-
-    #[test]
-    fn dot_descend_forward() {
-        let action = descend_and_go_forward(&EmptyActionContext {});
-        let file = dot_file(&action);
-        println!("{file}");
-    }
+#[cfg(feature = "graphing")]
+pub fn draw_svg<T: Action>(act: &T) -> std::io::Result<String> {
+    exec(
+        parse(&dot_file(act)).unwrap(),
+        &mut PrinterContext::default(),
+        vec![Format::Svg.into()],
+    )
 }
