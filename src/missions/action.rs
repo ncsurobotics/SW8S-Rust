@@ -1,8 +1,8 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
-use std::{marker::PhantomData, sync::Arc};
-use tokio::{join, sync::Mutex, try_join};
+use std::{marker::PhantomData, sync::Arc, thread};
+use tokio::{join, runtime::Handle, sync::Mutex, try_join};
 use uuid::Uuid;
 
 use super::graph::{stripped_type, DotString};
@@ -392,9 +392,17 @@ impl<
     async fn execute(&mut self) -> (T, U) {
         let first = self.first.clone();
         let second = self.second.clone();
-        let fut1 = tokio::spawn(async move { first.lock().await.execute().await });
-        let fut2 = tokio::spawn(async move { second.lock().await.execute().await });
-        try_join!(fut1, fut2).unwrap()
+        let handle1 = Handle::current();
+        let handle2 = Handle::current();
+
+        // https://docs.rs/tokio/1.33.0/tokio/runtime/struct.Handle.html#method.block_on
+        let fut1 = thread::spawn(move || {
+            handle1.block_on(async move { first.lock().await.execute().await })
+        });
+        let fut2 = thread::spawn(move || {
+            handle2.block_on(async move { second.lock().await.execute().await })
+        });
+        (fut1.join().unwrap(), fut2.join().unwrap())
     }
 }
 
