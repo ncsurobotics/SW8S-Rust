@@ -42,7 +42,7 @@ impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for Descend<T> {
     async fn execute(&mut self) -> Result<()> {
         self.context
             .get_control_board()
-            .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, self.target_depth)
+            .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
             .await
     }
 }
@@ -112,7 +112,7 @@ impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for ZeroMovement<T
     async fn execute(&mut self) -> Result<()> {
         self.context
             .get_control_board()
-            .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, self.target_depth)
+            .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
             .await
     }
 }

@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    f32::consts::PI,
     sync::{
         mpsc::{channel, Sender, TryRecvError},
         Arc,
@@ -23,6 +24,8 @@ use crate::{
 };
 
 use crate::comms::auv_control_board::util::AcknowledgeErr;
+
+use super::util::Angles;
 
 const ACK: [u8; 3] = *b"ACK";
 const WDGS: [u8; 4] = *b"WDGS";
@@ -144,6 +147,13 @@ impl ResponseMap {
             ));
             }
         }).await
+    }
+
+    pub async fn get_angles(&self) -> Option<Angles> {
+        match *self.bno055_status.read().await {
+            None => None,
+            Some(msg) => Some(Angles::from_raw(msg)),
+        }
     }
 }
 
