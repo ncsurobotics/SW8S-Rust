@@ -1,5 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
 use crate::vision::RelPos;
@@ -10,20 +11,20 @@ use super::{
 };
 
 #[derive(Debug)]
-pub struct Descend<T> {
-    context: T,
+pub struct Descend<'a, T> {
+    context: &'a T,
     target_depth: f32,
 }
 
-impl<T> Descend<T> {
-    pub const fn new(context: T, target_depth: f32) -> Self {
+impl<'a, T> Descend<'a, T> {
+    pub const fn new(context: &'a T, target_depth: f32) -> Self {
         Self {
             context,
             target_depth,
         }
     }
 
-    pub const fn uninitialized(context: T) -> Self {
+    pub const fn uninitialized(context: &'a T) -> Self {
         Self {
             context,
             target_depth: 0.0,
@@ -31,34 +32,37 @@ impl<T> Descend<T> {
     }
 }
 
-impl<T> Action for Descend<T> {}
+impl<T> Action for Descend<'_, T> {}
 
-impl<T> ActionMod<f32> for Descend<T> {
+impl<T> ActionMod<f32> for Descend<'_, T> {
     fn modify(&mut self, input: f32) {
         self.target_depth = input;
     }
 }
 
 #[async_trait]
-impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for Descend<T> {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Descend<'_, T> {
     async fn execute(&mut self) -> Result<()> {
+        println!("DESCEND");
         self.context
             .get_control_board()
             .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
-            .await
+            .await?;
+        println!("GOT SPEED SET");
+        Ok(())
     }
 }
 
 #[derive(Debug)]
-pub struct StraightMovement<T> {
-    context: T,
+pub struct StraightMovement<'a, T> {
+    context: &'a T,
     target_depth: f32,
     forward: bool,
 }
-impl<T> Action for StraightMovement<T> {}
+impl<T> Action for StraightMovement<'_, T> {}
 
-impl<T> StraightMovement<T> {
-    pub const fn new(context: T, target_depth: f32, forward: bool) -> Self {
+impl<'a, T> StraightMovement<'a, T> {
+    pub const fn new(context: &'a T, target_depth: f32, forward: bool) -> Self {
         Self {
             context,
             target_depth,
@@ -66,7 +70,7 @@ impl<T> StraightMovement<T> {
         }
     }
 
-    pub const fn uninitialized(context: T) -> Self {
+    pub const fn uninitialized(context: &'a T) -> Self {
         Self {
             context,
             target_depth: 0.0,
@@ -76,7 +80,9 @@ impl<T> StraightMovement<T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for StraightMovement<T> {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
+    for StraightMovement<'_, T>
+{
     async fn execute(&mut self) -> Result<()> {
         let mut speed: f32 = 0.5;
         if !self.forward {
@@ -88,20 +94,20 @@ impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for StraightMoveme
         }
         self.context
             .get_control_board()
-            .stability_2_speed_set(speed, 0.0, 0.0, 0.0, 0.0, self.target_depth)
+            .stability_2_speed_set_initial_yaw(0.0, speed, 0.0, 0.0, self.target_depth)
             .await
     }
 }
 
 #[derive(Debug)]
-pub struct ZeroMovement<T> {
-    context: T,
+pub struct ZeroMovement<'a, T> {
+    context: &'a T,
     target_depth: f32,
 }
-impl<T> Action for ZeroMovement<T> {}
+impl<T> Action for ZeroMovement<'_, T> {}
 
-impl<T> ZeroMovement<T> {
-    pub fn new(context: T, target_depth: f32) -> Self {
+impl<'a, T> ZeroMovement<'a, T> {
+    pub fn new(context: &'a T, target_depth: f32) -> Self {
         Self {
             context,
             target_depth,
@@ -110,7 +116,7 @@ impl<T> ZeroMovement<T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for ZeroMovement<T> {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for ZeroMovement<'_, T> {
     async fn execute(&mut self) -> Result<()> {
         self.context
             .get_control_board()
@@ -120,15 +126,15 @@ impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for ZeroMovement<T
 }
 
 #[derive(Debug)]
-pub struct AdjustMovement<T> {
-    context: T,
+pub struct AdjustMovement<'a, T> {
+    context: &'a T,
     x: f32,
     target_depth: f32,
 }
-impl<T> Action for AdjustMovement<T> {}
+impl<T> Action for AdjustMovement<'_, T> {}
 
-impl<T> AdjustMovement<T> {
-    pub fn new(context: T, target_depth: f32) -> Self {
+impl<'a, T> AdjustMovement<'a, T> {
+    pub fn new(context: &'a T, target_depth: f32) -> Self {
         Self {
             context,
             target_depth,
@@ -137,13 +143,13 @@ impl<T> AdjustMovement<T> {
     }
 }
 
-impl<T> ActionMod<f32> for AdjustMovement<T> {
+impl<T> ActionMod<f32> for AdjustMovement<'_, T> {
     fn modify(&mut self, input: f32) {
         self.target_depth = input;
     }
 }
 
-impl<T, V> ActionMod<V> for AdjustMovement<T>
+impl<T, V> ActionMod<V> for AdjustMovement<'_, T>
 where
     V: RelPos<Number = f32> + Sync + Send,
 {
@@ -153,7 +159,7 @@ where
 }
 
 #[async_trait]
-impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for AdjustMovement<T> {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for AdjustMovement<'_, T> {
     async fn execute(&mut self) -> Result<()> {
         self.context
             .get_control_board()

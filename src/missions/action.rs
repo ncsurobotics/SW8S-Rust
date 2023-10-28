@@ -233,13 +233,13 @@ impl<V: Send + Sync, T: ActionExec<V>, U: ActionExec<V>> ActionExec<(V, V)> for 
 }
 
 #[derive(Debug)]
-pub struct ActionChain<T: Sync + Send, V: Action, W: ActionMod<T>> {
+pub struct ActionChain<T: Sync + Send, V: Action, W: Action> {
     first: V,
     second: W,
     _phantom_t: PhantomData<T>,
 }
 
-impl<T: Sync + Send, V: Action, W: ActionMod<T>> Action for ActionChain<T, V, W> {
+impl<T: Sync + Send, V: Action, W: Action> Action for ActionChain<T, V, W> {
     fn dot_string(&self) -> DotString {
         let first_str = self.first.dot_string();
         let second_str = self.second.dot_string();
@@ -262,7 +262,7 @@ impl<T: Sync + Send, V: Action, W: ActionMod<T>> Action for ActionChain<T, V, W>
     }
 }
 
-impl<T: Sync + Send, V: Action, W: ActionMod<T>> ActionChain<T, V, W> {
+impl<T: Sync + Send, V: Action, W: Action> ActionChain<T, V, W> {
     pub const fn new(first: V, second: W) -> Self {
         Self {
             first,
@@ -322,10 +322,16 @@ impl<T, U, V, W> ActionSequence<T, U, V, W> {
 }
 
 #[async_trait]
-impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionExec<U>> ActionExec<(T, U)>
-    for ActionSequence<T, U, V, W>
+impl<
+        T: Send + Sync,
+        U: Send + Sync,
+        X: Send + Sync,
+        Y: Send + Sync,
+        V: ActionExec<Y>,
+        W: ActionExec<X>,
+    > ActionExec<(Y, X)> for ActionSequence<T, U, V, W>
 {
-    async fn execute(&mut self) -> (T, U) {
+    async fn execute(&mut self) -> (Y, X) {
         (self.first.execute().await, self.second.execute().await)
     }
 }
@@ -385,11 +391,13 @@ impl<T: Send + Sync, U: Send + Sync, V: Action, W: Action> ActionParallel<T, U, 
 impl<
         T: 'static + Send + Sync,
         U: 'static + Send + Sync,
-        V: 'static + ActionExec<T>,
-        W: 'static + ActionExec<U>,
-    > ActionExec<(T, U)> for ActionParallel<T, U, V, W>
+        Y: 'static + Send + Sync,
+        X: 'static + Send + Sync,
+        V: 'static + ActionExec<Y>,
+        W: 'static + ActionExec<X>,
+    > ActionExec<(Y, X)> for ActionParallel<T, U, V, W>
 {
-    async fn execute(&mut self) -> (T, U) {
+    async fn execute(&mut self) -> (Y, X) {
         let first = self.first.clone();
         let second = self.second.clone();
         let handle1 = Handle::current();
@@ -458,10 +466,16 @@ impl<T, U, V: Action, W: Action> ActionConcurrent<T, U, V, W> {
 }
 
 #[async_trait]
-impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionExec<U>> ActionExec<(T, U)>
-    for ActionConcurrent<T, U, V, W>
+impl<
+        T: Send + Sync,
+        U: Send + Sync,
+        X: Send + Sync,
+        Y: Send + Sync,
+        V: ActionExec<Y>,
+        W: ActionExec<X>,
+    > ActionExec<(Y, X)> for ActionConcurrent<T, U, V, W>
 {
-    async fn execute(&mut self) -> (T, U) {
+    async fn execute(&mut self) -> (Y, X) {
         join!(self.first.execute(), self.second.execute())
     }
 }

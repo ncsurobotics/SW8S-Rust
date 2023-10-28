@@ -25,6 +25,7 @@ impl<T> Action for WaitArm<'_, T> {}
 impl<T: GetMainElectronicsBoard> ActionExec<()> for WaitArm<'_, T> {
     /// Wait for system to be armed
     async fn execute(&mut self) {
+        println!("Waiting for ARM");
         while !self
             .context
             .get_main_electronics_board()
@@ -34,5 +35,6 @@ impl<T: GetMainElectronicsBoard> ActionExec<()> for WaitArm<'_, T> {
         {
             sleep(Duration::from_millis(10)).await;
         }
+        println!("Got ARM");
     }
 }

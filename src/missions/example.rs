@@ -1,10 +1,14 @@
+use anyhow::Result;
 use async_trait::async_trait;
+use tokio::io::WriteHalf;
+use tokio_serial::SerialStream;
 
 use super::{
     action::{
         Action, ActionConcurrent, ActionConditional, ActionExec, ActionParallel, ActionSequence,
         RaceAction,
     },
+    action_context::{GetControlBoard, GetMainElectronicsBoard},
     basic::DelayAction,
     meb::WaitArm,
     movement::Descend,
@@ -14,10 +18,14 @@ use super::{
 ///
 /// Runs two nested actions in order: Waiting for arm and descending in
 /// parallel, followed by waiting for arm and descending concurrently.
-pub fn initial_descent<T: Send + Sync>(context: &T) -> impl Action + '_ {
+pub fn initial_descent<
+    T: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
+>(
+    context: &T,
+) -> impl ActionExec<(((), Result<()>), ())> + '_ {
     ActionSequence::<T, T, _, _>::new(
-        ActionParallel::<T, T, _, _>::new(WaitArm::new(context), Descend::new(context, -0.5)),
-        ActionConcurrent::<T, T, _, _>::new(WaitArm::new(context), Descend::new(context, -1.0)),
+        ActionConcurrent::<T, T, _, _>::new(WaitArm::new(context), Descend::new(context, -0.5)),
+        WaitArm::new(context), //ActionConcurrent::<T, T, _, _>::new(WaitArm::new(context), Descend::new(context, -1.0)),
     )
 }
 

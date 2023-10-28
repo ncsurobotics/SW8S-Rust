@@ -64,10 +64,10 @@ pub struct Angles {
 
 impl Angles {
     pub fn from_raw(raw: [u8; 4 * 7]) -> Self {
-        let quat_w = f32::from_le_bytes(raw[0..3].try_into().unwrap());
-        let quat_x = f32::from_le_bytes(raw[3..7].try_into().unwrap());
-        let quat_y = f32::from_le_bytes(raw[7..11].try_into().unwrap());
-        let quat_z = f32::from_le_bytes(raw[11..15].try_into().unwrap());
+        let quat_w = f32::from_le_bytes(raw[0..4].try_into().unwrap());
+        let quat_x = f32::from_le_bytes(raw[4..8].try_into().unwrap());
+        let quat_y = f32::from_le_bytes(raw[8..12].try_into().unwrap());
+        let quat_z = f32::from_le_bytes(raw[12..16].try_into().unwrap());
 
         let pitch = 180.0 * (2.0 * (quat_y * quat_z + quat_w * quat_x)).asin() / PI;
 

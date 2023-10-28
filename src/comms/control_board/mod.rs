@@ -315,8 +315,9 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         let mut message = Vec::with_capacity(32 * 8);
         message.extend(SASSIST_2);
 
-        let target_yaw = match *self.initial_angles.lock().await {
-            Some(x) => x.yaw().clone(),
+        let self_angle = self.initial_angles.lock().await.clone();
+        let target_yaw = match self_angle {
+            Some(x) => *x.yaw(),
             None => {
                 self.set_initial_angle().await?;
                 let angle = self

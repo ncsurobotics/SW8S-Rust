@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use core::fmt::Debug;
 use opencv::prelude::Mat;
-use tokio::io::AsyncWriteExt;
+use tokio::io::{AsyncWriteExt, WriteHalf};
+use tokio_serial::SerialStream;
 
 use crate::{
     comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
@@ -25,17 +26,17 @@ pub trait GetMainElectronicsBoard: Send + Sync {
 #[derive(Debug)]
 pub struct EmptyActionContext;
 
-pub struct FullActionContext<T: AsyncWriteExt + Unpin + Send, U: MatSource> {
-    control_board: ControlBoard<T>,
-    main_electronics_board: MainElectronicsBoard,
-    frame_source: U,
+pub struct FullActionContext<'a, T: AsyncWriteExt + Unpin + Send, U: MatSource> {
+    control_board: &'a ControlBoard<T>,
+    main_electronics_board: &'a MainElectronicsBoard,
+    frame_source: &'a U,
 }
 
-impl<T: AsyncWriteExt + Unpin + Send, U: MatSource> FullActionContext<T, U> {
-    const fn new(
-        control_board: ControlBoard<T>,
-        main_electronics_board: MainElectronicsBoard,
-        frame_source: U,
+impl<'a, T: AsyncWriteExt + Unpin + Send, U: MatSource> FullActionContext<'a, T, U> {
+    pub const fn new(
+        control_board: &'a ControlBoard<T>,
+        main_electronics_board: &'a MainElectronicsBoard,
+        frame_source: &'a U,
     ) -> Self {
         Self {
             control_board,
@@ -45,22 +46,22 @@ impl<T: AsyncWriteExt + Unpin + Send, U: MatSource> FullActionContext<T, U> {
     }
 }
 
-impl<T: MatSource> GetControlBoard<tokio_serial::SerialStream>
-    for FullActionContext<tokio_serial::SerialStream, T>
+impl<T: MatSource> GetControlBoard<WriteHalf<SerialStream>>
+    for FullActionContext<'_, WriteHalf<SerialStream>, T>
 {
-    fn get_control_board(&self) -> &ControlBoard<tokio_serial::SerialStream> {
-        &self.control_board
+    fn get_control_board(&self) -> &ControlBoard<WriteHalf<SerialStream>> {
+        self.control_board
     }
 }
 
-impl<T: MatSource> GetMainElectronicsBoard for FullActionContext<tokio_serial::SerialStream, T> {
+impl<T: MatSource> GetMainElectronicsBoard for FullActionContext<'_, WriteHalf<SerialStream>, T> {
     fn get_main_electronics_board(&self) -> &MainElectronicsBoard {
-        &self.main_electronics_board
+        self.main_electronics_board
     }
 }
 
 #[async_trait]
-impl<T: AsyncWriteExt + Unpin + Send, U: MatSource> MatSource for FullActionContext<T, U> {
+impl<T: AsyncWriteExt + Unpin + Send, U: MatSource> MatSource for FullActionContext<'_, T, U> {
     async fn get_mat(&self) -> Mat {
         self.frame_source.get_mat().await
     }

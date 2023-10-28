@@ -1,12 +1,22 @@
+use crate::vision::{gate::Gate, nn_cv2::OnnxModel, RelPos};
+
 use super::{
-    action::{Action, ActionExec, ActionSequence},
+    action::{Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence},
+    action_context::{GetControlBoard, GetMainElectronicsBoard},
+    comms::StartBno055,
     meb::WaitArm,
-    movement::Descend,
     movement::StraightMovement,
     movement::ZeroMovement,
+    movement::{AdjustMovement, Descend},
+    vision::VisionNormOffset,
 };
+use anyhow::Result;
 use async_trait::async_trait;
-use tokio::time::{sleep, Duration};
+use tokio::{
+    io::{AsyncWriteExt, WriteHalf},
+    time::{sleep, Duration},
+};
+use tokio_serial::SerialStream;
 
 #[derive(Debug)]
 pub struct DelayAction {
@@ -18,7 +28,9 @@ impl Action for DelayAction {}
 #[async_trait]
 impl ActionExec<()> for DelayAction {
     async fn execute(&mut self) -> () {
+        println!("BEGIN sleep for {} seconds", self.delay);
         sleep(Duration::from_secs_f32(self.delay)).await;
+        println!("END sleep for {} seconds", self.delay);
     }
 }
 
@@ -39,7 +51,7 @@ pub fn descend_and_go_forward<T: Send + Sync>(context: &T) -> impl Action + '_ {
 
     // time in seconds that each action will wait until before continuing onto the next action.
     let dive_duration = 5.0;
-    let forward_duration = 10.0;
+    let forward_duration = 1.0;
     ActionSequence::<T, T, _, _>::new(
         WaitArm::new(context),
         ActionSequence::<T, T, _, _>::new(
@@ -54,6 +66,49 @@ pub fn descend_and_go_forward<T: Send + Sync>(context: &T) -> impl Action + '_ {
                 ),
                 ZeroMovement::new(context, depth),
             ),
+        ),
+    )
+}
+
+pub fn descend_and_go_forward_temp<
+    T: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard,
+>(
+    context: &T,
+) -> impl ActionExec<((), ((Result<()>, ()), ((Result<()>, ()), Result<()>)))> + '_ {
+    let depth: f32 = -1.0;
+
+    // time in seconds that each action will wait until before continuing onto the next action.
+    let dive_duration = 5.0;
+    let forward_duration = 5.0;
+    ActionSequence::<T, T, _, _>::new(
+        WaitArm::new(context),
+        ActionSequence::<T, T, _, _>::new(
+            ActionSequence::<T, T, _, _>::new(
+                Descend::new(context, depth),
+                DelayAction::new(dive_duration),
+            ),
+            ActionSequence::<T, T, _, _>::new(
+                ActionSequence::<T, T, _, _>::new(
+                    StraightMovement::new(context, depth, true),
+                    DelayAction::new(forward_duration),
+                ),
+                ZeroMovement::new(context, depth),
+            ),
+        ),
+    )
+}
+
+pub fn gate_run<T: Send + Sync>(context: &T) -> impl Action + '_ {
+    let depth: f32 = -1.0;
+
+    ActionSequence::<T, T, _, _>::new(
+        ActionConcurrent::<T, T, _, _>::new(
+            descend_and_go_forward(context),
+            StartBno055::new(context),
+        ),
+        ActionChain::<T, _, _>::new(
+            VisionNormOffset::<T, Gate<OnnxModel>, f32>::new(context, Gate::default()),
+            AdjustMovement::new(context, depth),
         ),
     )
 }

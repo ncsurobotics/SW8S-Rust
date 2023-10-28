@@ -1,8 +1,17 @@
-use std::{env, process::exit, time::Duration};
+use std::{env, path::Path, process::exit, time::Duration};
 
 use anyhow::{bail, Result};
 use config::Configuration;
-use sw8s_rust_lib::comms::{control_board::ControlBoard, meb::MainElectronicsBoard};
+use sw8s_rust_lib::{
+    comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
+    missions::{
+        action::ActionExec,
+        action_context::FullActionContext,
+        basic::{descend_and_go_forward, descend_and_go_forward_temp},
+        example::initial_descent,
+    },
+    video_source::appsink::Camera,
+};
 use tokio::{
     io::WriteHalf,
     signal,
@@ -142,6 +151,30 @@ async fn run_mission(mission: &str) -> Result<()> {
             }
             sleep(Duration::from_secs(10)).await;
             println!("Finished travel");
+            Ok(())
+        }
+        "descend" | "forward" => {
+            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
+            println!("Opened camera");
+            let _ = descend_and_go_forward_temp(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                &cam,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "example" => {
+            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
+            println!("Opened camera");
+            let _ = initial_descent(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                &cam,
+            ))
+            .execute()
+            .await;
             Ok(())
         }
         x => bail!("Invalid argument: [{x}]"),
