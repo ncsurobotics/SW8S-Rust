@@ -73,14 +73,12 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
 
         tokio::spawn(async move {
             loop {
-                if let Ok(inner) = timeout(
+                if let Err(_) = timeout(
                     Duration::from_millis(100),
                     Self::feed_watchdog(&inner_clone),
                 )
                 .await
                 {
-                    inner.unwrap();
-                } else {
                     eprintln!("Watchdog ACK timed out.");
                 }
 

@@ -9,20 +9,20 @@ use super::{
 };
 
 #[derive(Debug)]
-pub struct StartBno055<T> {
-    context: T,
+pub struct StartBno055<'a, T> {
+    context: &'a T,
 }
 
-impl<T> StartBno055<T> {
-    pub const fn new(context: T) -> Self {
+impl<'a, T> StartBno055<'a, T> {
+    pub const fn new(context: &'a T) -> Self {
         Self { context }
     }
 }
 
-impl<T> Action for StartBno055<T> {}
+impl<T> Action for StartBno055<'_, T> {}
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for StartBno055<T> {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for StartBno055<'_, T> {
     async fn execute(&mut self) -> Result<()> {
         self.context
             .get_control_board()

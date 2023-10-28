@@ -11,6 +11,7 @@ use sw8s_rust_lib::{
         example::initial_descent,
     },
     video_source::appsink::Camera,
+    vision::buoy::Buoy,
 };
 use tokio::{
     io::WriteHalf,

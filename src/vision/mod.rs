@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use derive_getters::Getters;
 use itertools::Itertools;
-use num_traits::{Float, FromPrimitive, Num};
+use num_traits::{zero, Float, FromPrimitive, Num, Zero};
 use opencv::{
     core::{Rect2d, Scalar},
     imgproc::{self, LINE_8},
@@ -64,7 +64,10 @@ impl<T: Num> Add for Offset2D<T> {
 
 impl<T: Num> Sum for Offset2D<T> {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.reduce(|acc, cur| acc + cur).unwrap()
+        iter.reduce(|acc, cur| acc + cur).unwrap_or(Self {
+            x: zero(),
+            y: zero(),
+        })
     }
 }
 

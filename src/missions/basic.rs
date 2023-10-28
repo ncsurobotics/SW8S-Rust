@@ -1,6 +1,6 @@
 use crate::{
     video_source::MatSource,
-    vision::{gate::Gate, nn_cv2::OnnxModel, RelPos},
+    vision::{buoy::Buoy, gate::Gate, nn_cv2::OnnxModel, RelPos},
 };
 
 use super::{
@@ -116,15 +116,18 @@ pub fn gate_run<
     (),
 )> + '_ {
     let depth: f32 = -1.0;
+    println!("INNER MODEL LOAD");
+    let model = Buoy::default();
+    println!("OUTER MODEL LOAD");
 
     ActionSequence::<T, T, _, _>::new(
         ActionConcurrent::<T, T, _, _>::new(
             descend_and_go_forward_temp(context),
-            ZeroMovement::new(context, depth),
+            StartBno055::new(context),
         ),
         ActionWhile::new(TupleSecond::new(ActionSequence::<T, T, _, _>::new(
             ActionChain::<_, _, _>::new(
-                VisionNormOffset::<T, Gate<OnnxModel>, f64>::new(context, Gate::default()),
+                VisionNormOffset::<T, Buoy<OnnxModel>, f64>::new(context, model),
                 AdjustMovement::new(context, depth),
             ),
             AlwaysTrue::new(),
