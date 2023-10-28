@@ -2,6 +2,8 @@ use anyhow::Result;
 use async_trait::async_trait;
 use tokio_serial::SerialStream;
 
+use crate::vision::RelPos;
+
 use super::{
     action::{Action, ActionExec, ActionMod},
     action_context::GetControlBoard,
@@ -113,6 +115,49 @@ impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for ZeroMovement<T
         self.context
             .get_control_board()
             .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
+            .await
+    }
+}
+
+#[derive(Debug)]
+pub struct AdjustMovement<T> {
+    context: T,
+    x: f32,
+    target_depth: f32,
+}
+impl<T> Action for AdjustMovement<T> {}
+
+impl<T> AdjustMovement<T> {
+    pub fn new(context: T, target_depth: f32) -> Self {
+        Self {
+            context,
+            target_depth,
+            x: 0.0,
+        }
+    }
+}
+
+impl<T> ActionMod<f32> for AdjustMovement<T> {
+    fn modify(&mut self, input: f32) {
+        self.target_depth = input;
+    }
+}
+
+impl<T, V> ActionMod<V> for AdjustMovement<T>
+where
+    V: RelPos<Number = f32> + Sync + Send,
+{
+    fn modify(&mut self, input: V) {
+        self.x = *input.offset().x();
+    }
+}
+
+#[async_trait]
+impl<T: GetControlBoard<SerialStream>> ActionExec<Result<()>> for AdjustMovement<T> {
+    async fn execute(&mut self) -> Result<()> {
+        self.context
+            .get_control_board()
+            .stability_2_speed_set_initial_yaw(0.0, self.x, 0.0, 0.0, self.target_depth)
             .await
     }
 }
