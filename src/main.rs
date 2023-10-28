@@ -7,7 +7,7 @@ use sw8s_rust_lib::{
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
-        basic::{descend_and_go_forward, descend_and_go_forward_temp},
+        basic::{descend_and_go_forward, descend_and_go_forward_temp, gate_run},
         example::initial_descent,
     },
     video_source::appsink::Camera,
@@ -157,6 +157,20 @@ async fn run_mission(mission: &str) -> Result<()> {
             let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
             println!("Opened camera");
             let _ = descend_and_go_forward_temp(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                &cam,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "gate_run" => {
+            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
+            let cam_extra =
+                Camera::jetson_new("/dev/video0", "front", Path::new("/tmp/feed_extra.mp4"))?;
+            println!("Opened camera");
+            let _ = gate_run(&FullActionContext::new(
                 control_board().await,
                 meb().await,
                 &cam,

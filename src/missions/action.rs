@@ -588,3 +588,33 @@ impl<U: Send + Sync, T: ActionExec<Result<U>>> ActionExec<Result<U>> for ActionW
         result
     }
 }
+
+/**
+ * Get second arg in action output
+ */
+#[derive(Debug)]
+pub struct TupleSecond<T: Action, U> {
+    action: T,
+    _phantom_u: PhantomData<U>,
+}
+
+impl<T: Action, U> Action for TupleSecond<T, U> {}
+
+/**
+ * Implementation for the ActionWhile struct.  
+ */
+impl<T: Action, U> TupleSecond<T, U> {
+    pub const fn new(action: T) -> Self {
+        Self {
+            action,
+            _phantom_u: PhantomData,
+        }
+    }
+}
+
+#[async_trait]
+impl<U: Send + Sync, V: Send + Sync, T: ActionExec<(U, V)>> ActionExec<V> for TupleSecond<T, U> {
+    async fn execute(&mut self) -> V {
+        self.action.execute().await.1
+    }
+}

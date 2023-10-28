@@ -61,7 +61,7 @@ pub fn race_conditional<T: Send + Sync>(context: &T) -> impl Action + '_ {
 }
 
 #[derive(Debug)]
-struct AlwaysTrue {}
+pub struct AlwaysTrue {}
 
 impl AlwaysTrue {
     pub fn new() -> Self {

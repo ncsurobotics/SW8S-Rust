@@ -5,8 +5,8 @@ use opencv::{
     dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
-use std::fmt::Debug;
 use std::hash::Hash;
+use std::{fmt::Debug, sync::Mutex};
 
 #[derive(Debug, Clone, Getters)]
 pub struct YoloDetection {
@@ -67,7 +67,7 @@ pub trait VisionModel: Debug {
 /// ONNX vision model running via OpenCV
 #[derive(Debug)]
 pub struct OnnxModel {
-    net: Net,
+    net: Mutex<Net>,
     //out_blob_names: Vec<String>,
     num_objects: usize,
     //output: Vec<usize>,
@@ -103,7 +103,7 @@ impl OnnxModel {
         num_objects: usize,
     ) -> Result<Self> {
         Ok(Self {
-            net: read_net_from_onnx_buffer(model_bytes)?,
+            net: Mutex::new(read_net_from_onnx_buffer(model_bytes)?),
             num_objects,
             model_size: Size::new(model_size, model_size),
             factor: Self::size_to_factor(model_size),
@@ -126,7 +126,7 @@ impl OnnxModel {
     /// ```
     pub fn from_file(model_name: &str, model_size: i32, num_objects: usize) -> Result<Self> {
         Ok(Self {
-            net: read_net_from_onnx(model_name)?,
+            net: Mutex::new(read_net_from_onnx(model_name)?),
             num_objects,
             model_size: Size::new(model_size, model_size),
             factor: Self::size_to_factor(model_size),
@@ -189,7 +189,7 @@ macro_rules! load_onnx {
 impl VisionModel for OnnxModel {
     fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Result<Vec<YoloDetection>> {
         let mut result: Vector<Mat> = Vector::new();
-        let result_names = Self::get_output_names(&self.net)?;
+        let result_names = Self::get_output_names(&self.net.lock().unwrap())?;
         let blob = blob_from_image(
             image,
             1.0 / 255.0,
@@ -200,8 +200,14 @@ impl VisionModel for OnnxModel {
             CV_32F,
         )?;
 
-        self.net.set_input(&blob, "", 1.0, Scalar::from(0.0))?;
-        self.net.forward(&mut result, &result_names)?;
+        self.net
+            .lock()
+            .unwrap()
+            .set_input(&blob, "", 1.0, Scalar::from(0.0))?;
+        self.net
+            .lock()
+            .unwrap()
+            .forward(&mut result, &result_names)?;
 
         self.process_net(result, threshold)
     }

@@ -1,9 +1,15 @@
-use crate::vision::{gate::Gate, nn_cv2::OnnxModel, RelPos};
+use crate::{
+    video_source::MatSource,
+    vision::{gate::Gate, nn_cv2::OnnxModel, RelPos},
+};
 
 use super::{
-    action::{Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence},
+    action::{
+        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile, TupleSecond,
+    },
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     comms::StartBno055,
+    example::AlwaysTrue,
     meb::WaitArm,
     movement::StraightMovement,
     movement::ZeroMovement,
@@ -98,17 +104,30 @@ pub fn descend_and_go_forward_temp<
     )
 }
 
-pub fn gate_run<T: Send + Sync>(context: &T) -> impl Action + '_ {
+pub fn gate_run<
+    T: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + MatSource,
+>(
+    context: &T,
+) -> impl ActionExec<(
+    (
+        ((), ((Result<()>, ()), ((Result<()>, ()), Result<()>))),
+        Result<()>,
+    ),
+    (),
+)> + '_ {
     let depth: f32 = -1.0;
 
     ActionSequence::<T, T, _, _>::new(
         ActionConcurrent::<T, T, _, _>::new(
-            descend_and_go_forward(context),
-            StartBno055::new(context),
+            descend_and_go_forward_temp(context),
+            ZeroMovement::new(context, depth),
         ),
-        ActionChain::<T, _, _>::new(
-            VisionNormOffset::<T, Gate<OnnxModel>, f32>::new(context, Gate::default()),
-            AdjustMovement::new(context, depth),
-        ),
+        ActionWhile::new(TupleSecond::new(ActionSequence::<T, T, _, _>::new(
+            ActionChain::<_, _, _>::new(
+                VisionNormOffset::<T, Gate<OnnxModel>, f64>::new(context, Gate::default()),
+                AdjustMovement::new(context, depth),
+            ),
+            AlwaysTrue::new(),
+        ))),
     )
 }

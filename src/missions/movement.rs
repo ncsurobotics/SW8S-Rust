@@ -149,12 +149,14 @@ impl<T> ActionMod<f32> for AdjustMovement<'_, T> {
     }
 }
 
-impl<T, V> ActionMod<V> for AdjustMovement<'_, T>
+impl<T, V> ActionMod<Result<V>> for AdjustMovement<'_, T>
 where
-    V: RelPos<Number = f32> + Sync + Send,
+    V: RelPos<Number = f64> + Sync + Send,
 {
-    fn modify(&mut self, input: V) {
-        self.x = *input.offset().x();
+    fn modify(&mut self, input: Result<V>) {
+        if let Ok(input) = input {
+            self.x = *input.offset().x() as f32;
+        }
     }
 }
 
@@ -163,7 +165,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Adj
     async fn execute(&mut self) -> Result<()> {
         self.context
             .get_control_board()
-            .stability_2_speed_set_initial_yaw(0.0, self.x, 0.0, 0.0, self.target_depth)
+            .stability_2_speed_set_initial_yaw(0.5, self.x, 0.0, 0.0, self.target_depth)
             .await
     }
 }
