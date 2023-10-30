@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 use std::{ops::Deref, sync::Arc, time::Duration};
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{bail, Result};
 use tokio::{
     io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, WriteHalf},
     net::TcpStream,
@@ -10,10 +10,7 @@ use tokio::{
 };
 use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
 
-use self::{
-    response::ResponseMap,
-    util::{Angles, BNO055AxisConfig},
-};
+use self::{response::ResponseMap, util::BNO055AxisConfig};
 
 use super::auv_control_board::{AUVControlBoard, MessageId};
 
@@ -26,7 +23,6 @@ where
     T: AsyncWriteExt + Unpin,
 {
     inner: Arc<AUVControlBoard<T, ResponseMap>>,
-    initial_angles: Arc<Mutex<Option<Angles>>>,
 }
 
 impl<T: AsyncWriteExt + Unpin> Deref for ControlBoard<T> {
@@ -49,7 +45,6 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         let responses = ResponseMap::new(comm_in).await;
         let this = Self {
             inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id).into(),
-            initial_angles: Arc::default(),
         };
 
         this.init_matrices().await?;
@@ -73,13 +68,14 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
 
         tokio::spawn(async move {
             loop {
-                if (timeout(
+                if let Ok(inner) = timeout(
                     Duration::from_millis(100),
                     Self::feed_watchdog(&inner_clone),
                 )
-                .await)
-                    .is_err()
+                .await
                 {
+                    inner.unwrap();
+                } else {
                     eprintln!("Watchdog ACK timed out.");
                 }
 
@@ -285,53 +281,6 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         self.write_out_basic(message).await
     }
 
-    pub async fn set_initial_angle(&self) -> Result<()> {
-        *self.initial_angles.lock().await = match self.responses().get_angles().await {
-            Some(angle) => Some(angle),
-            None => {
-                self.bno055_periodic_read(true).await?;
-                let mut angle = self.responses().get_angles().await;
-                while angle.is_none() {
-                    sleep(Duration::from_millis(50)).await;
-                    angle = self.responses().get_angles().await;
-                }
-                angle
-            }
-        };
-        Ok(())
-    }
-
-    pub async fn stability_2_speed_set_initial_yaw(
-        &self,
-        x: f32,
-        y: f32,
-        target_pitch: f32,
-        target_roll: f32,
-        target_depth: f32,
-    ) -> Result<()> {
-        const SASSIST_2: [u8; 8] = *b"SASSIST2";
-        // Oversized to avoid reallocations
-        let mut message = Vec::with_capacity(32 * 8);
-        message.extend(SASSIST_2);
-
-        let self_angle = *self.initial_angles.lock().await;
-        let target_yaw = match self_angle {
-            Some(x) => *x.yaw(),
-            None => {
-                self.set_initial_angle().await?;
-                let angle =
-                    (*self.initial_angles.lock().await).ok_or(anyhow!("Initial Yaw set Error"))?;
-                *angle.yaw()
-            }
-        };
-
-        [x, y, target_pitch, target_roll, target_yaw, target_depth]
-            .iter()
-            .for_each(|val| message.extend(val.to_le_bytes()));
-
-        self.write_out_basic(message).await
-    }
-
     pub async fn stability_1_speed_set(
         &self,
         x: f32,
@@ -360,17 +309,6 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         message.push(config.into());
 
         self.write_out_basic(message).await
-    }
-
-    pub async fn bno055_periodic_read(&self, enable: bool) -> Result<()> {
-        const BNO055P: [u8; 7] = *b"BNO055P";
-
-        let mut message = Vec::from(BNO055P);
-        message.push(enable.into());
-
-        self.write_out_basic(message).await?;
-        sleep(Duration::from_millis(300)).await; // Initialization time
-        Ok(())
     }
 
     pub async fn stability_assist_pid_tune(
