@@ -24,8 +24,6 @@ use crate::{
 
 use crate::comms::auv_control_board::util::AcknowledgeErr;
 
-use super::util::Angles;
-
 const ACK: [u8; 3] = *b"ACK";
 const WDGS: [u8; 4] = *b"WDGS";
 const BNO055D: [u8; 7] = *b"BNO055D";
@@ -146,10 +144,6 @@ impl ResponseMap {
             ));
             }
         }).await
-    }
-
-    pub async fn get_angles(&self) -> Option<Angles> {
-        (*self.bno055_status.read().await).map(Angles::from_raw)
     }
 }
 

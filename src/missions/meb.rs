@@ -22,11 +22,9 @@ impl<'a, T> WaitArm<'a, T> {
 impl<T> Action for WaitArm<'_, T> {}
 
 #[async_trait]
-impl<T: GetMainElectronicsBoard> ActionExec for WaitArm<'_, T> {
-    type Output = ();
+impl<T: GetMainElectronicsBoard> ActionExec<()> for WaitArm<'_, T> {
     /// Wait for system to be armed
-    async fn execute(&mut self) -> Self::Output {
-        println!("Waiting for ARM");
+    async fn execute(self) {
         while !self
             .context
             .get_main_electronics_board()
@@ -36,6 +34,5 @@ impl<T: GetMainElectronicsBoard> ActionExec for WaitArm<'_, T> {
         {
             sleep(Duration::from_millis(10)).await;
         }
-        println!("Got ARM");
     }
 }

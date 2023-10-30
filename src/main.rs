@@ -1,17 +1,8 @@
-use std::{env, path::Path, process::exit, time::Duration};
+use std::{env, process::exit, time::Duration};
 
 use anyhow::{bail, Result};
 use config::Configuration;
-use sw8s_rust_lib::{
-    comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
-    missions::{
-        action::ActionExec,
-        action_context::FullActionContext,
-        basic::{descend_and_go_forward, gate_run},
-        example::initial_descent,
-    },
-    video_source::appsink::Camera,
-};
+use sw8s_rust_lib::comms::{control_board::ControlBoard, meb::MainElectronicsBoard};
 use tokio::{
     io::WriteHalf,
     signal,
@@ -151,44 +142,6 @@ async fn run_mission(mission: &str) -> Result<()> {
             }
             sleep(Duration::from_secs(10)).await;
             println!("Finished travel");
-            Ok(())
-        }
-        "descend" | "forward" => {
-            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
-            println!("Opened camera");
-            let _ = descend_and_go_forward(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                &cam,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "gate_run" => {
-            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
-            let _cam_extra =
-                Camera::jetson_new("/dev/video0", "front", Path::new("/tmp/feed_extra.mp4"))?;
-            println!("Opened camera");
-            let _ = gate_run(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                &cam,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "example" => {
-            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
-            println!("Opened camera");
-            let _ = initial_descent(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                &cam,
-            ))
-            .execute()
-            .await;
             Ok(())
         }
         x => bail!("Invalid argument: [{x}]"),
