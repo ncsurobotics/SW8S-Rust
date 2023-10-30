@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use derive_getters::Getters;
 use itertools::Itertools;
-use num_traits::Num;
+use num_traits::{zero, FromPrimitive, Num};
 use opencv::{
     core::{Rect2d, Scalar},
     imgproc::{self, LINE_8},
@@ -15,6 +15,8 @@ use std::{
 };
 
 pub mod buoy;
+pub mod gate;
+pub mod gate_poles;
 pub mod image_prep;
 pub mod nn_cv2;
 pub mod path;
@@ -62,17 +64,20 @@ impl<T: Num> Add for Offset2D<T> {
 
 impl<T: Num> Sum for Offset2D<T> {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.reduce(|acc, cur| acc + cur).unwrap()
+        iter.reduce(|acc, cur| acc + cur).unwrap_or(Self {
+            x: zero(),
+            y: zero(),
+        })
     }
 }
 
-impl<T: Num + From<usize>> Div<usize> for Offset2D<T> {
+impl<T: Num + FromPrimitive> Div<usize> for Offset2D<T> {
     type Output = Self;
 
     fn div(self, rhs: usize) -> Self::Output {
         Self {
-            x: self.x / rhs.into(),
-            y: self.y / rhs.into(),
+            x: self.x / T::from_usize(rhs).unwrap(),
+            y: self.y / T::from_usize(rhs).unwrap(),
         }
     }
 }
@@ -193,6 +198,17 @@ impl<T: PartialEq, U> Eq for VisualDetection<T, U> {}
 impl<T: Hash, U> Hash for VisualDetection<T, U> {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.class.hash(state)
+    }
+}
+
+impl RelPos for Offset2D<f64> {
+    type Number = f64;
+
+    fn offset(&self) -> Offset2D<Self::Number> {
+        Offset2D {
+            x: self.x,
+            y: self.y,
+        }
     }
 }
 
