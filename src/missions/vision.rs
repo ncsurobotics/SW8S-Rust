@@ -5,8 +5,7 @@ use crate::video_source::MatSource;
 use crate::vision::{Offset2D, RelPos, VisualDetector};
 use anyhow::Result;
 use async_trait::async_trait;
-use num_traits::{FromPrimitive, Num, NumCast};
-use uuid::Uuid;
+use num_traits::{FromPrimitive, Num};
 
 /// Runs a vision routine to obtain object position
 ///
@@ -32,11 +31,12 @@ impl<T, U, V> Action for VisionNormOffset<'_, T, U, V> {}
 
 #[async_trait]
 impl<T: MatSource, V: Num + FromPrimitive + Send + Sync, U: VisualDetector<V> + Send + Sync>
-    ActionExec<Result<Offset2D<V>>> for VisionNormOffset<'_, T, U, V>
+    ActionExec for VisionNormOffset<'_, T, U, V>
 where
     U::Position: RelPos<Number = V>,
 {
-    async fn execute(&mut self) -> Result<Offset2D<V>> {
+    type Output = Result<Offset2D<V>>;
+    async fn execute(&mut self) -> Self::Output {
         #[cfg(feature = "logging")]
         {
             println!("Running detection...");

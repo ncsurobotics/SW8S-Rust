@@ -4,10 +4,7 @@ use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
 use super::{
-    action::{
-        Action, ActionConcurrent, ActionConditional, ActionExec, ActionParallel, ActionSequence,
-        RaceAction,
-    },
+    action::{Action, ActionConcurrent, ActionConditional, ActionExec, ActionSequence, RaceAction},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     basic::DelayAction,
     meb::WaitArm,
@@ -22,7 +19,7 @@ pub fn initial_descent<
     T: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
 >(
     context: &T,
-) -> impl ActionExec<(((), Result<()>), ())> + '_ {
+) -> impl ActionExec + '_ {
     ActionSequence::<T, T, _, _>::new(
         ActionConcurrent::<T, T, _, _>::new(WaitArm::new(context), Descend::new(context, -0.5)),
         WaitArm::new(context), //ActionConcurrent::<T, T, _, _>::new(WaitArm::new(context), Descend::new(context, -1.0)),
@@ -69,11 +66,18 @@ impl AlwaysTrue {
     }
 }
 
+impl Default for AlwaysTrue {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Action for AlwaysTrue {}
 
 #[async_trait]
-impl ActionExec<bool> for AlwaysTrue {
-    async fn execute(&mut self) -> bool {
-        true
+impl ActionExec for AlwaysTrue {
+    type Output = Result<()>;
+    async fn execute(&mut self) -> Self::Output {
+        Ok(())
     }
 }

@@ -41,8 +41,9 @@ impl<T> ActionMod<f32> for Descend<'_, T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Descend<'_, T> {
-    async fn execute(&mut self) -> Result<()> {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for Descend<'_, T> {
+    type Output = Result<()>;
+    async fn execute(&mut self) -> Self::Output {
         println!("DESCEND");
         self.context
             .get_control_board()
@@ -80,10 +81,9 @@ impl<'a, T> StraightMovement<'a, T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
-    for StraightMovement<'_, T>
-{
-    async fn execute(&mut self) -> Result<()> {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for StraightMovement<'_, T> {
+    type Output = Result<()>;
+    async fn execute(&mut self) -> Self::Output {
         let mut speed: f32 = 0.5;
         if !self.forward {
             // Eric Liu is a very talented programmer and utilizes the most effective linear programming techniques from the FIRST™ Robotics Competition.
@@ -116,8 +116,9 @@ impl<'a, T> ZeroMovement<'a, T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for ZeroMovement<'_, T> {
-    async fn execute(&mut self) -> Result<()> {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for ZeroMovement<'_, T> {
+    type Output = Result<()>;
+    async fn execute(&mut self) -> Self::Output {
         self.context
             .get_control_board()
             .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
@@ -161,8 +162,9 @@ where
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for AdjustMovement<'_, T> {
-    async fn execute(&mut self) -> Result<()> {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovement<'_, T> {
+    type Output = Result<()>;
+    async fn execute(&mut self) -> Self::Output {
         self.context
             .get_control_board()
             .stability_2_speed_set_initial_yaw(0.5, self.x, 0.0, 0.0, self.target_depth)

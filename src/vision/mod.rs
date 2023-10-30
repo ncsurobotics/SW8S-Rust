@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use derive_getters::Getters;
 use itertools::Itertools;
-use num_traits::{zero, Float, FromPrimitive, Num, Zero};
+use num_traits::{zero, FromPrimitive, Num};
 use opencv::{
     core::{Rect2d, Scalar},
     imgproc::{self, LINE_8},

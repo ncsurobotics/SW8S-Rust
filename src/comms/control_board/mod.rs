@@ -73,11 +73,12 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
 
         tokio::spawn(async move {
             loop {
-                if let Err(_) = timeout(
+                if (timeout(
                     Duration::from_millis(100),
                     Self::feed_watchdog(&inner_clone),
                 )
-                .await
+                .await)
+                    .is_err()
                 {
                     eprintln!("Watchdog ACK timed out.");
                 }
@@ -313,17 +314,13 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         let mut message = Vec::with_capacity(32 * 8);
         message.extend(SASSIST_2);
 
-        let self_angle = self.initial_angles.lock().await.clone();
+        let self_angle = *self.initial_angles.lock().await;
         let target_yaw = match self_angle {
             Some(x) => *x.yaw(),
             None => {
                 self.set_initial_angle().await?;
-                let angle = self
-                    .initial_angles
-                    .lock()
-                    .await
-                    .clone()
-                    .ok_or(anyhow!("Initial Yaw set Error"))?;
+                let angle =
+                    (*self.initial_angles.lock().await).ok_or(anyhow!("Initial Yaw set Error"))?;
                 *angle.yaw()
             }
         };

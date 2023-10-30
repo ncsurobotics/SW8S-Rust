@@ -95,4 +95,3 @@ impl YoloProcessor for Gate<OnnxModel> {
         self.model.size()
     }
 }
-

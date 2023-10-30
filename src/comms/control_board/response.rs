@@ -1,6 +1,5 @@
 use std::{
     collections::HashMap,
-    f32::consts::PI,
     sync::{
         mpsc::{channel, Sender, TryRecvError},
         Arc,
@@ -150,10 +149,7 @@ impl ResponseMap {
     }
 
     pub async fn get_angles(&self) -> Option<Angles> {
-        match *self.bno055_status.read().await {
-            None => None,
-            Some(msg) => Some(Angles::from_raw(msg)),
-        }
+        (*self.bno055_status.read().await).map(Angles::from_raw)
     }
 }
 

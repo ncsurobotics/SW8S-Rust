@@ -7,11 +7,10 @@ use sw8s_rust_lib::{
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
-        basic::{descend_and_go_forward, descend_and_go_forward_temp, gate_run},
+        basic::{descend_and_go_forward, gate_run},
         example::initial_descent,
     },
     video_source::appsink::Camera,
-    vision::buoy::Buoy,
 };
 use tokio::{
     io::WriteHalf,
@@ -157,7 +156,7 @@ async fn run_mission(mission: &str) -> Result<()> {
         "descend" | "forward" => {
             let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
             println!("Opened camera");
-            let _ = descend_and_go_forward_temp(&FullActionContext::new(
+            let _ = descend_and_go_forward(&FullActionContext::new(
                 control_board().await,
                 meb().await,
                 &cam,
@@ -168,7 +167,7 @@ async fn run_mission(mission: &str) -> Result<()> {
         }
         "gate_run" => {
             let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
-            let cam_extra =
+            let _cam_extra =
                 Camera::jetson_new("/dev/video0", "front", Path::new("/tmp/feed_extra.mp4"))?;
             println!("Opened camera");
             let _ = gate_run(&FullActionContext::new(

@@ -22,8 +22,9 @@ impl<'a, T> StartBno055<'a, T> {
 impl<T> Action for StartBno055<'_, T> {}
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for StartBno055<'_, T> {
-    async fn execute(&mut self) -> Result<()> {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for StartBno055<'_, T> {
+    type Output = Result<()>;
+    async fn execute(&mut self) -> Self::Output {
         self.context
             .get_control_board()
             .bno055_periodic_read(true)

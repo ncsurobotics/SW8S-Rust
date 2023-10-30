@@ -1,6 +1,6 @@
 use crate::{
     video_source::MatSource,
-    vision::{buoy::Buoy, gate::Gate, nn_cv2::OnnxModel, RelPos},
+    vision::{buoy::Buoy, nn_cv2::OnnxModel},
 };
 
 use super::{
@@ -16,10 +16,9 @@ use super::{
     movement::{AdjustMovement, Descend},
     vision::VisionNormOffset,
 };
-use anyhow::Result;
 use async_trait::async_trait;
 use tokio::{
-    io::{AsyncWriteExt, WriteHalf},
+    io::WriteHalf,
     time::{sleep, Duration},
 };
 use tokio_serial::SerialStream;
@@ -32,8 +31,9 @@ pub struct DelayAction {
 impl Action for DelayAction {}
 
 #[async_trait]
-impl ActionExec<()> for DelayAction {
-    async fn execute(&mut self) -> () {
+impl ActionExec for DelayAction {
+    type Output = ();
+    async fn execute(&mut self) -> Self::Output {
         println!("BEGIN sleep for {} seconds", self.delay);
         sleep(Duration::from_secs_f32(self.delay)).await;
         println!("END sleep for {} seconds", self.delay);
@@ -51,36 +51,11 @@ impl DelayAction {
  * descends and goes forward for a certain duration
  *
  **/
-
-pub fn descend_and_go_forward<T: Send + Sync>(context: &T) -> impl Action + '_ {
-    let depth: f32 = -1.0;
-
-    // time in seconds that each action will wait until before continuing onto the next action.
-    let dive_duration = 5.0;
-    let forward_duration = 1.0;
-    ActionSequence::<T, T, _, _>::new(
-        WaitArm::new(context),
-        ActionSequence::<T, T, _, _>::new(
-            ActionSequence::<T, T, _, _>::new(
-                Descend::new(context, depth),
-                DelayAction::new(dive_duration),
-            ),
-            ActionSequence::<T, T, _, _>::new(
-                ActionSequence::<T, T, _, _>::new(
-                    StraightMovement::new(context, depth, true),
-                    DelayAction::new(forward_duration),
-                ),
-                ZeroMovement::new(context, depth),
-            ),
-        ),
-    )
-}
-
-pub fn descend_and_go_forward_temp<
+pub fn descend_and_go_forward<
     T: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard,
 >(
     context: &T,
-) -> impl ActionExec<((), ((Result<()>, ()), ((Result<()>, ()), Result<()>)))> + '_ {
+) -> impl ActionExec + '_ {
     let depth: f32 = -1.0;
 
     // time in seconds that each action will wait until before continuing onto the next action.
@@ -108,13 +83,7 @@ pub fn gate_run<
     T: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + MatSource,
 >(
     context: &T,
-) -> impl ActionExec<(
-    (
-        ((), ((Result<()>, ()), ((Result<()>, ()), Result<()>))),
-        Result<()>,
-    ),
-    (),
-)> + '_ {
+) -> impl ActionExec + '_ {
     let depth: f32 = -1.0;
     println!("INNER MODEL LOAD");
     let model = Buoy::default();
@@ -122,11 +91,11 @@ pub fn gate_run<
 
     ActionSequence::<T, T, _, _>::new(
         ActionConcurrent::<T, T, _, _>::new(
-            descend_and_go_forward_temp(context),
+            descend_and_go_forward(context),
             StartBno055::new(context),
         ),
         ActionWhile::new(TupleSecond::new(ActionSequence::<T, T, _, _>::new(
-            ActionChain::<_, _, _>::new(
+            ActionChain::new(
                 VisionNormOffset::<T, Buoy<OnnxModel>, f64>::new(context, model),
                 AdjustMovement::new(context, depth),
             ),
