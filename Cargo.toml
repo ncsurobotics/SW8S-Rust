@@ -18,7 +18,7 @@ jetson = []
 logging = []
 
 [dependencies]
-opencv = "0.86.0" # Vision processing
+opencv = { version = "0.85.3", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
 tokio-serial = "5.4.1" # Async serial comms
 tokio = { version = "1.29.1", features = ["full"] } # Async runtime
 anyhow = "1.0.75" # Error handling
