@@ -18,16 +18,16 @@ jetson = []
 logging = []
 
 [dependencies]
-opencv = "0.86.0" # Vision processing
+opencv = "0.86.1" # Vision processing
 tokio-serial = "5.4.1" # Async serial comms
-tokio = { version = "1.29.1", features = ["full"] } # Async runtime
+tokio = { version = "1.33.0", features = ["full"] } # Async runtime
 anyhow = "1.0.75" # Error handling
 itertools = "0.11.0" # Enhance iterators
 num-traits = "0.2.17" # Numeric generics
 derive-getters = "0.3.0" # Getter macro
 async-trait = "0.1.74" # Async fns in trait definitions
-futures = { version = "0.3.28", default-features = false, features = ["std"] }# Futures utilities
-toml = "0.8.1" # Configuration file
+futures = { version = "0.3.29", default-features = false, features = ["std"] }# Futures utilities
+toml = "0.8.6" # Configuration file
 serde = { version = "1.0.190", features = ["derive"] } # Config serial handling
 bytes = "1.5.0" # Byte buffering
 
