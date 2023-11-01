@@ -1,2 +1,5 @@
 [build]
 rustdocflags = ["--document-private-items"] # Force full docs by default
+
+[target.aarch64-unknown-linux-gnu]
+linker = "aarch64-linux-gnu-gcc"
