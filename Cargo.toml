@@ -13,9 +13,15 @@ path = "src/lib.rs"
 name = "sw8s_rust"
 path = "src/main.rs"
 
+[[bin]]
+name = "sw8s_rust_graphs"
+path = "src/graph_main.rs"
+required-features = ["graphing"]
+
 [features]
 jetson = []
 logging = []
+graphing = ["dep:graphviz-rust"]
 
 [dependencies]
 opencv = { version = "0.85.3", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
@@ -30,6 +36,8 @@ futures = { version = "0.3.28", default-features = false, features = ["std"] }# 
 toml = "0.8.1" # Configuration file
 serde = { version = "1.0.190", features = ["derive"] } # Config serial handling
 bytes = "1.5.0" # Byte buffering
+uuid = { version = "1.5.0", features = ["v4", "fast-rng"] } # Unique IDs
+graphviz-rust = { version = "0.6.6", optional = true } # Drawing graphs
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
