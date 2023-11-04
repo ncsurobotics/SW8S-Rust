@@ -61,15 +61,15 @@ pub fn descend_and_go_forward<
     // time in seconds that each action will wait until before continuing onto the next action.
     let dive_duration = 5.0;
     let forward_duration = 5.0;
-    ActionSequence::<T, T, _, _>::new(
+    ActionSequence::new(
         WaitArm::new(context),
-        ActionSequence::<T, T, _, _>::new(
-            ActionSequence::<T, T, _, _>::new(
+        ActionSequence::new(
+            ActionSequence::new(
                 Descend::new(context, depth),
                 DelayAction::new(dive_duration),
             ),
-            ActionSequence::<T, T, _, _>::new(
-                ActionSequence::<T, T, _, _>::new(
+            ActionSequence::new(
+                ActionSequence::new(
                     StraightMovement::new(context, depth, true),
                     DelayAction::new(forward_duration),
                 ),
@@ -89,12 +89,9 @@ pub fn gate_run<
     let model = Buoy::default();
     println!("OUTER MODEL LOAD");
 
-    ActionSequence::<T, T, _, _>::new(
-        ActionConcurrent::<T, T, _, _>::new(
-            descend_and_go_forward(context),
-            StartBno055::new(context),
-        ),
-        ActionWhile::new(TupleSecond::new(ActionSequence::<T, T, _, _>::new(
+    ActionSequence::new(
+        ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
+        ActionWhile::new(TupleSecond::new(ActionSequence::new(
             ActionChain::new(
                 VisionNormOffset::<T, Buoy<OnnxModel>, f64>::new(context, model),
                 AdjustMovement::new(context, depth),
