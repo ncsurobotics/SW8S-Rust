@@ -1,7 +1,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
-use std::{marker::PhantomData, sync::Arc, thread};
+use std::{sync::Arc, thread};
 use tokio::{join, runtime::Handle, sync::Mutex};
 use uuid::Uuid;
 
@@ -42,14 +42,13 @@ pub trait ActionMod<Input: Send + Sync>: Action {
  * An action that runs one of two actions depending on if its conditional reference is true or false.  
  */
 #[derive(Debug)]
-pub struct ActionConditional<U, V: Action, W: Action, X: Action> {
+pub struct ActionConditional<V: Action, W: Action, X: Action> {
     condition: V,
     true_branch: W,
     false_branch: X,
-    _phantom_u: PhantomData<U>,
 }
 
-impl<U, V: Action, W: Action, X: Action> Action for ActionConditional<U, V, W, X> {
+impl<V: Action, W: Action, X: Action> Action for ActionConditional<V, W, X> {
     fn dot_string(&self) -> DotString {
         let true_str = self.true_branch.dot_string();
         let false_str = self.false_branch.dot_string();
@@ -85,13 +84,12 @@ impl<U, V: Action, W: Action, X: Action> Action for ActionConditional<U, V, W, X
 /**
  * Implementation for the ActionConditional struct.  
  */
-impl<U, V: Action, W: Action, X: Action> ActionConditional<U, V, W, X> {
+impl<V: Action, W: Action, X: Action> ActionConditional<V, W, X> {
     pub const fn new(condition: V, true_branch: W, false_branch: X) -> Self {
         Self {
             condition,
             true_branch,
             false_branch,
-            _phantom_u: PhantomData,
         }
     }
 }
@@ -105,7 +103,7 @@ impl<
         V: ActionExec<Output = bool>,
         W: ActionExec<Output = U>,
         X: ActionExec<Output = U>,
-    > ActionExec for ActionConditional<U, V, W, X>
+    > ActionExec for ActionConditional<V, W, X>
 {
     type Output = U;
     async fn execute(&mut self) -> Self::Output {
@@ -295,14 +293,12 @@ impl<
 }
 
 #[derive(Debug)]
-pub struct ActionSequence<T, U, V, W> {
+pub struct ActionSequence<V, W> {
     first: V,
     second: W,
-    _phantom_t: PhantomData<T>,
-    _phantom_u: PhantomData<U>,
 }
 
-impl<T, U, V: Action, W: Action> Action for ActionSequence<T, U, V, W> {
+impl<V: Action, W: Action> Action for ActionSequence<V, W> {
     fn dot_string(&self) -> DotString {
         let first_str = self.first.dot_string();
         let second_str = self.second.dot_string();
@@ -322,26 +318,15 @@ impl<T, U, V: Action, W: Action> Action for ActionSequence<T, U, V, W> {
     }
 }
 
-impl<T, U, V, W> ActionSequence<T, U, V, W> {
+impl<V, W> ActionSequence<V, W> {
     pub const fn new(first: V, second: W) -> Self {
-        Self {
-            first,
-            second,
-            _phantom_t: PhantomData,
-            _phantom_u: PhantomData,
-        }
+        Self { first, second }
     }
 }
 
 #[async_trait]
-impl<
-        T: Send + Sync,
-        U: Send + Sync,
-        X: Send + Sync,
-        Y: Send + Sync,
-        V: ActionExec<Output = Y>,
-        W: ActionExec<Output = X>,
-    > ActionExec for ActionSequence<T, U, V, W>
+impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Output = Y>, W: ActionExec<Output = X>>
+    ActionExec for ActionSequence<V, W>
 {
     type Output = (Y, X);
     async fn execute(&mut self) -> Self::Output {
@@ -350,14 +335,12 @@ impl<
 }
 
 #[derive(Debug)]
-pub struct ActionParallel<T: Send + Sync, U: Send + Sync, V: Action, W: Action> {
+pub struct ActionParallel<V: Action, W: Action> {
     first: Arc<Mutex<V>>,
     second: Arc<Mutex<W>>,
-    _phantom_t: PhantomData<T>,
-    _phantom_u: PhantomData<U>,
 }
 
-impl<T: Send + Sync, U: Send + Sync, V: Action, W: Action> Action for ActionParallel<T, U, V, W> {
+impl<V: Action, W: Action> Action for ActionParallel<V, W> {
     fn dot_string(&self) -> DotString {
         let first_str = self.first.blocking_lock().dot_string();
         let second_str = self.second.blocking_lock().dot_string();
@@ -389,26 +372,22 @@ impl<T: Send + Sync, U: Send + Sync, V: Action, W: Action> Action for ActionPara
     }
 }
 
-impl<T: Send + Sync, U: Send + Sync, V: Action, W: Action> ActionParallel<T, U, V, W> {
+impl<V: Action, W: Action> ActionParallel<V, W> {
     pub fn new(first: V, second: W) -> Self {
         Self {
             first: Arc::from(Mutex::from(first)),
             second: Arc::from(Mutex::from(second)),
-            _phantom_t: PhantomData,
-            _phantom_u: PhantomData,
         }
     }
 }
 
 #[async_trait]
 impl<
-        T: 'static + Send + Sync,
-        U: 'static + Send + Sync,
         Y: 'static + Send + Sync,
         X: 'static + Send + Sync,
         V: 'static + ActionExec<Output = Y>,
         W: 'static + ActionExec<Output = X>,
-    > ActionExec for ActionParallel<T, U, V, W>
+    > ActionExec for ActionParallel<V, W>
 {
     type Output = (Y, X);
     async fn execute(&mut self) -> Self::Output {
@@ -429,14 +408,12 @@ impl<
 }
 
 #[derive(Debug)]
-pub struct ActionConcurrent<T, U, V: Action, W: Action> {
+pub struct ActionConcurrent<V: Action, W: Action> {
     first: V,
     second: W,
-    _phantom_t: PhantomData<T>,
-    _phantom_u: PhantomData<U>,
 }
 
-impl<T, U, V: Action, W: Action> Action for ActionConcurrent<T, U, V, W> {
+impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
     fn dot_string(&self) -> DotString {
         let first_str = self.first.dot_string();
         let second_str = self.second.dot_string();
@@ -468,26 +445,15 @@ impl<T, U, V: Action, W: Action> Action for ActionConcurrent<T, U, V, W> {
     }
 }
 
-impl<T, U, V: Action, W: Action> ActionConcurrent<T, U, V, W> {
+impl<V: Action, W: Action> ActionConcurrent<V, W> {
     pub const fn new(first: V, second: W) -> Self {
-        Self {
-            first,
-            second,
-            _phantom_t: PhantomData,
-            _phantom_u: PhantomData,
-        }
+        Self { first, second }
     }
 }
 
 #[async_trait]
-impl<
-        T: Send + Sync,
-        U: Send + Sync,
-        X: Send + Sync,
-        Y: Send + Sync,
-        V: ActionExec<Output = Y>,
-        W: ActionExec<Output = X>,
-    > ActionExec for ActionConcurrent<T, U, V, W>
+impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Output = Y>, W: ActionExec<Output = X>>
+    ActionExec for ActionConcurrent<V, W>
 {
     type Output = (Y, X);
     async fn execute(&mut self) -> Self::Output {
