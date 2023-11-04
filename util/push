@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -eo
+
+this_dir="$(realpath "$(dirname -- "$0")")"
+parent="$(dirname "$this_dir")"
+cd "$parent"
+
+util/crossbuild "$@"
+
+ssh -i ./util/.sw8_ssh_identity 'sw8@192.168.2.5' 'sudo mount -o remount,rw /; mkdir sw8s'
+scp -i ./util/.sw8_ssh_identity jetson_target/debug/sw8s_rust 'sw8@192.168.2.5:sw8s/'

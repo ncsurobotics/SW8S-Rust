@@ -7,6 +7,13 @@ use anyhow::Result;
 use async_trait::async_trait;
 use num_traits::{FromPrimitive, Num};
 
+#[cfg(feature = "logging")]
+use opencv::{core::Vector, imgcodecs::imwrite};
+#[cfg(feature = "logging")]
+use std::fs::create_dir_all;
+#[cfg(feature = "logging")]
+use uuid::Uuid;
+
 /// Runs a vision routine to obtain object position
 ///
 /// The relative position is normalized to [-1, 1] on both axes
@@ -42,16 +49,21 @@ where
             println!("Running detection...");
         }
         let mat = self.context.get_mat().await;
-        let detections = self.model.detect_unique(&mat)?;
+        let detections = self.model.detect_unique(&mat);
         #[cfg(feature = "logging")]
         {
-            println!("Detected!");
+            create_dir_all("/tmp/detect").unwrap();
+            println!("Detect status: {}", detections.is_ok());
             imwrite(
-                "/tmp/detect" + Uuid::new_v4() + ".jpeg",
+                &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
                 &mat,
                 &Vector::default(),
-            );
+            )
+            .unwrap();
         }
+        let detections = detections?;
+        #[cfg(feature = "logging")]
+        println!("Number of detects: {}", detections.len());
 
         let positions: Vec<_> = detections
             .iter()

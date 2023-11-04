@@ -325,12 +325,11 @@ impl<V, W> ActionSequence<V, W> {
 }
 
 #[async_trait]
-impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Output = Y>, W: ActionExec<Output = X>>
-    ActionExec for ActionSequence<V, W>
-{
-    type Output = (Y, X);
+impl<X: Send + Sync, V: ActionExec, W: ActionExec<Output = X>> ActionExec for ActionSequence<V, W> {
+    type Output = X;
     async fn execute(&mut self) -> Self::Output {
-        (self.first.execute().await, self.second.execute().await)
+        self.first.execute().await;
+        self.second.execute().await
     }
 }
 
