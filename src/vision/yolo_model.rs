@@ -57,8 +57,8 @@ where
         const IMAGE_HEIGHT: f64 = 600.0;
         Self::Position {
             inner: Rect2d::new(
-                ((pos.inner.x / IMAGE_WIDTH) + 0.5) * 2.0,
-                ((pos.inner.y / IMAGE_HEIGHT) + 0.5) * 2.0,
+                ((pos.inner.x / IMAGE_WIDTH) - 0.5) * 2.0,
+                ((pos.inner.y / IMAGE_HEIGHT) - 0.5) * 2.0,
                 pos.inner.width / IMAGE_WIDTH,
                 pos.inner.height / IMAGE_HEIGHT,
             ),

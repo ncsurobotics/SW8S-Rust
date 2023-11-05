@@ -1,5 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use core::fmt::Debug;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
@@ -152,11 +153,18 @@ impl<T> ActionMod<f32> for AdjustMovement<'_, T> {
 
 impl<T, V> ActionMod<Result<V>> for AdjustMovement<'_, T>
 where
-    V: RelPos<Number = f64> + Sync + Send,
+    V: RelPos<Number = f64> + Sync + Send + Debug,
 {
     fn modify(&mut self, input: Result<V>) {
         if let Ok(input) = input {
-            self.x = *input.offset().x() as f32;
+            println!("Modify value: {:?}", input);
+            if !input.offset().x().is_nan() || !input.offset().y().is_nan() {
+                self.x = *input.offset().x() as f32;
+            } else {
+                self.x = 0.0;
+            }
+        } else {
+            self.x = 0.0;
         }
     }
 }
@@ -167,7 +175,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovement<
     async fn execute(&mut self) -> Self::Output {
         self.context
             .get_control_board()
-            .stability_2_speed_set_initial_yaw(0.5, self.x, 0.0, 0.0, self.target_depth)
+            .stability_2_speed_set_initial_yaw(self.x, 0.5, 0.0, 0.0, self.target_depth)
             .await
     }
 }

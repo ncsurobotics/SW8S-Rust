@@ -166,9 +166,9 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "gate_run" => {
-            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
-            let _cam_extra =
-                Camera::jetson_new("/dev/video0", "front", Path::new("/tmp/feed_extra.mp4"))?;
+            let cam = Camera::jetson_new("/dev/video0", "front", Path::new("/tmp/feed.mp4"))?;
+            //let _cam_extra =
+            //Camera::jetson_new("/dev/video0", "front", Path::new("/tmp/feed_extra.mp4"))?;
             println!("Opened camera");
             let _ = gate_run(&FullActionContext::new(
                 control_board().await,
