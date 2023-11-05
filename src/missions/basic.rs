@@ -85,18 +85,16 @@ pub fn gate_run<
     context: &T,
 ) -> impl ActionExec + '_ {
     let depth: f32 = -1.0;
-    println!("INNER MODEL LOAD");
     let model = Buoy::default();
-    println!("OUTER MODEL LOAD");
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        ActionWhile::new(TupleSecond::new(ActionSequence::new(
+        ActionWhile::new(ActionSequence::new(
             ActionChain::new(
                 VisionNormOffset::<T, Buoy<OnnxModel>, f64>::new(context, model),
                 AdjustMovement::new(context, depth),
             ),
             AlwaysTrue::new(),
-        ))),
+        )),
     )
 }
