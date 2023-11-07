@@ -44,14 +44,11 @@ where
 {
     type Output = Result<Offset2D<V>>;
     async fn execute(&mut self) -> Self::Output {
-        let mat = self.context.get_mat().await;
-        
-        #[cfg(feature = "logging")] 
+        #[cfg(feature = "logging")]
         {
             println!("Running detection...");
-            let mut mat = self.context.get_mat().await;
-        } 
-
+        }
+        let mat = self.context.get_mat().await;
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
         println!("Detect attempt: {}", detections.is_ok());
