@@ -26,5 +26,8 @@ jobs:
                                  libclang-dev \
                                  libopencv-dev \
 
+    - name: Build
+      run: cargo build
+
     - name: Run tests
-      run: cargo build # test --verbose
+      run: cargo test --verbose
