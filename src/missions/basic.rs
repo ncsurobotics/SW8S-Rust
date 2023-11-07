@@ -1,6 +1,6 @@
 use crate::{
     video_source::MatSource,
-    vision::{buoy::Buoy, nn_cv2::OnnxModel},
+    vision::{buoy::Buoy, gate::Gate, gate_poles::GatePoles, nn_cv2::OnnxModel},
 };
 
 use super::{
@@ -85,13 +85,13 @@ pub fn gate_run<
     context: &T,
 ) -> impl ActionExec + '_ {
     let depth: f32 = -1.0;
-    let model = Buoy::default();
+    let model = GatePoles::default();
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
         ActionWhile::new(ActionSequence::new(
             ActionChain::new(
-                VisionNormOffset::<T, Buoy<OnnxModel>, f64>::new(context, model),
+                VisionNormOffset::<T, GatePoles<OnnxModel>, f64>::new(context, model),
                 AdjustMovement::new(context, depth),
             ),
             AlwaysTrue::new(),

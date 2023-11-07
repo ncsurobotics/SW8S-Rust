@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use super::action::{Action, ActionExec};
 use crate::video_source::MatSource;
-use crate::vision::{Offset2D, RelPos, VisualDetector};
+use crate::vision::{Draw, Offset2D, RelPos, VisualDetector};
 use anyhow::Result;
 use async_trait::async_trait;
 use num_traits::{FromPrimitive, Num};
@@ -40,7 +40,7 @@ impl<T, U, V> Action for VisionNormOffset<'_, T, U, V> {}
 impl<T: MatSource, V: Num + FromPrimitive + Send + Sync, U: VisualDetector<V> + Send + Sync>
     ActionExec for VisionNormOffset<'_, T, U, V>
 where
-    U::Position: RelPos<Number = V>,
+    U::Position: RelPos<Number = V> + Draw,
 {
     type Output = Result<Offset2D<V>>;
     async fn execute(&mut self) -> Self::Output {
@@ -48,12 +48,18 @@ where
         {
             println!("Running detection...");
         }
-        let mat = self.context.get_mat().await;
-        let detections = self.model.detect_unique(&mat);
+        let mut mat = self.context.get_mat().await;
+        let detections = self.model.detect(&mat);
+        #[cfg(feature = "logging")]
+        println!("Detect attempt: {}", detections.is_ok());
+        let detections = detections?;
         #[cfg(feature = "logging")]
         {
+            detections
+                .iter()
+                .for_each(|x| x.position().draw(&mut mat).unwrap());
+            println!("Number of detects: {}", detections.len());
             create_dir_all("/tmp/detect").unwrap();
-            println!("Detect status: {}", detections.is_ok());
             imwrite(
                 &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
                 &mat,
@@ -61,9 +67,6 @@ where
             )
             .unwrap();
         }
-        let detections = detections?;
-        #[cfg(feature = "logging")]
-        println!("Number of detects: {}", detections.len());
 
         let positions: Vec<_> = detections
             .iter()
