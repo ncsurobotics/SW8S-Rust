@@ -48,7 +48,7 @@ where
         {
             println!("Running detection...");
         }
-        let mut mat = self.context.get_mat().await;
+        let mat = self.context.get_mat().await;
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
         println!("Detect attempt: {}", detections.is_ok());
