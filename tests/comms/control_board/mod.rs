@@ -110,6 +110,29 @@ async fn real_comms_read_no_error() {
     assert!(percent_error < 1.0);
 }
 
+
+#[tokio::test]
+pub async fn unity_tcp_connect() {
+    const LOCALHOST: &str = "172.27.160.1";
+    const SIM_PORT: &str = "1234";
+    const SIM_DUMMY_PORT: &str = "5011";
+
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+    while timeout(
+        Duration::from_secs(1),
+        control_board.raw_speed_set([0.2, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.1]),
+    )
+    .await
+    .is_err()
+    {
+        println!("RAW timeout");
+    }
+    // Will be broken until get IMU data read
+    sleep(Duration::from_secs(10)).await;
+    todo!();
+}
 #[ignore = "requires a UI, is long"]
 #[tokio::test]
 pub async fn tcp_connect() {
