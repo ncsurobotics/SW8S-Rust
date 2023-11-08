@@ -1,11 +1,11 @@
 use crate::{
     video_source::MatSource,
-    vision::{buoy::Buoy, gate::Gate, gate_poles::GatePoles, nn_cv2::OnnxModel},
+    vision::{gate_poles::GatePoles, nn_cv2::OnnxModel},
 };
 
 use super::{
     action::{
-        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile, TupleSecond,
+        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile,
     },
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     comms::StartBno055,

@@ -2,7 +2,6 @@ use std::f32::consts::PI;
 
 use anyhow::bail;
 use derive_getters::Getters;
-use num_traits::Float;
 
 /// See <https://cdn-shop.adafruit.com/datasheets/BST_BNO055_DS000_12.pdf>,
 /// page 25

@@ -48,6 +48,8 @@ where
         {
             println!("Running detection...");
         }
+        
+        #[allow(unused_mut)]
         let mut mat = self.context.get_mat().await;
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
