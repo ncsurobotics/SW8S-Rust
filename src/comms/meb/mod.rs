@@ -85,3 +85,66 @@ impl MainElectronicsBoard {
         *self.statuses.shutdown().read().await
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[tokio::test]
+    async fn thruster_is_armed() {
+        let meb = MainElectronicsBoard::new(tokio::io::empty()).await;
+
+        // Receive 24 consecutive messages with thruster arm set to true
+        for _ in 0..24 {
+            meb.statuses.thruster_arm().write().await.replace(true);
+            meb.thruster_arm().await;
+        }
+
+        assert_eq!(meb.thruster_arm().await, Some(true));
+    }
+
+    #[tokio::test]
+    async fn thruster_is_not_armed() {
+        let meb = MainElectronicsBoard::new(tokio::io::empty()).await;
+
+        // Receive 24 consecutive messages with thruster arm set to false
+        for _ in 0..24 {
+            meb.statuses.thruster_arm().write().await.replace(false);
+            meb.thruster_arm().await;
+        }
+
+        assert_eq!(meb.thruster_arm().await, Some(false));
+    }
+
+    #[tokio::test]
+    async fn thrust_arm_debounce() {
+        let meb = MainElectronicsBoard::new(tokio::io::empty()).await;
+
+        meb.statuses.thruster_arm().write().await.replace(false);
+        assert_eq!(meb.thruster_arm().await, Some(false));
+
+        for _ in 0..10 {
+            meb.statuses.thruster_arm().write().await.replace(true);
+            meb.thruster_arm().await;
+        }
+        assert_eq!(meb.thruster_arm().await, Some(false));
+
+        for _ in 0..24 {
+            meb.statuses.thruster_arm().write().await.replace(true);
+            meb.thruster_arm().await;
+        }
+        assert_eq!(meb.thruster_arm().await, Some(true));
+
+        for _ in 0..10 {
+            meb.statuses.thruster_arm().write().await.replace(false);
+            meb.thruster_arm().await;
+        }
+        assert_eq!(meb.thruster_arm().await, Some(true));
+
+        for _ in 0..24 {
+            meb.statuses.thruster_arm().write().await.replace(false);
+            meb.thruster_arm().await;
+        }
+        assert_eq!(meb.thruster_arm().await, Some(false));
+    }
+}
