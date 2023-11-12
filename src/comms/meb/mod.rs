@@ -59,7 +59,7 @@ impl MainElectronicsBoard {
     pub async fn thruster_arm(&self) -> Option<bool> {
         let arm_count = self.arm_count.clone();
         let arm_state = self.arm_state.clone();
-        let current_arm_state = self.arm_state.lock().unwrap().clone();
+        let current_arm_state = *self.statuses.thruster_arm().read().await;
 
         let t1 = thread::spawn(move || {
             let mut locked_arm_count = arm_count.lock().unwrap();
