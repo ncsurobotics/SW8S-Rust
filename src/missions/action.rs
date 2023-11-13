@@ -17,7 +17,11 @@ pub trait Action {
         DotString {
             head_ids: vec![id],
             tail_ids: vec![id],
-            body: format!("\"{}\" [label = \"{}\"];\n", id, stripped_type::<Self>()),
+            body: format!(
+                "\"{}\" [label = \"{}\", margin = 0];\n",
+                id,
+                stripped_type::<Self>()
+            ),
         }
     }
 }
@@ -257,7 +261,7 @@ impl<V: Action, W: Action> Action for ActionChain<V, W> {
         for tail in &first_str.tail_ids {
             for head in &second_str.head_ids {
                 body_str.push_str(&format!(
-                    "\"{}\" -> \"{}\" [color = purple, textcolor = purple, label = \"Pass Data\"];\n",
+                    "\"{}\" -> \"{}\" [color = purple, fontcolor = purple, label = \"Pass Data\"];\n",
                     tail, head
                 ))
             }
@@ -422,7 +426,7 @@ impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
             "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Concurrent\", shape = box, fontcolor = blue, style = dashed];\n",
             Uuid::new_v4(),
             concurrent_head
-        ) + &format!("\"{}\" [label = \"Collect\", shape = box, fontcolor = blue, style = dashed];\n", concurrent_tail) +
+        ) + &format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = blue, style = dashed];\n", concurrent_tail) +
             &first_str.body
             + &second_str.body;
 
@@ -526,10 +530,10 @@ impl<T: Action> Action for ActionWhile<T> {
 
         let mut body_str = action_str.body;
         for head in &action_str.head_ids {
-            body_str.push_str(&format!("\"{}\" [shape = diamond];\n", head));
             for tail in &action_str.tail_ids {
+                body_str.push_str(&format!("\"{}\" [shape = diamond];\n", tail));
                 body_str.push_str(&format!(
-                    "\"{}\":sw -> \"{}\":nw [label = \"True\"];\n",
+                    "\"{}\" -> \"{}\" [label = \"True\"];\n",
                     tail, head
                 ))
             }
