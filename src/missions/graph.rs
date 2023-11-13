@@ -39,7 +39,7 @@ impl DotString {
 }
 
 pub fn dot_file<T: ?Sized + Action>(act: &T) -> String {
-    let header = "digraph G {\nsplines = false;\n".to_string();
+    let header = "digraph G {\nsplines = true;\n".to_string();
     header + &act.dot_string().body + "}"
 }
 
