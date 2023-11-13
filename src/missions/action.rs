@@ -422,7 +422,7 @@ impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
             "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Concurrent\", shape = box, fontcolor = blue, style = dashed];\n",
             Uuid::new_v4(),
             concurrent_head
-        ) + &format!("{}\" [label = \"Collect\", shape = box, fontcolor = blue, style = dashed];\n", concurrent_tail) +
+        ) + &format!("\"{}\" [label = \"Collect\", shape = box, fontcolor = blue, style = dashed];\n", concurrent_tail) +
             &first_str.body
             + &second_str.body;
 
