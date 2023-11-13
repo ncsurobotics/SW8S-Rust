@@ -9,6 +9,10 @@ use super::graph::{stripped_type, DotString};
 
 /**
  * A trait for an action that can be executed.
+ *
+ * Functions returning Actions/ActionExec should be written with `-> impl ActionExec + '_` and
+ * using `Con` for the context generic. This allows the build script to strip out the context and
+ * create a mirrored version returning `-> impl Action +'_` for graphing.
  */
 pub trait Action {
     /// Represent this node in dot (graphviz) notation
