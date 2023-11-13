@@ -12,9 +12,17 @@ mod graphing {
         parse_file, Ident, ItemFn, ReturnType, Token, Type, TypeParamBound, UsePath, UseTree,
     };
 
-    struct ReplaceActionExec;
+    struct ReplaceActionExec<'a> {
+        actions: &'a mut Vec<String>,
+    }
 
-    impl Fold for ReplaceActionExec {
+    impl<'a> ReplaceActionExec<'a> {
+        fn new(actions: &'a mut Vec<String>) -> Self {
+            Self { actions }
+        }
+    }
+
+    impl Fold for ReplaceActionExec<'_> {
         // Replace every impl ActionExec with impl Action
         // Uses GraphAction to always be sure Action is imported
         // Also strips generics
@@ -27,6 +35,7 @@ mod graphing {
                             t.path.segments.iter_mut().for_each(|seg| {
                                 if seg.ident == "ActionExec" {
                                     seg.ident = Ident::new("GraphAction", seg.ident.span());
+                                    self.actions.push(j.sig.ident.to_string());
 
                                     j.sig.generics.type_params_mut().for_each(|param| {
                                         if param.ident == "Con" {
@@ -102,12 +111,27 @@ mod graphing {
 
         // Modify clones and write to output dir
         mission_files
-            .map(|(path, file)| (path, ReplaceActionExec.fold_file(file)))
-            .for_each(|(path, file)| {
+            .map(|(path, file)| {
+                let mut actions = vec![];
+                (
+                    path,
+                    ReplaceActionExec::new(&mut actions).fold_file(file),
+                    actions,
+                )
+            })
+            .for_each(|(path, file, actions)| {
+                let actions_str =
+                    "pub fn graph_actions<T>(context: &T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
+                        .to_string()
+                        + &actions
+                            .into_iter()
+                            .fold("".to_string(), |acc, x| acc + &format!("(\"{x}\".to_string(), Box::new({x}(context))),"))
+                        + "]}";
+                let file_contents =
+                    quote! { use sw8s_rust_lib::missions::action::Action as GraphAction; #file };
                 write(
                     out_path.join(path.strip_prefix::<PathBuf>("src/missions".into()).unwrap()),
-                    quote! { use sw8s_rust_lib::missions::action::Action as GraphAction; #file }
-                        .to_string(),
+                    format!("{} {}", file_contents, actions_str),
                 )
                 .unwrap()
             });
