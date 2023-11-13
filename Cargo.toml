@@ -2,6 +2,7 @@
 name = "sw8s_rust"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -21,7 +22,7 @@ required-features = ["graphing"]
 [features]
 jetson = []
 logging = []
-graphing = ["dep:graphviz-rust"]
+graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2"]
 
 [dependencies]
 opencv = { version = "0.86.1", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
@@ -38,6 +39,11 @@ serde = { version = "1.0.190", features = ["derive"] } # Config serial handling
 bytes = "1.5.0" # Byte buffering
 uuid = { version = "1.5.0", features = ["v4", "fast-rng"] } # Unique IDs
 graphviz-rust = { version = "0.6.6", optional = true } # Drawing graphs
+
+[build-dependencies]
+quote = { version = "1.0.33", optional = true }
+syn = { version = "2.0.39", features = ["full", "fold"], optional = true }
+proc-macro2 = { version = "1.0.69", optional = true }
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
