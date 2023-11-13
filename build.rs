@@ -95,7 +95,6 @@ mod graphing {
         println!("out_dir: {out_dir}");
         let out_path_raw = out_dir + "/graph_missions";
         let out_path = Path::new(&out_path_raw);
-        create_dir_all(out_path).unwrap();
 
         // Get parseable file clones
         let mission_files = get_files("src/missions".into())
@@ -129,6 +128,8 @@ mod graphing {
                         + "]}";
                 let file_contents =
                     quote! { use sw8s_rust_lib::missions::action::Action as GraphAction; #file };
+                let output_loc = out_path.join(path.strip_prefix::<PathBuf>("src/missions".into()).unwrap());
+                create_dir_all(output_loc.parent().unwrap()).unwrap();
                 write(
                     out_path.join(path.strip_prefix::<PathBuf>("src/missions".into()).unwrap()),
                     format!("{} {}", file_contents, actions_str),

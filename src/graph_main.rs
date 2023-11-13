@@ -2,7 +2,6 @@ use std::fs::create_dir_all;
 
 use futures::{stream, StreamExt};
 use paste::paste;
-use sw8s_rust_lib::missions::action::Action;
 use sw8s_rust_lib::missions::action_context::EmptyActionContext;
 use sw8s_rust_lib::missions::graph::{dot_file, draw_svg};
 use tokio::{fs::write, join};
