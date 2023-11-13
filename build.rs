@@ -28,10 +28,11 @@ mod graphing {
                                 if seg.ident == "ActionExec" {
                                     seg.ident = Ident::new("GraphAction", seg.ident.span());
 
-                                    j.sig
-                                        .generics
-                                        .type_params_mut()
-                                        .for_each(|param| param.bounds = Punctuated::new());
+                                    j.sig.generics.type_params_mut().for_each(|param| {
+                                        if param.ident == "Con" {
+                                            param.bounds = Punctuated::new()
+                                        }
+                                    });
                                 }
                             });
                         }
