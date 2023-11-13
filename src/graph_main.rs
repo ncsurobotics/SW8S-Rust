@@ -1,7 +1,13 @@
 use futures::{stream, StreamExt};
+use sw8s_rust_lib::missions::action_context::EmptyActionContext;
 use sw8s_rust_lib::missions::graph::{dot_file, draw_svg};
-use sw8s_rust_lib::missions::{action_context::EmptyActionContext, basic::descend_and_go_forward};
 use tokio::{fs::write, join};
+
+#[allow(warnings)]
+mod generated_actions {
+    include!(concat!(env!("OUT_DIR"), "/graph_missions/basic.rs"));
+}
+use generated_actions::descend_and_go_forward;
 
 #[tokio::main]
 async fn main() {
