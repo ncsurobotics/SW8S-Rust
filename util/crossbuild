@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eo
+TAG=sw8s-rust-jetson
+
+this_dir="$(realpath "$(dirname -- "$0")")"
+parent="$(dirname "$this_dir")"
+cd "$parent"
+
+docker buildx build -t "$TAG" -f "${this_dir}/Dockerfile" --platform linux/arm64 .
+docker run --rm -v "$parent":/build --mount source=sw8s-rust-jetson-vol,target=/root/.cargo/registry --platform=linux/arm64 "$TAG" "$@"
