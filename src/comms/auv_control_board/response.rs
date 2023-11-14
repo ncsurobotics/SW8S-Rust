@@ -1,9 +1,14 @@
+use std::fmt::Debug;
 use bytes::BufMut;
 use tokio::io::AsyncReadExt;
 #[cfg(feature = "logging")]
 use tokio::{fs::OpenOptions, io::AsyncWriteExt};
+use tokio::sync::OnceCell;
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
+
+#[cfg(feature = "logging")]
+static LOG_FILE: OnceCell<String> = OnceCell::const_new();
 
 pub fn find_end(buffer: &[u8]) -> Option<(usize, &u8)> {
     let mut prev_escaped = false;
@@ -110,11 +115,13 @@ pub async fn write_log(messages: &Vec<Vec<u8>>, dump_file: &str) {
         std::fs::create_dir("logging").unwrap();
     }
 
+    fmt_filename_time(dump_file).await;
+
     let mut file =
         OpenOptions::new()
             .create(true)
-            .append(false)
-            .open(dump_file)
+            .append(true)
+            .open(LOG_FILE.get().unwrap())
             .await
             .unwrap();
 
@@ -126,6 +133,12 @@ pub async fn write_log(messages: &Vec<Vec<u8>>, dump_file: &str) {
     }
 
     file.flush().await.unwrap();
+}
+
+#[cfg(feature = "logging")]
+pub async fn fmt_filename_time(dump_file: &str) {
+    let formatted_time = chrono::Local::now().format("%Y-%m-%d_%H:%M:%S").to_string();
+    LOG_FILE.get_or_init(|| async { format!("logging/{}{}.dat", dump_file.to_owned(), formatted_time) }).await;
 }
 
 #[cfg(test)]
@@ -140,13 +153,11 @@ mod tests {
         let input2: Vec<u8> = vec![END_BYTE, 1, START_BYTE, 3, END_BYTE, 5];
         let mut buffer: Vec<u8> = Vec::with_capacity(512);
 
-        let filename = "test.dat";
-
         assert_eq!(
             stream::iter(get_messages(
                 &mut buffer,
                 &mut &*input,
-            #[cfg(feature = "logging")] "test.dat").await)
+            #[cfg(feature = "logging")] "test").await)
                 .collect::<Vec<Vec<u8>>>()
                 .await,
             vec![vec![]]
@@ -156,7 +167,7 @@ mod tests {
             stream::iter(get_messages(
                 &mut buffer,
                 &mut &*input2,
-                #[cfg(feature = "logging")] "test.dat").await)
+                #[cfg(feature = "logging")] "test").await)
                 .collect::<Vec<Vec<u8>>>()
                 .await,
             vec![vec![3]]
@@ -170,7 +181,7 @@ mod tests {
         let input2: Vec<u8> = vec![START_BYTE, 3, 5, END_BYTE];
         let mut buffer: Vec<u8> = Vec::with_capacity(512);
 
-        let dump_file = "test_log.dat";
+        let dump_file = "test_log";
 
         {
             get_messages(&mut buffer, &mut &*input, dump_file).await;
@@ -178,8 +189,8 @@ mod tests {
         }
 
         assert_eq!(
-            std::fs::read(dump_file).unwrap(),
-            vec![0, 1, 3, 5]
+            std::fs::read(LOG_FILE.get().unwrap()).unwrap(),
+            vec![0, 1, 3, 3, 5]
         );
     }
 }
