@@ -105,11 +105,15 @@ pub async fn get_messages<T>(
 }
 
 #[cfg(feature = "logging")]
-pub async fn write_log(messages: &Vec<Vec<u8>>, #[cfg(feature = "logging")] dump_file: &str) {
+pub async fn write_log(messages: &Vec<Vec<u8>>, dump_file: &str) {
+    if !std::path::Path::new("logging").exists() {
+        std::fs::create_dir("logging").unwrap();
+    }
+
     let mut file =
         OpenOptions::new()
             .create(true)
-            .append(true)
+            .append(false)
             .open(dump_file)
             .await
             .unwrap();
@@ -135,6 +139,8 @@ mod tests {
         let input: Vec<u8> = vec![0, 1, START_BYTE, END_BYTE];
         let input2: Vec<u8> = vec![END_BYTE, 1, START_BYTE, 3, END_BYTE, 5];
         let mut buffer: Vec<u8> = Vec::with_capacity(512);
+
+        let filename = "test.dat";
 
         assert_eq!(
             stream::iter(get_messages(
