@@ -4,9 +4,7 @@ use crate::{
 };
 
 use super::{
-    action::{
-        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile,
-    },
+    action::{Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     comms::StartBno055,
     example::AlwaysTrue,
@@ -52,9 +50,9 @@ impl DelayAction {
  *
  **/
 pub fn descend_and_go_forward<
-    T: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard,
 >(
-    context: &T,
+    context: &Con,
 ) -> impl ActionExec + '_ {
     let depth: f32 = -1.0;
 
@@ -80,9 +78,9 @@ pub fn descend_and_go_forward<
 }
 
 pub fn gate_run<
-    T: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + MatSource,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + MatSource,
 >(
-    context: &T,
+    context: &Con,
 ) -> impl ActionExec + '_ {
     let depth: f32 = -1.0;
     let model = GatePoles::default();
@@ -91,7 +89,7 @@ pub fn gate_run<
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
         ActionWhile::new(ActionSequence::new(
             ActionChain::new(
-                VisionNormOffset::<T, GatePoles<OnnxModel>, f64>::new(context, model),
+                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(context, model),
                 AdjustMovement::new(context, depth),
             ),
             AlwaysTrue::new(),
