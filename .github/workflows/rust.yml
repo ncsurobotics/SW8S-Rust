@@ -23,6 +23,7 @@ jobs:
           llvm \
           libclang-dev \
           libopencv-dev
+        execute_install_scripts: true
     - name: Install gstreamer
       run: sudo aptitude install -y libgstreamer1.0-dev
 
