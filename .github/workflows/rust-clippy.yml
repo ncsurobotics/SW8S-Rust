@@ -32,10 +32,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
           components: clippy
-          override: true
       - uses: Swatinem/rust-cache@v2
 
       - name: Install required cargo

@@ -19,13 +19,14 @@ jobs:
 
     - uses: awalsh128/cache-apt-pkgs-action@v1
       with:
-        packages: libgstreamer1.0-dev llvm libclang-dev libopencv-dev
+        packages: aptitude \
+          llvm \
+          libclang-dev \
+          libopencv-dev
+    - name: Install gstreamer
+      run: sudo aptitude install -y libgstreamer1.0-dev
 
     - uses: dtolnay/rust-toolchain@stable
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
     - uses: Swatinem/rust-cache@v2
 
     - name: Run tests
