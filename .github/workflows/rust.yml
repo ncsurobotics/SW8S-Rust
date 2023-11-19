@@ -26,8 +26,6 @@ jobs:
 
     - name: Install gstreamer
       run: |
-        sudo apt update
-        sudo apt install -y aptitude
         sudo aptitude install -y libgstreamer1.0-dev
 
     - uses: dtolnay/rust-toolchain@stable
