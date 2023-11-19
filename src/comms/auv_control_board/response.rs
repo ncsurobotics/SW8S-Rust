@@ -80,8 +80,8 @@ pub async fn get_messages<T>(
     serial_conn: &mut T,
     #[cfg(feature = "logging")] dump_file: &str,
 ) -> Vec<Vec<u8>>
-    where
-        T: AsyncReadExt + Unpin + Send,
+where
+    T: AsyncReadExt + Unpin + Send,
 {
     if serial_conn.read_buf(buffer).await.unwrap() != 0 {
         let mut messages = Vec::new();
@@ -92,7 +92,8 @@ pub async fn get_messages<T>(
             }
         }
 
-        #[cfg(feature = "logging")] {
+        #[cfg(feature = "logging")]
+        {
             write_log(&messages, dump_file).await;
         }
 
@@ -105,20 +106,16 @@ pub async fn get_messages<T>(
 }
 
 #[cfg(feature = "logging")]
-pub async fn write_log(messages: &Vec<Vec<u8>>, #[cfg(feature = "logging")] dump_file: &str) {
-    let mut file =
-        OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(dump_file)
-            .await
-            .unwrap();
+pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_file: &str) {
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(dump_file)
+        .await
+        .unwrap();
 
     for msg in messages.iter() {
-        file
-            .write_all(&msg)
-            .await
-            .unwrap()
+        file.write_all(msg).await.unwrap()
     }
 
     file.flush().await.unwrap();
@@ -137,22 +134,32 @@ mod tests {
         let mut buffer: Vec<u8> = Vec::with_capacity(512);
 
         assert_eq!(
-            stream::iter(get_messages(
-                &mut buffer,
-                &mut &*input,
-            #[cfg(feature = "logging")] "test.dat").await)
-                .collect::<Vec<Vec<u8>>>()
-                .await,
+            stream::iter(
+                get_messages(
+                    &mut buffer,
+                    &mut &*input,
+                    #[cfg(feature = "logging")]
+                    "test.dat"
+                )
+                .await
+            )
+            .collect::<Vec<Vec<u8>>>()
+            .await,
             vec![vec![]]
         );
 
         assert_eq!(
-            stream::iter(get_messages(
-                &mut buffer,
-                &mut &*input2,
-                #[cfg(feature = "logging")] "test.dat").await)
-                .collect::<Vec<Vec<u8>>>()
-                .await,
+            stream::iter(
+                get_messages(
+                    &mut buffer,
+                    &mut &*input2,
+                    #[cfg(feature = "logging")]
+                    "test.dat"
+                )
+                .await
+            )
+            .collect::<Vec<Vec<u8>>>()
+            .await,
             vec![vec![3]]
         );
     }
@@ -171,9 +178,6 @@ mod tests {
             get_messages(&mut buffer, &mut &*input2, dump_file).await;
         }
 
-        assert_eq!(
-            std::fs::read(dump_file).unwrap(),
-            vec![0, 1, 3, 5]
-        );
+        assert_eq!(std::fs::read(dump_file).unwrap(), vec![0, 1, 3, 5]);
     }
 }
