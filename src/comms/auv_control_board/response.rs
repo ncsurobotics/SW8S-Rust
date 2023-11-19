@@ -115,7 +115,7 @@ pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_fi
         .unwrap();
 
     for msg in messages.iter() {
-        file.write_all(&msg).await.unwrap()
+        file.write_all(msg).await.unwrap()
     }
 
     file.flush().await.unwrap();
