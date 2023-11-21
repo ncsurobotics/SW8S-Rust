@@ -1,10 +1,12 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc};
 use std::thread;
 
 use anyhow::Result;
 use itertools::Itertools;
 use tokio::io::AsyncReadExt;
+use tokio::join;
 use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
+use tokio::sync::Mutex;
 
 use self::response::Statuses;
 
@@ -61,9 +63,9 @@ impl MainElectronicsBoard {
         let arm_state = self.arm_state.clone();
         let current_arm_state = *self.statuses.thruster_arm().read().await;
 
-        let t1 = thread::spawn(move || {
-            let mut locked_arm_count = arm_count.lock().unwrap();
-            let mut locked_arm_state = arm_state.lock().unwrap();
+        let mut t1 = tokio::spawn(async move {
+            let mut locked_arm_count = arm_count.lock().await;
+            let mut locked_arm_state = arm_state.lock().await;
 
             locked_arm_count.push(current_arm_state.unwrap_or(false));
             locked_arm_count.remove(0);
@@ -73,8 +75,8 @@ impl MainElectronicsBoard {
             }
         });
 
-        t1.join().unwrap();
-        self.arm_state.lock().unwrap().clone()
+        join!(t1);
+        self.arm_state.lock().await.clone()
     }
 
     pub async fn system_voltage(&self) -> Option<f32> {
