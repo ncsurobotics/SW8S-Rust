@@ -166,7 +166,7 @@ impl Statuses {
             locked_tarm_count.remove(0);
 
             if locked_tarm_count.iter().all_equal() {
-                Some(*locked_tarm_count.get(0).unwrap())
+                Some(*locked_tarm_count.first().unwrap())
             } else {
                 None
             }
