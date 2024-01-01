@@ -26,15 +26,15 @@ logging = []
 graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2"]
 
 [dependencies]
-opencv = { version = "0.88.4", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
+opencv = { version = "0.88.5", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
 tokio-serial = "5.4.1" # Async serial comms
-tokio = { version = "1.35.0", features = ["full"] } # Async runtime
-anyhow = "1.0.75" # Error handling
+tokio = { version = "1.35.1", features = ["full"] } # Async runtime
+anyhow = "1.0.78" # Error handling
 itertools = "0.12.0" # Enhance iterators
 num-traits = "0.2.17" # Numeric generics
 derive-getters = "0.3.0" # Getter macro
-async-trait = "0.1.74" # Async fns in trait definitions
-futures = { version = "0.3.29", default-features = false, features = ["std"] }# Futures utilities
+async-trait = "0.1.76" # Async fns in trait definitions
+futures = { version = "0.3.30", default-features = false, features = ["std"] }# Futures utilities
 toml = "0.8.8" # Configuration file
 serde = { version = "1.0.193", features = ["derive"] } # Config serial handling
 bytes = "1.5.0" # Byte buffering
@@ -43,13 +43,13 @@ graphviz-rust = { version = "0.7.0", optional = true } # Drawing graphs
 paste = { version = "1.0.14", optional = true } # Concat identifiers
 
 [build-dependencies]
-quote = { version = "1.0.33", optional = true }
-syn = { version = "2.0.41", features = ["full", "fold"], optional = true }
+quote = { version = "1.0.34", optional = true }
+syn = { version = "2.0.44", features = ["full", "fold"], optional = true }
 proc-macro2 = { version = "1.0.70", optional = true }
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
-reqwest = "0.11.22" # Downloading godot sim
+reqwest = "0.11.23" # Downloading godot sim
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]
 flate2 = "1.0.28" # Decompressing gz
