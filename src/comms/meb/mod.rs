@@ -1,5 +1,4 @@
 use anyhow::Result;
-use itertools::Itertools;
 use tokio::io::AsyncReadExt;
 use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
 
@@ -14,8 +13,8 @@ pub struct MainElectronicsBoard {
 
 impl MainElectronicsBoard {
     pub async fn new<T>(read_connection: T) -> Self
-        where
-            T: 'static + AsyncReadExt + Unpin + Send,
+    where
+        T: 'static + AsyncReadExt + Unpin + Send,
     {
         Self {
             statuses: Statuses::new(read_connection).await,
