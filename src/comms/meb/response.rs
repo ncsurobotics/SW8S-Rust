@@ -3,7 +3,6 @@ use std::{
         mpsc::{channel, Sender, TryRecvError},
         Arc,
     },
-    time::Duration,
 };
 
 use crate::{
@@ -13,10 +12,10 @@ use crate::{
 
 use derive_getters::Getters;
 use futures::{stream, StreamExt};
+use itertools::Itertools;
 use tokio::{
     io::{stderr, AsyncReadExt, AsyncWriteExt},
     sync::{Mutex, RwLock},
-    time::sleep,
 };
 
 type Lock<T> = Arc<RwLock<Option<T>>>;
@@ -34,6 +33,7 @@ pub struct Statuses {
     humid: Lock<[u8; 4]>,
     leak: Lock<bool>,
     thruster_arm: Lock<bool>,
+    tarm_count: Arc<Mutex<Vec<bool>>>,
     system_voltage: Lock<[u8; 4]>,
     shutdown: Lock<u8>,
     _tx: Sender<()>,
@@ -50,7 +50,8 @@ impl Statuses {
         let temp: Lock<_> = Arc::default();
         let humid: Lock<_> = Arc::default();
         let leak: Lock<_> = Arc::default();
-        let thruster_arm: Lock<_> = Arc::default();
+        let thruster_arm: Lock<_> = Arc::new(RwLock::new(Some(false)));
+        let tarm_count: Arc<Mutex<Vec<bool>>> = Arc::new(Mutex::new(vec![false; 24]));
         let system_voltage: Lock<_> = Arc::default();
         let shutdown: Lock<_> = Arc::default();
         let (_tx, rx) = channel::<()>(); // Signals struct destruction to thread
@@ -59,6 +60,7 @@ impl Statuses {
         let humid_clone = humid.clone();
         let leak_clone = leak.clone();
         let thruster_arm_clone = thruster_arm.clone();
+        let tarm_count_clone = tarm_count.clone();
         let system_voltage_clone = system_voltage.clone();
         let shutdown_clone = shutdown.clone();
 
@@ -74,6 +76,7 @@ impl Statuses {
                     &humid_clone,
                     &leak_clone,
                     &thruster_arm_clone,
+                    &tarm_count_clone,
                     &system_voltage_clone,
                     &shutdown_clone,
                     &mut stderr(),
@@ -87,6 +90,7 @@ impl Statuses {
             humid,
             leak,
             thruster_arm,
+            tarm_count,
             system_voltage,
             shutdown,
             _tx,
@@ -103,6 +107,7 @@ impl Statuses {
         humid: &RwLock<Option<[u8; 4]>>,
         leak: &RwLock<Option<bool>>,
         tarm: &Arc<RwLock<Option<bool>>>,
+        tarm_count: &Arc<Mutex<Vec<bool>>>,
         vsys: &RwLock<Option<[u8; 4]>>,
         sdown: &RwLock<Option<u8>>,
         err_stream: &mut U,
@@ -131,12 +136,10 @@ impl Statuses {
                 } else if message_body.get(0..4) == Some(&LEAK) {
                     *leak.write().await = Some(message_body[4] == 1);
                 } else if message_body.get(0..4) == Some(&TARM) {
-                    let tarm_clone = tarm.clone();
-                    let tarm_status = Some(message_body[4] == 1);
-                    tokio::spawn(async move {
-                        sleep(Duration::from_millis(3500)).await;
-                        *tarm_clone.write().await = tarm_status;
-                    });
+                    let tarm_status = Self::arm_debounce(tarm_count, Some(message_body[4] == 1)).await;
+                    if tarm_status.is_some() {
+                        *tarm.write().await = tarm_status;
+                    }
                 } else if message_body.get(0..4) == Some(&VSYS) {
                     *vsys.write().await = Some(message_body[4..].try_into().unwrap());
                 } else if message_body.get(0..4) == Some(&SDOWN) {
@@ -154,5 +157,83 @@ impl Statuses {
             ));
             }
         }).await;
+    }
+
+    async fn arm_debounce(tarm_count: &Arc<Mutex<Vec<bool>>>, current_tarm: Option<bool>) -> Option<bool> {
+            let mut locked_tarm_count = tarm_count.lock().await;
+
+            locked_tarm_count.push(current_tarm.unwrap_or(false));
+            locked_tarm_count.remove(0);
+
+            if locked_tarm_count.iter().all_equal() {
+                Some(*locked_tarm_count.first().unwrap())
+            } else {
+                None
+            }
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    async fn update_tarm(statuses: &Statuses, current_tarm: Option<bool>) {
+        let tarm_status = Statuses::arm_debounce(&statuses.tarm_count.clone(), current_tarm).await;
+
+        if tarm_status.is_some() {
+            *statuses.thruster_arm.write().await = tarm_status;
+        }
+    }
+    #[tokio::test]
+    async fn thruster_is_armed() {
+        let statuses = Statuses::new(tokio::io::empty()).await;
+
+        // Receive 24 consecutive messages with thruster arm set to true
+        for _ in 0..24 {
+            update_tarm(&statuses, Some(true)).await;
+        }
+
+        assert_eq!(*statuses.thruster_arm.read().await, Some(true));
+    }
+
+    #[tokio::test]
+    async fn thruster_is_not_armed() {
+        let statuses = Statuses::new(tokio::io::empty()).await;
+
+        // Receive 24 consecutive messages with thruster arm set to true
+        for _ in 0..24 {
+            update_tarm(&statuses, Some(false)).await;
+        }
+
+        assert_eq!(*statuses.thruster_arm.read().await, Some(false));
+    }
+
+    #[tokio::test]
+    async fn thrust_arm_debounce() {
+        let statuses = Statuses::new(tokio::io::empty()).await;
+
+        update_tarm(&statuses, Some(false)).await;
+        assert_eq!(*statuses.thruster_arm.read().await, Some(false));
+
+        for _ in 0..23 {
+            update_tarm(&statuses, Some(true)).await;
+        }
+        assert_eq!(*statuses.thruster_arm.read().await, Some(false));
+
+        for _ in 0..1 {
+            update_tarm(&statuses, Some(true)).await;
+        }
+        assert_eq!(*statuses.thruster_arm.read().await, Some(true));
+
+        for _ in 0..23 {
+            update_tarm(&statuses, Some(false)).await;
+        }
+        assert_eq!(*statuses.thruster_arm.read().await, Some(true));
+
+        for _ in 0..1 {
+            update_tarm(&statuses, Some(false)).await;
+        }
+        assert_eq!(*statuses.thruster_arm.read().await, Some(false));
     }
 }
