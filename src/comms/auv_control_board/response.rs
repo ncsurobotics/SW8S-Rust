@@ -1,9 +1,14 @@
+use std::fmt::Debug;
 use bytes::BufMut;
 use tokio::io::AsyncReadExt;
 #[cfg(feature = "logging")]
 use tokio::{fs::OpenOptions, io::AsyncWriteExt};
+use tokio::sync::OnceCell;
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
+
+#[cfg(feature = "logging")]
+static LOG_FILE: OnceCell<String> = OnceCell::const_new();
 
 pub fn find_end(buffer: &[u8]) -> Option<(usize, &u8)> {
     let mut prev_escaped = false;
@@ -107,18 +112,31 @@ where
 
 #[cfg(feature = "logging")]
 pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_file: &str) {
-    let mut file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(dump_file)
-        .await
-        .unwrap();
+    if !std::path::Path::new("logging").exists() {
+        std::fs::create_dir("logging").unwrap();
+    }
+
+    fmt_filename_time(dump_file).await;
+
+    let mut file =
+        OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(LOG_FILE.get().unwrap())
+            .await
+            .unwrap();
 
     for msg in messages.iter() {
         file.write_all(msg).await.unwrap()
     }
 
     file.flush().await.unwrap();
+}
+
+#[cfg(feature = "logging")]
+pub async fn fmt_filename_time(dump_file: &str) {
+    let formatted_time = chrono::Local::now().format("%Y-%m-%d_%H:%M:%S").to_string();
+    LOG_FILE.get_or_init(|| async { format!("logging/{}{}.dat", dump_file.to_owned(), formatted_time) }).await;
 }
 
 #[cfg(test)]
@@ -171,13 +189,16 @@ mod tests {
         let input2: Vec<u8> = vec![START_BYTE, 3, 5, END_BYTE];
         let mut buffer: Vec<u8> = Vec::with_capacity(512);
 
-        let dump_file = "test_log.dat";
+        let dump_file = "test_log";
 
         {
             get_messages(&mut buffer, &mut &*input, dump_file).await;
             get_messages(&mut buffer, &mut &*input2, dump_file).await;
         }
 
-        assert_eq!(std::fs::read(dump_file).unwrap(), vec![0, 1, 3, 5]);
+        assert_eq!(
+            std::fs::read(LOG_FILE.get().unwrap()).unwrap(),
+            vec![0, 1, 3, 3, 5]
+        );
     }
 }
