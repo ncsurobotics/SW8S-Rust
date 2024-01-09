@@ -1,7 +1,7 @@
 use std::{str::from_utf8, sync::Arc};
 
 use sw8s_rust_lib::comms::{auv_control_board::response::find_end, meb::response::Statuses};
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 
 #[tokio::test]
 async fn real_comms_read_no_error() {
@@ -23,6 +23,7 @@ async fn real_comms_read_no_error() {
             &RwLock::default(),
             &RwLock::default(),
             &Arc::default(),
+            &Arc::new(Mutex::new(vec![false; 24])),
             &RwLock::default(),
             &RwLock::default(),
             &mut err_msg,
