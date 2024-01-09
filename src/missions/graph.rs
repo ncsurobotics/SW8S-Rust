@@ -44,7 +44,7 @@ pub fn dot_file<T: ?Sized + Action>(act: &T) -> String {
 }
 
 #[cfg(feature = "graphing")]
-pub fn draw_svg<T: ?Sized + Action>(act: &T) -> std::io::Result<String> {
+pub fn draw_svg<T: ?Sized + Action>(act: &T) -> std::io::Result<Vec<u8>> {
     exec(
         parse(&dot_file(act)).unwrap(),
         &mut PrinterContext::default(),
