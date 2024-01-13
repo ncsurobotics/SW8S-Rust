@@ -23,6 +23,7 @@ required-features = ["graphing"]
 [features]
 jetson = []
 logging = []
+unblocked-logging = ["logging"]
 graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2"]
 
 [dependencies]

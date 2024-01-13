@@ -93,10 +93,23 @@ where
     if serial_conn.read_buf(buffer).await.unwrap() != 0 {
         let mut messages = Vec::new();
 
-        #[cfg(feature = "logging")]
+        #[cfg(feature = "unblocked-logging")]
+        {
+            let buffer = buffer.clone();
+            let dump_file = dump_file.to_string();
+            tokio::spawn(
+                async move {
+                    write_log(&[buffer], &dump_file).await;
+                }
+            );
+        }
+
+        #[cfg(all(feature="logging", not(feature = "unblocked-logging")))]
         {
             write_log(&[buffer.clone()], dump_file).await;
         }
+
+
 
         while let Some((end_idx, _)) = find_end(buffer) {
             if let Some(end_idx) = check_start(buffer, end_idx) {
