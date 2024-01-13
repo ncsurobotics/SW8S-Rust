@@ -3,12 +3,14 @@ use bytes::BufMut;
 use tokio::io::AsyncReadExt;
 #[cfg(feature = "logging")]
 use tokio::{fs::OpenOptions, io::AsyncWriteExt};
-use tokio::sync::OnceCell;
+use tokio::sync::{Mutex, OnceCell};
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 
 #[cfg(feature = "logging")]
-static LOG_FILE: OnceCell<String> = OnceCell::const_new();
+static LOG_TIMESTAMP: OnceCell<String> = OnceCell::const_new();
+#[cfg(feature = "logging")]
+static LOG_NAMES: Mutex<Vec<String>> = Mutex::const_new(Vec::new());
 
 pub fn find_end(buffer: &[u8]) -> Option<(usize, &u8)> {
     let mut prev_escaped = false;
@@ -91,16 +93,17 @@ where
     if serial_conn.read_buf(buffer).await.unwrap() != 0 {
         let mut messages = Vec::new();
 
+        #[cfg(feature = "logging")]
+        {
+            write_log(&[buffer.clone()], dump_file).await;
+        }
+
         while let Some((end_idx, _)) = find_end(buffer) {
             if let Some(end_idx) = check_start(buffer, end_idx) {
                 messages.push(clean_message(buffer, end_idx));
             }
         }
 
-        #[cfg(feature = "logging")]
-        {
-            write_log(&messages, dump_file).await;
-        }
 
         messages
     } else if buffer.has_remaining_mut() {
@@ -116,13 +119,13 @@ pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_fi
         std::fs::create_dir("logging").unwrap();
     }
 
-    fmt_filename_time(dump_file).await;
+    let file_dir = fmt_filename_time(dump_file).await;
 
     let mut file =
         OpenOptions::new()
             .create(true)
             .append(true)
-            .open(LOG_FILE.get().unwrap())
+            .open(file_dir)
             .await
             .unwrap();
 
@@ -134,9 +137,15 @@ pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_fi
 }
 
 #[cfg(feature = "logging")]
-pub async fn fmt_filename_time(dump_file: &str) {
-    let formatted_time = chrono::Local::now().format("%Y-%m-%d_%H:%M:%S").to_string();
-    LOG_FILE.get_or_init(|| async { format!("logging/{}{}.dat", dump_file.to_owned(), formatted_time) }).await;
+pub async fn fmt_filename_time(dump_file: &str) -> String {
+    let formatted_time = LOG_TIMESTAMP.get_or_init(|| async { chrono::Local::now().format("%Y-%m-%d_%H:%M:%S").to_string() }).await;
+
+    let mut names = LOG_NAMES.lock().await;
+    if names.iter().find(|&n| n == dump_file) == None {
+        names.push(dump_file.parse().unwrap());
+    }
+
+    format!("logging/{}{}.dat", dump_file.to_owned(), formatted_time)
 }
 
 #[cfg(test)]
@@ -201,8 +210,8 @@ mod tests {
         }
 
         assert_eq!(
-            std::fs::read(LOG_FILE.get().unwrap()).unwrap(),
-            vec![0, 1, 3, 3, 5]
+            std::fs::read(fmt_filename_time(dump_file).await).unwrap(),
+            vec![START_BYTE, 0, 1, END_BYTE, START_BYTE, 3, 5, END_BYTE]
         );
     }
 }
