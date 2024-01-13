@@ -93,7 +93,9 @@ where
     if serial_conn.read_buf(buffer).await.unwrap() != 0 {
         let mut messages = Vec::new();
 
-        #[cfg(feature = "unblocked-logging")]
+        // TODO fix order of messages with unblocked logging
+        /*
+        #[cfg(feature = "unblocked_logging")]
         {
             let buffer = buffer.clone();
             let dump_file = dump_file.to_string();
@@ -103,8 +105,9 @@ where
                 }
             );
         }
+        */
 
-        #[cfg(all(feature="logging", not(feature = "unblocked-logging")))]
+        #[cfg(all(feature="logging", not(feature = "unblocked_logging")))]
         {
             write_log(&[buffer.clone()], dump_file).await;
         }
@@ -163,6 +166,8 @@ pub async fn fmt_filename_time(dump_file: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use std::thread::sleep;
+    use std::time::Duration;
     use super::*;
     use futures::stream;
     use futures::StreamExt;
@@ -221,6 +226,8 @@ mod tests {
             get_messages(&mut buffer, &mut &*input, dump_file).await;
             get_messages(&mut buffer, &mut &*input2, dump_file).await;
         }
+
+        tokio::time::sleep(Duration::from_millis(500)).await;
 
         assert_eq!(
             std::fs::read(fmt_filename_time(dump_file).await).unwrap(),
