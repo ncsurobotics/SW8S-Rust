@@ -27,14 +27,14 @@ logging = []
 graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2"]
 
 [dependencies]
-opencv = { version = "0.88.6", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
+opencv = { version = "0.88.7", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
 tokio-serial = "5.4.1" # Async serial comms
 tokio = { version = "1.35.1", features = ["full"] } # Async runtime
 anyhow = "1.0.79" # Error handling
 itertools = "0.12.0" # Enhance iterators
 num-traits = "0.2.17" # Numeric generics
 derive-getters = "0.3.0" # Getter macro
-async-trait = "0.1.76" # Async fns in trait definitions
+async-trait = "0.1.77" # Async fns in trait definitions
 futures = { version = "0.3.30", default-features = false, features = ["std"] }# Futures utilities
 toml = "0.8.8" # Configuration file
 serde = { version = "1.0.195", features = ["derive"] } # Config serial handling
