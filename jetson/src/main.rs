@@ -6,12 +6,13 @@ use std::{
     thread,
 };
 
-use futures_util::{StreamExt, TryStreamExt};
+use futures_util::TryStreamExt;
 use indicatif::{MultiProgress, ProgressBar, ProgressDrawTarget, ProgressState, ProgressStyle};
 use tar::Archive;
 use tokio::{spawn, task::spawn_blocking};
 use tokio_util::io::{StreamReader, SyncIoBridge};
 use walkdir::WalkDir;
+use which::which;
 use xz::read::XzDecoder;
 
 #[tokio::main]
@@ -21,6 +22,8 @@ async fn main() {
     println!("It builds a binary in the \"jetson-target\" subdirectory.");
     println!("The default cargo command is \"build\", but arguments will override this command.");
     println!();
+
+    tools_check().unwrap();
 
     let mut system_args = args().skip(1).collect::<Vec<_>>();
     if system_args.is_empty() {
@@ -190,4 +193,17 @@ async fn main() {
             .join("target-jetson")
             .join("aarch64-unknown-linux-gnu")
     );
+}
+
+/// Checks that all required programs are installed
+fn tools_check() -> Result<(), String> {
+    ["rustup", "cargo", "clang", "lld"]
+        .into_iter()
+        .try_for_each(program_check)
+}
+
+/// Checks that all programs are installed
+fn program_check(program: &str) -> Result<(), String> {
+    which(program).map_err(|_| "{program} is not installed".to_string())?;
+    Ok(())
 }
