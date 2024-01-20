@@ -20,6 +20,7 @@ use tokio::{
     time::{sleep, Duration},
 };
 use tokio_serial::SerialStream;
+use crate::missions::action_context::GetFrontCamMat;
 
 #[derive(Debug)]
 pub struct DelayAction {
@@ -78,7 +79,7 @@ pub fn descend_and_go_forward<
 }
 
 pub fn gate_run<
-    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + MatSource,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + GetFrontCamMat,
 >(
     context: &Con,
 ) -> impl ActionExec + '_ {
