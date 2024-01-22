@@ -204,6 +204,6 @@ fn tools_check() -> Result<(), String> {
 
 /// Checks that all programs are installed
 fn program_check(program: &str) -> Result<(), String> {
-    which(program).map_err(|_| "{program} is not installed".to_string())?;
+    which(program).map_err(|_| format!("{program} is not installed"))?;
     Ok(())
 }
