@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 use std::{ops::Deref, sync::Arc, time::Duration};
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, bail, Result, Error};
 use tokio::{
     io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, WriteHalf},
     net::TcpStream,
@@ -16,6 +16,7 @@ use self::{
 };
 
 use super::auv_control_board::{AUVControlBoard, MessageId};
+use super::auv_control_board::ERROR_CODES;
 
 pub mod response;
 pub mod util;
@@ -71,6 +72,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
 
         let inner_clone = this.inner.clone();
 
+        let mut wd_counter = 0;
         tokio::spawn(async move {
             loop {
                 if (timeout(
@@ -81,6 +83,14 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
                     .is_err()
                 {
                     eprintln!("Watchdog ACK timed out.");
+                    wd_counter += 1;
+                    if wd_counter > 3 {
+                        // reset and reconnect to control board
+                        let cause = reset_controlboard().await.unwrap();
+                        println!("{:?}", cause);
+                        wd_counter = 0;
+                    }
+
                 }
 
                 sleep(Duration::from_millis(200)).await;
@@ -129,6 +139,11 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
 
 impl ControlBoard<WriteHalf<SerialStream>> {
     pub async fn serial(port_name: &str) -> Result<Self> {
+        let (comm_in, comm_out) = Self::get_serial_stream(port_name).await.unwrap();
+        Self::new(comm_out, comm_in, None).await
+    }
+
+    pub async fn get_serial_stream(port_name: &str) -> Result<(tokio::io::ReadHalf<SerialStream>, tokio::io::WriteHalf<SerialStream>)> {
         const BAUD_RATE: u32 = 9600;
         const DATA_BITS: DataBits = DataBits::Eight;
         const PARITY: Parity = Parity::None;
@@ -138,8 +153,7 @@ impl ControlBoard<WriteHalf<SerialStream>> {
             .data_bits(DATA_BITS)
             .parity(PARITY)
             .stop_bits(STOP_BITS);
-        let (comm_in, comm_out) = io::split(SerialStream::open(&port_builder)?);
-        Self::new(comm_out, comm_in, None).await
+        return Ok(io::split(SerialStream::open(&port_builder)?));
     }
 }
 
@@ -163,6 +177,17 @@ impl ControlBoard<WriteHalf<TcpStream>> {
         let (comm_in, comm_out) = io::split(stream);
         Self::new(comm_out, comm_in, None).await
     }
+}
+
+pub async fn reset_controlboard() -> Result<ERROR_CODES> {
+    let (comm_in, comm_out) = ControlBoard::get_serial_stream(&"/dev/ttyACM3").await.unwrap();
+    let responses = ResponseMap::new(comm_in).await;
+    let m = MessageId::default();
+    let temp_board = AUVControlBoard::new(Arc::new(Mutex::from(comm_out)), responses, m);
+    let _ = temp_board.reset().await;
+    let cause = temp_board.reset_cause().await?;
+
+    return Ok(cause);
 }
 
 impl<T: AsyncWrite + Unpin> ControlBoard<T> {

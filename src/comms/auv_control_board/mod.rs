@@ -12,6 +12,20 @@ use super::auv_control_board::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 pub mod response;
 pub mod util;
 
+#[derive(Debug)]
+pub enum ERROR_CODES {
+    HALT_EC_NONE,
+    HALT_EC_ASSERT,        
+    HALT_EC_MALLOC_FAIL,   
+    HALT_EC_SOVERFLOW,     
+    HALT_EC_FAULTIRQ,      
+    HALT_EC_SCHEDRET,      
+    HALT_EC_WDOG,          
+    HALT_EC_STARTUP,         
+    HALT_EC_DEBUG, 
+    UNKNOWN,           
+}
+
 #[async_trait]
 pub trait GetAck {
     async fn get_ack(&self, id: u16) -> Result<Vec<u8>, AcknowledgeErr>;
@@ -118,5 +132,41 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
         self.comm_out.lock().await.write_all(&message).await?;
         // Spec guarantees empty response
         Ok(self.responses.get_ack(id).await?)
+    }
+
+    pub async fn reset(&self) -> Result<()> {
+        const RESET: [u8; 5] = *b"RESET";
+
+        let mut message = Vec::from(RESET);
+        message.push(0x0D);
+        message.push(0x1E);
+
+        self.write_out_basic(message).await?;
+        // self.responses.get_ack(id)
+        return Ok(());
+    }
+
+    pub async fn reset_cause(&self) -> Result<ERROR_CODES> {
+        const RESET: [u8; 6] = *b"RSTWHY";
+
+        let mut message = Vec::from(RESET);
+        message.push(0x0D);
+        message.push(0x1E);
+
+        let code = self.write_out(message).await?;
+        let code_bytes: [u8; 4] = code.try_into().unwrap();
+        let error = i32::from_le_bytes(code_bytes);
+        match error {
+             0 => { Ok(ERROR_CODES::HALT_EC_NONE) },
+            -1 => { Ok(ERROR_CODES::HALT_EC_ASSERT) },
+            -2 => { Ok(ERROR_CODES::HALT_EC_MALLOC_FAIL) },
+            -3 => { Ok(ERROR_CODES::HALT_EC_SOVERFLOW) },
+            -4 => { Ok(ERROR_CODES::HALT_EC_FAULTIRQ) },
+            -5 => { Ok(ERROR_CODES::HALT_EC_SCHEDRET) },
+            -6 => { Ok(ERROR_CODES::HALT_EC_WDOG) },
+            -7 => { Ok(ERROR_CODES::HALT_EC_STARTUP) },
+            -1000 => { Ok(ERROR_CODES::HALT_EC_DEBUG) },
+            _ => { Ok(ERROR_CODES::UNKNOWN) },
+        }
     }
 }
