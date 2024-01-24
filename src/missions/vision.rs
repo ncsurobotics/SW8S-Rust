@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
 use super::action::{Action, ActionExec};
-use crate::video_source::MatSource;
 use crate::vision::{Draw, Offset2D, RelPos, VisualDetector};
 use anyhow::Result;
 use async_trait::async_trait;
@@ -13,6 +12,7 @@ use opencv::{core::Vector, imgcodecs::imwrite};
 use std::fs::create_dir_all;
 #[cfg(feature = "logging")]
 use uuid::Uuid;
+use crate::missions::action_context::GetFrontCamMat;
 
 /// Runs a vision routine to obtain object position
 ///
@@ -37,7 +37,7 @@ impl<'a, T, U, V> VisionNormOffset<'a, T, U, V> {
 impl<T, U, V> Action for VisionNormOffset<'_, T, U, V> {}
 
 #[async_trait]
-impl<T: MatSource, V: Num + FromPrimitive + Send + Sync, U: VisualDetector<V> + Send + Sync>
+impl<T: GetFrontCamMat + Send + Sync, V: Num + FromPrimitive + Send + Sync, U: VisualDetector<V> + Send + Sync>
     ActionExec for VisionNormOffset<'_, T, U, V>
 where
     U::Position: RelPos<Number = V> + Draw,
@@ -50,7 +50,7 @@ where
         }
 
         #[allow(unused_mut)]
-        let mut mat = self.context.get_mat().await;
+        let mut mat = self.context.get_front_camera_mat().await.clone();
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
         println!("Detect attempt: {}", detections.is_ok());
