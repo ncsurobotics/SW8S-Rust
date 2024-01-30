@@ -54,11 +54,17 @@ where
             .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
             .await?;
         println!("GOT ZERO SPEED SET");
-        while true {
+
+        let mut can_see_buoy = true;
+
+        while can_see_buoy {
             let camera_aquisition = self.context.get_front_camera_mat();
             let model_acquisition = buoy_model.detect(&camera_aquisition.await);
             match model_acquisition {
                 Ok(acquisition_vec) => {
+                    if acquisition_vec.len() == 0 {
+                        can_see_buoy = false;
+                    }
                     let detected_item = acquisition_vec
                         .iter()
                         .find(|&result| *result.class() == class_of_interest);
@@ -76,7 +82,7 @@ where
                                 )
                                 .await?;
                         }
-                        None => todo!(),
+                        None => can_see_buoy = false,
                     }
                 }
                 Err(_) => return Ok(()),
