@@ -1,6 +1,6 @@
 use anyhow::{bail, Result};
 use config::Configuration;
-
+use std::path::Path;
 
 use sw8s_rust_lib::{
     comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
@@ -24,8 +24,10 @@ use tokio::{
     time::{sleep, timeout},
 };
 use tokio_serial::SerialStream;
-
+use std::env;
+use std::process::exit;
 mod config;
+use std::time::Duration;
 
 static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<SerialStream>>> = OnceCell::const_new();
 async fn control_board() -> &'static ControlBoard<WriteHalf<SerialStream>> {
