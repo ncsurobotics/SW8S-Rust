@@ -1,42 +1,60 @@
+use crate::vision::{
+    buoy::{Buoy, Target},
+    nn_cv2::{VisionModel, YoloDetection},
+    yolo_model::YoloProcessor,
+};
+
 use super::{
     action::{Action, ActionExec, ActionMod},
-    action_context::GetControlBoard,
+    action_context::{GetControlBoard, GetFrontCamMat},
 };
 
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
-use tokio::io::WriteHalf;
+use tokio::io::{AsyncWriteExt, WriteHalf};
 use tokio_serial::SerialStream;
 
-
 #[derive(Debug)]
-struct DriveToBuoyVision<'a, T> {
+struct DriveToBuoyVision<'a, T, U: VisionModel> {
     context: &'a T,
-    buoy_model : Buoy,
-    target_depth : f32,
+    buoy_model: Buoy<U>,
+    target_depth: f32,
 }
 
-impl<T> Action for DriveToBuoyVision<'_, T> {}
+impl<T, U: VisionModel> Action for DriveToBuoyVision<'_, T, U> where U: VisionModel {}
 
-impl<T> ActionMod<f32> for Descend<'_, T> {
-    fn modify(&mut self, depth: f32, buoy_model : Buoy) {
+impl<T, U> ActionMod<f32> for DriveToBuoyVision<'_, T, U>
+where
+    U: VisionModel,
+{
+    // TODO: Do we even need this?
+    fn modify(&mut self, input: f32) {
         self.target_depth = input;
-        self.buoy_model = buoy_model;
     }
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for DriveToBuoyVision<'_, T> {
+impl<T, U> ActionExec for DriveToBuoyVision<'_, T, U>
+where
+    T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
+    U: VisionModel,
+{
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
+        let mut buoy_model = Buoy::default();
+        let detected_class = Target::Abydos1;
         println!("Getting control board and setting speed to zero before buoy search.");
         self.context
             .get_control_board()
             .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
             .await?;
-        println!("GOT SPEED SET");
+        println!("GOT ZERO SPEED SET");
+        let camera_aquisition = self.context.get_front_camera_mat();
+        let mut model_acquisition = buoy_model.detect_yolo_v5(&camera_aquisition.await);
+        model_acquisition
+            .iter()
+            .filter(|&x| == detected_class.);
         Ok(())
-     }
+    }
 }
-
