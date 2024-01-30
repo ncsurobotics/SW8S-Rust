@@ -16,9 +16,9 @@ use super::{
 /// Runs two nested actions in order: Waiting for arm and descending in
 /// parallel, followed by waiting for arm and descending concurrently.
 pub fn initial_descent<
-    T: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
+    Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
 >(
-    context: &T,
+    context: &Con,
 ) -> impl ActionExec + '_ {
     ActionSequence::new(
         ActionConcurrent::new(WaitArm::new(context), Descend::new(context, -0.5)),

@@ -1,8 +1,8 @@
-use self::response::Statuses;
-
 use anyhow::Result;
 use tokio::io::AsyncReadExt;
 use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
+
+use self::response::Statuses;
 
 pub mod response;
 

@@ -1,9 +1,16 @@
+use std::fmt::Debug;
 use bytes::BufMut;
 use tokio::io::AsyncReadExt;
 #[cfg(feature = "logging")]
 use tokio::{fs::OpenOptions, io::AsyncWriteExt};
+use tokio::sync::{Mutex, OnceCell};
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
+
+#[cfg(feature = "logging")]
+static LOG_TIMESTAMP: OnceCell<String> = OnceCell::const_new();
+#[cfg(feature = "logging")]
+static LOG_NAMES: Mutex<Vec<String>> = Mutex::const_new(Vec::new());
 
 pub fn find_end(buffer: &[u8]) -> Option<(usize, &u8)> {
     let mut prev_escaped = false;
@@ -80,11 +87,32 @@ pub async fn get_messages<T>(
     serial_conn: &mut T,
     #[cfg(feature = "logging")] dump_file: &str,
 ) -> Vec<Vec<u8>>
-    where
-        T: AsyncReadExt + Unpin + Send,
+where
+    T: AsyncReadExt + Unpin + Send,
 {
     if serial_conn.read_buf(buffer).await.unwrap() != 0 {
         let mut messages = Vec::new();
+
+        // TODO fix order of messages with unblocked logging
+        /*
+        #[cfg(feature = "unblocked_logging")]
+        {
+            let buffer = buffer.clone();
+            let dump_file = dump_file.to_string();
+            tokio::spawn(
+                async move {
+                    write_log(&[buffer], &dump_file).await;
+                }
+            );
+        }
+        */
+
+        #[cfg(all(feature="logging", not(feature = "unblocked_logging")))]
+        {
+            write_log(&[buffer.clone()], dump_file).await;
+        }
+
+
 
         while let Some((end_idx, _)) = find_end(buffer) {
             if let Some(end_idx) = check_start(buffer, end_idx) {
@@ -92,9 +120,6 @@ pub async fn get_messages<T>(
             }
         }
 
-        #[cfg(feature = "logging")] {
-            write_log(&messages, dump_file).await;
-        }
 
         messages
     } else if buffer.has_remaining_mut() {
@@ -105,54 +130,84 @@ pub async fn get_messages<T>(
 }
 
 #[cfg(feature = "logging")]
-pub async fn write_log(messages: &Vec<Vec<u8>>, #[cfg(feature = "logging")] dump_file: &str) {
+pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_file: &str) {
+    if !std::path::Path::new("logging").exists() {
+        std::fs::create_dir("logging").unwrap();
+    }
+
+    let file_dir = fmt_filename_time(dump_file).await;
+
     let mut file =
         OpenOptions::new()
             .create(true)
             .append(true)
-            .open(dump_file)
+            .open(file_dir)
             .await
             .unwrap();
 
     for msg in messages.iter() {
-        file
-            .write_all(&msg)
-            .await
-            .unwrap()
+        file.write_all(msg).await.unwrap()
     }
 
     file.flush().await.unwrap();
 }
 
+#[cfg(feature = "logging")]
+pub async fn fmt_filename_time(dump_file: &str) -> String {
+    let formatted_time = LOG_TIMESTAMP.get_or_init(|| async { chrono::Local::now().format("%Y-%m-%d_%H:%M:%S").to_string() }).await;
+
+    let mut names = LOG_NAMES.lock().await;
+    if names.iter().find(|&n| n == dump_file) == None {
+        names.push(dump_file.parse().unwrap());
+    }
+
+    format!("logging/{}{}.dat", dump_file.to_owned(), formatted_time)
+}
+
 #[cfg(test)]
 mod tests {
+    use std::thread::sleep;
+    use std::time::Duration;
     use super::*;
     use futures::stream;
     use futures::StreamExt;
+    use tokio::sync::Mutex;
 
+    static MESSAGE_LOCK: Mutex<()> = Mutex::const_new(());
     #[tokio::test]
     async fn start_not_at_front() {
         let input: Vec<u8> = vec![0, 1, START_BYTE, END_BYTE];
         let input2: Vec<u8> = vec![END_BYTE, 1, START_BYTE, 3, END_BYTE, 5];
         let mut buffer: Vec<u8> = Vec::with_capacity(512);
 
+        let _lock = MESSAGE_LOCK.lock().await;
         assert_eq!(
-            stream::iter(get_messages(
-                &mut buffer,
-                &mut &*input,
-            #[cfg(feature = "logging")] "test.dat").await)
-                .collect::<Vec<Vec<u8>>>()
-                .await,
+            stream::iter(
+                get_messages(
+                    &mut buffer,
+                    &mut &*input,
+                    #[cfg(feature = "logging")]
+                    "test.dat"
+                )
+                .await
+            )
+            .collect::<Vec<Vec<u8>>>()
+            .await,
             vec![vec![]]
         );
 
         assert_eq!(
-            stream::iter(get_messages(
-                &mut buffer,
-                &mut &*input2,
-                #[cfg(feature = "logging")] "test.dat").await)
-                .collect::<Vec<Vec<u8>>>()
-                .await,
+            stream::iter(
+                get_messages(
+                    &mut buffer,
+                    &mut &*input2,
+                    #[cfg(feature = "logging")]
+                    "test.dat"
+                )
+                .await
+            )
+            .collect::<Vec<Vec<u8>>>()
+            .await,
             vec![vec![3]]
         );
     }
@@ -164,16 +219,19 @@ mod tests {
         let input2: Vec<u8> = vec![START_BYTE, 3, 5, END_BYTE];
         let mut buffer: Vec<u8> = Vec::with_capacity(512);
 
-        let dump_file = "test_log.dat";
+        let dump_file = "test_log";
 
+        let _lock = MESSAGE_LOCK.lock().await;
         {
             get_messages(&mut buffer, &mut &*input, dump_file).await;
             get_messages(&mut buffer, &mut &*input2, dump_file).await;
         }
 
+        tokio::time::sleep(Duration::from_millis(500)).await;
+
         assert_eq!(
-            std::fs::read(dump_file).unwrap(),
-            vec![0, 1, 3, 5]
+            std::fs::read(fmt_filename_time(dump_file).await).unwrap(),
+            vec![START_BYTE, 0, 1, END_BYTE, START_BYTE, 3, 5, END_BYTE]
         );
     }
 }

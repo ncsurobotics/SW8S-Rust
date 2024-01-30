@@ -38,13 +38,13 @@ impl DotString {
     }
 }
 
-pub fn dot_file<T: Action>(act: &T) -> String {
-    let header = "digraph G {\nsplines = false;\n".to_string();
+pub fn dot_file<T: ?Sized + Action>(act: &T) -> String {
+    let header = "digraph G {\nsplines = true;\nnodesep = 1.0;\n".to_string();
     header + &act.dot_string().body + "}"
 }
 
 #[cfg(feature = "graphing")]
-pub fn draw_svg<T: Action>(act: &T) -> std::io::Result<String> {
+pub fn draw_svg<T: ?Sized + Action>(act: &T) -> std::io::Result<Vec<u8>> {
     exec(
         parse(&dot_file(act)).unwrap(),
         &mut PrinterContext::default(),
