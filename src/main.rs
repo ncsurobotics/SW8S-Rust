@@ -2,6 +2,8 @@ use anyhow::{bail, Result};
 use config::Configuration;
 use std::path::Path;
 
+use std::env;
+use std::process::exit;
 use sw8s_rust_lib::{
     comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
     missions::{
@@ -10,22 +12,19 @@ use sw8s_rust_lib::{
         basic::{descend_and_go_forward, gate_run},
         example::initial_descent,
     },
-    vision::buoy::Target,
     video_source::appsink::Camera,
+    vision::buoy::Target,
 };
 use tokio::{
     io::WriteHalf,
     signal,
     sync::{
         mpsc::{self, UnboundedSender},
-        OnceCell,
-        RwLock
+        OnceCell, RwLock,
     },
     time::{sleep, timeout},
 };
 use tokio_serial::SerialStream;
-use std::env;
-use std::process::exit;
 mod config;
 use std::time::Duration;
 
@@ -55,7 +54,12 @@ static FRONT_CAM_CELL: OnceCell<Camera> = OnceCell::const_new();
 async fn front_cam() -> &'static Camera {
     FRONT_CAM_CELL
         .get_or_init(|| async {
-            Camera::jetson_new(&Configuration::default().front_cam, "front", Path::new("/tmp/front_feed.mp4")).unwrap()
+            Camera::jetson_new(
+                &Configuration::default().front_cam,
+                "front",
+                Path::new("/tmp/front_feed.mp4"),
+            )
+            .unwrap()
         })
         .await
 }
@@ -64,11 +68,21 @@ static BOTTOM_CAM_CELL: OnceCell<Camera> = OnceCell::const_new();
 async fn bottom_cam() -> &'static Camera {
     BOTTOM_CAM_CELL
         .get_or_init(|| async {
-            Camera::jetson_new(&Configuration::default().bottom_cam, "bottom", Path::new("/tmp/bottom_feed.mp4")).unwrap()
+            Camera::jetson_new(
+                &Configuration::default().bottom_cam,
+                "bottom",
+                Path::new("/tmp/bottom_feed.mp4"),
+            )
+            .unwrap()
         })
         .await
 }
-static GATE_MODE: OnceCell<RwLock<Target>> = OnceCell::const_new();
+static GATE_TARGET: OnceCell<RwLock<Target>> = OnceCell::const_new();
+async fn gate_target() -> &'static RwLock<Target> {
+    GATE_TARGET
+        .get_or_init(|| async { RwLock::new(Target::Earth1) })
+        .await
+}
 
 #[tokio::main]
 async fn main() {
@@ -181,7 +195,8 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await
+                bottom_cam().await,
+                gate_target().await,
             ))
             .execute()
             .await;
@@ -193,7 +208,8 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await
+                bottom_cam().await,
+                gate_target().await,
             ))
             .execute()
             .await;
@@ -204,7 +220,8 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await
+                bottom_cam().await,
+                gate_target().await,
             ))
             .execute()
             .await;

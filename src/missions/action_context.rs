@@ -1,14 +1,17 @@
-use core::fmt::Debug;
 use async_trait::async_trait;
+use core::fmt::Debug;
 use opencv::core::Mat;
+use std::borrow::Borrow;
 use tokio::io::{AsyncWriteExt, WriteHalf};
+use tokio::sync::{RwLock, RwLockReadGuard};
 use tokio_serial::SerialStream;
 
-use crate::{
-    comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
-};
 use crate::video_source::appsink::Camera;
 use crate::video_source::MatSource;
+use crate::{
+    comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
+    vision::buoy::Target,
+};
 
 /**
  * Inherit this trait if you have a control board
@@ -28,15 +31,16 @@ pub trait GetMainElectronicsBoard: Send + Sync {
  * Inherit this trait if you have a front camera
  */
 #[async_trait]
-pub trait GetFrontCamMat: {
+pub trait GetFrontCamMat {
     async fn get_front_camera_mat(&self) -> Mat;
+    async fn get_desired_buoy_gate(&self) -> Target;
 }
 
 /**
  * Inherit this trait if you have a bottom camera
  */
 #[async_trait]
-pub trait GetBottomCamMat: {
+pub trait GetBottomCamMat {
     async fn get_bottom_camera_mat(&self) -> Mat;
 }
 
@@ -48,6 +52,7 @@ pub struct FullActionContext<'a, T: AsyncWriteExt + Unpin + Send> {
     main_electronics_board: &'a MainElectronicsBoard,
     front_cam: &'a Camera,
     bottom_cam: &'a Camera,
+    desired_buoy_target: &'a RwLock<Target>,
 }
 
 impl<'a, T: AsyncWriteExt + Unpin + Send> FullActionContext<'a, T> {
@@ -56,18 +61,19 @@ impl<'a, T: AsyncWriteExt + Unpin + Send> FullActionContext<'a, T> {
         main_electronics_board: &'a MainElectronicsBoard,
         front_cam: &'a Camera,
         bottom_cam: &'a Camera,
+        desired_buoy_target: &'a RwLock<Target>,
     ) -> Self {
         Self {
             control_board,
             main_electronics_board,
             front_cam,
             bottom_cam,
+            desired_buoy_target,
         }
     }
 }
 
-impl GetControlBoard<WriteHalf<SerialStream>> for FullActionContext<'_, WriteHalf<SerialStream>>
-{
+impl GetControlBoard<WriteHalf<SerialStream>> for FullActionContext<'_, WriteHalf<SerialStream>> {
     fn get_control_board(&self) -> &ControlBoard<WriteHalf<SerialStream>> {
         self.control_board
     }
@@ -81,10 +87,18 @@ impl GetMainElectronicsBoard for FullActionContext<'_, WriteHalf<SerialStream>> 
 
 #[async_trait]
 impl<T: AsyncWriteExt + Unpin + Send> GetFrontCamMat for FullActionContext<'_, T> {
-    async fn get_front_camera_mat(&self) -> Mat { self.front_cam.get_mat().await }
+    async fn get_front_camera_mat(&self) -> Mat {
+        self.front_cam.get_mat().await
+    }
+    async fn get_desired_buoy_gate(&self) -> Target {
+        let res = self.desired_buoy_target.read().await;
+        (*res).clone()
+    }
 }
 
 #[async_trait]
 impl<T: AsyncWriteExt + Unpin + Send> GetBottomCamMat for FullActionContext<'_, T> {
-    async fn get_bottom_camera_mat(&self) -> Mat { self.bottom_cam.get_mat().await }
+    async fn get_bottom_camera_mat(&self) -> Mat {
+        self.bottom_cam.get_mat().await
+    }
 }

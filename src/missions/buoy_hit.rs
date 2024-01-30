@@ -18,6 +18,8 @@ use std::sync::mpsc::Iter;
 use tokio::io::{AsyncWriteExt, WriteHalf};
 use tokio_serial::SerialStream;
 
+/// Action to drive to a Buoy using vision
+/// will not set the power to zero on its own.
 #[derive(Debug)]
 struct DriveToBuoyVision<'a, T, U: VisionModel> {
     context: &'a T,
@@ -28,16 +30,6 @@ struct DriveToBuoyVision<'a, T, U: VisionModel> {
 
 impl<T, U: VisionModel> Action for DriveToBuoyVision<'_, T, U> where U: VisionModel {}
 
-impl<T, U> ActionMod<f32> for DriveToBuoyVision<'_, T, U>
-where
-    U: VisionModel,
-{
-    // TODO: Do we even need this?
-    fn modify(&mut self, input: f32) {
-        self.target_depth = input;
-    }
-}
-
 #[async_trait]
 impl<T, U> ActionExec for DriveToBuoyVision<'_, T, U>
 where
@@ -47,7 +39,7 @@ where
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
         let mut buoy_model = Buoy::default();
-        let class_of_interest = Target::Abydos1;
+        let class_of_interest = self.context.get_desired_buoy_gate().await;
         println!("Getting control board and setting speed to zero before buoy search.");
         self.context
             .get_control_board()
@@ -88,6 +80,11 @@ where
                 Err(_) => return Ok(()),
             }
         }
+        // once we cannot see the buoy, we still want to continue forward, this implies we need to set the power to zero later.
+        self.context
+            .get_control_board()
+            .stability_2_speed_set_initial_yaw(self.forward_power, 0.0, 0.0, 0.0, self.target_depth)
+            .await?;
         Ok(())
     }
 }
