@@ -1,8 +1,6 @@
-use std::marker::PhantomData;
-
 use anyhow::Result;
 use async_trait::async_trait;
-use tokio::io::{AsyncWrite, WriteHalf};
+use tokio::io::WriteHalf;
 
 use crate::comms::stubborn_serial::StubbornSerialStream;
 

@@ -1,6 +1,5 @@
 use crate::{
     comms::stubborn_serial::StubbornSerialStream,
-    video_source::MatSource,
     vision::{gate_poles::GatePoles, nn_cv2::OnnxModel},
 };
 
@@ -18,10 +17,9 @@ use super::{
 use crate::missions::action_context::GetFrontCamMat;
 use async_trait::async_trait;
 use tokio::{
-    io::{AsyncWrite, WriteHalf},
+    io::WriteHalf,
     time::{sleep, Duration},
 };
-use tokio_serial::SerialStream;
 
 #[derive(Debug)]
 pub struct DelayAction {

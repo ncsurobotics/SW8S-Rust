@@ -1,9 +1,8 @@
-use std::fmt::Debug;
 use bytes::BufMut;
 use tokio::io::AsyncReadExt;
+use tokio::sync::{Mutex, OnceCell};
 #[cfg(feature = "logging")]
 use tokio::{fs::OpenOptions, io::AsyncWriteExt};
-use tokio::sync::{Mutex, OnceCell};
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 
@@ -107,19 +106,16 @@ where
         }
         */
 
-        #[cfg(all(feature="logging", not(feature = "unblocked_logging")))]
+        #[cfg(all(feature = "logging", not(feature = "unblocked_logging")))]
         {
             write_log(&[buffer.clone()], dump_file).await;
         }
-
-
 
         while let Some((end_idx, _)) = find_end(buffer) {
             if let Some(end_idx) = check_start(buffer, end_idx) {
                 messages.push(clean_message(buffer, end_idx));
             }
         }
-
 
         messages
     } else if buffer.has_remaining_mut() {
@@ -137,13 +133,12 @@ pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_fi
 
     let file_dir = fmt_filename_time(dump_file).await;
 
-    let mut file =
-        OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(file_dir)
-            .await
-            .unwrap();
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(file_dir)
+        .await
+        .unwrap();
 
     for msg in messages.iter() {
         file.write_all(msg).await.unwrap()
@@ -154,10 +149,12 @@ pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_fi
 
 #[cfg(feature = "logging")]
 pub async fn fmt_filename_time(dump_file: &str) -> String {
-    let formatted_time = LOG_TIMESTAMP.get_or_init(|| async { chrono::Local::now().format("%Y-%m-%d_%H:%M:%S").to_string() }).await;
+    let formatted_time = LOG_TIMESTAMP
+        .get_or_init(|| async { chrono::Local::now().format("%Y-%m-%d_%H:%M:%S").to_string() })
+        .await;
 
     let mut names = LOG_NAMES.lock().await;
-    if names.iter().find(|&n| n == dump_file) == None {
+    if !names.iter().any(|n| n == dump_file) {
         names.push(dump_file.parse().unwrap());
     }
 
@@ -166,11 +163,11 @@ pub async fn fmt_filename_time(dump_file: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::thread::sleep;
-    use std::time::Duration;
+
     use super::*;
     use futures::stream;
     use futures::StreamExt;
+    use std::time::Duration;
     use tokio::sync::Mutex;
 
     static MESSAGE_LOCK: Mutex<()> = Mutex::const_new(());

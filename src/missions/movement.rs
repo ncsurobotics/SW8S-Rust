@@ -1,10 +1,8 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
-use futures::AsyncWrite;
-use std::marker::PhantomData;
+
 use tokio::io::WriteHalf;
-use tokio_serial::SerialStream;
 
 use crate::{comms::stubborn_serial::StubbornSerialStream, vision::RelPos};
 

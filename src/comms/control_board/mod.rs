@@ -1,5 +1,5 @@
 use core::fmt::Debug;
-use std::{iter::Cycle, ops::Deref, sync::Arc, time::Duration};
+use std::{ops::Deref, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, bail, Result};
 use stubborn_io::{ReconnectOptions, StubbornTcpStream};
@@ -9,7 +9,7 @@ use tokio::{
     sync::{Mutex, RwLock},
     time::{sleep, timeout},
 };
-use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
+use tokio_serial::{DataBits, Parity, StopBits};
 
 use self::{
     response::ResponseMap,
