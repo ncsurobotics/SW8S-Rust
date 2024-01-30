@@ -1,40 +1,32 @@
-use crate::vision::{
-    buoy::{Buoy, Target},
-    nn_cv2::{VisionModel, YoloDetection},
-    yolo_model::YoloProcessor,
-    VisualDetector,
-};
+use crate::vision::{buoy::Buoy, VisualDetector};
 
 use super::{
-    action::{Action, ActionExec, ActionMod},
+    action::{Action, ActionExec},
     action_context::{GetControlBoard, GetFrontCamMat},
 };
 
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
-use futures::stream::ForEach;
-use std::sync::mpsc::Iter;
-use tokio::io::{AsyncWriteExt, WriteHalf};
+use tokio::io::WriteHalf;
+
 use tokio_serial::SerialStream;
 
 /// Action to drive to a Buoy using vision
 /// will not set the power to zero on its own.
 #[derive(Debug)]
-struct DriveToBuoyVision<'a, T, U: VisionModel> {
+struct DriveToBuoyVision<'a, T> {
     context: &'a T,
-    buoy_model: Buoy<U>,
     target_depth: f32,
     forward_power: f32,
 }
 
-impl<T, U: VisionModel> Action for DriveToBuoyVision<'_, T, U> where U: VisionModel {}
+impl<T> Action for DriveToBuoyVision<'_, T> {}
 
 #[async_trait]
-impl<T, U> ActionExec for DriveToBuoyVision<'_, T, U>
+impl<T> ActionExec for DriveToBuoyVision<'_, T>
 where
     T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
-    U: VisionModel,
 {
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
@@ -60,7 +52,7 @@ where
                     let detected_item = acquisition_vec
                         .iter()
                         .find(|&result| *result.class() == class_of_interest);
-                    match (detected_item) {
+                    match detected_item {
                         Some(scan) => {
                             let position = buoy_model.normalize(scan.position());
                             self.context

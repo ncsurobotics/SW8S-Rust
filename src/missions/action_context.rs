@@ -1,9 +1,8 @@
 use async_trait::async_trait;
 use core::fmt::Debug;
 use opencv::core::Mat;
-use std::borrow::Borrow;
 use tokio::io::{AsyncWriteExt, WriteHalf};
-use tokio::sync::{RwLock, RwLockReadGuard};
+use tokio::sync::RwLock;
 use tokio_serial::SerialStream;
 
 use crate::video_source::appsink::Camera;
