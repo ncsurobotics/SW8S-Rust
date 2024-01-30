@@ -12,6 +12,8 @@ use super::{
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
+use futures::stream::ForEach;
+use std::sync::mpsc::Iter;
 use tokio::io::{AsyncWriteExt, WriteHalf};
 use tokio_serial::SerialStream;
 
@@ -20,6 +22,7 @@ struct DriveToBuoyVision<'a, T, U: VisionModel> {
     context: &'a T,
     buoy_model: Buoy<U>,
     target_depth: f32,
+    forward_power: f32,
 }
 
 impl<T, U: VisionModel> Action for DriveToBuoyVision<'_, T, U> where U: VisionModel {}
@@ -43,18 +46,38 @@ where
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
         let mut buoy_model = Buoy::default();
-        let detected_class = Target::Abydos1;
+        let class_of_interest = Target::Abydos1;
         println!("Getting control board and setting speed to zero before buoy search.");
         self.context
             .get_control_board()
             .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
             .await?;
         println!("GOT ZERO SPEED SET");
-        let camera_aquisition = self.context.get_front_camera_mat();
-        let mut model_acquisition = buoy_model.detect_yolo_v5(&camera_aquisition.await);
-        model_acquisition
-            .iter()
-            .filter(|&x| == detected_class.);
+        while true {
+            let camera_aquisition = self.context.get_front_camera_mat();
+            let model_acquisition = buoy_model.detect_yolo_v5(&camera_aquisition.await);
+            match model_acquisition {
+                Ok(acquisition_vec) => {
+                    for acquisition in acquisition_vec {
+                        if (*acquisition.class_id() == class_of_interest.to_integer_id()) {
+                            self.context
+                                .get_control_board()
+                                .stability_2_speed_set_initial_yaw(
+                                    self.forward_power,
+                                    // TODO figure out how to get normalized values out of acquisition.
+                                    acquisition.,
+                                    0.0,
+                                    0.0,
+                                    self.target_depth,
+                                )
+                                .await?;
+                            break;
+                        }
+                    }
+                }
+                Err(_) => return Ok(()),
+            }
+        }
         Ok(())
     }
 }
