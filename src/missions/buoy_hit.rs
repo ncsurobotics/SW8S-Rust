@@ -95,7 +95,7 @@ where
     }
 }
 
-pub fn construct_action_sequence<'a, T>(
+pub fn buoy_bump_sequence<'a, T>(
     context: &'a T,
     depth: f32,
 ) -> ActionSequence<DriveToBuoyVision<'a, T>, ActionSequence<DelayAction, ZeroMovement<'a, T>>>
