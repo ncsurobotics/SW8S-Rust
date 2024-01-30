@@ -51,6 +51,24 @@ async fn meb() -> &'static MainElectronicsBoard {
         .await
 }
 
+static FRONT_CAM_CELL: OnceCell<Camera> = OnceCell::const_new();
+async fn front_cam() -> &'static Camera {
+    FRONT_CAM_CELL
+        .get_or_init(|| async {
+            Camera::jetson_new(&Configuration::default().front_cam, "front", Path::new("/tmp/front_feed.mp4")).unwrap()
+        })
+        .await
+}
+
+static BOTTOM_CAM_CELL: OnceCell<Camera> = OnceCell::const_new();
+async fn bottom_cam() -> &'static Camera {
+    BOTTOM_CAM_CELL
+        .get_or_init(|| async {
+            Camera::jetson_new(&Configuration::default().bottom_cam, "bottom", Path::new("/tmp/bottom_feed.mp4")).unwrap()
+        })
+        .await
+}
+
 #[tokio::main]
 async fn main() {
     let shutdown_tx = shutdown_handler().await;
@@ -158,38 +176,34 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "descend" | "forward" => {
-            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
-            println!("Opened camera");
             let _ = descend_and_go_forward(&FullActionContext::new(
                 control_board().await,
                 meb().await,
-                &cam,
+                front_cam().await,
+                bottom_cam().await
             ))
             .execute()
             .await;
             Ok(())
         }
         "gate_run" => {
-            let cam = Camera::jetson_new("/dev/video0", "front", Path::new("/tmp/feed.mp4"))?;
-            //let _cam_extra =
-            //Camera::jetson_new("/dev/video0", "front", Path::new("/tmp/feed_extra.mp4"))?;
             println!("Opened camera");
             let _ = gate_run(&FullActionContext::new(
                 control_board().await,
                 meb().await,
-                &cam,
+                front_cam().await,
+                bottom_cam().await
             ))
             .execute()
             .await;
             Ok(())
         }
         "example" => {
-            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
-            println!("Opened camera");
             let _ = initial_descent(&FullActionContext::new(
                 control_board().await,
                 meb().await,
-                &cam,
+                front_cam().await,
+                bottom_cam().await
             ))
             .execute()
             .await;

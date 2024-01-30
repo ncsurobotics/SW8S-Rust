@@ -15,11 +15,13 @@ use super::{
     movement::{AdjustMovement, Descend},
     vision::VisionNormOffset,
 };
+use crate::missions::action_context::GetFrontCamMat;
 use async_trait::async_trait;
 use tokio::{
     io::{AsyncWrite, WriteHalf},
     time::{sleep, Duration},
 };
+use tokio_serial::SerialStream;
 
 #[derive(Debug)]
 pub struct DelayAction {
@@ -82,7 +84,7 @@ pub fn gate_run<
         + Sync
         + GetControlBoard<WriteHalf<StubbornSerialStream>>
         + GetMainElectronicsBoard
-        + MatSource,
+        + GetFrontCamMat,
 >(
     context: &Con,
 ) -> impl ActionExec + '_ {
