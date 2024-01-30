@@ -1,7 +1,10 @@
+use std::marker::PhantomData;
+
 use anyhow::Result;
 use async_trait::async_trait;
-use tokio::io::WriteHalf;
-use tokio_serial::SerialStream;
+use tokio::io::{AsyncWrite, WriteHalf};
+
+use crate::comms::stubborn_serial::StubbornSerialStream;
 
 use super::{
     action::{Action, ActionExec},
@@ -22,7 +25,7 @@ impl<'a, T> StartBno055<'a, T> {
 impl<T> Action for StartBno055<'_, T> {}
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for StartBno055<'_, T> {
+impl<T: GetControlBoard<WriteHalf<StubbornSerialStream>>> ActionExec for StartBno055<'_, T> {
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
         self.context

@@ -1,6 +1,7 @@
 pub mod auv_control_board;
 pub mod control_board;
 pub mod meb;
+pub mod stubborn_serial;
 
 #[macro_export]
 macro_rules! write_stream_mutexed {

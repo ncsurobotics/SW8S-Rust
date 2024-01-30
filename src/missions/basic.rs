@@ -1,4 +1,5 @@
 use crate::{
+    comms::stubborn_serial::StubbornSerialStream,
     video_source::MatSource,
     vision::{gate_poles::GatePoles, nn_cv2::OnnxModel},
 };
@@ -16,10 +17,9 @@ use super::{
 };
 use async_trait::async_trait;
 use tokio::{
-    io::WriteHalf,
+    io::{AsyncWrite, WriteHalf},
     time::{sleep, Duration},
 };
-use tokio_serial::SerialStream;
 
 #[derive(Debug)]
 pub struct DelayAction {
@@ -50,7 +50,7 @@ impl DelayAction {
  *
  **/
 pub fn descend_and_go_forward<
-    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard,
+    Con: Send + Sync + GetControlBoard<WriteHalf<StubbornSerialStream>> + GetMainElectronicsBoard,
 >(
     context: &Con,
 ) -> impl ActionExec + '_ {
@@ -78,7 +78,11 @@ pub fn descend_and_go_forward<
 }
 
 pub fn gate_run<
-    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + MatSource,
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<StubbornSerialStream>>
+        + GetMainElectronicsBoard
+        + MatSource,
 >(
     context: &Con,
 ) -> impl ActionExec + '_ {

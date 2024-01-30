@@ -1,5 +1,7 @@
 use anyhow::Result;
+use tokio::task::JoinHandle;
 
+use std::process::ExitStatus;
 use std::str::from_utf8;
 use std::time::Duration;
 use std::{fs::create_dir_all, path::Path};
@@ -46,12 +48,12 @@ async fn download_sim() -> Result<()> {
     Ok(())
 }
 
-async fn open_sim(godot: String) -> Result<()> {
+async fn open_sim(godot: String) -> Result<JoinHandle<ExitStatus>> {
     if !Path::new(&godot).is_file() {
         download_sim().await?
     }
 
-    tokio::spawn(async move {
+    let handle = tokio::spawn(async move {
         Command::new(godot)
             .arg("--simcb")
             .kill_on_drop(true)
@@ -63,7 +65,7 @@ async fn open_sim(godot: String) -> Result<()> {
     });
     // Give simulator time to spawn, magic number
     sleep(Duration::from_secs(3)).await;
-    Ok(())
+    Ok(handle)
 }
 
 #[tokio::test]
@@ -155,6 +157,33 @@ pub async fn tcp_move_raw() {
     // Will be broken until get IMU data read
     sleep(Duration::from_secs(10)).await;
     todo!();
+}
+
+#[ignore = "requires a UI, is long"]
+#[tokio::test]
+pub async fn comm_drop() {
+    const LOCALHOST: &str = "127.0.0.1";
+    const SIM_PORT: &str = "5012";
+    const SIM_DUMMY_PORT: &str = "5011";
+
+    let godot = GODOT.lock().await;
+    let godot_handle = open_sim(godot.to_string()).await.unwrap();
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+    assert!(control_board.connected().await);
+
+    // Kill the simulation to drop communications
+    godot_handle.abort();
+    sleep(Duration::from_millis(500)).await;
+    assert!(!(control_board.connected().await));
+
+    // Reopen the simulation
+    open_sim(godot.to_string()).await.unwrap();
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+    assert!(control_board.connected().await);
 }
 
 #[ignore = "requires a UI, is long"]

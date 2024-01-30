@@ -1,7 +1,8 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use tokio::io::WriteHalf;
-use tokio_serial::SerialStream;
+
+use crate::comms::stubborn_serial::StubbornSerialStream;
 
 use super::{
     action::{Action, ActionConcurrent, ActionConditional, ActionExec, ActionSequence, RaceAction},
@@ -16,7 +17,7 @@ use super::{
 /// Runs two nested actions in order: Waiting for arm and descending in
 /// parallel, followed by waiting for arm and descending concurrently.
 pub fn initial_descent<
-    Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
+    Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<StubbornSerialStream>>,
 >(
     context: &Con,
 ) -> impl ActionExec + '_ {

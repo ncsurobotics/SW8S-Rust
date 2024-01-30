@@ -3,7 +3,10 @@ use std::{env, path::Path, process::exit, time::Duration};
 use anyhow::{bail, Result};
 use config::Configuration;
 use sw8s_rust_lib::{
-    comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
+    comms::{
+        control_board::ControlBoard, meb::MainElectronicsBoard,
+        stubborn_serial::StubbornSerialStream,
+    },
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
@@ -25,8 +28,9 @@ use tokio_serial::SerialStream;
 
 mod config;
 
-static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<SerialStream>>> = OnceCell::const_new();
-async fn control_board() -> &'static ControlBoard<WriteHalf<SerialStream>> {
+static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<StubbornSerialStream>>> =
+    OnceCell::const_new();
+async fn control_board() -> &'static ControlBoard<WriteHalf<StubbornSerialStream>> {
     CONTROL_BOARD_CELL
         .get_or_init(|| async {
             ControlBoard::serial(&Configuration::default().control_board_path)

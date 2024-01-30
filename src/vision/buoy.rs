@@ -100,6 +100,8 @@ impl YoloProcessor for Buoy<OnnxModel> {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::create_dir_all;
+
     use itertools::Itertools;
     use opencv::{
         core::Vector,
@@ -122,6 +124,7 @@ mod tests {
             .for_each(|result| result.draw(&mut image).unwrap());
 
         println!("Detections: {:#?}", detect_unique);
+        create_dir_all("tests/vision/output/buoy_images").unwrap();
         imwrite(
             "tests/vision/output/buoy_images/1.jpeg",
             &image,

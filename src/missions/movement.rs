@@ -1,10 +1,12 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
+use futures::AsyncWrite;
+use std::marker::PhantomData;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
-use crate::vision::RelPos;
+use crate::{comms::stubborn_serial::StubbornSerialStream, vision::RelPos};
 
 use super::{
     action::{Action, ActionExec, ActionMod},
@@ -42,7 +44,7 @@ impl<T> ActionMod<f32> for Descend<'_, T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for Descend<'_, T> {
+impl<T: GetControlBoard<WriteHalf<StubbornSerialStream>>> ActionExec for Descend<'_, T> {
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
         println!("DESCEND");
@@ -82,7 +84,7 @@ impl<'a, T> StraightMovement<'a, T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for StraightMovement<'_, T> {
+impl<T: GetControlBoard<WriteHalf<StubbornSerialStream>>> ActionExec for StraightMovement<'_, T> {
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
         let mut speed: f32 = 0.5;
@@ -117,7 +119,7 @@ impl<'a, T> ZeroMovement<'a, T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for ZeroMovement<'_, T> {
+impl<T: GetControlBoard<WriteHalf<StubbornSerialStream>>> ActionExec for ZeroMovement<'_, T> {
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
         self.context
@@ -170,7 +172,7 @@ where
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovement<'_, T> {
+impl<T: GetControlBoard<WriteHalf<StubbornSerialStream>>> ActionExec for AdjustMovement<'_, T> {
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
         self.context

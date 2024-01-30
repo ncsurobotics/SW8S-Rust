@@ -1,11 +1,12 @@
 use core::fmt::Debug;
-use std::{ops::Deref, sync::Arc, time::Duration};
+use std::{iter::Cycle, ops::Deref, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, bail, Result};
+use stubborn_io::{ReconnectOptions, StubbornTcpStream};
 use tokio::{
     io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, WriteHalf},
     net::TcpStream,
-    sync::Mutex,
+    sync::{Mutex, RwLock},
     time::{sleep, timeout},
 };
 use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
@@ -15,7 +16,10 @@ use self::{
     util::{Angles, BNO055AxisConfig},
 };
 
-use super::auv_control_board::{AUVControlBoard, MessageId};
+use super::{
+    auv_control_board::{AUVControlBoard, MessageId},
+    stubborn_serial::StubbornSerialStream,
+};
 
 pub mod response;
 pub mod util;
@@ -27,6 +31,7 @@ where
 {
     inner: Arc<AUVControlBoard<T, ResponseMap>>,
     initial_angles: Arc<Mutex<Option<Angles>>>,
+    connected: Arc<RwLock<bool>>,
 }
 
 impl<T: AsyncWriteExt + Unpin> Deref for ControlBoard<T> {
@@ -50,6 +55,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         let this = Self {
             inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id).into(),
             initial_angles: Arc::default(),
+            connected: Arc::new(false.into()),
         };
 
         this.init_matrices().await?;
@@ -70,6 +76,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         this.stab_tune().await?;
 
         let inner_clone = this.inner.clone();
+        let connected = this.connected.clone();
 
         tokio::spawn(async move {
             loop {
@@ -78,9 +85,16 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
                     Self::feed_watchdog(&inner_clone),
                 )
                 .await)
-                    .is_err()
+                    .ok()
+                    .and_then(|ret| ret.ok())
+                    .is_none()
                 {
+                    *connected.write().await = false;
                     eprintln!("Watchdog ACK timed out.");
+                    eprintln!("{:?}", Self::feed_watchdog(&inner_clone).await);
+                } else {
+                    *connected.write().await = true;
+                    eprintln!("Watchdog ACK GET.");
                 }
 
                 sleep(Duration::from_millis(200)).await;
@@ -88,7 +102,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         });
 
         // Wait for watchdog to register
-        while this.watchdog_status().await != Some(true) {
+        while !this.connected().await {
             sleep(Duration::from_millis(10)).await;
         }
         Ok(this)
@@ -127,28 +141,40 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
     }
 }
 
-impl ControlBoard<WriteHalf<SerialStream>> {
+impl ControlBoard<WriteHalf<StubbornSerialStream>> {
     pub async fn serial(port_name: &str) -> Result<Self> {
         const BAUD_RATE: u32 = 9600;
         const DATA_BITS: DataBits = DataBits::Eight;
         const PARITY: Parity = Parity::None;
         const STOP_BITS: StopBits = StopBits::One;
 
+        let connection_options = ReconnectOptions::new()
+            .with_exit_if_first_connect_fails(false)
+            .with_retries_generator(|| [Duration::from_millis(10)].into_iter().cycle());
+
         let port_builder = tokio_serial::new(port_name, BAUD_RATE)
             .data_bits(DATA_BITS)
             .parity(PARITY)
             .stop_bits(STOP_BITS);
-        let (comm_in, comm_out) = io::split(SerialStream::open(&port_builder)?);
+        let (comm_in, comm_out) = io::split(
+            StubbornSerialStream::connect_with_options(port_builder, connection_options).await?,
+        );
         Self::new(comm_out, comm_in, None).await
     }
 }
 
-impl ControlBoard<WriteHalf<TcpStream>> {
+impl ControlBoard<WriteHalf<StubbornTcpStream<String>>> {
     /// Both connections are necessary for the simulator to run,
     /// but the one that doesn't feed forward to control board is unnecessary
     pub async fn tcp(host: &str, port: &str, dummy_port: String) -> Result<Self> {
         let host = host.to_string();
         let host_clone = host.clone();
+
+        let connection_options = ReconnectOptions::new()
+            .with_exit_if_first_connect_fails(false)
+            .with_retries_generator(|| [Duration::from_millis(100)].into_iter().cycle())
+            .with_on_connect_fail_callback(|| println!("FAILED TO CONNECT"));
+
         tokio::spawn(async move {
             let _stream = TcpStream::connect(host_clone + ":" + &dummy_port)
                 .await
@@ -159,7 +185,18 @@ impl ControlBoard<WriteHalf<TcpStream>> {
             }
         });
 
-        let stream = TcpStream::connect(host.to_string() + ":" + port).await?;
+        /*
+        let stream = StubbornTcpStream::connect_with_options(
+            host.to_string() + ":" + port,
+            connection_options,
+        )
+        .await?;
+        */
+        let stream = StubbornTcpStream::connect_with_options(
+            host.to_string() + ":" + port,
+            connection_options,
+        )
+        .await?;
         let (comm_in, comm_out) = io::split(stream);
         Self::new(comm_out, comm_in, None).await
     }
@@ -402,5 +439,9 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
 
     pub async fn watchdog_status(&self) -> Option<bool> {
         *self.responses().watchdog_status().read().await
+    }
+
+    pub async fn connected(&self) -> bool {
+        *self.connected.read().await
     }
 }
