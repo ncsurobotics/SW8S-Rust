@@ -1,7 +1,7 @@
-use std::{env, path::Path, process::exit, time::Duration};
-
 use anyhow::{bail, Result};
 use config::Configuration;
+
+
 use sw8s_rust_lib::{
     comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
     missions::{
@@ -10,6 +10,7 @@ use sw8s_rust_lib::{
         basic::{descend_and_go_forward, gate_run},
         example::initial_descent,
     },
+    vision::buoy::Target,
     video_source::appsink::Camera,
 };
 use tokio::{
@@ -18,6 +19,7 @@ use tokio::{
     sync::{
         mpsc::{self, UnboundedSender},
         OnceCell,
+        RwLock
     },
     time::{sleep, timeout},
 };
@@ -64,6 +66,7 @@ async fn bottom_cam() -> &'static Camera {
         })
         .await
 }
+static GATE_MODE: OnceCell<RwLock<Target>> = OnceCell::const_new();
 
 #[tokio::main]
 async fn main() {
