@@ -60,7 +60,7 @@ where
             let model_acquisition = buoy_model.detect(&camera_aquisition.await);
             match model_acquisition {
                 Ok(acquisition_vec) => {
-                    if acquisition_vec.len() == 0 {
+                    if acquisition_vec.is_empty() {
                         can_see_buoy = false;
                     }
                     let detected_item = acquisition_vec
