@@ -1,8 +1,10 @@
 use crate::vision::{buoy::Buoy, VisualDetector};
 
 use super::{
-    action::{Action, ActionExec},
+    action::{Action, ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetFrontCamMat},
+    basic::DelayAction,
+    movement::ZeroMovement,
 };
 
 use anyhow::Result;
@@ -15,10 +17,22 @@ use tokio_serial::SerialStream;
 /// Action to drive to a Buoy using vision
 /// will not set the power to zero on its own.
 #[derive(Debug)]
-struct DriveToBuoyVision<'a, T> {
+pub struct DriveToBuoyVision<'a, T> {
     context: &'a T,
     target_depth: f32,
     forward_power: f32,
+    k_p: f32,
+}
+
+impl<'a, T> DriveToBuoyVision<'a, T> {
+    pub fn new(context: &'a T, target_depth: f32, forward_power: f32) -> Self {
+        DriveToBuoyVision {
+            context,
+            target_depth,
+            forward_power,
+            k_p: 0.3,
+        }
+    }
 }
 
 impl<T> Action for DriveToBuoyVision<'_, T> {}
@@ -59,7 +73,7 @@ where
                                 .get_control_board()
                                 .stability_2_speed_set_initial_yaw(
                                     self.forward_power,
-                                    position.x as f32,
+                                    self.k_p * position.x as f32,
                                     0.0,
                                     0.0,
                                     self.target_depth,
@@ -79,4 +93,30 @@ where
             .await?;
         Ok(())
     }
+}
+
+pub fn construct_action_sequence<'a, T>(
+    context: &'a T,
+    depth: f32,
+) -> ActionSequence<DriveToBuoyVision<'a, T>, ActionSequence<DelayAction, ZeroMovement<'a, T>>>
+where
+    T: GetControlBoard<WriteHalf<SerialStream>> + 'a,
+{
+    let forward_power = 0.3;
+    let delay_s = 6.0;
+
+    // Instantiate DriveToBuoyVision with provided values
+    let drive_to_buoy_vision = DriveToBuoyVision::new(context, depth, forward_power);
+
+    // Create a DelayAction with hardcoded delay
+    let delay_action = DelayAction::new(delay_s);
+
+    // Instantiate ZeroMovement with provided values
+    let zero_movement = ZeroMovement::new(context, depth);
+
+    // Create the inner ActionSequence
+    let inner_sequence = ActionSequence::new(delay_action, zero_movement);
+
+    // Create and return the outer ActionSequence
+    ActionSequence::new(drive_to_buoy_vision, inner_sequence)
 }
