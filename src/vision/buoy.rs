@@ -45,16 +45,14 @@ impl TryFrom<i32> for Target {
     }
 }
 
-impl TryInto<i32> for Target {
-    type Error = TargetError;
-
-    fn try_into(self) -> std::result::Result<i32, Self::Error> {
-        Ok(match self {
+impl Target {
+    pub fn to_integer_id(&self) -> i32 {
+        match self {
             Target::Earth1 => 0,
             Target::Earth2 => 1,
             Target::Abydos1 => 2,
             Target::Abydos2 => 3,
-        })
+        }
     }
 }
 

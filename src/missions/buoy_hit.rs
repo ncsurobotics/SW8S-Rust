@@ -2,6 +2,7 @@ use crate::vision::{
     buoy::{Buoy, Target},
     nn_cv2::{VisionModel, YoloDetection},
     yolo_model::YoloProcessor,
+    VisualDetector,
 };
 
 use super::{
@@ -55,24 +56,27 @@ where
         println!("GOT ZERO SPEED SET");
         while true {
             let camera_aquisition = self.context.get_front_camera_mat();
-            let model_acquisition = buoy_model.detect_yolo_v5(&camera_aquisition.await);
+            let model_acquisition = buoy_model.detect(&camera_aquisition.await);
             match model_acquisition {
                 Ok(acquisition_vec) => {
-                    for acquisition in acquisition_vec {
-                        if (*acquisition.class_id() == class_of_interest.to_integer_id()) {
+                    let detected_item = acquisition_vec
+                        .iter()
+                        .find(|&result| *result.class() == class_of_interest);
+                    match (detected_item) {
+                        Some(scan) => {
+                            let position = buoy_model.normalize(scan.position());
                             self.context
                                 .get_control_board()
                                 .stability_2_speed_set_initial_yaw(
                                     self.forward_power,
-                                    // TODO figure out how to get normalized values out of acquisition.
-                                    acquisition.,
+                                    position.x as f32,
                                     0.0,
                                     0.0,
                                     self.target_depth,
                                 )
                                 .await?;
-                            break;
                         }
+                        None => todo!(),
                     }
                 }
                 Err(_) => return Ok(()),
