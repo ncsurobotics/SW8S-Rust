@@ -170,26 +170,29 @@ impl<T: Action, U: Action> Action for RaceAction<T, U> {
             }
         } else {
             let race_id = Uuid::new_v4();
+            let resolve_id = Uuid::new_v4();
 
             let mut body_str = format!(
-            "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = red;\n\"{}\" [label = \"Race\", shape = box, fontcolor = red, style = dashed];\n",
+            "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = red;\n\"{}\" [label = \"Race\", shape = box, fontcolor = red, style = dashed];\nstyle = dashed;\ncolor = red;\n\"{}\" [label = \"Resolve\", shape = box, fontcolor = red, style = dashed];\n",
             Uuid::new_v4(),
-            race_id
+            race_id,
+            resolve_id
         ) + &first_str.body
             + &second_str.body;
 
-            vec![first_str.head_ids, second_str.head_ids]
+            [&first_str.head_ids, &second_str.head_ids]
                 .into_iter()
                 .flatten()
                 .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", race_id, id)));
+            [&first_str.tail_ids, &second_str.tail_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, resolve_id)));
             body_str.push_str("}\n");
 
             DotString {
                 head_ids: vec![race_id],
-                tail_ids: vec![first_str.tail_ids, second_str.tail_ids]
-                    .into_iter()
-                    .flatten()
-                    .collect(),
+                tail_ids: vec![resolve_id],
                 body: body_str,
             }
         }

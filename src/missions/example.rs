@@ -65,13 +65,16 @@ pub fn race_many<
 >(
     _context: &Con,
 ) -> impl ActionExec + '_ {
-    act_nest!(
-        RaceAction::new,
+    ActionSequence::new(
+        act_nest!(
+            RaceAction::new,
+            AlwaysTrue::new(),
+            AlwaysTrue::new(),
+            AlwaysTrue::new(),
+            AlwaysTrue::new(),
+            AlwaysTrue::new()
+        ),
         AlwaysTrue::new(),
-        AlwaysTrue::new(),
-        AlwaysTrue::new(),
-        AlwaysTrue::new(),
-        AlwaysTrue::new()
     )
 }
 
