@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 use std::{ops::Deref, sync::Arc, time::Duration};
 
-use anyhow::{anyhow, bail, Result, Error};
+use anyhow::{anyhow, bail, Error, Result};
 use tokio::{
     io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, WriteHalf},
     net::TcpStream,
@@ -15,8 +15,8 @@ use self::{
     util::{Angles, BNO055AxisConfig},
 };
 
-use super::auv_control_board::{AUVControlBoard, MessageId};
 use super::auv_control_board::ERROR_CODES;
+use super::auv_control_board::{AUVControlBoard, MessageId};
 
 pub mod response;
 pub mod util;
@@ -90,7 +90,6 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
                         println!("{:?}", cause);
                         wd_counter = 0;
                     }
-
                 }
 
                 sleep(Duration::from_millis(200)).await;
@@ -143,7 +142,12 @@ impl ControlBoard<WriteHalf<SerialStream>> {
         Self::new(comm_out, comm_in, None).await
     }
 
-    pub async fn get_serial_stream(port_name: &str) -> Result<(tokio::io::ReadHalf<SerialStream>, tokio::io::WriteHalf<SerialStream>)> {
+    pub async fn get_serial_stream(
+        port_name: &str,
+    ) -> Result<(
+        tokio::io::ReadHalf<SerialStream>,
+        tokio::io::WriteHalf<SerialStream>,
+    )> {
         const BAUD_RATE: u32 = 9600;
         const DATA_BITS: DataBits = DataBits::Eight;
         const PARITY: Parity = Parity::None;
@@ -161,6 +165,18 @@ impl ControlBoard<WriteHalf<TcpStream>> {
     /// Both connections are necessary for the simulator to run,
     /// but the one that doesn't feed forward to control board is unnecessary
     pub async fn tcp(host: &str, port: &str, dummy_port: String) -> Result<Self> {
+        let (comm_in, comm_out) = Self::get_tcp_stream(host, port, dummy_port).await?;
+        Self::new(comm_out, comm_in, None).await
+    }
+
+    pub async fn get_tcp_stream(
+        host: &str,
+        port: &str,
+        dummy_port: String,
+    ) -> Result<(
+        tokio::io::ReadHalf<TcpStream>,
+        tokio::io::WriteHalf<TcpStream>,
+    )> {
         let host = host.to_string();
         let host_clone = host.clone();
         tokio::spawn(async move {
@@ -174,13 +190,14 @@ impl ControlBoard<WriteHalf<TcpStream>> {
         });
 
         let stream = TcpStream::connect(host.to_string() + ":" + port).await?;
-        let (comm_in, comm_out) = io::split(stream);
-        Self::new(comm_out, comm_in, None).await
+        Ok(io::split(stream))
     }
 }
 
 pub async fn reset_controlboard() -> Result<ERROR_CODES> {
-    let (comm_in, comm_out) = ControlBoard::get_serial_stream(&"/dev/ttyACM3").await.unwrap();
+    let (comm_in, comm_out) = ControlBoard::get_serial_stream(&"/dev/ttyACM3")
+        .await
+        .unwrap();
     let responses = ResponseMap::new(comm_in).await;
     let m = MessageId::default();
     let temp_board = AUVControlBoard::new(Arc::new(Mutex::from(comm_out)), responses, m);
