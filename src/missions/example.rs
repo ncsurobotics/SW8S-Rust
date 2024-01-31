@@ -3,6 +3,8 @@ use async_trait::async_trait;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
+use crate::act_nest;
+
 use super::{
     action::{Action, ActionConcurrent, ActionConditional, ActionExec, ActionSequence, RaceAction},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
@@ -54,6 +56,22 @@ pub fn race_conditional<T: Send + Sync>(context: &T) -> impl Action + '_ {
         AlwaysTrue::new(),
         WaitArm::new(context),
         RaceAction::new(Descend::new(context, -0.5), DelayAction::new(1.0)),
+    )
+}
+
+/// Function to demonstrate use of act_nest
+pub fn race_many<
+    Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
+>(
+    _context: &Con,
+) -> impl ActionExec + '_ {
+    act_nest!(
+        RaceAction::new,
+        AlwaysTrue::new(),
+        AlwaysTrue::new(),
+        AlwaysTrue::new(),
+        AlwaysTrue::new(),
+        AlwaysTrue::new()
     )
 }
 

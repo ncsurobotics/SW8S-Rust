@@ -47,6 +47,25 @@ pub trait ActionMod<Input: Send + Sync>: Action {
 }
 
 /**
+ * Simplifies combining tuple actions
+ * Takes input as `wrapper`, `child`, `child`,...
+ *
+ * `wrapper`: Tuple action to combine with (e.g. RaceAction)
+ * `child`: Each action to be combined
+ */
+#[macro_export]
+macro_rules! act_nest {
+    ($wrapper:expr, $action_l:expr, $action_r:expr) => {
+        $wrapper($action_l, $action_r)
+    };
+   ($wrapper:expr, $action_l:expr, $( $action_r:expr ),*) => {
+       $wrapper($action_l, act_nest!($wrapper, $(
+                   $action_r
+           ),+))
+   };
+}
+
+/**
  * An action that runs one of two actions depending on if its conditional reference is true or false.  
  */
 #[derive(Debug)]
@@ -168,54 +187,6 @@ impl<T: Action, U: Action> Action for RaceAction<T, U> {
 impl<T: Action, U: Action> RaceAction<T, U> {
     pub const fn new(first: T, second: U) -> Self {
         Self { first, second }
-    }
-}
-
-/**
- * Action that runs an array actions at the same time and exits both when any exit
- */
-pub struct ArrRaceAction {
-    actions: Vec<Box<dyn Action>>,
-}
-
-impl Action for ArrRaceAction {
-    fn dot_string(&self) -> DotString {
-        let actions: Vec<_> = self.actions.iter().map(|act| act.dot_string()).collect();
-        let race_id = Uuid::new_v4();
-
-        let mut body_str = format!(
-            "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = red;\n\"{}\" [label = \"Race\", shape = box, fontcolor = red, style = dashed];\n",
-            Uuid::new_v4(),
-            race_id
-        );
-        let add_to_body: String = actions.iter().map(|act| act.body.to_string()).collect();
-        body_str.push_str(&add_to_body);
-
-        actions
-            .clone()
-            .into_iter()
-            .flat_map(|act| act.head_ids)
-            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", race_id, id)));
-        body_str.push_str("}\n");
-
-        DotString {
-            head_ids: vec![race_id],
-            tail_ids: actions
-                .clone()
-                .into_iter()
-                .flat_map(|act| act.tail_ids)
-                .collect(),
-            body: body_str,
-        }
-    }
-}
-
-/**
- * Construct race action
- */
-impl ArrRaceAction {
-    pub const fn new(actions: Vec<Box<dyn Action>>) -> Self {
-        Self { actions }
     }
 }
 
