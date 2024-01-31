@@ -1,8 +1,6 @@
-use std::{
-    sync::{
-        mpsc::{channel, Sender, TryRecvError},
-        Arc,
-    },
+use std::sync::{
+    mpsc::{channel, Sender, TryRecvError},
+    Arc,
 };
 
 use crate::{
@@ -159,20 +157,22 @@ impl Statuses {
         }).await;
     }
 
-    async fn arm_debounce(tarm_count: &Arc<Mutex<Vec<bool>>>, current_tarm: Option<bool>) -> Option<bool> {
-            let mut locked_tarm_count = tarm_count.lock().await;
+    async fn arm_debounce(
+        tarm_count: &Arc<Mutex<Vec<bool>>>,
+        current_tarm: Option<bool>,
+    ) -> Option<bool> {
+        let mut locked_tarm_count = tarm_count.lock().await;
 
-            locked_tarm_count.push(current_tarm.unwrap_or(false));
-            locked_tarm_count.remove(0);
+        locked_tarm_count.push(current_tarm.unwrap_or(false));
+        locked_tarm_count.remove(0);
 
-            if locked_tarm_count.iter().all_equal() {
-                Some(*locked_tarm_count.first().unwrap())
-            } else {
-                None
-            }
+        if locked_tarm_count.iter().all_equal() {
+            Some(*locked_tarm_count.first().unwrap())
+        } else {
+            None
+        }
     }
 }
-
 
 #[cfg(test)]
 mod test {

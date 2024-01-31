@@ -1,7 +1,4 @@
-use crate::{
-    video_source::MatSource,
-    vision::{gate_poles::GatePoles, nn_cv2::OnnxModel},
-};
+use crate::vision::{gate_poles::GatePoles, nn_cv2::OnnxModel};
 
 use super::{
     action::{Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile},
@@ -14,13 +11,13 @@ use super::{
     movement::{AdjustMovement, Descend},
     vision::VisionNormOffset,
 };
+use crate::missions::action_context::GetFrontCamMat;
 use async_trait::async_trait;
 use tokio::{
     io::WriteHalf,
     time::{sleep, Duration},
 };
 use tokio_serial::SerialStream;
-use crate::missions::action_context::GetFrontCamMat;
 
 #[derive(Debug)]
 pub struct DelayAction {
@@ -79,7 +76,11 @@ pub fn descend_and_go_forward<
 }
 
 pub fn gate_run<
-    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + GetFrontCamMat,
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat,
 >(
     context: &Con,
 ) -> impl ActionExec + '_ {

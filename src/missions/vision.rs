@@ -6,13 +6,13 @@ use anyhow::Result;
 use async_trait::async_trait;
 use num_traits::{FromPrimitive, Num};
 
+use crate::missions::action_context::GetFrontCamMat;
 #[cfg(feature = "logging")]
 use opencv::{core::Vector, imgcodecs::imwrite};
 #[cfg(feature = "logging")]
 use std::fs::create_dir_all;
 #[cfg(feature = "logging")]
 use uuid::Uuid;
-use crate::missions::action_context::GetFrontCamMat;
 
 /// Runs a vision routine to obtain object position
 ///
@@ -37,8 +37,11 @@ impl<'a, T, U, V> VisionNormOffset<'a, T, U, V> {
 impl<T, U, V> Action for VisionNormOffset<'_, T, U, V> {}
 
 #[async_trait]
-impl<T: GetFrontCamMat + Send + Sync, V: Num + FromPrimitive + Send + Sync, U: VisualDetector<V> + Send + Sync>
-    ActionExec for VisionNormOffset<'_, T, U, V>
+impl<
+        T: GetFrontCamMat + Send + Sync,
+        V: Num + FromPrimitive + Send + Sync,
+        U: VisualDetector<V> + Send + Sync,
+    > ActionExec for VisionNormOffset<'_, T, U, V>
 where
     U::Position: RelPos<Number = V> + Draw,
 {

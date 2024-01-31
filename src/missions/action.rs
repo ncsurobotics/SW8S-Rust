@@ -16,7 +16,7 @@ use super::graph::{stripped_type, DotString};
  */
 pub trait Action {
     /// Represent this node in dot (graphviz) notation
-    fn dot_string(&self) -> DotString {
+    fn dot_string(&self, _parent: &str) -> DotString {
         let id = Uuid::new_v4();
         DotString {
             head_ids: vec![id],
@@ -76,10 +76,10 @@ pub struct ActionConditional<V: Action, W: Action, X: Action> {
 }
 
 impl<V: Action, W: Action, X: Action> Action for ActionConditional<V, W, X> {
-    fn dot_string(&self) -> DotString {
-        let true_str = self.true_branch.dot_string();
-        let false_str = self.false_branch.dot_string();
-        let condition_str = self.condition.dot_string();
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let true_str = self.true_branch.dot_string(stripped_type::<Self>());
+        let false_str = self.false_branch.dot_string(stripped_type::<Self>());
+        let condition_str = self.condition.dot_string(stripped_type::<Self>());
 
         let mut combined_str = true_str.body + &false_str.body + &condition_str.body;
         for tail_id in condition_str.tail_ids {
@@ -152,31 +152,46 @@ pub struct RaceAction<T: Action, U: Action> {
 }
 
 impl<T: Action, U: Action> Action for RaceAction<T, U> {
-    fn dot_string(&self) -> DotString {
-        let first_str = self.first.dot_string();
-        let second_str = self.second.dot_string();
-        let race_id = Uuid::new_v4();
+    fn dot_string(&self, parent: &str) -> DotString {
+        let first_str = self.first.dot_string(stripped_type::<Self>());
+        let second_str = self.second.dot_string(stripped_type::<Self>());
 
-        let mut body_str = format!(
+        if parent == stripped_type::<Self>() {
+            DotString {
+                head_ids: [first_str.head_ids, second_str.head_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                tail_ids: [first_str.tail_ids, second_str.tail_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                body: first_str.body + &second_str.body,
+            }
+        } else {
+            let race_id = Uuid::new_v4();
+
+            let mut body_str = format!(
             "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = red;\n\"{}\" [label = \"Race\", shape = box, fontcolor = red, style = dashed];\n",
             Uuid::new_v4(),
             race_id
         ) + &first_str.body
             + &second_str.body;
 
-        vec![first_str.head_ids, second_str.head_ids]
-            .into_iter()
-            .flatten()
-            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", race_id, id)));
-        body_str.push_str("}\n");
-
-        DotString {
-            head_ids: vec![race_id],
-            tail_ids: vec![first_str.tail_ids, second_str.tail_ids]
+            vec![first_str.head_ids, second_str.head_ids]
                 .into_iter()
                 .flatten()
-                .collect(),
-            body: body_str,
+                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", race_id, id)));
+            body_str.push_str("}\n");
+
+            DotString {
+                head_ids: vec![race_id],
+                tail_ids: vec![first_str.tail_ids, second_str.tail_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                body: body_str,
+            }
         }
     }
 }
@@ -216,12 +231,25 @@ pub struct DualAction<T: Action, U: Action> {
 }
 
 impl<T: Action, U: Action> Action for DualAction<T, U> {
-    fn dot_string(&self) -> DotString {
-        let first_str = self.first.dot_string();
-        let second_str = self.second.dot_string();
+    fn dot_string(&self, parent: &str) -> DotString {
+        let first_str = self.first.dot_string(stripped_type::<Self>());
+        let second_str = self.second.dot_string(stripped_type::<Self>());
         let (dual_head, dual_tail) = (Uuid::new_v4(), Uuid::new_v4());
 
-        let mut body_str = format!(
+        if parent == stripped_type::<Self>() {
+            DotString {
+                head_ids: [first_str.head_ids, second_str.head_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                tail_ids: [first_str.tail_ids, second_str.tail_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                body: first_str.body + &second_str.body,
+            }
+        } else {
+            let mut body_str = format!(
             "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Dual\", shape = box, fontcolor = blue, style = dashed];\n",
             Uuid::new_v4(),
             dual_head
@@ -229,20 +257,21 @@ impl<T: Action, U: Action> Action for DualAction<T, U> {
             &first_str.body
             + &second_str.body;
 
-        vec![first_str.head_ids, second_str.head_ids]
-            .into_iter()
-            .flatten()
-            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", dual_head, id)));
-        vec![first_str.tail_ids, second_str.tail_ids]
-            .into_iter()
-            .flatten()
-            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, dual_tail)));
-        body_str.push_str("}\n");
+            vec![first_str.head_ids, second_str.head_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", dual_head, id)));
+            vec![first_str.tail_ids, second_str.tail_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, dual_tail)));
+            body_str.push_str("}\n");
 
-        DotString {
-            head_ids: vec![dual_head],
-            tail_ids: vec![dual_tail],
-            body: body_str,
+            DotString {
+                head_ids: vec![dual_head],
+                tail_ids: vec![dual_tail],
+                body: body_str,
+            }
         }
     }
 }
@@ -276,9 +305,9 @@ pub struct ActionChain<V: Action, W: Action> {
 }
 
 impl<V: Action, W: Action> Action for ActionChain<V, W> {
-    fn dot_string(&self) -> DotString {
-        let first_str = self.first.dot_string();
-        let second_str = self.second.dot_string();
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let first_str = self.first.dot_string(stripped_type::<Self>());
+        let second_str = self.second.dot_string(stripped_type::<Self>());
 
         let mut body_str = first_str.body + &second_str.body;
         for tail in &first_str.tail_ids {
@@ -326,9 +355,9 @@ pub struct ActionSequence<V, W> {
 }
 
 impl<V: Action, W: Action> Action for ActionSequence<V, W> {
-    fn dot_string(&self) -> DotString {
-        let first_str = self.first.dot_string();
-        let second_str = self.second.dot_string();
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let first_str = self.first.dot_string(stripped_type::<Self>());
+        let second_str = self.second.dot_string(stripped_type::<Self>());
 
         let mut body_str = first_str.body + &second_str.body;
         for tail in &first_str.tail_ids {
@@ -367,12 +396,31 @@ pub struct ActionParallel<V: Action, W: Action> {
 }
 
 impl<V: Action, W: Action> Action for ActionParallel<V, W> {
-    fn dot_string(&self) -> DotString {
-        let first_str = self.first.blocking_lock().dot_string();
-        let second_str = self.second.blocking_lock().dot_string();
+    fn dot_string(&self, parent: &str) -> DotString {
+        let first_str = self
+            .first
+            .blocking_lock()
+            .dot_string(stripped_type::<Self>());
+        let second_str = self
+            .second
+            .blocking_lock()
+            .dot_string(stripped_type::<Self>());
         let (par_head, par_tail) = (Uuid::new_v4(), Uuid::new_v4());
 
-        let mut body_str = format!(
+        if parent == stripped_type::<Self>() {
+            DotString {
+                head_ids: [first_str.head_ids, second_str.head_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                tail_ids: [first_str.tail_ids, second_str.tail_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                body: first_str.body + &second_str.body,
+            }
+        } else {
+            let mut body_str = format!(
             "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Parallel\", shape = box, fontcolor = blue, style = dashed];\n",
             Uuid::new_v4(),
             par_head
@@ -380,20 +428,21 @@ impl<V: Action, W: Action> Action for ActionParallel<V, W> {
             &first_str.body
             + &second_str.body;
 
-        vec![first_str.head_ids, second_str.head_ids]
-            .into_iter()
-            .flatten()
-            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", par_head, id)));
-        vec![first_str.tail_ids, second_str.tail_ids]
-            .into_iter()
-            .flatten()
-            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, par_tail)));
-        body_str.push_str("}\n");
+            vec![first_str.head_ids, second_str.head_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", par_head, id)));
+            vec![first_str.tail_ids, second_str.tail_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, par_tail)));
+            body_str.push_str("}\n");
 
-        DotString {
-            head_ids: vec![par_head],
-            tail_ids: vec![par_tail],
-            body: body_str,
+            DotString {
+                head_ids: vec![par_head],
+                tail_ids: vec![par_tail],
+                body: body_str,
+            }
         }
     }
 }
@@ -440,12 +489,25 @@ pub struct ActionConcurrent<V: Action, W: Action> {
 }
 
 impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
-    fn dot_string(&self) -> DotString {
-        let first_str = self.first.dot_string();
-        let second_str = self.second.dot_string();
+    fn dot_string(&self, parent: &str) -> DotString {
+        let first_str = self.first.dot_string(stripped_type::<Self>());
+        let second_str = self.second.dot_string(stripped_type::<Self>());
         let (concurrent_head, concurrent_tail) = (Uuid::new_v4(), Uuid::new_v4());
 
-        let mut body_str = format!(
+        if parent == stripped_type::<Self>() {
+            DotString {
+                head_ids: [first_str.head_ids, second_str.head_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                tail_ids: [first_str.tail_ids, second_str.tail_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                body: first_str.body + &second_str.body,
+            }
+        } else {
+            let mut body_str = format!(
             "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Concurrent\", shape = box, fontcolor = blue, style = dashed];\n",
             Uuid::new_v4(),
             concurrent_head
@@ -453,20 +515,25 @@ impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
             &first_str.body
             + &second_str.body;
 
-        vec![first_str.head_ids, second_str.head_ids]
-            .into_iter()
-            .flatten()
-            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id)));
-        vec![first_str.tail_ids, second_str.tail_ids]
-            .into_iter()
-            .flatten()
-            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail)));
-        body_str.push_str("}\n");
+            vec![first_str.head_ids, second_str.head_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| {
+                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id))
+                });
+            vec![first_str.tail_ids, second_str.tail_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| {
+                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
+                });
+            body_str.push_str("}\n");
 
-        DotString {
-            head_ids: vec![concurrent_head],
-            tail_ids: vec![concurrent_tail],
-            body: body_str,
+            DotString {
+                head_ids: vec![concurrent_head],
+                tail_ids: vec![concurrent_tail],
+                body: body_str,
+            }
         }
     }
 }
@@ -497,8 +564,8 @@ pub struct ActionUntil<T: Action> {
 }
 
 impl<T: Action> Action for ActionUntil<T> {
-    fn dot_string(&self) -> DotString {
-        let action_str = self.action.dot_string();
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let action_str = self.action.dot_string(stripped_type::<Self>());
 
         let mut body_str = action_str.body;
         for head in &action_str.head_ids {
@@ -548,8 +615,8 @@ pub struct ActionWhile<T: Action> {
 }
 
 impl<T: Action> Action for ActionWhile<T> {
-    fn dot_string(&self) -> DotString {
-        let action_str = self.action.dot_string();
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let action_str = self.action.dot_string(stripped_type::<Self>());
 
         let mut body_str = action_str.body;
         for head in &action_str.head_ids {
