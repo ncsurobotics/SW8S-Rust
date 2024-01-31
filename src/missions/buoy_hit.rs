@@ -2,7 +2,7 @@ use crate::vision::{buoy::Buoy, nn_cv2::OnnxModel, VisualDetector};
 
 use super::{
     action::{Action, ActionExec, ActionSequence, ActionWhile},
-    action_context::{GetControlBoard, GetFrontCamMat},
+    action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::{StraightMovement, ZeroMovement},
 };
@@ -83,29 +83,32 @@ where
     }
 }
 
-pub fn buoy_bump_sequence<'a, T>(
-    context: &'a T,
-    depth: f32,
-) -> ActionSequence<
-    ActionWhile<DriveToBuoyVision<'a, T>>,
-    ActionSequence<StraightMovement<T>, ActionSequence<DelayAction, ZeroMovement<'a, T>>>,
->
-where
-    T: GetControlBoard<WriteHalf<SerialStream>> + 'a,
-{
+pub fn buoy_collision_sequence<
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat
+        + Unpin,
+>(
+    context: &Con,
+) -> impl ActionExec + '_ {
+    const DEPTH: f32 = 1.0;
+
     let forward_power = 0.3;
     let delay_s = 6.0;
 
     // Instantiate DriveToBuoyVision with provided values
-    let drive_to_buoy_vision = DriveToBuoyVision::new(context, depth, forward_power);
+
+    let drive_to_buoy_vision = DriveToBuoyVision::new(context, DEPTH, forward_power);
     let drive_while_buoy_visible = ActionWhile::new(drive_to_buoy_vision);
 
-    let forward_action = StraightMovement::new(context, depth, true);
+    let forward_action = StraightMovement::new(context, DEPTH, true);
     // Create a DelayAction with hardcoded delay
     let delay_action = DelayAction::new(delay_s);
 
     // Instantiate ZeroMovement with provided values
-    let zero_movement = ZeroMovement::new(context, depth);
+    let zero_movement = ZeroMovement::new(context, DEPTH);
 
     // Create the inner ActionSequence
     let inner_sequence = ActionSequence::new(
@@ -113,5 +116,5 @@ where
         ActionSequence::new(delay_action, zero_movement),
     );
     // Create and return the outer ActionSequence
-    ActionSequence::new(drive_while_buoy_visible, inner_sequence)
+    return ActionSequence::new(drive_while_buoy_visible, inner_sequence);
 }
