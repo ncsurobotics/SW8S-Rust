@@ -598,3 +598,35 @@ impl<U: Send + Sync, V: Send + Sync, T: ActionExec<Output = (U, V)>> ActionExec 
         self.action.execute().await.1
     }
 }
+
+/**
+ * Return first valid response from block of actions.
+ */
+#[derive(Debug)]
+pub struct FirstValid<T: Action> {
+    action: T,
+}
+
+impl<T: Action> Action for FirstValid<T> {}
+
+/**
+ * Implementation for the FirstValid struct.  
+ */
+impl<T: Action> FirstValid<T> {
+    pub const fn new(action: T) -> Self {
+        Self { action }
+    }
+}
+
+#[async_trait]
+impl<U: Send + Sync, T: ActionExec<Output = (Result<U>, Result<U>)>> ActionExec for FirstValid<T> {
+    type Output = Result<U>;
+    async fn execute(&mut self) -> Self::Output {
+        let (first, second) = self.action.execute().await;
+        if first.is_ok() {
+            first
+        } else {
+            second
+        }
+    }
+}
