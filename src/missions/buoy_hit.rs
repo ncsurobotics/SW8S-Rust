@@ -116,5 +116,5 @@ pub fn buoy_collision_sequence<
         ActionSequence::new(delay_action, zero_movement),
     );
     // Create and return the outer ActionSequence
-    return ActionSequence::new(drive_while_buoy_visible, inner_sequence);
+    ActionSequence::new(drive_while_buoy_visible, inner_sequence)
 }
