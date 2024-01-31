@@ -2,7 +2,7 @@ use crate::vision::{buoy::Buoy, VisualDetector};
 
 use super::{
     action::{Action, ActionExec, ActionSequence},
-    action_context::{GetControlBoard, GetFrontCamMat},
+    action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::ZeroMovement,
 };
@@ -95,24 +95,29 @@ where
     }
 }
 
-pub fn buoy_bump_sequence<'a, T>(
-    context: &'a T,
-    depth: f32,
-) -> ActionSequence<DriveToBuoyVision<'a, T>, ActionSequence<DelayAction, ZeroMovement<'a, T>>>
-where
-    T: GetControlBoard<WriteHalf<SerialStream>> + 'a,
-{
+pub fn buoy_bump_sequence<
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat
+        + Unpin,
+>(
+    context: &Con,
+) -> impl ActionExec + '_ {
+    const DEPTH: f32 = 1.0;
+
     let forward_power = 0.3;
     let delay_s = 6.0;
 
     // Instantiate DriveToBuoyVision with provided values
-    let drive_to_buoy_vision = DriveToBuoyVision::new(context, depth, forward_power);
+    let drive_to_buoy_vision = DriveToBuoyVision::new(context, DEPTH, forward_power);
 
     // Create a DelayAction with hardcoded delay
     let delay_action = DelayAction::new(delay_s);
 
     // Instantiate ZeroMovement with provided values
-    let zero_movement = ZeroMovement::new(context, depth);
+    let zero_movement = ZeroMovement::new(context, DEPTH);
 
     // Create the inner ActionSequence
     let inner_sequence = ActionSequence::new(delay_action, zero_movement);

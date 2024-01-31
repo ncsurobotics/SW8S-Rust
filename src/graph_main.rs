@@ -14,6 +14,9 @@ mod generated_actions {
     pub mod example {
         include!(concat!(env!("OUT_DIR"), "/graph_missions/example.rs"));
     }
+    pub mod buoy_hit {
+        include!(concat!(env!("OUT_DIR"), "/graph_missions/buoy_hit.rs"));
+    }
 }
 
 const CONTEXT: EmptyActionContext = EmptyActionContext;
@@ -34,7 +37,7 @@ macro_rules! graph_actions {
 async fn main() {
     create_dir_all("graphs/").unwrap();
     // (name, action) pairs to draw
-    let actions = graph_actions!(basic, example);
+    let actions = graph_actions!(basic, example, buoy_hit);
 
     stream::iter(actions)
         .for_each(|(dir_name, action_set)| async move {
