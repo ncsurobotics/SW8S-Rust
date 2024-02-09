@@ -51,7 +51,12 @@ static FRONT_CAM_CELL: OnceCell<Camera> = OnceCell::const_new();
 async fn front_cam() -> &'static Camera {
     FRONT_CAM_CELL
         .get_or_init(|| async {
-            Camera::jetson_new(&Configuration::default().front_cam, "front", Path::new("/tmp/front_feed.mp4")).unwrap()
+            Camera::jetson_new(
+                &Configuration::default().front_cam,
+                "front",
+                Path::new("/tmp/front_feed.mp4"),
+            )
+            .unwrap()
         })
         .await
 }
@@ -60,7 +65,12 @@ static BOTTOM_CAM_CELL: OnceCell<Camera> = OnceCell::const_new();
 async fn bottom_cam() -> &'static Camera {
     BOTTOM_CAM_CELL
         .get_or_init(|| async {
-            Camera::jetson_new(&Configuration::default().bottom_cam, "bottom", Path::new("/tmp/bottom_feed.mp4")).unwrap()
+            Camera::jetson_new(
+                &Configuration::default().bottom_cam,
+                "bottom",
+                Path::new("/tmp/bottom_feed.mp4"),
+            )
+            .unwrap()
         })
         .await
 }
@@ -176,7 +186,7 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await
+                bottom_cam().await,
             ))
             .execute()
             .await;
@@ -188,7 +198,7 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await
+                bottom_cam().await,
             ))
             .execute()
             .await;
@@ -199,7 +209,7 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await
+                bottom_cam().await,
             ))
             .execute()
             .await;
