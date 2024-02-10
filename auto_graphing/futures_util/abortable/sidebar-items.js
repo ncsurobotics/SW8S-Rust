@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["AbortHandle","AbortInner","AbortRegistration","Abortable","Aborted"]};

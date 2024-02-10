@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["INVALID","NULL"],"fn":["fetch"],"macro":["syscall","weak","weak_or_syscall","weakcall"],"mod":["libc"],"struct":["Weak"]};

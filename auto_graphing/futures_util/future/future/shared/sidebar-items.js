@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["COMPLETE","IDLE","NULL_WAKER_KEY","POISONED","POLLING"],"enum":["FutureOrOutput"],"struct":["Inner","Notifier","Shared","WeakShared"]};

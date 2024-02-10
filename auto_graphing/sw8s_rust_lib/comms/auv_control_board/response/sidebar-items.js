@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["check_start","clean_message","find_end","fmt_filename_time","get_messages","write_log"],"static":["LOG_NAMES","LOG_TIMESTAMP"]};

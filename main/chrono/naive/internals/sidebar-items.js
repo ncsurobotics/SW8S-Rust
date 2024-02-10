@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["A","AG","B","BA","C","CB","D","DC","E","ED","F","FE","G","GF","MAX_MDL","MAX_OL","MAX_YEAR","MDL_TO_OL","MIN_OL","MIN_YEAR","OL_TO_MDL","XX","YEAR_DELTAS","YEAR_TO_FLAGS"],"fn":["cycle_to_yo","weekday_from_u32_mod7","yo_to_cycle"],"struct":["Mdf","Of","YearFlags"],"type":["DateImpl"]};

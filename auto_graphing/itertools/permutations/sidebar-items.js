@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["PermutationState"],"fn":["advance","permutations"],"struct":["Permutations"]};

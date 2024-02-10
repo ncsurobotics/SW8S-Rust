@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["integer_decode_f32","integer_decode_f64"],"macro":["float_const_impl","float_impl_std"],"trait":["Float","FloatConst","FloatCore"]};

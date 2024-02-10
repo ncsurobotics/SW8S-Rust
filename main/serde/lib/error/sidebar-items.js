@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["request_ref","request_value"],"struct":["Report","Request"],"trait":["Error"]};

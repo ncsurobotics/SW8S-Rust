@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["oflags_bits","oflags_for_open_how"]};

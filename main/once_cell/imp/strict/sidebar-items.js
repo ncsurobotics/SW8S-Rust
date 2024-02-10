@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["addr","map_addr","with_addr"]};

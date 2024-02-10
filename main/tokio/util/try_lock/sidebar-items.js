@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["new"],"struct":["LockGuard","TryLock"]};
