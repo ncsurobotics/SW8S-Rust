@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"trait":["VideoCaptureTrait","VideoCaptureTraitConst","VideoWriterTrait","VideoWriterTraitConst"]};
