@@ -7,6 +7,7 @@
 
 <h2>Other Branches</h2>
 
+<!DOCTYPE html> 
 <html>
 	<body style="background-color:LightGray; font-size:18px">
 		<ul>
@@ -16,7 +17,7 @@
 					{% if dir_split[2] != "main" %}
 						{% if dir_split.size == 4 %}
 							{% if dir_split[3] == "index.html" %}
-								<li><a href="{{ site.baseurl }}/{{ directory.path }}" style="color: DarkBlue">{{ dir_split[2] }}</a></li>
+								<li><a href="{{ site.baseurl | append: directory.path }}" style="color: DarkBlue">{{ dir_split[2] }}</a></li>
 							{% endif %}
 						{% endif %}
 					{% endif %}
