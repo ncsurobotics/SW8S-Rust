@@ -60,6 +60,6 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/github-pages-deploy-action@v3
+        uses: amesIves/github-pages-deploy-action@v3
         with:
           target-folder: ${{ env.SUBDIR }}
