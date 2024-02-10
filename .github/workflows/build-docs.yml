@@ -49,4 +49,4 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: target/doc 
-          target-folder: ${{ github.ref_name }}
+          target-folder: docs/${{ github.ref_name }}
