@@ -1,12 +1,10 @@
-use core::fmt::Debug;
 use async_trait::async_trait;
+use core::fmt::Debug;
 use opencv::core::Mat;
 use tokio::io::{AsyncWriteExt, WriteHalf};
 use tokio_serial::SerialStream;
 
-use crate::{
-    comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
-};
+use crate::comms::{control_board::ControlBoard, meb::MainElectronicsBoard};
 use crate::video_source::appsink::Camera;
 use crate::video_source::MatSource;
 
@@ -28,7 +26,7 @@ pub trait GetMainElectronicsBoard: Send + Sync {
  * Inherit this trait if you have a front camera
  */
 #[async_trait]
-pub trait GetFrontCamMat: {
+pub trait GetFrontCamMat {
     async fn get_front_camera_mat(&self) -> Mat;
 }
 
@@ -36,7 +34,7 @@ pub trait GetFrontCamMat: {
  * Inherit this trait if you have a bottom camera
  */
 #[async_trait]
-pub trait GetBottomCamMat: {
+pub trait GetBottomCamMat {
     async fn get_bottom_camera_mat(&self) -> Mat;
 }
 
@@ -66,8 +64,7 @@ impl<'a, T: AsyncWriteExt + Unpin + Send> FullActionContext<'a, T> {
     }
 }
 
-impl GetControlBoard<WriteHalf<SerialStream>> for FullActionContext<'_, WriteHalf<SerialStream>>
-{
+impl GetControlBoard<WriteHalf<SerialStream>> for FullActionContext<'_, WriteHalf<SerialStream>> {
     fn get_control_board(&self) -> &ControlBoard<WriteHalf<SerialStream>> {
         self.control_board
     }
@@ -81,10 +78,14 @@ impl GetMainElectronicsBoard for FullActionContext<'_, WriteHalf<SerialStream>> 
 
 #[async_trait]
 impl<T: AsyncWriteExt + Unpin + Send> GetFrontCamMat for FullActionContext<'_, T> {
-    async fn get_front_camera_mat(&self) -> Mat { self.front_cam.get_mat().await }
+    async fn get_front_camera_mat(&self) -> Mat {
+        self.front_cam.get_mat().await
+    }
 }
 
 #[async_trait]
 impl<T: AsyncWriteExt + Unpin + Send> GetBottomCamMat for FullActionContext<'_, T> {
-    async fn get_bottom_camera_mat(&self) -> Mat { self.bottom_cam.get_mat().await }
+    async fn get_bottom_camera_mat(&self) -> Mat {
+        self.bottom_cam.get_mat().await
+    }
 }

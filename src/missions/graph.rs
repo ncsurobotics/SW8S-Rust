@@ -20,7 +20,7 @@ pub fn stripped_type<T: ?Sized>() -> &'static str {
 }
 
 /// Contains information for dot (graphviz) graphing
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DotString {
     pub head_ids: Vec<Uuid>,
     pub tail_ids: Vec<Uuid>,
@@ -40,7 +40,7 @@ impl DotString {
 
 pub fn dot_file<T: ?Sized + Action>(act: &T) -> String {
     let header = "digraph G {\nsplines = true;\nnodesep = 1.0;\n".to_string();
-    header + &act.dot_string().body + "}"
+    header + &act.dot_string("").body + "}"
 }
 
 #[cfg(feature = "graphing")]
