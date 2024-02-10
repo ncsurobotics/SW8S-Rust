@@ -54,13 +54,9 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - name: Generate subdir name
-        run: |
-          echo "SUBDIR=$(git branch --show-current)/docs" >> "$GITHUB_ENV"
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: .
-          target-folder: ${{ env.SUBDIR }}
+          target-folder: ${{ github.ref_name }}
