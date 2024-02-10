@@ -128,7 +128,7 @@ impl PcaData {
 /// # Arguments
 /// * `points` - Points from image for PCA analysis
 /// * `max_components` - Maximum number of PCA regions to return, 0 for unbounded
-pub fn binary_pca(points: &Vec<Point_<f64>>, max_components: i32) -> Result<PcaData> {
+pub fn binary_pca(points: &[Point_<f64>], max_components: i32) -> Result<PcaData> {
     let mut image_data =
         Mat::new_rows_cols_with_default(points.len() as i32, 2, CV_64F, Scalar::default())?;
     (0..image_data.rows()).for_each(|idx| {
