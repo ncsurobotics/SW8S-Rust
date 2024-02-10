@@ -7,42 +7,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build_docs:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Update Ubuntu Packages
-      run: sudo apt-get update
-
-    - uses: awalsh128/cache-apt-pkgs-action@v1
-      with:
-        packages: llvm \
-          clang \
-          libclang-dev \
-          libopencv-dev
-
-    - uses: dtolnay/rust-toolchain@stable
-      with:
-        components: clippy
-    - uses: Swatinem/rust-cache@v2
-
-    - name: Build docs
-      run: cargo doc --all-features
-
-    - name: Add redirect
-      run: echo '<meta http-equiv="refresh" content="0;url=aoc/index.html">' > target/doc/index.html
-    - name: Remove lock file
-      run: rm target/doc/.lock
-
-    - uses: actions/upload-pages-artifact@v3
-      with:
-        path: target/doc
-
-  deploy:
-    needs: build_docs
-
+  doc_deploy:
     permissions:
       pages: write
       id-token: write
@@ -51,12 +16,36 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Ubuntu Packages
+        run: sudo apt-get update
+
+      - uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: llvm \
+            clang \
+            libclang-dev \
+            libopencv-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build docs
+        run: cargo doc --all-features
+
+      - name: Add redirect
+        run: echo '<meta http-equiv="refresh" content="0;url=aoc/index.html">' > target/doc/index.html
+      - name: Remove lock file
+        run: rm target/doc/.lock
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: .
+          folder: target/doc 
           target-folder: ${{ github.ref_name }}
