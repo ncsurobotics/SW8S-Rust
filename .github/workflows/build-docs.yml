@@ -41,7 +41,7 @@ jobs:
         path: target/doc
 
   deploy:
-    needs: build
+    needs: build_docs
 
     permissions:
       pages: write
