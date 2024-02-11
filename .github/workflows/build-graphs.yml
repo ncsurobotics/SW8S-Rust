@@ -44,7 +44,7 @@ jobs:
           sudo aptitude install -y libgstreamer1.0-dev
 
       - name: Configure GraphViz Plugins
-        run: dot -c
+        run: sudo dot -c
 
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
