@@ -28,6 +28,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: _empty
-          clean: true 
-          clean-exclude: "!*/${{ github.ref_name }}"
+          clean-exclude: |
+            "**"
+            "!*/${{ github.ref_name }}"
 
