@@ -1,6 +1,9 @@
 name: delete-pages
 
-on: ["delete"]
+on:
+  delete:
+    branches:
+      - '**'
 
 env:
   CARGO_TERM_COLOR: always
@@ -14,7 +17,7 @@ jobs:
           ref: gh-pages
 
       - name: Remove pages files
-        run: rm -rf */'${{ github.event.ref_name }}'
+        run: rm -rf */'${{ github.event.ref }}'
 
       - name: Remove from GitHub Pages
         uses: EndBug/add-and-commit@v9
