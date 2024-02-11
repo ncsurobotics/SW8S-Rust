@@ -20,7 +20,7 @@ pub fn stripped_type<T: ?Sized>() -> &'static str {
 }
 
 /// Contains information for dot (graphviz) graphing
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DotString {
     pub head_ids: Vec<Uuid>,
     pub tail_ids: Vec<Uuid>,
