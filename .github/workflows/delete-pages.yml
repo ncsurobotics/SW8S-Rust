@@ -14,7 +14,7 @@ jobs:
           ref: gh-pages
 
       - name: Remove pages files
-        run: rm -rf */'${{ github.ref_name }}'
+        run: rm -rf */'${{ github.event.ref_name }}'
 
       - name: Remove from GitHub Pages
         uses: EndBug/add-and-commit@v9
