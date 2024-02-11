@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["buf_impl","buf_mut","chain","iter","limit","reader","take","uninit_slice","vec_deque","writer"],"struct":["Chain","IntoIter","Limit","Reader","Take","UninitSlice","Writer"],"trait":["Buf","BufMut"]};

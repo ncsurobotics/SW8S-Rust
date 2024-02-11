@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["coalesce","dedup","dedup_by","dedup_by_with_count","dedup_with_count"],"struct":["CoalesceBy","DedupEq","DedupPred2CoalescePred","DedupPredWithCount2CoalescePred","NoCount","WithCount"],"trait":["CoalescePredicate","CountItem","DedupPredicate"],"type":["Coalesce","Dedup","DedupBy","DedupByWithCount","DedupWithCount"]};

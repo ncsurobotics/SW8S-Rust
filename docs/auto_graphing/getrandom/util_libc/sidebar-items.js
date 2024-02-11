@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_errno","last_os_error","open_readonly","sys_fill_exact"],"struct":["Weak"]};

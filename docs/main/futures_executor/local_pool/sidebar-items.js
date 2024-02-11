@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CURRENT_THREAD_NOTIFY"],"fn":["block_on","block_on_stream","run_executor","woken"],"struct":["BlockingStream","LocalPool","LocalSpawner","ThreadNotify"],"type":["Incoming"]};

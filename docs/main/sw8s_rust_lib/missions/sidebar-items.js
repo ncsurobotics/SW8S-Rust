@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["action","action_context","basic","comms","example","graph","meb","movement","vision"]};

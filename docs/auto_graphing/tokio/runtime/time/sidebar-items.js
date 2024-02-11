@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["entry","handle","source","wheel"],"struct":["Driver","Inner","InnerState"]};

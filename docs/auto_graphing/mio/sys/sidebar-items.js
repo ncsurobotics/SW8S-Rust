@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["debug_detail"],"mod":["unix"]};
