@@ -1,0 +1,15 @@
+digraph G {
+splines = true;
+nodesep = 1.0;
+"b6357b2f-0d82-4029-b311-006ca0cee8f3" [label = "WaitArm", margin = 0];
+"248ee4c8-1d8d-46d2-afd6-2db2a2c44595" [label = "Descend", margin = 0];
+"c7a171fe-875b-45e2-b567-bea0e6bb81a1" [label = "DelayAction", margin = 0];
+"248ee4c8-1d8d-46d2-afd6-2db2a2c44595" -> "c7a171fe-875b-45e2-b567-bea0e6bb81a1";
+"372617c6-4bef-4375-b8d5-9adefe625483" [label = "StraightMovement", margin = 0];
+"3562b8f9-11ae-4613-9e64-0b7697c568d6" [label = "DelayAction", margin = 0];
+"372617c6-4bef-4375-b8d5-9adefe625483" -> "3562b8f9-11ae-4613-9e64-0b7697c568d6";
+"70b15ec1-3ad6-4a7e-b17f-a1a8623c71d0" [label = "ZeroMovement", margin = 0];
+"3562b8f9-11ae-4613-9e64-0b7697c568d6" -> "70b15ec1-3ad6-4a7e-b17f-a1a8623c71d0";
+"c7a171fe-875b-45e2-b567-bea0e6bb81a1" -> "372617c6-4bef-4375-b8d5-9adefe625483";
+"b6357b2f-0d82-4029-b311-006ca0cee8f3" -> "248ee4c8-1d8d-46d2-afd6-2db2a2c44595";
+}
