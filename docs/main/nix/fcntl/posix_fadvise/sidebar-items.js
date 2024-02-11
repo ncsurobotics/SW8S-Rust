@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["PosixFadviseAdvice"],"fn":["posix_fadvise"]};

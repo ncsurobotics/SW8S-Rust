@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["RoundingError"],"fn":["duration_round","duration_trunc","span_for_digits"],"trait":["DurationRound","SubsecRound"]};

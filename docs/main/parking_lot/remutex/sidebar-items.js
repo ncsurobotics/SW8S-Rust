@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["const_reentrant_mutex"],"struct":["RawThreadId"],"type":["MappedReentrantMutexGuard","ReentrantMutex","ReentrantMutexGuard"]};
