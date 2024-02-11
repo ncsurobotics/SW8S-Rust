@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CURRENT","INITIAL_CAPACITY","MAX_TASKS_PER_TICK","REMOTE_FIRST_INTERVAL"],"fn":["spawn_local","spawn_local_inner"],"struct":["Context","LocalData","LocalDataEnterGuard","LocalEnterGuard","LocalSet","LocalState","RunUntil","Shared"]};

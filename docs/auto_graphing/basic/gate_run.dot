@@ -1,0 +1,34 @@
+digraph G {
+splines = true;
+nodesep = 1.0;
+subgraph "cluster_c8b4ac58-5af9-4473-bd45-a773936562d7" {
+style = dashed;
+color = blue;
+"824cd752-6e17-434e-aefb-9e38207e1415" [label = "Concurrent", shape = box, fontcolor = blue, style = dashed];
+"b32920a9-13be-453a-893a-e690c9117b76" [label = "Converge", shape = box, fontcolor = blue, style = dashed];
+"02fafee7-7ef3-44c3-ab7c-822a914b6980" [label = "WaitArm", margin = 0];
+"e11b6e86-9833-4c66-b623-5ef420c44f65" [label = "Descend", margin = 0];
+"0d2b41c7-d069-4d2a-bd75-ea64715ad788" [label = "DelayAction", margin = 0];
+"e11b6e86-9833-4c66-b623-5ef420c44f65" -> "0d2b41c7-d069-4d2a-bd75-ea64715ad788";
+"3788dfcb-b305-43f2-9c3d-59392c772db8" [label = "StraightMovement", margin = 0];
+"f05f551f-e370-4f20-88d7-3bfbd5abe933" [label = "DelayAction", margin = 0];
+"3788dfcb-b305-43f2-9c3d-59392c772db8" -> "f05f551f-e370-4f20-88d7-3bfbd5abe933";
+"e9ccef40-1fed-469d-bf9a-e0e530d86ae2" [label = "ZeroMovement", margin = 0];
+"f05f551f-e370-4f20-88d7-3bfbd5abe933" -> "e9ccef40-1fed-469d-bf9a-e0e530d86ae2";
+"0d2b41c7-d069-4d2a-bd75-ea64715ad788" -> "3788dfcb-b305-43f2-9c3d-59392c772db8";
+"02fafee7-7ef3-44c3-ab7c-822a914b6980" -> "e11b6e86-9833-4c66-b623-5ef420c44f65";
+"aee99cc7-0599-4a8b-a93b-e2a577aa9d5c" [label = "StartBno055", margin = 0];
+"824cd752-6e17-434e-aefb-9e38207e1415" -> "02fafee7-7ef3-44c3-ab7c-822a914b6980";
+"824cd752-6e17-434e-aefb-9e38207e1415" -> "aee99cc7-0599-4a8b-a93b-e2a577aa9d5c";
+"e9ccef40-1fed-469d-bf9a-e0e530d86ae2" -> "b32920a9-13be-453a-893a-e690c9117b76";
+"aee99cc7-0599-4a8b-a93b-e2a577aa9d5c" -> "b32920a9-13be-453a-893a-e690c9117b76";
+}
+"b37337a6-1f16-4148-8b49-2f355dafbf30" [label = "VisionNormOffset", margin = 0];
+"feab0c5d-e2a4-4487-b470-7cfaadf3485e" [label = "AdjustMovement", margin = 0];
+"b37337a6-1f16-4148-8b49-2f355dafbf30" -> "feab0c5d-e2a4-4487-b470-7cfaadf3485e" [color = purple, fontcolor = purple, label = "Pass Data"];
+"ec7cf531-5f80-4653-9c51-6cc0d1b63ae1" [label = "AlwaysTrue", margin = 0];
+"feab0c5d-e2a4-4487-b470-7cfaadf3485e" -> "ec7cf531-5f80-4653-9c51-6cc0d1b63ae1";
+"ec7cf531-5f80-4653-9c51-6cc0d1b63ae1" [shape = diamond];
+"ec7cf531-5f80-4653-9c51-6cc0d1b63ae1" -> "b37337a6-1f16-4148-8b49-2f355dafbf30" [label = "True"];
+"b32920a9-13be-453a-893a-e690c9117b76" -> "b37337a6-1f16-4148-8b49-2f355dafbf30";
+}
