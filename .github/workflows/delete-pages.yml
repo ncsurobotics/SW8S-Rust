@@ -7,28 +7,16 @@ env:
 
 jobs:
   delete_pages:
-    permissions:
-      pages: write
-      id-token: write
-      contents: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
 
-      - name: Generate empty folder
-        run: mkdir _empty
+      - name: Remove pages files
+        run: rm -rf */'${{ github.ref_name }}'
 
       - name: Remove from GitHub Pages
-        id: deployment
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: EndBug/add-and-commit@v9
         with:
-          folder: _empty
-          clean-exclude: |
-            "**"
-            "!*/${{ github.ref_name }}"
-
+          message: 'Automated Pages Cleanup'
