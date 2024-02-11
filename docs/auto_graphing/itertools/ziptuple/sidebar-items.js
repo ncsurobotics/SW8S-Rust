@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["multizip"],"macro":["impl_zip_iter"],"struct":["Zip"]};
