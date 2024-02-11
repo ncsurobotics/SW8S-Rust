@@ -25,19 +25,10 @@ jobs:
         packages: llvm \
           clang \
           libclang-dev \
-          libgstreamer1.0-dev \
-          libgstreamer-plugins-base1.0-dev \
           libopencv-dev \
           libavutil-dev \
           libavcodec-dev \
-          libavformat-dev \
-          libswscale-dev \
-          libavresample-dev \
-          libopenexr-dev \
-          liblapack-dev \
-          libatlas-base-dev \
-          libfreetype-dev \
-          libharfbuzz-dev \
+          libavformat-dev
 
     - name: Install gstreamer
       run: |

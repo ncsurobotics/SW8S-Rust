@@ -1,0 +1,91 @@
+# Derived from: https://github.com/dnaka91/advent-of-code/blob/main/.github/workflows/docs.yml
+name: github-pages-graphs
+
+on: ["push"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  graph_deploy:
+    permissions:
+      pages: write
+      id-token: write
+      contents: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Ubuntu Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get autoremove
+
+      - uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: llvm \
+            clang \
+            libclang-dev \
+            libopencv-dev \
+            libavutil-dev \
+            libavcodec-dev \
+            libavformat-dev \
+            graphviz
+
+      - name: Install gstreamer
+        run: |
+          sudo apt update
+          sudo apt install -y aptitude
+          sudo aptitude install -y libgstreamer1.0-dev
+
+      - name: Configure GraphViz Plugins
+        run: sudo dot -c
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build graphs
+        run: RUST_BACKTRACE=1 cargo run --all-features --bin sw8s_rust_graphs
+
+      - name: Prepare graphs for web
+        run: |
+          cd graphs
+          printf '%s\n' '<!DOCTYPE html>' > index.html
+          printf '%s\n' '<html>' >> index.html
+          printf '\t%s\n' '<body style="background-color:LightGray; font-size:18px">' >> index.html
+          printf '\t%s\n' '<ul>' >> index.html
+          for d in */; do
+            printf '\t\t%s%s%s\n' '<li>' "${d%/}" '<ul>' >> index.html
+            cd "$d"
+            for f in *.svg; do
+              html="${f%svg}html"
+              printf '\t\t\t%s%s%s%s%s%s\n' '<li><a href=' "${d}${html}" ' style="color: DarkBlue">' "${f%.svg}" '</a>' '</li>' >> ../index.html
+              printf '%s\n%s%s%s\n' '<!DOCTYPE html>' > "$html"
+              printf '%s\n' '<html>' >> "$html"
+              printf '\t%s\n' '<body style="background-color:LightGray; font-size:18px">' >> "$html"
+              printf '\t\t%s%s%s\n' '<h2>' "${f%.svg}" '</h2>' >> "$html"
+              printf '\t\t%s%s%s%s%s\n' '<a href=' "${f%svg}dot" ' style="color: DarkBlue">' "DOT (graphviz) source" '</a>' >> "$html"
+              printf '\t\t%s\n' '<br>' >> "$html"
+              printf '\t\t%s\n' '<br>' >> "$html"
+              printf '\t\t%s%s%s\n' '<img src=' "$f" '>' >> "$html"
+              printf '\t%s\n' '</body>' >> "$html"
+              printf '%s\n' '</html>' >> "$html"
+            done
+            cd ..
+            printf '\t\t%s\n' '</ul></li>' >> index.html
+          done
+          printf '\t%s\n' '</ul>' >> index.html
+          printf '\t%s\n' '</body>' >> index.html
+          printf '%s\n' '</html>' >> index.html
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: graphs 
+          target-folder: graphs/${{ github.ref_name }}
