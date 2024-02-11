@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["AdjustMovement","Descend","StraightMovement","ZeroMovement"]};

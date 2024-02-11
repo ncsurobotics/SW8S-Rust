@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["OnnxModel","YoloClass","YoloDetection"],"trait":["VisionModel"]};
