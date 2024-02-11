@@ -64,7 +64,7 @@ jobs:
             cd "$d"
             for f in *.svg; do
               html="${f%svg}html"
-              printf '\t\t\t%s%s%s%s%s%s\n' '<li><a href=' "$(d}$html" ' style="color: DarkBlue">' "${f%.svg}" '</a>' '</li>' >> ../index.html
+              printf '\t\t\t%s%s%s%s%s%s\n' '<li><a href=' "${d}${html}" ' style="color: DarkBlue">' "${f%.svg}" '</a>' '</li>' >> ../index.html
               printf '%s\n%s%s%s\n' '<!DOCTYPE html>' > "$html"
               printf '%s\n' '<html>' >> "$html"
               printf '\t%s\n' '<body style="background-color:LightGray; font-size:18px">' >> "$html"
