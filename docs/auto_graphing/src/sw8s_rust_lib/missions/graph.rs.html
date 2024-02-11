@@ -74,7 +74,7 @@
 }
 
 <span class="doccomment">/// Contains information for dot (graphviz) graphing
-</span><span class="attr">#[derive(Debug)]
+</span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>DotString {
     <span class="kw">pub </span>head_ids: Vec&lt;Uuid&gt;,
     <span class="kw">pub </span>tail_ids: Vec&lt;Uuid&gt;,
@@ -93,8 +93,8 @@
 }
 
 <span class="kw">pub fn </span>dot_file&lt;T: <span class="question-mark">?</span>Sized + Action&gt;(act: <span class="kw-2">&amp;</span>T) -&gt; String {
-    <span class="kw">let </span>header = <span class="string">"digraph G {\nsplines = true;\nnodesep = 1.0;\nbgcolor = \"none\";"</span>.to_string();
-    header + <span class="kw-2">&amp;</span>act.dot_string().body + <span class="string">"}"
+    <span class="kw">let </span>header = <span class="string">"digraph G {\nsplines = true;\nnodesep = 1.0;\nbgcolor = \"none\";\n"</span>.to_string();
+    header + <span class="kw-2">&amp;</span>act.dot_string(<span class="string">""</span>).body + <span class="string">"}"
 </span>}
 
 <span class="attr">#[cfg(feature = <span class="string">"graphing"</span>)]

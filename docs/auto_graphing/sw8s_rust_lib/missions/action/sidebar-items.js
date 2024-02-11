@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["ActionChain","ActionConcurrent","ActionConditional","ActionParallel","ActionSequence","ActionUntil","ActionWhile","DualAction","RaceAction","TupleSecond"],"trait":["Action","ActionExec","ActionMod"]};
+window.SIDEBAR_ITEMS = {"struct":["ActionChain","ActionConcurrent","ActionConditional","ActionParallel","ActionSequence","ActionUntil","ActionWhile","DualAction","FirstValid","RaceAction","TupleSecond"],"trait":["Action","ActionExec","ActionMod"]};

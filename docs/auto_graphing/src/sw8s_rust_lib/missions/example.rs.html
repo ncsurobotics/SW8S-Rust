@@ -82,10 +82,33 @@
 <a href="#81" id="81">81</a>
 <a href="#82" id="82">82</a>
 <a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
+
+<span class="kw">use </span><span class="kw">crate</span>::act_nest;
 
 <span class="kw">use super</span>::{
     action::{Action, ActionConcurrent, ActionConditional, ActionExec, ActionSequence, RaceAction},
@@ -138,6 +161,25 @@
         AlwaysTrue::new(),
         WaitArm::new(context),
         RaceAction::new(Descend::new(context, -<span class="number">0.5</span>), DelayAction::new(<span class="number">1.0</span>)),
+    )
+}
+
+<span class="doccomment">/// Function to demonstrate use of act_nest
+</span><span class="kw">pub fn </span>race_many&lt;
+    Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;,
+&gt;(
+    _context: <span class="kw-2">&amp;</span>Con,
+) -&gt; <span class="kw">impl </span>ActionExec + <span class="lifetime">'_ </span>{
+    ActionSequence::new(
+        <span class="macro">act_nest!</span>(
+            RaceAction::new,
+            AlwaysTrue::new(),
+            AlwaysTrue::new(),
+            AlwaysTrue::new(),
+            AlwaysTrue::new(),
+            AlwaysTrue::new()
+        ),
+        AlwaysTrue::new(),
     )
 }
 
