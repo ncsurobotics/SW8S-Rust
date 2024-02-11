@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["parenthesize_impl_trait"],"struct":["AddLifetimeToImplTrait","CollectLifetimes"]};

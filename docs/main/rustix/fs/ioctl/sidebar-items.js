@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["ext4_ioc_resize_fs","ioctl_blkpbszget","ioctl_blksszget","ioctl_ficlone"],"struct":["Ficlone"]};

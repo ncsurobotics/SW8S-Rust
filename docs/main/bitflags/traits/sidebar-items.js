@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["impl_bits"],"mod":["__private"],"struct":["Flag"],"trait":["Bits","Flags","Primitive","PublicFlags"]};

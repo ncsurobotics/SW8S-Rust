@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["define_uuid_macro"]};

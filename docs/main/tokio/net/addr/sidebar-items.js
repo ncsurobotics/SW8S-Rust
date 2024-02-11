@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["to_socket_addrs"],"mod":["sealed"],"trait":["ToSocketAddrs"],"type":["ReadyFuture"]};

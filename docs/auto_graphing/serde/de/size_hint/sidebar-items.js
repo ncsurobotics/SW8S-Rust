@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["cautious","from_bounds","helper"]};

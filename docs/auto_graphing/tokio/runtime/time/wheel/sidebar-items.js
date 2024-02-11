@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAX_DURATION","NUM_LEVELS"],"fn":["level_for"],"mod":["level"],"struct":["Wheel"]};

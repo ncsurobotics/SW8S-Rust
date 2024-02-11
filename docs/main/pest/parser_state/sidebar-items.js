@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Atomicity","Lookahead","MatchDir"],"fn":["constrain_idxs","normalize_index","set_call_limit","state"],"static":["CALL_LIMIT"],"struct":["CallLimitTracker","ParserState"],"type":["ParseResult"]};

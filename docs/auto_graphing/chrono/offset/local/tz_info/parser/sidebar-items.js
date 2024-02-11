@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Version"],"fn":["parse","read_be_i32","read_be_i64"],"struct":["Cursor","Header","State"]};
