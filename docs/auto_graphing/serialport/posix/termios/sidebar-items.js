@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["get_termios","set_baud_rate","set_data_bits","set_flow_control","set_parity","set_stop_bits","set_termios"],"type":["Termios"]};

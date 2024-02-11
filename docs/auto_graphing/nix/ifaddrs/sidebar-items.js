@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["get_ifu_from_sockaddr","getifaddrs"],"struct":["InterfaceAddress","InterfaceAddressIterator"]};
