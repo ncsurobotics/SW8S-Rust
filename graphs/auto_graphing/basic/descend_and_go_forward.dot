@@ -1,15 +1,16 @@
 digraph G {
 splines = true;
 nodesep = 1.0;
-bgcolor = "none";"b78ec845-c473-4e7a-9e02-05ce2bbdd14b" [label = "WaitArm", margin = 0];
-"d0967060-dc60-4aec-b6f8-e8c6cca3aad9" [label = "Descend", margin = 0];
-"74dda845-2a8b-414b-b499-c13c9b67d6ee" [label = "DelayAction", margin = 0];
-"d0967060-dc60-4aec-b6f8-e8c6cca3aad9" -> "74dda845-2a8b-414b-b499-c13c9b67d6ee";
-"a80d313b-d779-4860-9e71-db0a58770179" [label = "StraightMovement", margin = 0];
-"e9719240-7def-4966-a458-1671da1b8741" [label = "DelayAction", margin = 0];
-"a80d313b-d779-4860-9e71-db0a58770179" -> "e9719240-7def-4966-a458-1671da1b8741";
-"7ff9b8a5-ec53-4e7a-b5ef-1f6658848de2" [label = "ZeroMovement", margin = 0];
-"e9719240-7def-4966-a458-1671da1b8741" -> "7ff9b8a5-ec53-4e7a-b5ef-1f6658848de2";
-"74dda845-2a8b-414b-b499-c13c9b67d6ee" -> "a80d313b-d779-4860-9e71-db0a58770179";
-"b78ec845-c473-4e7a-9e02-05ce2bbdd14b" -> "d0967060-dc60-4aec-b6f8-e8c6cca3aad9";
+bgcolor = "none";
+"fc78548f-6d70-40af-ae24-d561230fadb9" [label = "WaitArm", margin = 0];
+"95a1d577-905e-4877-9747-6440fcdfb241" [label = "Descend", margin = 0];
+"dec196d9-b431-4aa3-9ee6-9c97cf8f9b4a" [label = "DelayAction", margin = 0];
+"95a1d577-905e-4877-9747-6440fcdfb241" -> "dec196d9-b431-4aa3-9ee6-9c97cf8f9b4a";
+"c8527d90-eac8-40a8-a501-113e43f18f1d" [label = "StraightMovement", margin = 0];
+"dceb3d90-77b5-43eb-8671-50b7007a6170" [label = "DelayAction", margin = 0];
+"c8527d90-eac8-40a8-a501-113e43f18f1d" -> "dceb3d90-77b5-43eb-8671-50b7007a6170";
+"1611ccdc-1ab4-42c2-9221-f92963524cab" [label = "ZeroMovement", margin = 0];
+"dceb3d90-77b5-43eb-8671-50b7007a6170" -> "1611ccdc-1ab4-42c2-9221-f92963524cab";
+"dec196d9-b431-4aa3-9ee6-9c97cf8f9b4a" -> "c8527d90-eac8-40a8-a501-113e43f18f1d";
+"fc78548f-6d70-40af-ae24-d561230fadb9" -> "95a1d577-905e-4877-9747-6440fcdfb241";
 }
