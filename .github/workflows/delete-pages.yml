@@ -1,0 +1,29 @@
+name: delete-pages
+
+on: ["delete"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  delete_pages:
+    permissions:
+      pages: write
+      id-token: write
+      contents: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Remove from GitHub Pages
+        id: deployment
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          clean: true 
+          clean-exclude: "!*/${{ github.ref_name }}"
+
