@@ -64,16 +64,16 @@ jobs:
             cd "$d"
             for f in *.svg; do
               html="${f%svg}html"
-              printf '\t\t\t%s%s%s%s%s%s\n' '<li><a href=' "\"$html\"" ' style="color: DarkBlue">' '</a>' "\"${f%.svg}\"" '</li>' >> ../index.html
+              printf '\t\t\t%s%s%s%s%s%s\n' '<li><a href=' "\"$html\"" ' style="color: DarkBlue">' "${f%.svg}" '</a>' '</li>' >> ../index.html
               printf '%s\n%s%s%s\n' '<!DOCTYPE html>' > "$html"
               printf '%s%s%s\n' '<h2>' "${f%.svg}" '</h2>' >> "$html"
-              printf '%s%s%s%s%s\n' '<a href=' "${f%svg}dot" ' style="color: DarkBlue">' "DOT (graphviz) source" '</a>' >> "$html"
+              printf '%s%s%s%s%s\n' '<a href=' "${d}${f%svg}dot" ' style="color: DarkBlue">' "DOT (graphviz) source" '</a>' >> "$html"
               printf '%s\n' '<br>' >> "$html"
               printf '%s\n' '<br>' >> "$html"
               printf '%s%s%s\n' '<img src=' "$f" '>' >> "$html"
             done
             cd ..
-            printf '\t\t%s\n' '<\li>' >> index.html
+            printf '\t\t%s\n' '</li>' >> index.html
           done
           printf '\t%s\n' '</ul>' >> index.html
           printf '\t%s\n' '</body>' >> index.html
