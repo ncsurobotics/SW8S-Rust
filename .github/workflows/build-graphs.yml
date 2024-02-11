@@ -72,7 +72,7 @@ jobs:
               printf '\t\t%s%s%s%s%s\n' '<a href=' "${f%svg}dot" ' style="color: DarkBlue">' "DOT (graphviz) source" '</a>' >> "$html"
               printf '\t\t%s\n' '<br>' >> "$html"
               printf '\t\t%s\n' '<br>' >> "$html"
-              printf '\t\t%s%s%s\n' '<img src=' "$f" ' style="background-color:LightGray;">' >> "$html"
+              printf '\t\t%s%s%s\n' '<img src=' "$f" '>' >> "$html"
               printf '\t%s\n' '</body>' >> "$html"
               printf '%s\n' '</html>' >> "$html"
             done
