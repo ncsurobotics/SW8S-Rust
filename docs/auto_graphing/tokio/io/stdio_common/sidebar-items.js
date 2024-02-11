@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAGIC_CONST","MAX_BYTES_PER_CHAR"],"struct":["SplitByUtf8BoundaryIfWindows"]};

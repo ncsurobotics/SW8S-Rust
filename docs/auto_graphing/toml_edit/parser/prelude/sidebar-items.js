@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["StrContext","StrContextValue"],"fn":["new_input"],"macro":["dispatch"],"struct":["ContextError","RecursionCheck"],"trait":["FromExternalError","Parser"],"type":["Input","PResult"]};
