@@ -20,10 +20,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Generate empty folder
+        run: mkdir _empty
+
       - name: Remove from GitHub Pages
         id: deployment
         uses: JamesIves/github-pages-deploy-action@v4
         with:
+          folder: _empty
           clean: true 
           clean-exclude: "!*/${{ github.ref_name }}"
 
