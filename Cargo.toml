@@ -32,17 +32,17 @@ tokio-serial = "5.4.1" # Async serial comms
 tokio = { version = "1.36.0", features = ["full"] } # Async runtime
 anyhow = "1.0.79" # Error handling
 itertools = "0.12.1" # Enhance iterators
-num-traits = "0.2.17" # Numeric generics
+num-traits = "0.2.18" # Numeric generics
 derive-getters = "0.3.0" # Getter macro
 async-trait = "0.1.77" # Async fns in trait definitions
 futures = { version = "0.3.30", default-features = false, features = ["std"] }# Futures utilities
-toml = "0.8.9" # Configuration file
+toml = "0.8.10" # Configuration file
 serde = { version = "1.0.196", features = ["derive"] } # Config serial handling
 bytes = "1.5.0" # Byte buffering
 uuid = { version = "1.7.0", features = ["v4", "fast-rng"] } # Unique IDs
 graphviz-rust = { version = "0.7.1", optional = true } # Drawing graphs
 paste = { version = "1.0.14", optional = true } # Concat identifiers
-chrono = "0.4.33"
+chrono = "0.4.34"
 
 [build-dependencies]
 quote = { version = "1.0.33", optional = true }
