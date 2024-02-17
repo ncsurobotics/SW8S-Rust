@@ -40,7 +40,7 @@ pub trait ActionExec: Action + Send + Sync {
 }
 
 /**
- * A trait that can be executed and modified at runtime.  
+ * A trait that can be executed and modified at runtime.
  */
 pub trait ActionMod<Input: Send + Sync>: Action {
     fn modify(&mut self, input: Input);
@@ -109,7 +109,7 @@ impl<V: Action, W: Action, X: Action> Action for ActionConditional<V, W, X> {
 }
 
 /**
- * Implementation for the ActionConditional struct.  
+ * Implementation for the ActionConditional struct.
  */
 impl<V: Action, W: Action, X: Action> ActionConditional<V, W, X> {
     pub const fn new(condition: V, true_branch: W, false_branch: X) -> Self {
@@ -209,7 +209,7 @@ impl<T: Action, U: Action> RaceAction<T, U> {
 }
 
 /**
- * Implement race logic where both actions are scheduled until one finishes.  
+ * Implement race logic where both actions are scheduled until one finishes.
  */
 #[async_trait]
 impl<V: Sync + Send, T: ActionExec<Output = V>, U: ActionExec<Output = V>> ActionExec
@@ -289,7 +289,7 @@ impl<T: Action, U: Action> DualAction<T, U> {
 }
 
 /**
- * Implement multiple logic where both actions are scheduled until both finish.  
+ * Implement multiple logic where both actions are scheduled until both finish.
  */
 #[async_trait]
 impl<V: Send + Sync, T: ActionExec<Output = V>, U: ActionExec<Output = V>> ActionExec
@@ -641,7 +641,7 @@ impl<T: Action> Action for ActionWhile<T> {
 }
 
 /**
- * Implementation for the ActionWhile struct.  
+ * Implementation for the ActionWhile struct.
  */
 impl<T: Action> ActionWhile<T> {
     pub const fn new(action: T) -> Self {
@@ -672,7 +672,7 @@ pub struct TupleSecond<T: Action> {
 impl<T: Action> Action for TupleSecond<T> {}
 
 /**
- * Implementation for the ActionWhile struct.  
+ * Implementation for the ActionWhile struct.
  */
 impl<T: Action> TupleSecond<T> {
     pub const fn new(action: T) -> Self {

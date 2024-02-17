@@ -2,12 +2,15 @@ use async_trait::async_trait;
 use core::fmt::Debug;
 use opencv::core::Mat;
 use tokio::io::{AsyncWriteExt, WriteHalf};
+use tokio::sync::RwLock;
 use tokio_serial::SerialStream;
 
-use crate::comms::{control_board::ControlBoard, meb::MainElectronicsBoard};
 use crate::video_source::appsink::Camera;
 use crate::video_source::MatSource;
-
+use crate::{
+    comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
+    vision::buoy::Target,
+};
 /**
  * Inherit this trait if you have a control board
  */
@@ -28,6 +31,7 @@ pub trait GetMainElectronicsBoard: Send + Sync {
 #[async_trait]
 pub trait GetFrontCamMat {
     async fn get_front_camera_mat(&self) -> Mat;
+    async fn get_desired_buoy_gate(&self) -> Target;
 }
 
 /**
@@ -46,6 +50,7 @@ pub struct FullActionContext<'a, T: AsyncWriteExt + Unpin + Send> {
     main_electronics_board: &'a MainElectronicsBoard,
     front_cam: &'a Camera,
     bottom_cam: &'a Camera,
+    desired_buoy_target: &'a RwLock<Target>,
 }
 
 impl<'a, T: AsyncWriteExt + Unpin + Send> FullActionContext<'a, T> {
@@ -54,12 +59,14 @@ impl<'a, T: AsyncWriteExt + Unpin + Send> FullActionContext<'a, T> {
         main_electronics_board: &'a MainElectronicsBoard,
         front_cam: &'a Camera,
         bottom_cam: &'a Camera,
+        desired_buoy_target: &'a RwLock<Target>,
     ) -> Self {
         Self {
             control_board,
             main_electronics_board,
             front_cam,
             bottom_cam,
+            desired_buoy_target,
         }
     }
 }
@@ -80,6 +87,10 @@ impl GetMainElectronicsBoard for FullActionContext<'_, WriteHalf<SerialStream>> 
 impl<T: AsyncWriteExt + Unpin + Send> GetFrontCamMat for FullActionContext<'_, T> {
     async fn get_front_camera_mat(&self) -> Mat {
         self.front_cam.get_mat().await
+    }
+    async fn get_desired_buoy_gate(&self) -> Target {
+        let res = self.desired_buoy_target.read().await;
+        (*res).clone()
     }
 }
 

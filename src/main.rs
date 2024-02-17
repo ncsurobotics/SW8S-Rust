@@ -1,7 +1,9 @@
-use std::{env, path::Path, process::exit, time::Duration};
-
 use anyhow::{bail, Result};
 use config::Configuration;
+use std::path::Path;
+
+use std::env;
+use std::process::exit;
 use sw8s_rust_lib::{
     comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
     missions::{
@@ -11,19 +13,20 @@ use sw8s_rust_lib::{
         example::initial_descent,
     },
     video_source::appsink::Camera,
+    vision::buoy::Target,
 };
 use tokio::{
     io::WriteHalf,
     signal,
     sync::{
         mpsc::{self, UnboundedSender},
-        OnceCell,
+        OnceCell, RwLock,
     },
     time::{sleep, timeout},
 };
 use tokio_serial::SerialStream;
-
 mod config;
+use std::time::Duration;
 
 static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<SerialStream>>> = OnceCell::const_new();
 async fn control_board() -> &'static ControlBoard<WriteHalf<SerialStream>> {
@@ -72,6 +75,12 @@ async fn bottom_cam() -> &'static Camera {
             )
             .unwrap()
         })
+        .await
+}
+static GATE_TARGET: OnceCell<RwLock<Target>> = OnceCell::const_new();
+async fn gate_target() -> &'static RwLock<Target> {
+    GATE_TARGET
+        .get_or_init(|| async { RwLock::new(Target::Earth1) })
         .await
 }
 
@@ -187,6 +196,7 @@ async fn run_mission(mission: &str) -> Result<()> {
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
+                gate_target().await,
             ))
             .execute()
             .await;
@@ -199,6 +209,7 @@ async fn run_mission(mission: &str) -> Result<()> {
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
+                gate_target().await,
             ))
             .execute()
             .await;
@@ -210,6 +221,7 @@ async fn run_mission(mission: &str) -> Result<()> {
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
+                gate_target().await,
             ))
             .execute()
             .await;

@@ -7,3 +7,4 @@ pub mod graph;
 pub mod meb;
 pub mod movement;
 pub mod vision;
+pub mod buoy_hit;

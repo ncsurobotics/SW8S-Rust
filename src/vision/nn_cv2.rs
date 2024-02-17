@@ -55,7 +55,7 @@ where
     }
 }
 
-pub trait VisionModel: Debug {
+pub trait VisionModel: Debug + Sync + Send {
     fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Result<Vec<YoloDetection>>;
     fn size(&self) -> Size;
 }
