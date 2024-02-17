@@ -141,6 +141,17 @@
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
 <a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>opencv::{core::Size, prelude::Mat};
 
@@ -184,6 +195,17 @@
             <span class="number">2 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Abydos1),
             <span class="number">3 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Abydos2),
             x =&gt; <span class="prelude-val">Err</span>(TargetError { x }),
+        }
+    }
+}
+
+<span class="kw">impl </span>Target {
+    <span class="kw">pub fn </span>to_integer_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i32 {
+        <span class="kw">match </span><span class="self">self </span>{
+            Target::Earth1 =&gt; <span class="number">0</span>,
+            Target::Earth2 =&gt; <span class="number">1</span>,
+            Target::Abydos1 =&gt; <span class="number">2</span>,
+            Target::Abydos2 =&gt; <span class="number">3</span>,
         }
     }
 }

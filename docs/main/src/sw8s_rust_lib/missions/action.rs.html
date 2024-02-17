@@ -762,7 +762,7 @@
 }
 
 <span class="doccomment">/**
- * A trait that can be executed and modified at runtime.  
+ * A trait that can be executed and modified at runtime.
  */
 </span><span class="kw">pub trait </span>ActionMod&lt;Input: Send + Sync&gt;: Action {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: Input);
@@ -831,7 +831,7 @@
 }
 
 <span class="doccomment">/**
- * Implementation for the ActionConditional struct.  
+ * Implementation for the ActionConditional struct.
  */
 </span><span class="kw">impl</span>&lt;V: Action, W: Action, X: Action&gt; ActionConditional&lt;V, W, X&gt; {
     <span class="kw">pub const fn </span>new(condition: V, true_branch: W, false_branch: X) -&gt; <span class="self">Self </span>{
@@ -931,7 +931,7 @@
 }
 
 <span class="doccomment">/**
- * Implement race logic where both actions are scheduled until one finishes.  
+ * Implement race logic where both actions are scheduled until one finishes.
  */
 </span><span class="attr">#[async_trait]
 </span><span class="kw">impl</span>&lt;V: Sync + Send, T: ActionExec&lt;Output = V&gt;, U: ActionExec&lt;Output = V&gt;&gt; ActionExec
@@ -1011,7 +1011,7 @@
 }
 
 <span class="doccomment">/**
- * Implement multiple logic where both actions are scheduled until both finish.  
+ * Implement multiple logic where both actions are scheduled until both finish.
  */
 </span><span class="attr">#[async_trait]
 </span><span class="kw">impl</span>&lt;V: Send + Sync, T: ActionExec&lt;Output = V&gt;, U: ActionExec&lt;Output = V&gt;&gt; ActionExec
@@ -1363,7 +1363,7 @@
 }
 
 <span class="doccomment">/**
- * Implementation for the ActionWhile struct.  
+ * Implementation for the ActionWhile struct.
  */
 </span><span class="kw">impl</span>&lt;T: Action&gt; ActionWhile&lt;T&gt; {
     <span class="kw">pub const fn </span>new(action: T) -&gt; <span class="self">Self </span>{
@@ -1394,7 +1394,7 @@
 <span class="kw">impl</span>&lt;T: Action&gt; Action <span class="kw">for </span>TupleSecond&lt;T&gt; {}
 
 <span class="doccomment">/**
- * Implementation for the ActionWhile struct.  
+ * Implementation for the ActionWhile struct.
  */
 </span><span class="kw">impl</span>&lt;T: Action&gt; TupleSecond&lt;T&gt; {
     <span class="kw">pub const fn </span>new(action: T) -&gt; <span class="self">Self </span>{

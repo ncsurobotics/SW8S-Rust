@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["basic","example"]};
+window.SIDEBAR_ITEMS = {"mod":["basic","buoy_hit","example"]};

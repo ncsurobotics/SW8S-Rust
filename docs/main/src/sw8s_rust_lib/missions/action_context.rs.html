@@ -90,16 +90,30 @@
 <a href="#89" id="89">89</a>
 <a href="#90" id="90">90</a>
 <a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>opencv::core::Mat;
 <span class="kw">use </span>tokio::io::{AsyncWriteExt, WriteHalf};
+<span class="kw">use </span>tokio::sync::RwLock;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
-<span class="kw">use </span><span class="kw">crate</span>::comms::{control_board::ControlBoard, meb::MainElectronicsBoard};
 <span class="kw">use </span><span class="kw">crate</span>::video_source::appsink::Camera;
 <span class="kw">use </span><span class="kw">crate</span>::video_source::MatSource;
-
+<span class="kw">use crate</span>::{
+    comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
+    vision::buoy::Target,
+};
 <span class="doccomment">/**
  * Inherit this trait if you have a control board
  */
@@ -120,6 +134,7 @@
 </span><span class="attr">#[async_trait]
 </span><span class="kw">pub trait </span>GetFrontCamMat {
     <span class="kw">async fn </span>get_front_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat;
+    <span class="kw">async fn </span>get_desired_buoy_gate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Target;
 }
 
 <span class="doccomment">/**
@@ -138,6 +153,7 @@
     main_electronics_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>MainElectronicsBoard,
     front_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
     bottom_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
+    desired_buoy_target: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>RwLock&lt;Target&gt;,
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: AsyncWriteExt + Unpin + Send&gt; FullActionContext&lt;<span class="lifetime">'a</span>, T&gt; {
@@ -146,12 +162,14 @@
         main_electronics_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>MainElectronicsBoard,
         front_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
         bottom_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
+        desired_buoy_target: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>RwLock&lt;Target&gt;,
     ) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             control_board,
             main_electronics_board,
             front_cam,
             bottom_cam,
+            desired_buoy_target,
         }
     }
 }
@@ -173,6 +191,10 @@
     <span class="kw">async fn </span>get_front_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
         <span class="self">self</span>.front_cam.get_mat().<span class="kw">await
     </span>}
+    <span class="kw">async fn </span>get_desired_buoy_gate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Target {
+        <span class="kw">let </span>res = <span class="self">self</span>.desired_buoy_target.read().<span class="kw">await</span>;
+        (<span class="kw-2">*</span>res).clone()
+    }
 }
 
 <span class="attr">#[async_trait]

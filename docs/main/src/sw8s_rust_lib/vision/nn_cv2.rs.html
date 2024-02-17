@@ -342,7 +342,7 @@
     }
 }
 
-<span class="kw">pub trait </span>VisionModel: Debug {
+<span class="kw">pub trait </span>VisionModel: Debug + Sync + Send {
     <span class="kw">fn </span>detect_yolo_v5(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat, threshold: f64) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;YoloDetection&gt;&gt;;
     <span class="kw">fn </span>size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Size;
 }
