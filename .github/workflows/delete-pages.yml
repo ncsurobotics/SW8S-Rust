@@ -1,0 +1,25 @@
+name: delete-pages
+
+on:
+  delete:
+    branches:
+      - '**'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  delete_pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Remove pages files
+        run: rm -rf */'${{ github.event.ref }}'
+
+      - name: Remove from GitHub Pages
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'Automated Pages Cleanup'

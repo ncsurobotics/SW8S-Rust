@@ -11,7 +11,6 @@ use crate::{
     comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
     vision::buoy::Target,
 };
-
 /**
  * Inherit this trait if you have a control board
  */
