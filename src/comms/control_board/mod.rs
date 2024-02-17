@@ -1,5 +1,5 @@
 use core::fmt::Debug;
-use std::{ops::Deref, sync::Arc, time::Duration};
+use std::{ops::Deref, os::linux::raw::stat, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, bail, Result};
 use tokio::{
@@ -19,6 +19,12 @@ use super::auv_control_board::{AUVControlBoard, MessageId};
 
 pub mod response;
 pub mod util;
+
+pub enum SensorStatuses {
+    IMU_NR,
+    DEPTH_NR,
+    ALL_GOOD
+}
 
 #[derive(Debug)]
 pub struct ControlBoard<T>
@@ -398,6 +404,22 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         message.push(invert as u8);
 
         self.write_out_basic(message).await
+    }
+
+    pub async fn sensor_status_query(&self) -> Result<SensorStatuses> {
+        const STATUS: [u8; 5] = *b"SSTAT";
+        let message = Vec::from(STATUS);
+        let status_resp = self.write_out(message).await;
+        let status_byte = status_resp.unwrap()[0];
+        if status_byte & 0x10 != 0x10 {
+            return Ok(SensorStatuses::IMU_NR);
+        } else if status_byte & 0x01 != 0x01 {
+            return Ok(SensorStatuses::DEPTH_NR);
+        } else {
+            return Ok(SensorStatuses::ALL_GOOD);
+        }
+
+
     }
 
     pub async fn watchdog_status(&self) -> Option<bool> {
