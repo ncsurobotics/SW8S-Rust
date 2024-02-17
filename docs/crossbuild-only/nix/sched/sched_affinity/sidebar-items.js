@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["sched_getaffinity","sched_getcpu","sched_setaffinity"],"struct":["CpuSet"]};

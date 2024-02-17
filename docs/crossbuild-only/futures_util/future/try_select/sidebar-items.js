@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["try_select"],"struct":["TrySelect"],"type":["EitherErr","EitherOk"]};

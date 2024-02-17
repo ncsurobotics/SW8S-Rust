@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["core_types","dnn_types","imgproc_types","videoio_types"]};
