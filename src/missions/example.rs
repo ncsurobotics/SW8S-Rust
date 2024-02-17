@@ -89,7 +89,6 @@ impl AlwaysTrue {
         AlwaysTrue {}
     }
 }
-
 impl Default for AlwaysTrue {
     fn default() -> Self {
         Self::new()

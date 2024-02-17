@@ -9,7 +9,7 @@ use super::{
     comms::StartBno055,
     example::AlwaysTrue,
     meb::WaitArm,
-    movement::{AdjustMovement, Descend, StraightMovement, ZeroMovement},
+    movement::{AdjustMovement, CountFalse, CountTrue, Descend, StraightMovement, ZeroMovement},
     vision::VisionNormOffset,
 };
 use crate::missions::action_context::GetFrontCamMat;
@@ -86,16 +86,30 @@ pub fn gate_run<
     context: &Con,
 ) -> impl ActionExec + '_ {
     let depth: f32 = -1.0;
-    let model = GatePoles::default();
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        ActionWhile::new(ActionChain::new(
-            VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(context, model),
-            TupleSecond::new(ActionConcurrent::new(
-                AdjustMovement::new(context, depth),
-                AlwaysTrue::new(),
+        ActionSequence::new(
+            ActionWhile::new(ActionChain::new(
+                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
+                    context,
+                    GatePoles::default(),
+                ),
+                TupleSecond::new(ActionConcurrent::new(
+                    AdjustMovement::new(context, depth),
+                    CountTrue::new(3),
+                )),
             )),
-        )),
+            ActionWhile::new(ActionChain::new(
+                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
+                    context,
+                    GatePoles::default(),
+                ),
+                TupleSecond::new(ActionConcurrent::new(
+                    AdjustMovement::new(context, depth),
+                    CountFalse::new(3),
+                )),
+            )),
+        ),
     )
 }

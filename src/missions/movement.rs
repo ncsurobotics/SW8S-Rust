@@ -1,10 +1,10 @@
+use crate::vision::RelPos;
+use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
-
-use crate::vision::RelPos;
 
 use super::{
     action::{Action, ActionExec, ActionMod},
@@ -177,5 +177,83 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovement<
             .get_control_board()
             .stability_2_speed_set_initial_yaw(self.x, 0.5, 0.0, 0.0, self.target_depth)
             .await
+    }
+}
+
+#[derive(Debug)]
+pub struct CountTrue {
+    target: u32,
+    count: u32,
+}
+
+impl CountTrue {
+    pub fn new(target: u32) -> Self {
+        CountTrue { target, count: 0 }
+    }
+}
+
+impl Action for CountTrue {}
+
+impl<T: Send + Sync> ActionMod<Result<T>> for CountTrue {
+    fn modify(&mut self, input: &Result<T>) {
+        if input.is_ok() {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+    }
+}
+
+#[async_trait]
+impl ActionExec for CountTrue {
+    type Output = Result<()>;
+    async fn execute(&mut self) -> Self::Output {
+        if self.count == self.target {
+            Ok(())
+        } else {
+            Err(anyhow!("Under count"))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct CountFalse {
+    target: u32,
+    count: u32,
+}
+
+impl CountFalse {
+    pub fn new(target: u32) -> Self {
+        CountFalse { target, count: 0 }
+    }
+}
+
+impl Action for CountFalse {}
+
+impl<T: Send + Sync> ActionMod<Result<T>> for CountFalse {
+    fn modify(&mut self, input: &Result<T>) {
+        if input.is_err() {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+    }
+}
+
+#[async_trait]
+impl ActionExec for CountFalse {
+    type Output = Result<()>;
+    async fn execute(&mut self) -> Self::Output {
+        if self.count == self.target {
+            Ok(())
+        } else {
+            Err(anyhow!("Under count"))
+        }
     }
 }
