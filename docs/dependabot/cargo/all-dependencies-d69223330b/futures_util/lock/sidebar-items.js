@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["bilock","mutex"],"struct":["MappedMutexGuard","Mutex","MutexGuard","MutexLockFuture","OwnedMutexGuard","OwnedMutexLockFuture"]};

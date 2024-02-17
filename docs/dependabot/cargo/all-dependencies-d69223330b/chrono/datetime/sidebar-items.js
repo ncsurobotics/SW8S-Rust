@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAX_DATETIME","MIN_DATETIME"],"fn":["map_local"],"struct":["DateTime"]};

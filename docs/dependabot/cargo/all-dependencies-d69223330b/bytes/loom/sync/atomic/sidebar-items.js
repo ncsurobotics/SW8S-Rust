@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Ordering"],"struct":["AtomicPtr","AtomicUsize"],"trait":["AtomicMut"]};
