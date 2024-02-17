@@ -99,17 +99,19 @@
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::vision::{gate_poles::GatePoles, nn_cv2::OnnxModel};
 
 <span class="kw">use super</span>::{
-    action::{Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile},
+    action::{
+        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile, DualAction,
+        TupleSecond,
+    },
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     comms::StartBno055,
     example::AlwaysTrue,
     meb::WaitArm,
-    movement::StraightMovement,
-    movement::ZeroMovement,
-    movement::{AdjustMovement, Descend},
+    movement::{AdjustMovement, Descend, StraightMovement, ZeroMovement},
     vision::VisionNormOffset,
 };
 <span class="kw">use </span><span class="kw">crate</span>::missions::action_context::GetFrontCamMat;
@@ -190,12 +192,12 @@
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        ActionWhile::new(ActionSequence::new(
-            ActionChain::new(
-                VisionNormOffset::&lt;Con, GatePoles&lt;OnnxModel&gt;, f64&gt;::new(context, model),
+        ActionWhile::new(ActionChain::new(
+            VisionNormOffset::&lt;Con, GatePoles&lt;OnnxModel&gt;, f64&gt;::new(context, model),
+            TupleSecond::new(ActionConcurrent::new(
                 AdjustMovement::new(context, depth),
-            ),
-            AlwaysTrue::new(),
+                AlwaysTrue::new(),
+            )),
         )),
     )
 }
