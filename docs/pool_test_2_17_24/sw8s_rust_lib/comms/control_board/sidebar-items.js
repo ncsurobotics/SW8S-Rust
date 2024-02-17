@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["response","util"],"struct":["ControlBoard"]};
+window.SIDEBAR_ITEMS = {"enum":["SensorStatuses"],"mod":["response","util"],"struct":["ControlBoard"]};
