@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["fionread","tcgets2","tcsets2","tioccbrk","tiocexcl","tiocmbic","tiocmbis","tiocmget","tiocnxcl","tiocoutq","tiocsbrk"],"mod":["raw"],"struct":["SerialLines"]};
