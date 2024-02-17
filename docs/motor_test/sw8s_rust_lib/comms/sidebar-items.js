@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["auv_control_board","control_board","meb"]};
