@@ -133,7 +133,38 @@ async fn run_mission(mission: &str) -> Result<()> {
             let _ = cntrl_ready.await;
             Ok(())
         }
+        "empty" => {
+            let control_board = control_board().await;
+            control_board
+                .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0])
+                .await
+                .unwrap();
+            sleep(Duration::from_millis(1000)).await;
+            println!("1");
+            control_board
+                .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0])
+                .await
+                .unwrap();
+            sleep(Duration::from_millis(1000)).await;
+            println!("2");
+            control_board
+                .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
+                .await
+                .unwrap();
+            sleep(Duration::from_millis(1000)).await;
+            println!("3");
+            control_board
+                .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+                .await
+                .unwrap();
+            println!("4");
+            Ok(())
+        }
         "depth_test" | "depth-test" => {
+            let _control_board = control_board().await;
+            println!("Init ctrl");
+            sleep(Duration::from_millis(1000)).await;
+            println!("End sleep");
             println!("Starting depth hold...");
             loop {
                 if let Ok(ret) = timeout(
