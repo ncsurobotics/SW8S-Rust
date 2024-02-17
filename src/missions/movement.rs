@@ -36,8 +36,8 @@ impl<'a, T> Descend<'a, T> {
 impl<T> Action for Descend<'_, T> {}
 
 impl<T> ActionMod<f32> for Descend<'_, T> {
-    fn modify(&mut self, input: f32) {
-        self.target_depth = input;
+    fn modify(&mut self, input: &f32) {
+        self.target_depth = *input;
     }
 }
 
@@ -146,8 +146,8 @@ impl<'a, T> AdjustMovement<'a, T> {
 }
 
 impl<T> ActionMod<f32> for AdjustMovement<'_, T> {
-    fn modify(&mut self, input: f32) {
-        self.target_depth = input;
+    fn modify(&mut self, input: &f32) {
+        self.target_depth = *input;
     }
 }
 
@@ -155,7 +155,7 @@ impl<T, V> ActionMod<Result<V>> for AdjustMovement<'_, T>
 where
     V: RelPos<Number = f64> + Sync + Send + Debug,
 {
-    fn modify(&mut self, input: Result<V>) {
+    fn modify(&mut self, input: &Result<V>) {
         if let Ok(input) = input {
             println!("Modify value: {:?}", input);
             if !input.offset().x().is_nan() || !input.offset().y().is_nan() {

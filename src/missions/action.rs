@@ -43,7 +43,7 @@ pub trait ActionExec: Action + Send + Sync {
  * A trait that can be executed and modified at runtime.
  */
 pub trait ActionMod<Input: Send + Sync>: Action {
-    fn modify(&mut self, input: Input);
+    fn modify(&mut self, input: &Input);
 }
 
 /**
@@ -301,6 +301,15 @@ impl<V: Send + Sync, T: ActionExec<Output = V>, U: ActionExec<Output = V>> Actio
     }
 }
 
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> + Sync + Send>
+    ActionMod<Input> for DualAction<V, W>
+{
+    fn modify(&mut self, input: &Input) {
+        self.first.modify(input);
+        self.second.modify(input);
+    }
+}
+
 #[derive(Debug)]
 pub struct ActionChain<V: Action, W: Action> {
     first: V,
@@ -346,7 +355,7 @@ impl<
 {
     type Output = U;
     async fn execute(&mut self) -> Self::Output {
-        self.second.modify(self.first.execute().await);
+        self.second.modify(&self.first.execute().await);
         self.second.execute().await
     }
 }
@@ -557,6 +566,15 @@ impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Output = Y>, W: ActionExec<Ou
     }
 }
 
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> + Sync + Send>
+    ActionMod<Input> for ActionConcurrent<V, W>
+{
+    fn modify(&mut self, input: &Input) {
+        self.first.modify(input);
+        self.second.modify(input);
+    }
+}
+
 /**
  * An action that tries `count` times for a success
  */
@@ -685,6 +703,12 @@ impl<U: Send + Sync, V: Send + Sync, T: ActionExec<Output = (U, V)>> ActionExec 
     type Output = V;
     async fn execute(&mut self) -> Self::Output {
         self.action.execute().await.1
+    }
+}
+
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send> ActionMod<Input> for TupleSecond<V> {
+    fn modify(&mut self, input: &Input) {
+        self.action.modify(input);
     }
 }
 

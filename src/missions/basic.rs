@@ -1,14 +1,15 @@
 use crate::vision::{gate_poles::GatePoles, nn_cv2::OnnxModel};
 
 use super::{
-    action::{Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile},
+    action::{
+        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile, DualAction,
+        TupleSecond,
+    },
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     comms::StartBno055,
     example::AlwaysTrue,
     meb::WaitArm,
-    movement::StraightMovement,
-    movement::ZeroMovement,
-    movement::{AdjustMovement, Descend},
+    movement::{AdjustMovement, Descend, StraightMovement, ZeroMovement},
     vision::VisionNormOffset,
 };
 use crate::missions::action_context::GetFrontCamMat;
@@ -89,12 +90,12 @@ pub fn gate_run<
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        ActionWhile::new(ActionSequence::new(
-            ActionChain::new(
-                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(context, model),
+        ActionWhile::new(ActionChain::new(
+            VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(context, model),
+            TupleSecond::new(ActionConcurrent::new(
                 AdjustMovement::new(context, depth),
-            ),
-            AlwaysTrue::new(),
+                AlwaysTrue::new(),
+            )),
         )),
     )
 }
