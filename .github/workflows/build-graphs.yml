@@ -1,7 +1,12 @@
 # Derived from: https://github.com/dnaka91/advent-of-code/blob/main/.github/workflows/docs.yml
 name: github-pages-graphs
 
-on: ["push"]
+on:
+  push:
+    branches:
+      - '**'
+      - '!gh-pages'
+      - '!mutex_gh_pages'
 
 env:
   CARGO_TERM_COLOR: always
