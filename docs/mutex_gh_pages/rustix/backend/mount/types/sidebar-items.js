@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["InternalMountFlags","MountFlags","MountFlagsArg","MountPropagationFlags","UnmountFlags"]};

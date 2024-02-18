@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Stage"],"struct":["Cell","Core","CoreStage","Header","TaskIdGuard","Trailer"]};

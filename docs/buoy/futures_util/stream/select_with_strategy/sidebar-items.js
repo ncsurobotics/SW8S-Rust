@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["InternalState","PollNext"],"fn":["poll_inner","poll_side","select_with_strategy"],"struct":["SelectWithStrategy"]};

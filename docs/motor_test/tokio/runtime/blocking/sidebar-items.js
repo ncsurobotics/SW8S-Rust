@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["create_blocking_pool"],"mod":["pool","schedule","shutdown","task"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["HEX_TABLE","SHL4_TABLE"],"fn":["parse_hyphenated","parse_simple","try_parse"]};

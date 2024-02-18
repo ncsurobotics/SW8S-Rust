@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Derive"],"fn":["ungroup"],"mod":["ast","attr","case","check","ctxt","receiver","respan","symbol"]};

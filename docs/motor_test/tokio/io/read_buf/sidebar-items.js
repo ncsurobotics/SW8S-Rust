@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["slice_assume_init","slice_assume_init_mut","slice_to_uninit_mut"],"struct":["ReadBuf"]};

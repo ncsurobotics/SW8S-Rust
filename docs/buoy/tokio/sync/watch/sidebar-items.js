@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["changed_impl","channel","maybe_changed"],"mod":["big_notify","error","state"],"struct":["Receiver","Ref","Sender","Shared"]};

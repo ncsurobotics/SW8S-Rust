@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["merge","merge_by_new","merge_join_by"],"struct":["MergeBy","MergeFuncLR","MergeLte"],"trait":["FuncLR","OrderingOrBool"],"type":["Merge","MergeJoinBy"]};

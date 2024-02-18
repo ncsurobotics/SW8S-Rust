@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["create_named","tempfile","tempfile_in"],"mod":["imp"],"struct":["NamedTempFile","PathPersistError","PersistError","TempPath"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["if_alloc","private_try_stream"],"trait":["FusedStream","Stream","TryStream"],"type":["BoxStream","LocalBoxStream"]};

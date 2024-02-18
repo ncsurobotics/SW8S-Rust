@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DIR_BITS","NONE","READ","SIZE_BITS","WRITE"]};
