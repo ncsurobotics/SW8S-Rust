@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["dot_file","draw_svg","stripped_type"],"struct":["DotString"]};
