@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"externcrate":["dot_generator","dot_structures","into_attr","into_attr_derive"],"fn":["exec","exec_dot","parse","print"],"macro":["as_item","generate_attr"],"mod":["attributes","cmd","parser","printer"]};
