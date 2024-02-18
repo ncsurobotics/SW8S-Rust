@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Segment"],"fn":["parse","paste"],"struct":["Colon","LitStr"]};

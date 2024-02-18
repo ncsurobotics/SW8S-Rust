@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["id","try_id"],"struct":["Id"]};
