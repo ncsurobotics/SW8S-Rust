@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["iter","slice"],"struct":["Difference","Drain","IndexSet","Intersection","IntoIter","Iter","Slice","SymmetricDifference","Union"],"type":["Bucket"]};

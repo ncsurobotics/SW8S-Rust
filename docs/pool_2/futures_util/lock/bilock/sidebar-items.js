@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["invalid_ptr"],"struct":["BiLock","BiLockGuard","Inner","ReuniteError"]};

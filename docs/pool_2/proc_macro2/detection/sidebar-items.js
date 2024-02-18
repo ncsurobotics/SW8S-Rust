@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["force_fallback","initialize","inside_proc_macro","unforce_fallback"],"static":["INIT","WORKS"]};
