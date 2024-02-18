@@ -1,0 +1,35 @@
+digraph G {
+splines = true;
+nodesep = 1.0;
+bgcolor = "none";
+subgraph "cluster_bf156400-e932-4763-8a6a-a48ced8e42ff" {
+style = dashed;
+color = blue;
+"0e3b0ef8-33d2-45b1-9024-1c4d3a8f49b0" [label = "Concurrent", shape = box, fontcolor = blue, style = dashed];
+"eb58aab5-949e-444d-a3ab-eb83ae0364d4" [label = "Converge", shape = box, fontcolor = blue, style = dashed];
+"e3747052-e4a0-4bab-a05d-735a268dc7ef" [label = "WaitArm", margin = 0];
+"e5a80a50-5417-49b7-ba62-b8d3044ac067" [label = "Descend", margin = 0];
+"4b5d9567-1cc8-49b5-bd53-43fc7ed1a2d0" [label = "DelayAction", margin = 0];
+"e5a80a50-5417-49b7-ba62-b8d3044ac067" -> "4b5d9567-1cc8-49b5-bd53-43fc7ed1a2d0";
+"89168800-8f38-450d-a3ee-4249139744dd" [label = "StraightMovement", margin = 0];
+"725a6833-1b7c-4074-be6b-11fcd921115d" [label = "DelayAction", margin = 0];
+"89168800-8f38-450d-a3ee-4249139744dd" -> "725a6833-1b7c-4074-be6b-11fcd921115d";
+"9f5d0913-9fdc-47e9-b251-333308bf5a1e" [label = "ZeroMovement", margin = 0];
+"725a6833-1b7c-4074-be6b-11fcd921115d" -> "9f5d0913-9fdc-47e9-b251-333308bf5a1e";
+"4b5d9567-1cc8-49b5-bd53-43fc7ed1a2d0" -> "89168800-8f38-450d-a3ee-4249139744dd";
+"e3747052-e4a0-4bab-a05d-735a268dc7ef" -> "e5a80a50-5417-49b7-ba62-b8d3044ac067";
+"f339b6c2-df26-4546-ba3d-eb433290baf1" [label = "StartBno055", margin = 0];
+"0e3b0ef8-33d2-45b1-9024-1c4d3a8f49b0" -> "e3747052-e4a0-4bab-a05d-735a268dc7ef";
+"0e3b0ef8-33d2-45b1-9024-1c4d3a8f49b0" -> "f339b6c2-df26-4546-ba3d-eb433290baf1";
+"9f5d0913-9fdc-47e9-b251-333308bf5a1e" -> "eb58aab5-949e-444d-a3ab-eb83ae0364d4";
+"f339b6c2-df26-4546-ba3d-eb433290baf1" -> "eb58aab5-949e-444d-a3ab-eb83ae0364d4";
+}
+"8e03073b-cd13-4c7e-abff-6f5fa672199e" [label = "VisionNormOffset", margin = 0];
+"c1b200ef-4cf1-43a4-bcb6-db3fda00239c" [label = "AdjustMovement", margin = 0];
+"8e03073b-cd13-4c7e-abff-6f5fa672199e" -> "c1b200ef-4cf1-43a4-bcb6-db3fda00239c" [color = purple, fontcolor = purple, label = "Pass Data"];
+"fc4d6ceb-9f7a-4102-9471-29e199f0d076" [label = "AlwaysTrue", margin = 0];
+"c1b200ef-4cf1-43a4-bcb6-db3fda00239c" -> "fc4d6ceb-9f7a-4102-9471-29e199f0d076";
+"fc4d6ceb-9f7a-4102-9471-29e199f0d076" [shape = diamond];
+"fc4d6ceb-9f7a-4102-9471-29e199f0d076" -> "8e03073b-cd13-4c7e-abff-6f5fa672199e" [label = "True"];
+"eb58aab5-949e-444d-a3ab-eb83ae0364d4" -> "8e03073b-cd13-4c7e-abff-6f5fa672199e";
+}
