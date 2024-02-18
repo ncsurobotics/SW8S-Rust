@@ -44,6 +44,10 @@ jobs:
       - name: Remove lock file
         run: rm target/doc/.lock
 
+      - uses: ben-z/gh-action-mutex@v1.0-alpha-8
+        with:
+          branch: gh-pages-mutex
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: JamesIves/github-pages-deploy-action@v4

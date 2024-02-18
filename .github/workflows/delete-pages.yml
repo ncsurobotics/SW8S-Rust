@@ -12,6 +12,10 @@ jobs:
   delete_pages:
     runs-on: ubuntu-latest
     steps:
+      - uses: ben-z/gh-action-mutex@v1.0-alpha-8
+        with:
+          branch: gh-pages-mutex
+
       - uses: actions/checkout@v4
         with:
           ref: gh-pages
