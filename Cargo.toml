@@ -30,7 +30,7 @@ graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2"]
 opencv = { version = "0.88.8", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
 tokio-serial = "5.4.1" # Async serial comms
 tokio = { version = "1.36.0", features = ["full"] } # Async runtime
-anyhow = "1.0.79" # Error handling
+anyhow = "1.0.80" # Error handling
 itertools = "0.12.1" # Enhance iterators
 num-traits = "0.2.18" # Numeric generics
 derive-getters = "0.3.0" # Getter macro
@@ -46,7 +46,7 @@ chrono = "0.4.34"
 
 [build-dependencies]
 quote = { version = "1.0.33", optional = true }
-syn = { version = "2.0.39", features = ["full", "fold"], optional = true }
+syn = { version = "2.0.49", features = ["full", "fold"], optional = true }
 proc-macro2 = { version = "1.0.78", optional = true }
 
 [dev-dependencies]
