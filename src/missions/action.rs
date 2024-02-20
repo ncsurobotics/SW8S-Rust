@@ -523,27 +523,34 @@ impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
             "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Concurrent\", shape = box, fontcolor = blue, style = dashed];\n",
             Uuid::new_v4(),
             concurrent_head
-        ) + &format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = blue, style = dashed];\n", concurrent_tail) +
-            &first_str.body
-            + &second_str.body;
+        );
 
+            body_str.push_str(&(first_str.body + &second_str.body));
             vec![first_str.head_ids, second_str.head_ids]
                 .into_iter()
                 .flatten()
                 .for_each(|id| {
                     body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id))
                 });
-            vec![first_str.tail_ids, second_str.tail_ids]
-                .into_iter()
-                .flatten()
-                .for_each(|id| {
-                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
-                });
+
+            let tail_ids = if parent != "TupleSecond" {
+                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = blue, style = dashed];\n", concurrent_tail)));
+                vec![first_str.tail_ids, second_str.tail_ids.clone()]
+                    .into_iter()
+                    .flatten()
+                    .for_each(|id| {
+                        body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
+                    });
+                vec![concurrent_tail]
+            } else {
+                second_str.tail_ids
+            };
+
             body_str.push_str("}\n");
 
             DotString {
                 head_ids: vec![concurrent_head],
-                tail_ids: vec![concurrent_tail],
+                tail_ids,
                 body: body_str,
             }
         }
@@ -687,7 +694,11 @@ pub struct TupleSecond<T: Action> {
     action: T,
 }
 
-impl<T: Action> Action for TupleSecond<T> {}
+impl<T: Action> Action for TupleSecond<T> {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        self.action.dot_string(stripped_type::<Self>())
+    }
+}
 
 /**
  * Implementation for the ActionWhile struct.
