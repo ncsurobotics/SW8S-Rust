@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["InterfaceIndexOrAddress"],"fn":["from_linger","into_linger","set_common_flags","set_common_type"],"struct":["Socket"],"type":["Inner"]};

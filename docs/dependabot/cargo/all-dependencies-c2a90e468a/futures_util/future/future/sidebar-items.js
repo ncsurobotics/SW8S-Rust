@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["catch_unwind","flatten","fuse","map","remote_handle","shared"],"struct":["Flatten","FlattenStream","Inspect","IntoStream","Map","MapInto","NeverError","Then","UnitError"],"trait":["FutureExt"]};
