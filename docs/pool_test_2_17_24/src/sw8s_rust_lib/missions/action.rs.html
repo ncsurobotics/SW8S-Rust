@@ -744,6 +744,17 @@
 <a href="#743" id="743">743</a>
 <a href="#744" id="744">744</a>
 <a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
+<a href="#753" id="753">753</a>
+<a href="#754" id="754">754</a>
+<a href="#755" id="755">755</a>
+<a href="#756" id="756">756</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>core::fmt::Debug;
@@ -1269,27 +1280,34 @@
             <span class="string">"subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Concurrent\", shape = box, fontcolor = blue, style = dashed];\n"</span>,
             Uuid::new_v4(),
             concurrent_head
-        ) + <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"\"{}\" [label = \"Converge\", shape = box, fontcolor = blue, style = dashed];\n"</span>, concurrent_tail) +
-            <span class="kw-2">&amp;</span>first_str.body
-            + <span class="kw-2">&amp;</span>second_str.body;
+        );
 
+            body_str.push_str(<span class="kw-2">&amp;</span>(first_str.body + <span class="kw-2">&amp;</span>second_str.body));
             <span class="macro">vec!</span>[first_str.head_ids, second_str.head_ids]
                 .into_iter()
                 .flatten()
                 .for_each(|id| {
                     body_str.push_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"\"{}\" -&gt; \"{}\";\n"</span>, concurrent_head, id))
                 });
-            <span class="macro">vec!</span>[first_str.tail_ids, second_str.tail_ids]
-                .into_iter()
-                .flatten()
-                .for_each(|id| {
-                    body_str.push_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"\"{}\" -&gt; \"{}\";\n"</span>, id, concurrent_tail))
-                });
+
+            <span class="kw">let </span>tail_ids = <span class="kw">if </span>parent != <span class="string">"TupleSecond" </span>{
+                body_str.push_str(<span class="kw-2">&amp;</span>(<span class="macro">format!</span>(<span class="string">"\"{}\" [label = \"Converge\", shape = box, fontcolor = blue, style = dashed];\n"</span>, concurrent_tail)));
+                <span class="macro">vec!</span>[first_str.tail_ids, second_str.tail_ids.clone()]
+                    .into_iter()
+                    .flatten()
+                    .for_each(|id| {
+                        body_str.push_str(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"\"{}\" -&gt; \"{}\";\n"</span>, id, concurrent_tail))
+                    });
+                <span class="macro">vec!</span>[concurrent_tail]
+            } <span class="kw">else </span>{
+                second_str.tail_ids
+            };
+
             body_str.push_str(<span class="string">"}\n"</span>);
 
             DotString {
                 head_ids: <span class="macro">vec!</span>[concurrent_head],
-                tail_ids: <span class="macro">vec!</span>[concurrent_tail],
+                tail_ids,
                 body: body_str,
             }
         }
@@ -1433,7 +1451,11 @@
     action: T,
 }
 
-<span class="kw">impl</span>&lt;T: Action&gt; Action <span class="kw">for </span>TupleSecond&lt;T&gt; {}
+<span class="kw">impl</span>&lt;T: Action&gt; Action <span class="kw">for </span>TupleSecond&lt;T&gt; {
+    <span class="kw">fn </span>dot_string(<span class="kw-2">&amp;</span><span class="self">self</span>, _parent: <span class="kw-2">&amp;</span>str) -&gt; DotString {
+        <span class="self">self</span>.action.dot_string(stripped_type::&lt;<span class="self">Self</span>&gt;())
+    }
+}
 
 <span class="doccomment">/**
  * Implementation for the ActionWhile struct.
