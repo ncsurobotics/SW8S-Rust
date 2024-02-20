@@ -5,7 +5,10 @@ use std::path::Path;
 use std::env;
 use std::process::exit;
 use sw8s_rust_lib::{
-    comms::{control_board::{self, ControlBoard, SensorStatuses}, meb::MainElectronicsBoard},
+    comms::{
+        control_board::{ControlBoard, SensorStatuses},
+        meb::MainElectronicsBoard,
+    },
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
@@ -105,21 +108,21 @@ async fn shutdown_handler() -> UnboundedSender<()> {
         let exit_status =
             tokio::select! {_ = signal::ctrl_c() => { 1 }, _ = shutdown_rx.recv() => { 0 }};
 
-            let status = control_board().await.sensor_status_query().await;
+        let status = control_board().await.sensor_status_query().await;
 
-            match status.unwrap() {
-                SensorStatuses::IMU_NR => {
-                    println!("imu not ready");
-                    exit(1);
-                },
-                SensorStatuses::DEPTH_NR => {
-                    println!("depth not ready");
-                    exit(1);
-                },
-                _ => {
-                    println!("all good");
-                }
+        match status.unwrap() {
+            SensorStatuses::IMU_NR => {
+                println!("imu not ready");
+                exit(1);
             }
+            SensorStatuses::DEPTH_NR => {
+                println!("depth not ready");
+                exit(1);
+            }
+            _ => {
+                println!("all good");
+            }
+        }
 
         // Stop motors
         if let Some(control_board) = CONTROL_BOARD_CELL.get() {

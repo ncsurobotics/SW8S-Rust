@@ -1,5 +1,5 @@
 use core::fmt::Debug;
-use std::{ops::Deref, os::linux::raw::stat, sync::Arc, time::Duration};
+use std::{ops::Deref, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, bail, Result};
 use tokio::{
@@ -23,7 +23,7 @@ pub mod util;
 pub enum SensorStatuses {
     IMU_NR,
     DEPTH_NR,
-    ALL_GOOD
+    ALL_GOOD,
 }
 
 #[derive(Debug)]
@@ -412,14 +412,12 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         let status_resp = self.write_out(message).await;
         let status_byte = status_resp.unwrap()[0];
         if status_byte & 0x10 != 0x10 {
-            return Ok(SensorStatuses::IMU_NR);
+            Ok(SensorStatuses::IMU_NR)
         } else if status_byte & 0x01 != 0x01 {
             return Ok(SensorStatuses::DEPTH_NR);
         } else {
             return Ok(SensorStatuses::ALL_GOOD);
         }
-
-
     }
 
     pub async fn watchdog_status(&self) -> Option<bool> {

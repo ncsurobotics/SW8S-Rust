@@ -2,12 +2,10 @@ use crate::vision::{gate_poles::GatePoles, nn_cv2::OnnxModel};
 
 use super::{
     action::{
-        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile, DualAction,
-        TupleSecond,
+        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile, TupleSecond,
     },
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     comms::StartBno055,
-    example::AlwaysTrue,
     meb::WaitArm,
     movement::{AdjustMovement, CountFalse, CountTrue, Descend, StraightMovement, ZeroMovement},
     vision::VisionNormOffset,
