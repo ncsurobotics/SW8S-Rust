@@ -1,0 +1,19 @@
+digraph G {
+splines = true;
+nodesep = 1.0;
+bgcolor = "none";
+subgraph "cluster_7f88113c-6002-4591-a904-904a9d17c6a0" {
+style = dashed;
+color = blue;
+"8a0d941d-be72-43f3-a68a-76184373a846" [label = "Concurrent", shape = box, fontcolor = blue, style = dashed];
+"b0010f13-7725-4681-b057-4ebe307ae018" [label = "Converge", shape = box, fontcolor = blue, style = dashed];
+"f0317273-11ac-44bf-88da-4fdbed7100d7" [label = "WaitArm", margin = 0];
+"8bbc8884-5fa5-4620-9a2d-49318bf621b2" [label = "Descend", margin = 0];
+"8a0d941d-be72-43f3-a68a-76184373a846" -> "f0317273-11ac-44bf-88da-4fdbed7100d7";
+"8a0d941d-be72-43f3-a68a-76184373a846" -> "8bbc8884-5fa5-4620-9a2d-49318bf621b2";
+"f0317273-11ac-44bf-88da-4fdbed7100d7" -> "b0010f13-7725-4681-b057-4ebe307ae018";
+"8bbc8884-5fa5-4620-9a2d-49318bf621b2" -> "b0010f13-7725-4681-b057-4ebe307ae018";
+}
+"bfb56dfb-0bfc-4dba-b0d6-bdc7cc93900f" [label = "WaitArm", margin = 0];
+"b0010f13-7725-4681-b057-4ebe307ae018" -> "bfb56dfb-0bfc-4dba-b0d6-bdc7cc93900f";
+}
