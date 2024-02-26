@@ -37,16 +37,16 @@ derive-getters = "0.3.0" # Getter macro
 async-trait = "0.1.77" # Async fns in trait definitions
 futures = { version = "0.3.30", default-features = false, features = ["std"] }# Futures utilities
 toml = "0.8.10" # Configuration file
-serde = { version = "1.0.196", features = ["derive"] } # Config serial handling
+serde = { version = "1.0.197", features = ["derive"] } # Config serial handling
 bytes = "1.5.0" # Byte buffering
 uuid = { version = "1.7.0", features = ["v4", "fast-rng"] } # Unique IDs
-graphviz-rust = { version = "0.7.1", optional = true } # Drawing graphs
+graphviz-rust = { version = "0.7.2", optional = true } # Drawing graphs
 paste = { version = "1.0.14", optional = true } # Concat identifiers
 chrono = "0.4.34"
 
 [build-dependencies]
 quote = { version = "1.0.33", optional = true }
-syn = { version = "2.0.49", features = ["full", "fold"], optional = true }
+syn = { version = "2.0.51", features = ["full", "fold"], optional = true }
 proc-macro2 = { version = "1.0.78", optional = true }
 
 [dev-dependencies]
