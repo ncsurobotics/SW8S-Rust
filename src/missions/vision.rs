@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 
 use super::action::{Action, ActionExec};
-use crate::vision::{Draw, Offset2D, RelPos, VisualDetector};
+use crate::vision::{Draw, Offset2D, RelPos, VisualDetection, VisualDetector};
 use anyhow::Result;
 use async_trait::async_trait;
 use num_traits::{FromPrimitive, Num};
@@ -38,12 +38,12 @@ impl<T, U, V> Action for VisionNormOffset<'_, T, U, V> {}
 
 #[async_trait]
 impl<
-        T: GetFrontCamMat + Send + Sync,
-        V: Num + FromPrimitive + Send + Sync,
-        U: VisualDetector<V> + Send + Sync,
-    > ActionExec for VisionNormOffset<'_, T, U, V>
-where
-    U::Position: RelPos<Number = V> + Draw,
+    T: GetFrontCamMat + Send + Sync,
+    V: Num + FromPrimitive + Send + Sync,
+    U: VisualDetector<V> + Send + Sync,
+> ActionExec for VisionNormOffset<'_, T, U, V>
+    where
+        U::Position: RelPos<Number=V> + Draw,
 {
     type Output = Result<Offset2D<V>>;
     async fn execute(&mut self) -> Self::Output {
@@ -53,7 +53,7 @@ where
         }
 
         #[allow(unused_mut)]
-        let mut mat = self.context.get_front_camera_mat().await.clone();
+            let mut mat = self.context.get_front_camera_mat().await.clone();
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
         println!("Detect attempt: {}", detections.is_ok());
@@ -70,7 +70,7 @@ where
                 &mat,
                 &Vector::default(),
             )
-            .unwrap();
+                .unwrap();
         }
 
         let positions: Vec<_> = detections
@@ -84,3 +84,70 @@ where
         Ok(positions.into_iter().sum::<Offset2D<V>>() / positions_len)
     }
 }
+
+#[derive(Debug)]
+pub struct VisionDetect<'a, T, U, V> {
+    context: &'a T,
+    model: U,
+    _num: PhantomData<V>,
+}
+
+impl<'a, T, U, V> VisionDetect<'a, T, U, V> {
+    pub const fn new(context: &'a T, model: U) -> Self {
+        Self {
+            context,
+            model,
+            _num: PhantomData,
+        }
+    }
+}
+
+impl<T, U, V> Action for VisionDetect<'_, T, U, V> {}
+
+#[async_trait]
+impl<
+    T: GetFrontCamMat + Send + Sync,
+    V: Num + FromPrimitive + Send + Sync,
+    U: VisualDetector<V> + Send + Sync,
+> ActionExec for VisionDetect<'_, T, U, V>
+    where
+        U::Position: RelPos<Number=V> + Draw,
+{
+    type Output = Result<Vec<VisualDetection<<U as VisualDetector<V>>::ClassEnum, <U as VisualDetector<V>>::Position>>>;
+    async fn execute(&mut self) -> Self::Output {
+        #[cfg(feature = "logging")]
+        {
+            println!("Running detection...");
+        }
+
+        #[allow(unused_mut)]
+            let mut mat = self.context.get_front_camera_mat().await.clone();
+        let detections = self.model.detect(&mat);
+        #[cfg(feature = "logging")]
+        println!("Detect attempt: {}", detections.is_ok());
+        let detections = detections?;
+        #[cfg(feature = "logging")]
+        {
+            detections
+                .iter()
+                .for_each(|x| x.position().draw(&mut mat).unwrap());
+            println!("Number of detects: {}", detections.len());
+            create_dir_all("/tmp/detect").unwrap();
+            imwrite(
+                &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
+                &mat,
+                &Vector::default(),
+            )
+                .unwrap();
+        }
+
+        let norm_detections: Vec<VisualDetection<<U as VisualDetector<V>>::ClassEnum, <U as VisualDetector<V>>::Position>> = detections
+            .iter()
+            .map(|detect| self.model.normalize(detect.position()))
+            .collect();
+
+        Ok(norm_detections)
+    }
+}
+
+
