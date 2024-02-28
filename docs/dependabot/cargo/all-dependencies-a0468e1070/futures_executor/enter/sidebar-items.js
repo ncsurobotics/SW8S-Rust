@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["ENTERED"],"fn":["enter"],"struct":["Enter","EnterError"]};

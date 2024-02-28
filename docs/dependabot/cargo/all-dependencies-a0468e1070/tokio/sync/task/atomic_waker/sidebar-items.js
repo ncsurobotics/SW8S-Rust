@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["REGISTERING","WAITING","WAKING"],"struct":["AtomicWaker"],"trait":["WakerRef"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["dissolve_rename_from"],"struct":["Field","NamedStruct","Rename"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Variant","Version"],"macro":["uuid"],"mod":["builder","error","external","fmt","macros","parser","rng","timestamp","v4"],"struct":["Builder","Error","Uuid"],"type":["Bytes"]};

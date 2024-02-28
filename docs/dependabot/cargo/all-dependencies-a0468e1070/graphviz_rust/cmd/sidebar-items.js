@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CommandArg","Format","Layout"],"fn":["do_exec","exec","temp_file"]};

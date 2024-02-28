@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["heapify","kmerge","kmerge_by","sift_down"],"struct":["HeadTail","KMergeBy","KMergeByLt"],"trait":["KMergePredicate"],"type":["KMerge"]};
