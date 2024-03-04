@@ -1,0 +1,14 @@
+digraph G {
+splines = true;
+nodesep = 1.0;
+bgcolor = "none";
+"93e7c9a1-ae20-41d7-a93f-13a1b05a7a58" [label = "DriveToBuoyVision", margin = 0];
+"93e7c9a1-ae20-41d7-a93f-13a1b05a7a58" [shape = diamond];
+"93e7c9a1-ae20-41d7-a93f-13a1b05a7a58" -> "93e7c9a1-ae20-41d7-a93f-13a1b05a7a58" [label = "True"];
+"9a249ba3-963f-4b7a-9eba-a21b703953cc" [label = "StraightMovement", margin = 0];
+"2bbebd0c-8e4a-44c0-9ebe-2ceb35d0bb28" [label = "DelayAction", margin = 0];
+"c69847d3-d488-4441-b77d-a0240ad8c16c" [label = "ZeroMovement", margin = 0];
+"2bbebd0c-8e4a-44c0-9ebe-2ceb35d0bb28" -> "c69847d3-d488-4441-b77d-a0240ad8c16c";
+"9a249ba3-963f-4b7a-9eba-a21b703953cc" -> "2bbebd0c-8e4a-44c0-9ebe-2ceb35d0bb28";
+"93e7c9a1-ae20-41d7-a93f-13a1b05a7a58" -> "9a249ba3-963f-4b7a-9eba-a21b703953cc";
+}
