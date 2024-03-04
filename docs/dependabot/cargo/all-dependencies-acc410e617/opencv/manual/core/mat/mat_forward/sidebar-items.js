@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["at","at_2d","at_2d_mut","at_3d","at_3d_mut","at_mut","at_nd","at_nd_mut","at_pt","at_pt_mut"]};
