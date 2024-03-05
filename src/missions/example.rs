@@ -6,7 +6,10 @@ use tokio_serial::SerialStream;
 use crate::act_nest;
 
 use super::{
-    action::{Action, ActionConcurrent, ActionConditional, ActionExec, ActionSequence, RaceAction},
+    action::{
+        Action, ActionConcurrent, ActionConditional, ActionExec, ActionMod, ActionSequence,
+        RaceAction,
+    },
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     basic::DelayAction,
     meb::WaitArm,
@@ -86,7 +89,6 @@ impl AlwaysTrue {
         AlwaysTrue {}
     }
 }
-
 impl Default for AlwaysTrue {
     fn default() -> Self {
         Self::new()
@@ -94,6 +96,10 @@ impl Default for AlwaysTrue {
 }
 
 impl Action for AlwaysTrue {}
+
+impl<T: Send + Sync> ActionMod<T> for AlwaysTrue {
+    fn modify(&mut self, _input: &T) {}
+}
 
 #[async_trait]
 impl ActionExec for AlwaysTrue {

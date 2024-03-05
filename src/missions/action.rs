@@ -43,7 +43,7 @@ pub trait ActionExec: Action + Send + Sync {
  * A trait that can be executed and modified at runtime.
  */
 pub trait ActionMod<Input: Send + Sync>: Action {
-    fn modify(&mut self, input: Input);
+    fn modify(&mut self, input: &Input);
 }
 
 /**
@@ -301,6 +301,15 @@ impl<V: Send + Sync, T: ActionExec<Output = V>, U: ActionExec<Output = V>> Actio
     }
 }
 
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> + Sync + Send>
+    ActionMod<Input> for DualAction<V, W>
+{
+    fn modify(&mut self, input: &Input) {
+        self.first.modify(input);
+        self.second.modify(input);
+    }
+}
+
 #[derive(Debug)]
 pub struct ActionChain<V: Action, W: Action> {
     first: V,
@@ -346,7 +355,7 @@ impl<
 {
     type Output = U;
     async fn execute(&mut self) -> Self::Output {
-        self.second.modify(self.first.execute().await);
+        self.second.modify(&self.first.execute().await);
         self.second.execute().await
     }
 }
@@ -514,27 +523,34 @@ impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
             "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Concurrent\", shape = box, fontcolor = blue, style = dashed];\n",
             Uuid::new_v4(),
             concurrent_head
-        ) + &format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = blue, style = dashed];\n", concurrent_tail) +
-            &first_str.body
-            + &second_str.body;
+        );
 
+            body_str.push_str(&(first_str.body + &second_str.body));
             vec![first_str.head_ids, second_str.head_ids]
                 .into_iter()
                 .flatten()
                 .for_each(|id| {
                     body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id))
                 });
-            vec![first_str.tail_ids, second_str.tail_ids]
-                .into_iter()
-                .flatten()
-                .for_each(|id| {
-                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
-                });
+
+            let tail_ids = if parent != "TupleSecond" {
+                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = blue, style = dashed];\n", concurrent_tail)));
+                vec![first_str.tail_ids, second_str.tail_ids.clone()]
+                    .into_iter()
+                    .flatten()
+                    .for_each(|id| {
+                        body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
+                    });
+                vec![concurrent_tail]
+            } else {
+                second_str.tail_ids
+            };
+
             body_str.push_str("}\n");
 
             DotString {
                 head_ids: vec![concurrent_head],
-                tail_ids: vec![concurrent_tail],
+                tail_ids,
                 body: body_str,
             }
         }
@@ -554,6 +570,15 @@ impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Output = Y>, W: ActionExec<Ou
     type Output = (Y, X);
     async fn execute(&mut self) -> Self::Output {
         join!(self.first.execute(), self.second.execute())
+    }
+}
+
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> + Sync + Send>
+    ActionMod<Input> for ActionConcurrent<V, W>
+{
+    fn modify(&mut self, input: &Input) {
+        self.first.modify(input);
+        self.second.modify(input);
     }
 }
 
@@ -669,7 +694,11 @@ pub struct TupleSecond<T: Action> {
     action: T,
 }
 
-impl<T: Action> Action for TupleSecond<T> {}
+impl<T: Action> Action for TupleSecond<T> {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        self.action.dot_string(stripped_type::<Self>())
+    }
+}
 
 /**
  * Implementation for the ActionWhile struct.
@@ -685,6 +714,12 @@ impl<U: Send + Sync, V: Send + Sync, T: ActionExec<Output = (U, V)>> ActionExec 
     type Output = V;
     async fn execute(&mut self) -> Self::Output {
         self.action.execute().await.1
+    }
+}
+
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send> ActionMod<Input> for TupleSecond<V> {
+    fn modify(&mut self, input: &Input) {
+        self.action.modify(input);
     }
 }
 
