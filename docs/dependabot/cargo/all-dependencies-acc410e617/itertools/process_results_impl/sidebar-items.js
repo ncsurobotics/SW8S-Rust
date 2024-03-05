@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["process_results"],"struct":["ProcessResults"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Advice","FileType","FlockOperation"],"struct":["Access","AtFlags","FallocateFlags","MemfdFlags","Mode","OFlags","RenameFlags","ResolveFlags","SealFlags","StatVfs","StatVfsMountFlags","StatxFlags"],"type":["Dev","FsWord","RawMode","Stat","StatFs","Statx","StatxTimestamp"]};
