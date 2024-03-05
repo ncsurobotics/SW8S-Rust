@@ -754,3 +754,9 @@ impl<U: Send + Sync, T: ActionExec<Output = (Result<U>, Result<U>)>> ActionExec 
         }
     }
 }
+
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send> ActionMod<Input> for FirstValid<V> {
+    fn modify(&mut self, input: &Input) {
+        self.action.modify(input);
+    }
+}
