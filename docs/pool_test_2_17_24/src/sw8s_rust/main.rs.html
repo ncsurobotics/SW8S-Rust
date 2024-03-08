@@ -278,6 +278,9 @@
 <a href="#277" id="277">277</a>
 <a href="#278" id="278">278</a>
 <a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -285,7 +288,10 @@
 <span class="kw">use </span>std::env;
 <span class="kw">use </span>std::process::exit;
 <span class="kw">use </span>sw8s_rust_lib::{
-    comms::{control_board::{<span class="self">self</span>, ControlBoard, SensorStatuses}, meb::MainElectronicsBoard},
+    comms::{
+        control_board::{ControlBoard, SensorStatuses},
+        meb::MainElectronicsBoard,
+    },
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
@@ -385,21 +391,21 @@
         </span><span class="kw">let </span>exit_status =
             <span class="macro">tokio::select! </span>{<span class="kw">_ </span>= signal::ctrl_c() =&gt; { <span class="number">1 </span>}, <span class="kw">_ </span>= shutdown_rx.recv() =&gt; { <span class="number">0 </span>}};
 
-            <span class="kw">let </span>status = control_board().<span class="kw">await</span>.sensor_status_query().<span class="kw">await</span>;
+        <span class="kw">let </span>status = control_board().<span class="kw">await</span>.sensor_status_query().<span class="kw">await</span>;
 
-            <span class="kw">match </span>status.unwrap() {
-                SensorStatuses::IMU_NR =&gt; {
-                    <span class="macro">println!</span>(<span class="string">"imu not ready"</span>);
-                    exit(<span class="number">1</span>);
-                },
-                SensorStatuses::DEPTH_NR =&gt; {
-                    <span class="macro">println!</span>(<span class="string">"depth not ready"</span>);
-                    exit(<span class="number">1</span>);
-                },
-                <span class="kw">_ </span>=&gt; {
-                    <span class="macro">println!</span>(<span class="string">"all good"</span>);
-                }
+        <span class="kw">match </span>status.unwrap() {
+            SensorStatuses::IMU_NR =&gt; {
+                <span class="macro">println!</span>(<span class="string">"imu not ready"</span>);
+                exit(<span class="number">1</span>);
             }
+            SensorStatuses::DEPTH_NR =&gt; {
+                <span class="macro">println!</span>(<span class="string">"depth not ready"</span>);
+                exit(<span class="number">1</span>);
+            }
+            <span class="kw">_ </span>=&gt; {
+                <span class="macro">println!</span>(<span class="string">"all good"</span>);
+            }
+        }
 
         <span class="comment">// Stop motors
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(control_board) = CONTROL_BOARD_CELL.get() {

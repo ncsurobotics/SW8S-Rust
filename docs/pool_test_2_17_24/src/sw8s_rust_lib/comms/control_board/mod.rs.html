@@ -425,10 +425,8 @@
 <a href="#424" id="424">424</a>
 <a href="#425" id="425">425</a>
 <a href="#426" id="426">426</a>
-<a href="#427" id="427">427</a>
-<a href="#428" id="428">428</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>core::fmt::Debug;
-<span class="kw">use </span>std::{ops::Deref, os::linux::raw::stat, sync::Arc, time::Duration};
+<span class="kw">use </span>std::{ops::Deref, sync::Arc, time::Duration};
 
 <span class="kw">use </span>anyhow::{anyhow, bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>tokio::{
@@ -452,7 +450,7 @@
 <span class="kw">pub enum </span>SensorStatuses {
     IMU_NR,
     DEPTH_NR,
-    ALL_GOOD
+    ALL_GOOD,
 }
 
 <span class="attr">#[derive(Debug)]
@@ -841,14 +839,12 @@
         <span class="kw">let </span>status_resp = <span class="self">self</span>.write_out(message).<span class="kw">await</span>;
         <span class="kw">let </span>status_byte = status_resp.unwrap()[<span class="number">0</span>];
         <span class="kw">if </span>status_byte &amp; <span class="number">0x10 </span>!= <span class="number">0x10 </span>{
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(SensorStatuses::IMU_NR);
+            <span class="prelude-val">Ok</span>(SensorStatuses::IMU_NR)
         } <span class="kw">else if </span>status_byte &amp; <span class="number">0x01 </span>!= <span class="number">0x01 </span>{
             <span class="kw">return </span><span class="prelude-val">Ok</span>(SensorStatuses::DEPTH_NR);
         } <span class="kw">else </span>{
             <span class="kw">return </span><span class="prelude-val">Ok</span>(SensorStatuses::ALL_GOOD);
         }
-
-
     }
 
     <span class="kw">pub async fn </span>watchdog_status(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;bool&gt; {
