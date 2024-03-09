@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["basic","buoy_hit","example"]};
+window.SIDEBAR_ITEMS = {"mod":["basic","buoy_circle","buoy_hit","example","path_align"]};

@@ -101,6 +101,22 @@
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
 <a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>opencv::core::Mat;
@@ -145,7 +161,14 @@
     <span class="kw">async fn </span>get_bottom_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat;
 }
 
-<span class="attr">#[derive(Debug)]
+<span class="comment">/*
+#[async_trait]
+pub trait GetConfig {
+    async fn get_config(&amp;self) -&gt; Configuration;
+}
+*/
+
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>EmptyActionContext;
 
 <span class="kw">pub struct </span>FullActionContext&lt;<span class="lifetime">'a</span>, T: AsyncWriteExt + Unpin + Send&gt; {
@@ -203,4 +226,13 @@
         <span class="self">self</span>.bottom_cam.get_mat().<span class="kw">await
     </span>}
 }
-</code></pre></div></section></main></body></html>
+
+<span class="comment">/*
+#[async_trait]
+impl&lt;T: AsyncWriteExt + Unpin + Send&gt; GetConfig for FullActionContext&lt;'_, T&gt; {
+    async fn get_config(&amp;self) -&gt; Mat {
+        self.bottom_cam.get_mat().await
+    }
+}
+*/
+</span></code></pre></div></section></main></body></html>

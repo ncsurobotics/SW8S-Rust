@@ -112,6 +112,9 @@
 <a href="#111" id="111">111</a>
 <a href="#112" id="112">112</a>
 <a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::vision::{gate_poles::GatePoles, nn_cv2::OnnxModel};
 
 <span class="kw">use super</span>::{
@@ -121,7 +124,10 @@
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     comms::StartBno055,
     meb::WaitArm,
-    movement::{AdjustMovement, CountFalse, CountTrue, Descend, StraightMovement, ZeroMovement},
+    movement::{
+        AdjustMovement, AdjustMovementAngle, CountFalse, CountTrue, Descend, StraightMovement,
+        ZeroMovement,
+    },
     vision::VisionNormOffset,
 };
 <span class="kw">use </span><span class="kw">crate</span>::missions::action_context::GetFrontCamMat;
@@ -208,7 +214,7 @@
                     GatePoles::default(),
                 ),
                 TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovement::new(context, depth),
+                    AdjustMovementAngle::new(context, depth),
                     CountTrue::new(<span class="number">3</span>),
                 )),
             )),
@@ -218,7 +224,7 @@
                     GatePoles::default(),
                 ),
                 TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovement::new(context, depth),
+                    AdjustMovementAngle::new(context, depth),
                     CountFalse::new(<span class="number">3</span>),
                 )),
             )),

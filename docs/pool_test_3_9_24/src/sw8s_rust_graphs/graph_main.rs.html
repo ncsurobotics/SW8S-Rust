@@ -58,6 +58,12 @@
 <a href="#57" id="57">57</a>
 <a href="#58" id="58">58</a>
 <a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fs::create_dir_all;
 
 <span class="kw">use </span>futures::{stream, StreamExt};
@@ -76,6 +82,12 @@
     }
     <span class="kw">pub mod </span>buoy_hit {
         <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/buoy_hit.rs"</span>));
+    }
+    <span class="kw">pub mod </span>buoy_circle {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/buoy_circle.rs"</span>));
+    }
+    <span class="kw">pub mod </span>path_align {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/path_align.rs"</span>));
     }
 }
 
@@ -97,7 +109,7 @@
 </span><span class="kw">async fn </span>main() {
     create_dir_all(<span class="string">"graphs/"</span>).unwrap();
     <span class="comment">// (name, action) pairs to draw
-    </span><span class="kw">let </span>actions = <span class="macro">graph_actions!</span>(basic, example, buoy_hit);
+    </span><span class="kw">let </span>actions = <span class="macro">graph_actions!</span>(basic, example, buoy_hit, buoy_circle, path_align);
 
     stream::iter(actions)
         .for_each(|(dir_name, action_set)| <span class="kw">async move </span>{
