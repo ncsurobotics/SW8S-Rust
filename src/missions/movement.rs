@@ -1,8 +1,11 @@
 use crate::vision::RelPos;
+use crate::vision::RelPosAngle;
 use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
+use num_traits::Pow;
+use opencv::core::abs;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
@@ -176,6 +179,82 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovement<
         self.context
             .get_control_board()
             .stability_2_speed_set_initial_yaw(self.x, 0.5, 0.0, 0.0, self.target_depth)
+            .await
+    }
+}
+
+#[derive(Debug)]
+pub struct CenterMovement<'a, T> {
+    context: &'a T,
+    x: f32,
+    y: f32,
+    yaw: f32,
+    target_depth: f32,
+}
+impl<T> Action for CenterMovement<'_, T> {}
+
+impl<'a, T> CenterMovement<'a, T> {
+    pub fn new(context: &'a T, target_depth: f32) -> Self {
+        Self {
+            context,
+            target_depth,
+            x: 0.0,
+            y: 0.0,
+            yaw: 0.0,
+        }
+    }
+}
+
+impl<T> ActionMod<f32> for CenterMovement<'_, T> {
+    fn modify(&mut self, input: &f32) {
+        self.target_depth = *input;
+    }
+}
+
+impl<T, V> ActionMod<Result<V>> for CenterMovement<'_, T>
+where
+    V: RelPosAngle<Number = f64> + Sync + Send + Debug,
+{
+    fn modify(&mut self, input: &Result<V>) {
+        if let Ok(input) = input {
+            println!("Modify value: {:?}", input);
+            if !input.offset().x().is_nan() && !input.offset().y().is_nan() {
+                self.x = *input.offset().x() as f32;
+                self.y = *input.offset().y() as f32;
+                self.yaw = *input.offset_angle().angle() as f32;
+            } else {
+                self.x = 0.0;
+                self.y = 0.0;
+            }
+        } else {
+            self.x = 0.0;
+            self.y = 0.0;
+        }
+    }
+}
+
+#[async_trait]
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for CenterMovement<'_, T> {
+    type Output = Result<()>;
+    async fn execute(&mut self) -> Self::Output {
+        const FACTOR: f32 = 1.5;
+        const MIN_SPEED: f32 = 0.3;
+        const MIN_YAW: f32 = 5.0;
+
+        let mut x = self.x.pow(FACTOR);
+        let mut y = self.y.pow(FACTOR);
+        let mut yaw = self.yaw;
+
+        if x < MIN_SPEED {
+            x = 0.0;
+        }
+        if y < MIN_SPEED {
+            y = 0.0;
+        }
+
+        self.context
+            .get_control_board()
+            .stability_2_speed_set(x, y, 0.0, 0.0, yaw, self.target_depth)
             .await
     }
 }

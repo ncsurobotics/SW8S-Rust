@@ -42,6 +42,13 @@ pub trait GetBottomCamMat {
     async fn get_bottom_camera_mat(&self) -> Mat;
 }
 
+/*
+#[async_trait]
+pub trait GetConfig {
+    async fn get_config(&self) -> Configuration;
+}
+*/
+
 #[derive(Debug)]
 pub struct EmptyActionContext;
 
@@ -100,3 +107,12 @@ impl<T: AsyncWriteExt + Unpin + Send> GetBottomCamMat for FullActionContext<'_, 
         self.bottom_cam.get_mat().await
     }
 }
+
+/*
+#[async_trait]
+impl<T: AsyncWriteExt + Unpin + Send> GetConfig for FullActionContext<'_, T> {
+    async fn get_config(&self) -> Mat {
+        self.bottom_cam.get_mat().await
+    }
+}
+*/

@@ -28,7 +28,7 @@ use tokio::{
     time::{sleep, timeout},
 };
 use tokio_serial::SerialStream;
-mod config;
+pub mod config;
 use std::time::Duration;
 
 static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<SerialStream>>> = OnceCell::const_new();
@@ -265,6 +265,34 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
+        /*
+        "path_align" => {
+            bail!("TODO");
+            let _ = path_align(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "buoy_circle" => {
+            bail!("TODO");
+            let _ = gate_run(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        */
         "example" => {
             let _ = initial_descent(&FullActionContext::new(
                 control_board().await,
