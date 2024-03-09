@@ -265,6 +265,13 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
+        "start_cam" => {
+            println!("Opening camera");
+            front_cam().await;
+            bottom_cam().await;       
+            println!("Opening camera");
+            Ok(())
+        }
         /*
         "path_align" => {
             bail!("TODO");
