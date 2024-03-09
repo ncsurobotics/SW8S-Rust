@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["List"],"fn":["move_to_new_list"],"struct":["EntryInOneOfTheLists","IdleNotifiedSet","ListEntry","ListsInner"],"type":["LinkedList","Lists"]};

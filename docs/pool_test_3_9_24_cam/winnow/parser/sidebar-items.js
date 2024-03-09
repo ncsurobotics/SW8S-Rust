@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["unpeek"],"macro":["impl_parser_for_tuple","impl_parser_for_tuples"],"trait":["Parser"]};

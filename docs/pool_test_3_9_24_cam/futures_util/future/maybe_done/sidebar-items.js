@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["MaybeDone"],"fn":["maybe_done"]};

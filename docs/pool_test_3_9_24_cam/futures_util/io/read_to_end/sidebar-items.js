@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["read_to_end_internal"],"struct":["Guard","ReadToEnd"]};

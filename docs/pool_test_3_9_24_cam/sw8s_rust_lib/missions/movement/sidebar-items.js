@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["angle_base_value"],"static":["ANGLE_BASE_VALUE"],"struct":["AdjustMovement","AdjustMovementAngle","CenterMovement","CountFalse","CountTrue","Descend","StraightMovement","ZeroMovement"]};

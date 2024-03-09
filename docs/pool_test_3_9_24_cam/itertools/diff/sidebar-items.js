@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Diff"],"fn":["diff_with"]};
