@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["getresgid","getresuid"],"struct":["ResGid","ResUid"]};
