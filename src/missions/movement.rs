@@ -279,18 +279,32 @@ where
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovementAngle<'_, T> {
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
+        const ADJUST_VAL: f32 = 1.5;
+        const MIN_X: f32 = 0.3;
+
         let yaw = if let Some(angles) = self.context.get_control_board().get_initial_angles().await
         {
             println!("Initial Yaw: {}", angles.yaw());
-            angles.yaw() + self.yaw_adjust
+            let mut inner_yaw = angles.yaw() + self.yaw_adjust;
+            if inner_yaw.abs() > 180.0 {
+                let sign = inner_yaw / inner_yaw.abs();
+                inner_yaw = -(inner_yaw - (sign * 180.0)); // TODO: confirm this math
+            }
+            inner_yaw
         } else {
             0.0
         };
         println!("Adjusted Yaw: {}", yaw);
 
+        let mut x = self.x.pow(ADJUST_VAL);
+        if x < MIN_X {
+            x = 0.0;
+        }
+        println!("Setting x to {x}");
+
         self.context
             .get_control_board()
-            .stability_2_speed_set(self.x, 0.5, 0.0, 0.0, yaw, self.target_depth)
+            .stability_2_speed_set(x, 0.5, 0.0, 0.0, yaw, self.target_depth)
             .await
     }
 }
