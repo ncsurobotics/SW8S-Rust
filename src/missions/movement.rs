@@ -1,3 +1,4 @@
+use crate::comms::control_board::ControlBoard;
 use crate::vision::RelPos;
 use crate::vision::RelPosAngle;
 use anyhow::anyhow;
@@ -6,7 +7,9 @@ use async_trait::async_trait;
 use core::fmt::Debug;
 use num_traits::Pow;
 use opencv::core::abs;
+use tokio::io::AsyncWrite;
 use tokio::io::WriteHalf;
+use tokio::sync::OnceCell;
 use tokio_serial::SerialStream;
 
 use super::{
@@ -184,6 +187,115 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovement<
 }
 
 #[derive(Debug)]
+pub struct AdjustMovementAngle<'a, T> {
+    context: &'a T,
+    x: f32,
+    yaw_adjust: f32,
+    target_depth: f32,
+}
+impl<T> Action for AdjustMovementAngle<'_, T> {}
+
+impl<'a, T> AdjustMovementAngle<'a, T> {
+    pub fn new(context: &'a T, target_depth: f32) -> Self {
+        Self {
+            context,
+            target_depth,
+            x: 0.0,
+            yaw_adjust: 0.0,
+        }
+    }
+}
+
+impl<T> ActionMod<f32> for AdjustMovementAngle<'_, T> {
+    fn modify(&mut self, input: &f32) {
+        self.target_depth = *input;
+    }
+}
+
+/*
+impl<T, V> ActionMod<Result<V>> for AdjustMovementAngle<'_, T>
+where
+    V: RelPosAngle<Number = f64> + Sync + Send + Debug,
+{
+    fn modify(&mut self, input: &Result<V>) {
+        if let Ok(input) = input {
+            println!("Modify value: {:?}", input);
+            if !input.offset().x().is_nan() && !input.offset().y().is_nan() {
+                self.x = *input.offset().x() as f32;
+                self.yaw = *input.offset_angle().angle() as f32;
+            } else {
+                self.x = 0.0;
+                self.yaw = 0.0;
+            }
+        } else {
+            self.x = 0.0;
+            self.yaw = 0.0;
+        }
+    }
+}
+*/
+
+static ANGLE_BASE_VALUE: OnceCell<f32> = OnceCell::const_new();
+async fn angle_base_value<T: AsyncWrite + Unpin>(board: &ControlBoard<T>) -> f32 {
+    *ANGLE_BASE_VALUE
+        .get_or_init(|| async {
+            let mut angles = board.responses().get_angles().await;
+            while angles.is_none() {
+                angles = board.responses().get_angles().await;
+            }
+            *angles.unwrap().yaw()
+        })
+        .await
+}
+
+impl<T, V> ActionMod<Result<V>> for AdjustMovementAngle<'_, T>
+where
+    V: RelPos<Number = f64> + Sync + Send + Debug,
+{
+    fn modify(&mut self, input: &Result<V>) {
+        const MIN_TO_CHANGE_ANGLE: f32 = 0.1;
+        const ANGLE_DIFF: f32 = 3.0;
+
+        if let Ok(input) = input {
+            println!("Modify value: {:?}", input);
+            if !input.offset().x().is_nan() && !input.offset().y().is_nan() {
+                self.x = *input.offset().x() as f32;
+                self.yaw_adjust += if self.x.abs() > MIN_TO_CHANGE_ANGLE {
+                    (self.x / self.x.abs()) * ANGLE_DIFF
+                } else {
+                    0.0
+                };
+                println!("YAW ADJUST: {}", self.yaw_adjust);
+            } else {
+                self.x = 0.0;
+            }
+        } else {
+            self.x = 0.0;
+        }
+    }
+}
+
+#[async_trait]
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovementAngle<'_, T> {
+    type Output = Result<()>;
+    async fn execute(&mut self) -> Self::Output {
+        let yaw = if let Some(angles) = self.context.get_control_board().get_initial_angles().await
+        {
+            println!("Initial Yaw: {}", angles.yaw());
+            angles.yaw() + self.yaw_adjust
+        } else {
+            0.0
+        };
+        println!("Adjusted Yaw: {}", yaw);
+
+        self.context
+            .get_control_board()
+            .stability_2_speed_set(self.x, 0.5, 0.0, 0.0, yaw, self.target_depth)
+            .await
+    }
+}
+
+#[derive(Debug)]
 pub struct CenterMovement<'a, T> {
     context: &'a T,
     x: f32,
@@ -283,6 +395,7 @@ impl<T: Send + Sync> ActionMod<Result<T>> for CountTrue {
         } else {
             self.count = 0;
         }
+        println!("COUNTING TRUE: {} ? {}", self.count, self.target);
     }
 }
 
@@ -290,10 +403,12 @@ impl<T: Send + Sync> ActionMod<Result<T>> for CountTrue {
 impl ActionExec for CountTrue {
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
-        if self.count == self.target {
+        println!("CHECKING TRUE: {} ? {}", self.count, self.target);
+        if self.count < self.target {
+            println!("Under count");
             Ok(())
         } else {
-            Err(anyhow!("Under count"))
+            Err(anyhow!("At count"))
         }
     }
 }
@@ -322,6 +437,7 @@ impl<T: Send + Sync> ActionMod<Result<T>> for CountFalse {
         } else {
             self.count = 0;
         }
+        println!("COUNTING FALSE: {} ? {}", self.count, self.target);
     }
 }
 
@@ -329,10 +445,12 @@ impl<T: Send + Sync> ActionMod<Result<T>> for CountFalse {
 impl ActionExec for CountFalse {
     type Output = Result<()>;
     async fn execute(&mut self) -> Self::Output {
-        if self.count == self.target {
+        println!("CHECKING FALSE: {} ? {}", self.count, self.target);
+        if self.count < self.target {
+            println!("Under count");
             Ok(())
         } else {
-            Err(anyhow!("Under count"))
+            Err(anyhow!("At count"))
         }
     }
 }

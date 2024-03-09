@@ -25,6 +25,7 @@ use core::fmt::Debug;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
+/*
 pub fn path_align<
     Con: Send
         + Sync
@@ -50,3 +51,4 @@ pub fn path_align<
         ),
     )
 }
+*/

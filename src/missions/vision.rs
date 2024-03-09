@@ -2,9 +2,9 @@ use std::marker::PhantomData;
 
 use super::action::{Action, ActionExec};
 use crate::vision::{Draw, Offset2D, RelPos, VisualDetector};
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use num_traits::{FromPrimitive, Num};
+use num_traits::{Float, FromPrimitive, Num};
 
 use crate::missions::action_context::GetFrontCamMat;
 #[cfg(feature = "logging")]
@@ -39,7 +39,7 @@ impl<T, U, V> Action for VisionNormOffset<'_, T, U, V> {}
 #[async_trait]
 impl<
         T: GetFrontCamMat + Send + Sync,
-        V: Num + FromPrimitive + Send + Sync,
+        V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec for VisionNormOffset<'_, T, U, V>
 where
@@ -81,6 +81,11 @@ where
 
         let positions_len = positions.len();
 
-        Ok(positions.into_iter().sum::<Offset2D<V>>() / positions_len)
+        let offset = positions.into_iter().sum::<Offset2D<V>>() / positions_len;
+        if offset.x().is_nan() || offset.y().is_nan() {
+            Err(anyhow!("NaN values"))
+        } else {
+            Ok(offset)
+        }
     }
 }

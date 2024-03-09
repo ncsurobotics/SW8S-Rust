@@ -7,7 +7,10 @@ use super::{
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     comms::StartBno055,
     meb::WaitArm,
-    movement::{AdjustMovement, CountFalse, CountTrue, Descend, StraightMovement, ZeroMovement},
+    movement::{
+        AdjustMovement, AdjustMovementAngle, CountFalse, CountTrue, Descend, StraightMovement,
+        ZeroMovement,
+    },
     vision::VisionNormOffset,
 };
 use crate::missions::action_context::GetFrontCamMat;
@@ -94,7 +97,7 @@ pub fn gate_run<
                     GatePoles::default(),
                 ),
                 TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovement::new(context, depth),
+                    AdjustMovementAngle::new(context, depth),
                     CountTrue::new(3),
                 )),
             )),
@@ -104,7 +107,7 @@ pub fn gate_run<
                     GatePoles::default(),
                 ),
                 TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovement::new(context, depth),
+                    AdjustMovementAngle::new(context, depth),
                     CountFalse::new(3),
                 )),
             )),
