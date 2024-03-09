@@ -5,6 +5,7 @@ use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
+use futures::FutureExt;
 use num_traits::Pow;
 use opencv::core::abs;
 use tokio::io::AsyncWrite;
@@ -254,14 +255,14 @@ where
 {
     fn modify(&mut self, input: &Result<V>) {
         const MIN_TO_CHANGE_ANGLE: f32 = 0.1;
-        const ANGLE_DIFF: f32 = 3.0;
+        const ANGLE_DIFF: f32 = 7.0;
 
         if let Ok(input) = input {
             println!("Modify value: {:?}", input);
             if !input.offset().x().is_nan() && !input.offset().y().is_nan() {
                 self.x = *input.offset().x() as f32;
-                self.yaw_adjust += if self.x.abs() > MIN_TO_CHANGE_ANGLE {
-                    (self.x / self.x.abs()) * ANGLE_DIFF
+                self.yaw_adjust -= if self.x.abs() > MIN_TO_CHANGE_ANGLE {
+                    self.x * ANGLE_DIFF
                 } else {
                     0.0
                 };
@@ -294,10 +295,20 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovementA
         } else {
             0.0
         };
+        println!(
+            "Current Yaw: {:?}",
+            self.context
+                .get_control_board()
+                .responses()
+                .get_angles()
+                .await
+                .map(|angles| *angles.yaw())
+        );
         println!("Adjusted Yaw: {}", yaw);
 
-        let mut x = self.x.pow(ADJUST_VAL);
-        if x < MIN_X {
+        println!("Prior x: {}", self.x);
+        let mut x = self.x.signum() * self.x.abs().pow(ADJUST_VAL);
+        if x.abs() < MIN_X {
             x = 0.0;
         }
         println!("Setting x to {x}");

@@ -108,7 +108,7 @@ pub fn gate_run<
                 ),
                 TupleSecond::new(ActionConcurrent::new(
                     AdjustMovementAngle::new(context, depth),
-                    CountFalse::new(3),
+                    CountFalse::new(10),
                 )),
             )),
         ),
