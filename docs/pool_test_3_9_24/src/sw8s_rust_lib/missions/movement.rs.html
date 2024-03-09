@@ -455,6 +455,31 @@
 <a href="#454" id="454">454</a>
 <a href="#455" id="455">455</a>
 <a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
+<a href="#458" id="458">458</a>
+<a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
+<a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
+<a href="#467" id="467">467</a>
+<a href="#468" id="468">468</a>
+<a href="#469" id="469">469</a>
+<a href="#470" id="470">470</a>
+<a href="#471" id="471">471</a>
+<a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
+<a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::vision::RelPos;
 <span class="kw">use </span><span class="kw">crate</span>::vision::RelPosAngle;
@@ -462,6 +487,7 @@
 <span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>core::fmt::Debug;
+<span class="kw">use </span>futures::FutureExt;
 <span class="kw">use </span>num_traits::Pow;
 <span class="kw">use </span>opencv::core::abs;
 <span class="kw">use </span>tokio::io::AsyncWrite;
@@ -711,14 +737,14 @@ where
 {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span><span class="prelude-ty">Result</span>&lt;V&gt;) {
         <span class="kw">const </span>MIN_TO_CHANGE_ANGLE: f32 = <span class="number">0.1</span>;
-        <span class="kw">const </span>ANGLE_DIFF: f32 = <span class="number">3.0</span>;
+        <span class="kw">const </span>ANGLE_DIFF: f32 = <span class="number">7.0</span>;
 
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(input) = input {
             <span class="macro">println!</span>(<span class="string">"Modify value: {:?}"</span>, input);
             <span class="kw">if </span>!input.offset().x().is_nan() &amp;&amp; !input.offset().y().is_nan() {
                 <span class="self">self</span>.x = <span class="kw-2">*</span>input.offset().x() <span class="kw">as </span>f32;
-                <span class="self">self</span>.yaw_adjust += <span class="kw">if </span><span class="self">self</span>.x.abs() &gt; MIN_TO_CHANGE_ANGLE {
-                    (<span class="self">self</span>.x / <span class="self">self</span>.x.abs()) * ANGLE_DIFF
+                <span class="self">self</span>.yaw_adjust -= <span class="kw">if </span><span class="self">self</span>.x.abs() &gt; MIN_TO_CHANGE_ANGLE {
+                    <span class="self">self</span>.x * ANGLE_DIFF
                 } <span class="kw">else </span>{
                     <span class="number">0.0
                 </span>};
@@ -736,18 +762,42 @@ where
 </span><span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec <span class="kw">for </span>AdjustMovementAngle&lt;<span class="lifetime">'_</span>, T&gt; {
     <span class="kw">type </span>Output = <span class="prelude-ty">Result</span>&lt;()&gt;;
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
+        <span class="kw">const </span>ADJUST_VAL: f32 = <span class="number">1.5</span>;
+        <span class="kw">const </span>MIN_X: f32 = <span class="number">0.3</span>;
+
         <span class="kw">let </span>yaw = <span class="kw">if let </span><span class="prelude-val">Some</span>(angles) = <span class="self">self</span>.context.get_control_board().get_initial_angles().<span class="kw">await
         </span>{
             <span class="macro">println!</span>(<span class="string">"Initial Yaw: {}"</span>, angles.yaw());
-            angles.yaw() + <span class="self">self</span>.yaw_adjust
+            <span class="kw">let </span><span class="kw-2">mut </span>inner_yaw = angles.yaw() + <span class="self">self</span>.yaw_adjust;
+            <span class="kw">if </span>inner_yaw.abs() &gt; <span class="number">180.0 </span>{
+                <span class="kw">let </span>sign = inner_yaw / inner_yaw.abs();
+                inner_yaw = -(inner_yaw - (sign * <span class="number">180.0</span>)); <span class="comment">// TODO: confirm this math
+            </span>}
+            inner_yaw
         } <span class="kw">else </span>{
             <span class="number">0.0
         </span>};
+        <span class="macro">println!</span>(
+            <span class="string">"Current Yaw: {:?}"</span>,
+            <span class="self">self</span>.context
+                .get_control_board()
+                .responses()
+                .get_angles()
+                .<span class="kw">await
+                </span>.map(|angles| <span class="kw-2">*</span>angles.yaw())
+        );
         <span class="macro">println!</span>(<span class="string">"Adjusted Yaw: {}"</span>, yaw);
+
+        <span class="macro">println!</span>(<span class="string">"Prior x: {}"</span>, <span class="self">self</span>.x);
+        <span class="kw">let </span><span class="kw-2">mut </span>x = <span class="self">self</span>.x.signum() * <span class="self">self</span>.x.abs().pow(ADJUST_VAL);
+        <span class="kw">if </span>x.abs() &lt; MIN_X {
+            x = <span class="number">0.0</span>;
+        }
+        <span class="macro">println!</span>(<span class="string">"Setting x to {x}"</span>);
 
         <span class="self">self</span>.context
             .get_control_board()
-            .stability_2_speed_set(<span class="self">self</span>.x, <span class="number">0.5</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, yaw, <span class="self">self</span>.target_depth)
+            .stability_2_speed_set(x, <span class="number">0.5</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, yaw, <span class="self">self</span>.target_depth)
             .<span class="kw">await
     </span>}
 }
