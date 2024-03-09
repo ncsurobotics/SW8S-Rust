@@ -309,6 +309,13 @@
 <a href="#308" id="308">308</a>
 <a href="#309" id="309">309</a>
 <a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -574,6 +581,13 @@
             ))
             .execute()
             .<span class="kw">await</span>;
+            <span class="prelude-val">Ok</span>(())
+        }
+        <span class="string">"start_cam" </span>=&gt; { <span class="comment">// This has not been tested
+            </span><span class="macro">println!</span>(<span class="string">"Opening camera"</span>);
+            front_cam().<span class="kw">await</span>;
+            bottom_cam().<span class="kw">await</span>;       
+            <span class="macro">println!</span>(<span class="string">"Opening camera"</span>);
             <span class="prelude-val">Ok</span>(())
         }
         <span class="comment">/*
