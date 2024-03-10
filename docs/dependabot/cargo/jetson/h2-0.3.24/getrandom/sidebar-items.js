@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["getrandom","getrandom_uninit"],"mod":["error","error_impls","imp","use_file","util","util_libc"],"struct":["Error"]};
