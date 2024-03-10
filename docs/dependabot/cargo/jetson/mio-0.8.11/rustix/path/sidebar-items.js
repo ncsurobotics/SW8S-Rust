@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["SMALL_PATH_BUFFER_SIZE"],"mod":["arg"],"trait":["Arg"]};
