@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Item"],"fn":["array","table","value"]};

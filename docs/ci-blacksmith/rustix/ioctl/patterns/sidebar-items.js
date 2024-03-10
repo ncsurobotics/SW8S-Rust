@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["BadOpcode","Getter","NoArg","NoneOpcode","ReadOpcode","ReadWriteOpcode","Setter","WriteOpcode"],"trait":["CompileTimeOpcode"]};

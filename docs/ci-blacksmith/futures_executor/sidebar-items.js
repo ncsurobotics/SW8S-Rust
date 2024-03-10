@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["block_on","block_on_stream","enter"],"mod":["enter","local_pool"],"struct":["BlockingStream","Enter","EnterError","LocalPool","LocalSpawner"]};
