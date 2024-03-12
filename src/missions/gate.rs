@@ -11,7 +11,7 @@ use crate::{
     vision::{
         gate_poles::{GatePoles, Target},
         nn_cv2::{OnnxModel, YoloClass},
-        Offset2D, VisualDetection,
+        DrawRect2d, Offset2D, VisualDetection,
     },
 };
 
@@ -21,7 +21,7 @@ use super::{
         ActionWhile, FirstValid, TupleSecond,
     },
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
-    basic::descend_and_go_forward,
+    basic::{descend_and_go_forward, NoOp},
     comms::StartBno055,
     movement::{CountFalse, CountTrue},
     vision::{DetectTarget, VisionNorm},
@@ -67,15 +67,9 @@ pub fn adjust_logic<
         TupleSecond::new(ActionConcurrent::new(
             act_nest!(
                 wrap_action(ActionConcurrent::new, FirstValid::new),
-                DetectTarget::new(Target::Earth),
-                DetectTarget::new(YoloClass {
-                    identifier: Target::Abydos,
-                    confidence: 1.0,
-                }),
-                DetectTarget::new(YoloClass {
-                    identifier: Target::LargeGate,
-                    confidence: 1.0,
-                }),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Earth),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Abydos),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::LargeGate),
             ),
             end_condition,
         )),

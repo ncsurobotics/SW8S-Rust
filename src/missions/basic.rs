@@ -115,44 +115,6 @@ pub fn gate_run_naive<
     )
 }
 
-pub fn gate_run_complex<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
->(
-    context: &Con,
-) -> impl ActionExec + '_ {
-    let depth: f32 = -1.0;
-
-    ActionSequence::new(
-        ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        ActionSequence::new(
-            ActionWhile::new(ActionChain::new(
-                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
-                    context,
-                    GatePoles::default(),
-                ),
-                TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovementAngle::new(context, depth),
-                    CountTrue::new(3),
-                )),
-            )),
-            ActionWhile::new(ActionChain::new(
-                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
-                    context,
-                    GatePoles::default(),
-                ),
-                TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovementAngle::new(context, depth),
-                    CountFalse::new(10),
-                )),
-            )),
-        ),
-    )
-}
-
 #[derive(Debug)]
 pub struct NoOp {}
 

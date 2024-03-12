@@ -65,7 +65,7 @@ where
                 .iter()
                 .for_each(|x| x.position().draw(&mut mat).unwrap());
             println!("Number of detects: {}", detections.len());
-            create_dir_all("/tmp/detect");
+            let _ = create_dir_all("/tmp/detect");
             imwrite(
                 &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
                 &mat,
