@@ -24,7 +24,7 @@ use super::{
     basic::descend_and_go_forward,
     comms::StartBno055,
     movement::{CountFalse, CountTrue},
-    vision::VisionNorm,
+    vision::{DetectTarget, VisionNorm},
 };
 
 pub fn gate_run_complex<

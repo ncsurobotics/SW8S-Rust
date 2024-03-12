@@ -1,8 +1,9 @@
-use std::marker::PhantomData;
+use std::fmt::Debug;
+use std::{iter::Sum, marker::PhantomData, ops::Div};
 
-use super::action::{Action, ActionExec};
+use super::action::{Action, ActionExec, ActionMod};
 use crate::vision::{Draw, Offset2D, RelPos, VisualDetection, VisualDetector};
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
 use async_trait::async_trait;
 use num_traits::{Float, FromPrimitive, Num};
 
@@ -164,12 +165,12 @@ where
 }
 
 #[derive(Debug)]
-pub struct DetectTarget<T, U> {
-    results: anyhow::Result<Vec<VisualDetection<T, U>>>,
+pub struct DetectTarget<T, U, V> {
+    results: anyhow::Result<Vec<VisualDetection<U, V>>>,
     target: T,
 }
 
-impl<T, U> DetectTarget<T, U> {
+impl<T, U, V> DetectTarget<T, U, V> {
     pub const fn new(target: T) -> Self {
         Self {
             results: Ok(vec![]),
@@ -178,38 +179,38 @@ impl<T, U> DetectTarget<T, U> {
     }
 }
 
-impl<T, U> Action for DetectTarget<T, U> {}
+impl<T, U, V> Action for DetectTarget<T, U, V> {}
 
 #[async_trait]
-impl<T: Send + Sync + PartialEq, U: Send + Sync + Clone + Sum<U> + Div<usize, Output = U>>
-    ActionExec for DetectTarget<T, U>
+impl<
+        T: Send + Sync + PartialEq,
+        U: Send + Sync + Clone + Into<T> + Debug,
+        V: Send + Sync + Debug + Clone,
+    > ActionExec for DetectTarget<T, U, V>
 {
-    type Output = anyhow::Result<U>;
+    type Output = anyhow::Result<Vec<VisualDetection<U, V>>>;
     async fn execute(&mut self) -> Self::Output {
         if let Ok(vals) = &self.results {
             let passing_vals: Vec<_> = vals
                 .iter()
-                .filter(|entry| entry.class() == &self.target)
+                .filter(|entry| <U as Into<T>>::into(entry.class().clone()) == self.target)
+                .cloned()
                 .collect();
             if !passing_vals.is_empty() {
-                Ok(passing_vals
-                    .iter()
-                    .map(|entry| entry.position().clone())
-                    .sum::<U>()
-                    / passing_vals.len())
+                Ok(passing_vals)
             } else {
                 bail!("No valid detections")
             }
         } else {
-            bail!("Empty results")
+            bail!("{}", self.results.as_ref().unwrap_err())
         }
     }
 }
 
-impl<T: Send + Sync + Clone, U: Send + Sync + Clone>
-    ActionMod<anyhow::Result<Vec<VisualDetection<T, U>>>> for DetectTarget<T, U>
+impl<T, U: Send + Sync + Clone, V: Send + Sync + Clone>
+    ActionMod<anyhow::Result<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
-    fn modify(&mut self, input: &anyhow::Result<Vec<VisualDetection<T, U>>>) {
+    fn modify(&mut self, input: &anyhow::Result<Vec<VisualDetection<U, V>>>) {
         self.results = input
             .as_ref()
             .map(|valid| valid.clone())
