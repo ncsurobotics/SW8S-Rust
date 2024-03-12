@@ -55,20 +55,36 @@ pub trait ActionMod<Input: Send + Sync>: Action {
  */
 #[macro_export]
 macro_rules! act_nest {
-    ($wrapper:expr, $action_l:expr, $action_r:expr) => {
+    ($wrapper:expr, $action_l:expr, $action_r:expr $(,)?) => {
         $wrapper($action_l, $action_r)
     };
-   ($wrapper:expr, $action_l:expr, $( $action_r:expr ),*) => {
+    ($wrapper:expr, $action_l:expr, $( $action_r:expr $(,)? ),+) => {
        $wrapper($action_l, act_nest!($wrapper, $(
                    $action_r
            ),+))
-   };
+    };
+}
+
+/**
+ * Produces a new function that puts `wrapper` around `wrapee`.
+ *
+ * Needed for act_nest! macros that want to combine `MetaAction::new` calls,
+ * since the recursive construction doesn't use identical values at each call site.
+ *
+ * e.g. `wrap_action(ActionConcurrent::new, FirstValid::new)` in order to run the
+ * nested actions concurrently, outputting the first valid return
+ */
+pub fn wrap_action<T, U, V, W, X: Fn(T, U) -> V, Y: Fn(V) -> W>(
+    wrapee: X,
+    wrapper: Y,
+) -> impl Fn(T, U) -> W {
+    move |val1: T, val2: U| wrapper(wrapee(val1, val2))
 }
 
 /**
  * An action that runs one of two actions depending on if its conditional reference is true or false.  
  */
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ActionConditional<V: Action, W: Action, X: Action> {
     condition: V,
     true_branch: W,
@@ -142,7 +158,7 @@ impl<
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /**
  * Action that runs two actions at the same time and exits both when one exits
  */
@@ -227,7 +243,7 @@ impl<V: Sync + Send, T: ActionExec<Output = V>, U: ActionExec<Output = V>> Actio
 /**
  * Run two actions at once, and only exit when all actions have exited.
  */
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DualAction<T: Action, U: Action> {
     first: T,
     second: U,
@@ -310,7 +326,7 @@ impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> 
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ActionChain<V: Action, W: Action> {
     first: V,
     second: W,
@@ -360,7 +376,7 @@ impl<
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ActionSequence<V, W> {
     first: V,
     second: W,
@@ -401,7 +417,7 @@ impl<X: Send + Sync, V: ActionExec, W: ActionExec<Output = X>> ActionExec for Ac
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ActionParallel<V: Action, W: Action> {
     first: Arc<Mutex<V>>,
     second: Arc<Mutex<W>>,
@@ -494,7 +510,7 @@ impl<
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ActionConcurrent<V: Action, W: Action> {
     first: V,
     second: W,
@@ -585,7 +601,7 @@ impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> 
 /**
  * An action that tries `count` times for a success
  */
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ActionUntil<T: Action> {
     action: T,
     limit: u32,
@@ -637,7 +653,7 @@ impl<U: Send + Sync, T: ActionExec<Output = Result<U>>> ActionExec for ActionUnt
 /**
  * An action that runs while true
  */
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ActionWhile<T: Action> {
     action: T,
 }
@@ -689,7 +705,7 @@ impl<U: Send + Sync, T: ActionExec<Output = Result<U>>> ActionExec for ActionWhi
 /**
  * Get second arg in action output
  */
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TupleSecond<T: Action> {
     action: T,
 }
@@ -726,7 +742,7 @@ impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send> ActionMod<Input> for
 /**
  * Return first valid response from block of actions.
  */
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FirstValid<T: Action> {
     action: T,
 }
@@ -739,6 +755,12 @@ impl<T: Action> Action for FirstValid<T> {}
 impl<T: Action> FirstValid<T> {
     pub const fn new(action: T) -> Self {
         Self { action }
+    }
+}
+
+impl<Input: Send + Sync, T: ActionMod<Input> + Sync + Send> ActionMod<Input> for FirstValid<T> {
+    fn modify(&mut self, input: &Input) {
+        self.action.modify(input);
     }
 }
 
