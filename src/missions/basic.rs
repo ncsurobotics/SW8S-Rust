@@ -2,14 +2,14 @@ use crate::vision::{gate_poles::GatePoles, nn_cv2::OnnxModel};
 
 use super::{
     action::{
-        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile, TupleSecond,
+        Action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence, ActionWhile,
+        TupleSecond,
     },
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     comms::StartBno055,
     meb::WaitArm,
     movement::{
-        AdjustMovement, AdjustMovementAngle, CountFalse, CountTrue, Descend, StraightMovement,
-        ZeroMovement,
+        AdjustMovementAngle, CountFalse, CountTrue, Descend, StraightMovement, ZeroMovement,
     },
     vision::VisionNormOffset,
 };
@@ -77,7 +77,7 @@ pub fn descend_and_go_forward<
     )
 }
 
-pub fn gate_run<
+pub fn gate_run_naive<
     Con: Send
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
@@ -113,4 +113,69 @@ pub fn gate_run<
             )),
         ),
     )
+}
+
+pub fn gate_run_complex<
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat,
+>(
+    context: &Con,
+) -> impl ActionExec + '_ {
+    let depth: f32 = -1.0;
+
+    ActionSequence::new(
+        ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
+        ActionSequence::new(
+            ActionWhile::new(ActionChain::new(
+                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
+                    context,
+                    GatePoles::default(),
+                ),
+                TupleSecond::new(ActionConcurrent::new(
+                    AdjustMovementAngle::new(context, depth),
+                    CountTrue::new(3),
+                )),
+            )),
+            ActionWhile::new(ActionChain::new(
+                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
+                    context,
+                    GatePoles::default(),
+                ),
+                TupleSecond::new(ActionConcurrent::new(
+                    AdjustMovementAngle::new(context, depth),
+                    CountFalse::new(10),
+                )),
+            )),
+        ),
+    )
+}
+
+#[derive(Debug)]
+pub struct NoOp {}
+
+impl Default for NoOp {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl NoOp {
+    pub fn new() -> Self {
+        NoOp {}
+    }
+}
+
+impl Action for NoOp {}
+
+impl<T: Send + Sync> ActionMod<T> for NoOp {
+    fn modify(&mut self, _input: &T) {}
+}
+
+#[async_trait]
+impl ActionExec for NoOp {
+    type Output = ();
+    async fn execute(&mut self) -> Self::Output {}
 }

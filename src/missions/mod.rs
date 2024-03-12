@@ -5,6 +5,7 @@ pub mod buoy_circle;
 pub mod buoy_hit;
 pub mod comms;
 pub mod example;
+pub mod gate;
 pub mod graph;
 pub mod meb;
 pub mod movement;

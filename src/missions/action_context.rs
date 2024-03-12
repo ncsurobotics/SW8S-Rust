@@ -32,6 +32,7 @@ pub trait GetMainElectronicsBoard: Send + Sync {
 pub trait GetFrontCamMat {
     async fn get_front_camera_mat(&self) -> Mat;
     async fn get_desired_buoy_gate(&self) -> Target;
+    async fn set_desired_buoy_gate(&mut self, value: Target) -> &Self;
 }
 
 /**
@@ -98,6 +99,10 @@ impl<T: AsyncWriteExt + Unpin + Send> GetFrontCamMat for FullActionContext<'_, T
     async fn get_desired_buoy_gate(&self) -> Target {
         let res = self.desired_buoy_target.read().await;
         (*res).clone()
+    }
+    async fn set_desired_buoy_gate(&mut self, value: Target) -> &Self {
+        *self.desired_buoy_target.write().await = value;
+        self
     }
 }
 

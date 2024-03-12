@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use core::fmt::Debug;
 use futures::FutureExt;
 use num_traits::Pow;
-use opencv::core::abs;
+
 use tokio::io::AsyncWrite;
 use tokio::io::WriteHalf;
 use tokio::sync::OnceCell;
@@ -380,7 +380,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for CenterMovement<
 
         let mut x = self.x.pow(FACTOR);
         let mut y = self.y.pow(FACTOR);
-        let mut yaw = self.yaw;
+        let yaw = self.yaw;
 
         if x < MIN_SPEED {
             x = 0.0;

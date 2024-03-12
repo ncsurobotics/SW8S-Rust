@@ -425,6 +425,6 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
     }
 
     pub async fn get_initial_angles(&self) -> Option<Angles> {
-        self.initial_angles.lock().await.clone()
+        *self.initial_angles.lock().await
     }
 }

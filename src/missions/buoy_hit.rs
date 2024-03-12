@@ -1,4 +1,4 @@
-use crate::vision::{buoy::{self, Buoy}, nn_cv2::OnnxModel, VisualDetector};
+use crate::vision::{buoy::Buoy, nn_cv2::OnnxModel, VisualDetector};
 
 use super::{
     action::{Action, ActionExec, ActionSequence, ActionWhile},
@@ -26,33 +26,32 @@ pub struct DriveToBuoyVision<'a, T> {
 
 pub struct FindBuoy<'a, T> {
     context: &'a T,
-    buoy_model: Buoy<OnnxModel>
+    buoy_model: Buoy<OnnxModel>,
 }
 
-pub struct DriveToBuoy <'a, T> {
+pub struct DriveToBuoy<'a, T> {
     context: &'a T,
     target_depth: f32,
     forward_power: f32,
     k_p: f32,
 }
 
-
 impl<'a, T> FindBuoy<'a, T> {
     pub fn new(context: &'a T, buoy_model: Buoy<OnnxModel>) -> Self {
         FindBuoy {
             context,
-            buoy_model
+            buoy_model,
         }
     }
 }
 
-impl<'a, T> DriveToBuoy <'a, T> {
+impl<'a, T> DriveToBuoy<'a, T> {
     pub fn new(context: &'a T, target_depth: f32, forward_power: f32) -> Self {
         DriveToBuoy {
             context,
             target_depth,
             forward_power,
-            k_p: 0.3
+            k_p: 0.3,
         }
     }
 }
@@ -76,7 +75,7 @@ impl<T> Action for FindBuoy<'_, T> {}
 
 #[async_trait]
 impl<T> ActionExec for FindBuoy<'_, T>
-where 
+where
     T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
 {
     type Output = Result<()>;
@@ -87,10 +86,12 @@ where
         let model_acquisition = self.buoy_model.detect(&camera_aquisition.await);
         let detected = match model_acquisition {
             Ok(acquisition_vec) if !acquisition_vec.is_empty() => {
-               acquisition_vec.iter().find(| &result| *result.class()==class_of_interest);
-            },
+                acquisition_vec
+                    .iter()
+                    .find(|&result| *result.class() == class_of_interest);
+            }
             Ok(_) => todo!(),
-            Err(_) => todo!()
+            Err(_) => todo!(),
         };
         return Ok(detected);
     }
