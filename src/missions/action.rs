@@ -425,17 +425,16 @@ pub struct ActionParallel<V: Action, W: Action> {
 
 impl<V: Action, W: Action> Action for ActionParallel<V, W> {
     fn dot_string(&self, parent: &str) -> DotString {
-        let first_str = self
-            .first
-            .blocking_lock()
-            .dot_string(stripped_type::<Self>());
-        let second_str = self
-            .second
-            .blocking_lock()
-            .dot_string(stripped_type::<Self>());
+        let mut self_type = stripped_type::<Self>().to_string();
+        if parent == "FirstValid" {
+            self_type = self_type + "_" + parent;
+        }
+
+        let first_str = self.first.blocking_lock().dot_string(&self_type);
+        let second_str = self.second.blocking_lock().dot_string(&self_type);
         let (par_head, par_tail) = (Uuid::new_v4(), Uuid::new_v4());
 
-        if parent == stripped_type::<Self>() {
+        if parent.contains(stripped_type::<Self>()) {
             DotString {
                 head_ids: [first_str.head_ids, second_str.head_ids]
                     .into_iter()
@@ -448,11 +447,21 @@ impl<V: Action, W: Action> Action for ActionParallel<V, W> {
                 body: first_str.body + &second_str.body,
             }
         } else {
+            let mut name = "Parallel";
+            let mut color = "blue";
+            if parent == "FirstValid" {
+                name = "FirstValid (Parallel)";
+                color = "darkgreen";
+            }
+
             let mut body_str = format!(
-            "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Parallel\", shape = box, fontcolor = blue, style = dashed];\n",
-            Uuid::new_v4(),
-            par_head
-        ) + &format!("{}\" [label = \"Collect\", shape = box, fontcolor = blue, style = dashed];\n", par_tail) +
+                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {};\n\"{}\" [label = \"{}\", shape = box, fontcolor = {}, style = dashed];\n",
+                Uuid::new_v4(),
+                color,
+                par_head,
+                name,
+                color,
+            ) + &format!("{}\" [label = \"Collect\", shape = box, fontcolor = {}, style = dashed];\n", par_tail, color) +
             &first_str.body
             + &second_str.body;
 
@@ -518,11 +527,16 @@ pub struct ActionConcurrent<V: Action, W: Action> {
 
 impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
     fn dot_string(&self, parent: &str) -> DotString {
-        let first_str = self.first.dot_string(stripped_type::<Self>());
-        let second_str = self.second.dot_string(stripped_type::<Self>());
+        let mut self_type = stripped_type::<Self>().to_string();
+        if parent == "FirstValid" {
+            self_type = self_type + "_" + parent;
+        }
+
+        let first_str = self.first.dot_string(&self_type);
+        let second_str = self.second.dot_string(&self_type);
         let (concurrent_head, concurrent_tail) = (Uuid::new_v4(), Uuid::new_v4());
 
-        if parent == stripped_type::<Self>() {
+        if parent.contains(stripped_type::<Self>()) {
             DotString {
                 head_ids: [first_str.head_ids, second_str.head_ids]
                     .into_iter()
@@ -535,11 +549,21 @@ impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
                 body: first_str.body + &second_str.body,
             }
         } else {
+            let mut name = "Concurrent";
+            let mut color = "blue";
+            if parent == "FirstValid" {
+                name = "FirstValid (Concurrent)";
+                color = "darkgreen";
+            }
+
             let mut body_str = format!(
-            "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Concurrent\", shape = box, fontcolor = blue, style = dashed];\n",
-            Uuid::new_v4(),
-            concurrent_head
-        );
+                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {};\n\"{}\" [label = \"{}\", shape = box, fontcolor = {}, style = dashed];\n",
+                Uuid::new_v4(),
+                color,
+                concurrent_head,
+                name,
+                color,
+            );
 
             body_str.push_str(&(first_str.body + &second_str.body));
             vec![first_str.head_ids, second_str.head_ids]
@@ -550,7 +574,7 @@ impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
                 });
 
             let tail_ids = if parent != "TupleSecond" {
-                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = blue, style = dashed];\n", concurrent_tail)));
+                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = {}, style = dashed];\n", concurrent_tail, color)));
                 vec![first_str.tail_ids, second_str.tail_ids.clone()]
                     .into_iter()
                     .flatten()
@@ -747,7 +771,15 @@ pub struct FirstValid<T: Action> {
     action: T,
 }
 
-impl<T: Action> Action for FirstValid<T> {}
+impl<T: Action> Action for FirstValid<T> {
+    fn dot_string(&self, parent: &str) -> DotString {
+        let mut self_type = stripped_type::<Self>();
+        if parent.contains(self_type) {
+            self_type = parent;
+        }
+        self.action.dot_string(self_type)
+    }
+}
 
 /**
  * Implementation for the FirstValid struct.  
