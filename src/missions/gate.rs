@@ -67,10 +67,7 @@ pub fn adjust_logic<
         TupleSecond::new(ActionConcurrent::new(
             act_nest!(
                 wrap_action(ActionConcurrent::new, FirstValid::new),
-                DetectTarget::new(YoloClass {
-                    identifier: Target::Earth,
-                    confidence: 1.0,
-                }),
+                DetectTarget::new(Target::Earth),
                 DetectTarget::new(YoloClass {
                     identifier: Target::Abydos,
                     confidence: 1.0,
