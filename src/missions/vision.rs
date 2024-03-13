@@ -4,7 +4,7 @@ use std::{iter::Sum, marker::PhantomData};
 use super::action::{Action, ActionExec, ActionMod};
 use super::graph::DotString;
 use crate::vision::{Draw, Offset2D, RelPos, VisualDetection, VisualDetector};
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use num_traits::{Float, FromPrimitive, Num};
 use uuid::Uuid;
@@ -229,6 +229,6 @@ impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
     ActionMod<Option<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
     fn modify(&mut self, input: &Option<Vec<VisualDetection<U, V>>>) {
-        self.results = input.as_ref().map(|valid| valid.clone());
+        self.results = input.as_ref().cloned();
     }
 }

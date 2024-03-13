@@ -7,12 +7,14 @@ use async_trait::async_trait;
 use core::fmt::Debug;
 use futures::FutureExt;
 use num_traits::Pow;
+use uuid::Uuid;
 
 use tokio::io::AsyncWrite;
 use tokio::io::WriteHalf;
 use tokio::sync::OnceCell;
 use tokio_serial::SerialStream;
 
+use super::graph::DotString;
 use super::{
     action::{Action, ActionExec, ActionMod},
     action_context::GetControlBoard,
@@ -406,7 +408,19 @@ impl CountTrue {
     }
 }
 
-impl Action for CountTrue {}
+impl Action for CountTrue {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let id = Uuid::new_v4();
+        DotString {
+            head_ids: vec![id],
+            tail_ids: vec![id],
+            body: format!(
+                "\"{}\" [label = \"Consecutive True < {}\", margin = 0];\n",
+                id, self.target
+            ),
+        }
+    }
+}
 
 impl<T: Send + Sync> ActionMod<Result<T>> for CountTrue {
     fn modify(&mut self, input: &Result<T>) {
@@ -418,7 +432,6 @@ impl<T: Send + Sync> ActionMod<Result<T>> for CountTrue {
         } else {
             self.count = 0;
         }
-        println!("COUNTING TRUE: {} ? {}", self.count, self.target);
     }
 }
 
@@ -432,16 +445,13 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
         } else {
             self.count = 0;
         }
-        println!("COUNTING TRUE: {} ? {}", self.count, self.target);
     }
 }
 
 #[async_trait]
 impl ActionExec<Result<()>> for CountTrue {
     async fn execute(&mut self) -> Result<()> {
-        println!("CHECKING TRUE: {} ? {}", self.count, self.target);
         if self.count < self.target {
-            println!("Under count");
             Ok(())
         } else {
             Err(anyhow!("At count"))
@@ -461,7 +471,19 @@ impl CountFalse {
     }
 }
 
-impl Action for CountFalse {}
+impl Action for CountFalse {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let id = Uuid::new_v4();
+        DotString {
+            head_ids: vec![id],
+            tail_ids: vec![id],
+            body: format!(
+                "\"{}\" [label = \"Consecutive False < {}\", margin = 0];\n",
+                id, self.target
+            ),
+        }
+    }
+}
 
 impl<T: Send + Sync> ActionMod<Result<T>> for CountFalse {
     fn modify(&mut self, input: &Result<T>) {
@@ -473,7 +495,6 @@ impl<T: Send + Sync> ActionMod<Result<T>> for CountFalse {
         } else {
             self.count = 0;
         }
-        println!("COUNTING FALSE: {} ? {}", self.count, self.target);
     }
 }
 
@@ -487,16 +508,13 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
         } else {
             self.count = 0;
         }
-        println!("COUNTING FALSE: {} ? {}", self.count, self.target);
     }
 }
 
 #[async_trait]
 impl ActionExec<Result<()>> for CountFalse {
     async fn execute(&mut self) -> Result<()> {
-        println!("CHECKING FALSE: {} ? {}", self.count, self.target);
         if self.count < self.target {
-            println!("Under count");
             Ok(())
         } else {
             Err(anyhow!("At count"))

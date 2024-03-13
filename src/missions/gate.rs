@@ -13,10 +13,10 @@ use crate::{
 use super::{
     action::{
         wrap_action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence,
-        ActionWhile, FirstValid, TupleSecond,
+        ActionWhile, FirstValid,
     },
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
-    basic::{descend_and_go_forward, NoOp},
+    basic::descend_and_go_forward,
     comms::StartBno055,
     movement::{CountFalse, CountTrue},
     vision::{DetectTarget, VisionNorm},

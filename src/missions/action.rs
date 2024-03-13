@@ -389,10 +389,15 @@ impl<T, V: Action, W: Action> Action for ActionSequence<T, V, W> {
         let first_str = self.first.dot_string(stripped_type::<Self>());
         let second_str = self.second.dot_string(stripped_type::<Self>());
 
+        let mut label = "";
+        if stripped_type::<V>() == "ActionWhile" {
+            label = "[label = \"False\"]";
+        }
+
         let mut body_str = first_str.body + &second_str.body;
         for tail in &first_str.tail_ids {
             for head in &second_str.head_ids {
-                body_str.push_str(&format!("\"{}\" -> \"{}\";\n", tail, head))
+                body_str.push_str(&format!("\"{}\" -> \"{}\" {};\n", tail, head, label))
             }
         }
 

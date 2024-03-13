@@ -137,7 +137,7 @@ impl GetFrontCamMat for EmptyActionContext {
     async fn get_desired_buoy_gate(&self) -> Target {
         todo!()
     }
-    async fn set_desired_buoy_gate(&mut self, value: Target) -> &Self {
+    async fn set_desired_buoy_gate(&mut self, _value: Target) -> &Self {
         todo!()
     }
 }

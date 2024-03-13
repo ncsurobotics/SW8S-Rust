@@ -7,7 +7,7 @@ mod graphing {
     use std::fs::{create_dir_all, read_dir, read_to_string, write};
     use std::path::{Path, PathBuf};
     use syn::fold::{fold_item_fn, fold_use_path, Fold};
-    use syn::punctuated::Punctuated;
+
     use syn::{
         parse_file, Ident, ItemFn, ReturnType, Token, Type, TypeParamBound, UsePath, UseTree,
     };
