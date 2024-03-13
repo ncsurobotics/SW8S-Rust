@@ -1,16 +1,16 @@
 digraph G {
-splines = true;
-nodesep = 1.0;
-bgcolor = "none";
-"761db725-eb0f-49ca-b9f1-0582b1b487a5" [label = "WaitArm", margin = 0];
-"1f85267b-d9b6-46ea-a8c4-b37ff29c1a0f" [label = "Descend", margin = 0];
-"74bc59ef-006c-4167-8e34-762e55c9bcd9" [label = "DelayAction", margin = 0];
-"1f85267b-d9b6-46ea-a8c4-b37ff29c1a0f" -> "74bc59ef-006c-4167-8e34-762e55c9bcd9";
-"7e4acb7c-452a-4eeb-a950-b6fb4114d08c" [label = "StraightMovement", margin = 0];
-"50953452-8921-4569-adef-2b37453b8727" [label = "DelayAction", margin = 0];
-"7e4acb7c-452a-4eeb-a950-b6fb4114d08c" -> "50953452-8921-4569-adef-2b37453b8727";
-"fd0a79f5-05cc-493d-9359-6978dcd822ba" [label = "ZeroMovement", margin = 0];
-"50953452-8921-4569-adef-2b37453b8727" -> "fd0a79f5-05cc-493d-9359-6978dcd822ba";
-"74bc59ef-006c-4167-8e34-762e55c9bcd9" -> "7e4acb7c-452a-4eeb-a950-b6fb4114d08c";
-"761db725-eb0f-49ca-b9f1-0582b1b487a5" -> "1f85267b-d9b6-46ea-a8c4-b37ff29c1a0f";
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	"1083b887-8341-400d-ae51-e206d4f4942a" -> "7f877c36-1d2b-4b29-bd06-17edeb91126c" ;
+	"9c3657ae-4515-4742-832d-d370f98fb42c" -> "3659bbed-4203-48f2-abe0-2e8e61763ffe" ;
+	"3659bbed-4203-48f2-abe0-2e8e61763ffe" -> "79541dae-18fc-4eb2-a7e1-e093f0f0fb5b" ;
+	"7f877c36-1d2b-4b29-bd06-17edeb91126c" -> "9c3657ae-4515-4742-832d-d370f98fb42c" ;
+	"e3f6c1bd-7d59-4ca5-895f-1c6b0ffa32ea" -> "1083b887-8341-400d-ae51-e206d4f4942a" ;
+	"e3f6c1bd-7d59-4ca5-895f-1c6b0ffa32ea" [label = "WaitArm", margin = 0];
+	"1083b887-8341-400d-ae51-e206d4f4942a" [label = "Descend", margin = 0];
+	"7f877c36-1d2b-4b29-bd06-17edeb91126c" [label = "DelayAction", margin = 0];
+	"9c3657ae-4515-4742-832d-d370f98fb42c" [label = "StraightMovement", margin = 0];
+	"3659bbed-4203-48f2-abe0-2e8e61763ffe" [label = "DelayAction", margin = 0];
+	"79541dae-18fc-4eb2-a7e1-e093f0f0fb5b" [label = "ZeroMovement", margin = 0];
 }
