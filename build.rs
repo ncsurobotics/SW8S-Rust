@@ -34,17 +34,19 @@ mod graphing {
                         if let TypeParamBound::Trait(ref mut t) = bound {
                             t.path.segments.iter_mut().for_each(|seg| {
                                 if seg.ident == "ActionExec" {
-                                    seg.ident = Ident::new("GraphAction", seg.ident.span());
+                                    seg.ident = Ident::new("GraphActionExec", seg.ident.span());
 
                                     if j.sig.inputs.len() == 1 {
                                         self.actions.push(j.sig.ident.to_string());
                                     }
 
+                                    /*
                                     j.sig.generics.type_params_mut().for_each(|param| {
                                         if param.ident == "Con" {
                                             param.bounds = Punctuated::new()
                                         }
                                     });
+                                    */
                                 }
                             });
                         }
@@ -62,9 +64,9 @@ mod graphing {
             match j.ident.to_string().as_str() {
                 "crate" => j.ident = Ident::new("sw8s_rust_lib", j.ident.span()),
                 "super" => {
-                    j.ident = Ident::new("crate", j.ident.span());
+                    j.ident = Ident::new("sw8s_rust_lib", j.ident.span());
                     j.tree = Box::new(UseTree::Path(UsePath {
-                        ident: Ident::new("generated_actions", Span::call_site()),
+                        ident: Ident::new("missions", Span::call_site()),
                         colon2_token: Token![::](Span::call_site()),
                         tree: j.tree,
                     }));
@@ -123,14 +125,14 @@ mod graphing {
             })
             .for_each(|(path, file, actions)| {
                 let actions_str =
-                    "pub fn graph_actions<T>(context: &T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
+                    "pub fn graph_actions<T: GraphActionContext::GetMainElectronicsBoard + GraphActionContext::GetControlBoard<tokio::io::WriteHalf<tokio_serial::SerialStream>> + GraphActionContext::GetFrontCamMat + Send + Sync + std::marker::Unpin>(context: &T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
                         .to_string()
                         + &actions
                             .into_iter()
                             .fold("".to_string(), |acc, x| acc + &format!("(\"{x}\".to_string(), Box::new({x}(context))),"))
                         + "]}";
                 let file_contents =
-                    quote! { use crate::generated_actions::action::Action as GraphAction; #file };
+                    quote! { use sw8s_rust_lib::missions::action::Action as GraphAction; use sw8s_rust_lib::missions::action::ActionExec as GraphActionExec; use sw8s_rust_lib::missions::action_context as GraphActionContext; #file };
                 let output_loc = out_path.join(path.strip_prefix::<PathBuf>("src/missions".into()).unwrap());
                 create_dir_all(output_loc.parent().unwrap()).unwrap();
                 write(

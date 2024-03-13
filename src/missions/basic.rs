@@ -29,9 +29,8 @@ pub struct DelayAction {
 impl Action for DelayAction {}
 
 #[async_trait]
-impl ActionExec for DelayAction {
-    type Output = ();
-    async fn execute(&mut self) -> Self::Output {
+impl ActionExec<()> for DelayAction {
+    async fn execute(&mut self) -> () {
         println!("BEGIN sleep for {} seconds", self.delay);
         sleep(Duration::from_secs_f32(self.delay)).await;
         println!("END sleep for {} seconds", self.delay);
@@ -50,10 +49,15 @@ impl DelayAction {
  *
  **/
 pub fn descend_and_go_forward<
+    'a,
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard,
+    T: Send + Sync,
 >(
-    context: &Con,
-) -> impl ActionExec + '_ {
+    context: &'a Con,
+) -> impl ActionExec<T> + 'a
+where
+    ZeroMovement<'a, Con>: ActionExec<T>,
+{
     let depth: f32 = -1.0;
 
     // time in seconds that each action will wait until before continuing onto the next action.
@@ -85,7 +89,7 @@ pub fn gate_run_naive<
         + GetFrontCamMat,
 >(
     context: &Con,
-) -> impl ActionExec + '_ {
+) -> impl ActionExec<()> + '_ {
     let depth: f32 = -1.0;
 
     ActionSequence::new(
@@ -137,7 +141,6 @@ impl<T: Send + Sync> ActionMod<T> for NoOp {
 }
 
 #[async_trait]
-impl ActionExec for NoOp {
-    type Output = ();
-    async fn execute(&mut self) -> Self::Output {}
+impl ActionExec<()> for NoOp {
+    async fn execute(&mut self) -> () {}
 }

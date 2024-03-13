@@ -21,10 +21,15 @@ use super::{
 /// Runs two nested actions in order: Waiting for arm and descending in
 /// parallel, followed by waiting for arm and descending concurrently.
 pub fn initial_descent<
+    'a,
     Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
+    T: Send + Sync + 'a,
 >(
-    context: &Con,
-) -> impl ActionExec + '_ {
+    context: &'a Con,
+) -> impl ActionExec<T> + 'a
+where
+    WaitArm<'a, Con>: ActionExec<T>,
+{
     ActionSequence::new(
         ActionConcurrent::new(WaitArm::new(context), Descend::new(context, -0.5)),
         WaitArm::new(context), //ActionConcurrent::new(WaitArm::new(context), Descend::new(context, -1.0)),
@@ -43,6 +48,7 @@ pub fn always_wait<T: Send + Sync>(context: &T) -> impl Action + '_ {
     )
 }
 
+/*
 pub fn sequence_conditional<T: Send + Sync>(context: &T) -> impl Action + '_ {
     ActionSequence::new(
         ActionSequence::new(WaitArm::new(context), Descend::new(context, -1.0)),
@@ -53,6 +59,7 @@ pub fn sequence_conditional<T: Send + Sync>(context: &T) -> impl Action + '_ {
         ),
     )
 }
+*/
 
 pub fn race_conditional<T: Send + Sync>(context: &T) -> impl Action + '_ {
     ActionConditional::new(
@@ -64,10 +71,15 @@ pub fn race_conditional<T: Send + Sync>(context: &T) -> impl Action + '_ {
 
 /// Function to demonstrate use of act_nest
 pub fn race_many<
+    'a,
     Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
+    T: Send + Sync + 'a,
 >(
-    _context: &Con,
-) -> impl ActionExec + '_ {
+    _context: &'a Con,
+) -> impl ActionExec<T> + 'a
+where
+    AlwaysTrue: ActionExec<T>,
+{
     ActionSequence::new(
         act_nest!(
             RaceAction::new,
@@ -102,9 +114,8 @@ impl<T: Send + Sync> ActionMod<T> for AlwaysTrue {
 }
 
 #[async_trait]
-impl ActionExec for AlwaysTrue {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
+impl ActionExec<Result<()>> for AlwaysTrue {
+    async fn execute(&mut self) -> Result<()> {
         Ok(())
     }
 }

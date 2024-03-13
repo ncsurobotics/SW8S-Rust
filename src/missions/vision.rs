@@ -42,12 +42,11 @@ impl<
         T: GetFrontCamMat + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
-    > ActionExec for VisionNormOffset<'_, T, U, V>
+    > ActionExec<Result<Offset2D<V>>> for VisionNormOffset<'_, T, U, V>
 where
     U::Position: RelPos<Number = V> + Draw,
 {
-    type Output = Result<Offset2D<V>>;
-    async fn execute(&mut self) -> Self::Output {
+    async fn execute(&mut self) -> Result<Offset2D<V>> {
         #[cfg(feature = "logging")]
         {
             println!("Running detection...");
@@ -119,13 +118,13 @@ impl<
         T: GetFrontCamMat + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
-    > ActionExec for VisionNorm<'_, T, U, V>
+    > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>>>
+    for VisionNorm<'_, T, U, V>
 where
     U::Position: RelPos<Number = V> + Draw + Send + Sync,
     U::ClassEnum: Send + Sync,
 {
-    type Output = Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>>;
-    async fn execute(&mut self) -> Self::Output {
+    async fn execute(&mut self) -> Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>> {
         #[cfg(feature = "logging")]
         {
             println!("Running detection...");
@@ -166,14 +165,14 @@ where
 
 #[derive(Debug)]
 pub struct DetectTarget<T, U, V> {
-    results: anyhow::Result<Vec<VisualDetection<U, V>>>,
+    results: Option<Vec<VisualDetection<U, V>>>,
     target: T,
 }
 
 impl<T, U, V> DetectTarget<T, U, V> {
     pub const fn new(target: T) -> Self {
         Self {
-            results: Ok(vec![]),
+            results: None,
             target,
         }
     }
@@ -198,23 +197,22 @@ impl<
         T: Send + Sync + PartialEq + Display,
         U: Send + Sync + Clone + Into<T> + Debug,
         V: Send + Sync + Debug + Clone,
-    > ActionExec for DetectTarget<T, U, V>
+    > ActionExec<Option<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
-    type Output = anyhow::Result<Vec<VisualDetection<U, V>>>;
-    async fn execute(&mut self) -> Self::Output {
-        if let Ok(vals) = &self.results {
+    async fn execute(&mut self) -> Option<Vec<VisualDetection<U, V>>> {
+        if let Some(vals) = &self.results {
             let passing_vals: Vec<_> = vals
                 .iter()
                 .filter(|entry| <U as Into<T>>::into(entry.class().clone()) == self.target)
                 .cloned()
                 .collect();
             if !passing_vals.is_empty() {
-                Ok(passing_vals)
+                Some(passing_vals)
             } else {
-                bail!("No valid detections")
+                None
             }
         } else {
-            bail!("{}", self.results.as_ref().unwrap_err())
+            None
         }
     }
 }
@@ -223,9 +221,14 @@ impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
     ActionMod<anyhow::Result<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
     fn modify(&mut self, input: &anyhow::Result<Vec<VisualDetection<U, V>>>) {
-        self.results = input
-            .as_ref()
-            .map(|valid| valid.clone())
-            .map_err(|invalid| anyhow!("{}", invalid));
+        self.results = input.as_ref().map(|valid| valid.clone()).ok()
+    }
+}
+
+impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
+    ActionMod<Option<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
+{
+    fn modify(&mut self, input: &Option<Vec<VisualDetection<U, V>>>) {
+        self.results = input.as_ref().map(|valid| valid.clone());
     }
 }

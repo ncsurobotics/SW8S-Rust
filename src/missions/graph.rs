@@ -41,9 +41,7 @@ impl DotString {
 
 /// Generate the .dot (graphviz) file to draw the action
 pub fn dot_file<T: ?Sized + Action>(act: &T) -> String {
-    let header =
-        "digraph G {\nsplines = true;\nnodesep = 1.0;\nbgcolor = \"none\"\nconcentrate=true;\n"
-            .to_string();
+    let header = "digraph G {\nsplines = true;\nnodesep = 1.0;\nbgcolor = \"none\"\n".to_string();
     let full = header + &act.dot_string("").body + "}";
     indent_lines(reorder_dot_strings(&full.split('\n').collect_vec()).lines())
 }

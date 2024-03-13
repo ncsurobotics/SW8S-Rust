@@ -1,7 +1,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
-use std::{sync::Arc, thread};
+use std::{marker::PhantomData, sync::Arc, thread};
 use tokio::{join, runtime::Handle, sync::Mutex};
 use uuid::Uuid;
 
@@ -30,13 +30,16 @@ pub trait Action {
     }
 }
 
+pub trait ActionIgnoredGeneric<T>: Action {}
+
+impl<T, U: Action> ActionIgnoredGeneric<T> for U {}
+
 /**
  * A trait for an action that can be executed.
  */
 #[async_trait]
-pub trait ActionExec: Action + Send + Sync {
-    type Output: Send + Sync;
-    async fn execute(&mut self) -> Self::Output;
+pub trait ActionExec<T: Send + Sync>: Action + Send + Sync {
+    async fn execute(&mut self) -> T;
 }
 
 /**
@@ -141,15 +144,10 @@ impl<V: Action, W: Action, X: Action> ActionConditional<V, W, X> {
  * Implement the conditional logic for the ActionConditional action.
  */
 #[async_trait]
-impl<
-        U: Send + Sync,
-        V: ActionExec<Output = bool>,
-        W: ActionExec<Output = U>,
-        X: ActionExec<Output = U>,
-    > ActionExec for ActionConditional<V, W, X>
+impl<U: Send + Sync, V: ActionExec<bool>, W: ActionExec<U>, X: ActionExec<U>> ActionExec<U>
+    for ActionConditional<V, W, X>
 {
-    type Output = U;
-    async fn execute(&mut self) -> Self::Output {
+    async fn execute(&mut self) -> U {
         if self.condition.execute().await {
             self.true_branch.execute().await
         } else {
@@ -228,11 +226,8 @@ impl<T: Action, U: Action> RaceAction<T, U> {
  * Implement race logic where both actions are scheduled until one finishes.
  */
 #[async_trait]
-impl<V: Sync + Send, T: ActionExec<Output = V>, U: ActionExec<Output = V>> ActionExec
-    for RaceAction<T, U>
-{
-    type Output = V;
-    async fn execute(&mut self) -> Self::Output {
+impl<V: Sync + Send, T: ActionExec<V>, U: ActionExec<V>> ActionExec<V> for RaceAction<T, U> {
+    async fn execute(&mut self) -> V {
         tokio::select! {
             res = self.first.execute() => res,
             res = self.second.execute() => res
@@ -308,11 +303,8 @@ impl<T: Action, U: Action> DualAction<T, U> {
  * Implement multiple logic where both actions are scheduled until both finish.
  */
 #[async_trait]
-impl<V: Send + Sync, T: ActionExec<Output = V>, U: ActionExec<Output = V>> ActionExec
-    for DualAction<T, U>
-{
-    type Output = (V, V);
-    async fn execute(&mut self) -> Self::Output {
+impl<V: Send + Sync, T: ActionExec<V>, U: ActionExec<V>> ActionExec<(V, V)> for DualAction<T, U> {
+    async fn execute(&mut self) -> (V, V) {
         tokio::join!(self.first.execute(), self.second.execute())
     }
 }
@@ -327,12 +319,13 @@ impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> 
 }
 
 #[derive(Debug, Clone)]
-pub struct ActionChain<V: Action, W: Action> {
+pub struct ActionChain<T, V: Action, W: Action> {
     first: V,
     second: W,
+    _phantom_t: PhantomData<T>,
 }
 
-impl<V: Action, W: Action> Action for ActionChain<V, W> {
+impl<T, V: Action, W: Action> Action for ActionChain<T, V, W> {
     fn dot_string(&self, _parent: &str) -> DotString {
         let first_str = self.first.dot_string(stripped_type::<Self>());
         let second_str = self.second.dot_string(stripped_type::<Self>());
@@ -355,34 +348,43 @@ impl<V: Action, W: Action> Action for ActionChain<V, W> {
     }
 }
 
-impl<V: Action, W: Action> ActionChain<V, W> {
+impl<T, V: Action, W: Action> ActionChain<T, V, W> {
     pub const fn new(first: V, second: W) -> Self {
-        Self { first, second }
+        Self {
+            first,
+            second,
+            _phantom_t: PhantomData,
+        }
     }
 }
 
 #[async_trait]
-impl<
-        T: Send + Sync,
-        U: Send + Sync,
-        V: ActionExec<Output = T>,
-        W: ActionMod<T> + ActionExec<Output = U>,
-    > ActionExec for ActionChain<V, W>
+impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionMod<T> + ActionExec<U>>
+    ActionExec<U> for ActionChain<T, V, W>
 {
-    type Output = U;
-    async fn execute(&mut self) -> Self::Output {
+    async fn execute(&mut self) -> U {
+        let _: T = self.first.execute().await;
         self.second.modify(&self.first.execute().await);
         self.second.execute().await
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct ActionSequence<V, W> {
-    first: V,
-    second: W,
+impl<Input: Send + Sync, T, U: ActionMod<Input>, V: Action> ActionMod<Input>
+    for ActionChain<T, U, V>
+{
+    fn modify(&mut self, input: &Input) {
+        self.first.modify(input);
+    }
 }
 
-impl<V: Action, W: Action> Action for ActionSequence<V, W> {
+#[derive(Debug, Clone)]
+pub struct ActionSequence<T, V, W> {
+    first: V,
+    second: W,
+    _phantom_t: PhantomData<T>,
+}
+
+impl<T, V: Action, W: Action> Action for ActionSequence<T, V, W> {
     fn dot_string(&self, _parent: &str) -> DotString {
         let first_str = self.first.dot_string(stripped_type::<Self>());
         let second_str = self.second.dot_string(stripped_type::<Self>());
@@ -402,16 +404,21 @@ impl<V: Action, W: Action> Action for ActionSequence<V, W> {
     }
 }
 
-impl<V, W> ActionSequence<V, W> {
+impl<T, V, W> ActionSequence<T, V, W> {
     pub const fn new(first: V, second: W) -> Self {
-        Self { first, second }
+        Self {
+            first,
+            second,
+            _phantom_t: PhantomData,
+        }
     }
 }
 
 #[async_trait]
-impl<X: Send + Sync, V: ActionExec, W: ActionExec<Output = X>> ActionExec for ActionSequence<V, W> {
-    type Output = X;
-    async fn execute(&mut self) -> Self::Output {
+impl<T: Send + Sync, X: Send + Sync, V: ActionExec<T>, W: ActionExec<X>> ActionExec<X>
+    for ActionSequence<T, V, W>
+{
+    async fn execute(&mut self) -> X {
         self.first.execute().await;
         self.second.execute().await
     }
@@ -426,8 +433,9 @@ pub struct ActionParallel<V: Action, W: Action> {
 impl<V: Action, W: Action> Action for ActionParallel<V, W> {
     fn dot_string(&self, parent: &str) -> DotString {
         let mut self_type = stripped_type::<Self>().to_string();
-        if parent == "FirstValid" {
-            self_type = self_type + "_" + parent;
+        if parent.contains("FirstValid") && (parent == "FirstValid" || parent.contains("Parallel"))
+        {
+            self_type += "_FirstValid";
         }
 
         let first_str = self.first.blocking_lock().dot_string(&self_type);
@@ -450,7 +458,7 @@ impl<V: Action, W: Action> Action for ActionParallel<V, W> {
             let mut name = "Parallel";
             let mut color = "blue";
             if parent == "FirstValid" {
-                name = "First Valid (Parallel)";
+                name = "FirstValid (Parallel)";
                 color = "darkgreen";
             }
 
@@ -497,12 +505,11 @@ impl<V: Action, W: Action> ActionParallel<V, W> {
 impl<
         Y: 'static + Send + Sync,
         X: 'static + Send + Sync,
-        V: 'static + ActionExec<Output = Y>,
-        W: 'static + ActionExec<Output = X>,
-    > ActionExec for ActionParallel<V, W>
+        V: 'static + ActionExec<Y>,
+        W: 'static + ActionExec<X>,
+    > ActionExec<(Y, X)> for ActionParallel<V, W>
 {
-    type Output = (Y, X);
-    async fn execute(&mut self) -> Self::Output {
+    async fn execute(&mut self) -> (Y, X) {
         let first = self.first.clone();
         let second = self.second.clone();
         let handle1 = Handle::current();
@@ -528,8 +535,10 @@ pub struct ActionConcurrent<V: Action, W: Action> {
 impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
     fn dot_string(&self, parent: &str) -> DotString {
         let mut self_type = stripped_type::<Self>().to_string();
-        if parent == "FirstValid" {
-            self_type = self_type + "_" + parent;
+        if parent.contains("FirstValid")
+            && (parent == "FirstValid" || parent.contains("Concurrent"))
+        {
+            self_type += "_FirstValid";
         }
 
         let first_str = self.first.dot_string(&self_type);
@@ -552,7 +561,7 @@ impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
             let mut name = "Concurrent";
             let mut color = "blue";
             if parent == "FirstValid" {
-                name = "First Valid (Concurrent)";
+                name = "FirstValid (Concurrent)";
                 color = "darkgreen";
             }
 
@@ -604,11 +613,10 @@ impl<V: Action, W: Action> ActionConcurrent<V, W> {
 }
 
 #[async_trait]
-impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Output = Y>, W: ActionExec<Output = X>>
-    ActionExec for ActionConcurrent<V, W>
+impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Y>, W: ActionExec<X>> ActionExec<(Y, X)>
+    for ActionConcurrent<V, W>
 {
-    type Output = (Y, X);
-    async fn execute(&mut self) -> Self::Output {
+    async fn execute(&mut self) -> (Y, X) {
         join!(self.first.execute(), self.second.execute())
     }
 }
@@ -661,9 +669,8 @@ impl<T: Action> ActionUntil<T> {
 }
 
 #[async_trait]
-impl<U: Send + Sync, T: ActionExec<Output = Result<U>>> ActionExec for ActionUntil<T> {
-    type Output = Result<U>;
-    async fn execute(&mut self) -> Self::Output {
+impl<U: Send + Sync, T: ActionExec<Result<U>>> ActionExec<Result<U>> for ActionUntil<T> {
+    async fn execute(&mut self) -> Result<U> {
         let mut count = 1;
         let mut result = self.action.execute().await;
         while result.is_err() && count < self.limit {
@@ -715,14 +722,13 @@ impl<T: Action> ActionWhile<T> {
 }
 
 #[async_trait]
-impl<U: Send + Sync, T: ActionExec<Output = Result<U>>> ActionExec for ActionWhile<T> {
-    type Output = Result<U>;
-    async fn execute(&mut self) -> Self::Output {
-        let mut result = self.action.execute().await;
-        while result.is_ok() {
-            result = self.action.execute().await;
+impl<U: Send + Sync, T: ActionExec<Result<U>>> ActionExec<U> for ActionWhile<T> {
+    async fn execute(&mut self) -> U {
+        loop {
+            if let Ok(result) = self.action.execute().await {
+                return result;
+            }
         }
-        result
     }
 }
 
@@ -730,11 +736,12 @@ impl<U: Send + Sync, T: ActionExec<Output = Result<U>>> ActionExec for ActionWhi
  * Get second arg in action output
  */
 #[derive(Debug, Clone)]
-pub struct TupleSecond<T: Action> {
+pub struct TupleSecond<T: Action, U> {
     action: T,
+    _phantom_u: PhantomData<U>,
 }
 
-impl<T: Action> Action for TupleSecond<T> {
+impl<T: Action, U> Action for TupleSecond<T, U> {
     fn dot_string(&self, _parent: &str) -> DotString {
         self.action.dot_string(stripped_type::<Self>())
     }
@@ -743,21 +750,25 @@ impl<T: Action> Action for TupleSecond<T> {
 /**
  * Implementation for the ActionWhile struct.
  */
-impl<T: Action> TupleSecond<T> {
+impl<T: Action, U> TupleSecond<T, U> {
     pub const fn new(action: T) -> Self {
-        Self { action }
+        Self {
+            action,
+            _phantom_u: PhantomData,
+        }
     }
 }
 
 #[async_trait]
-impl<U: Send + Sync, V: Send + Sync, T: ActionExec<Output = (U, V)>> ActionExec for TupleSecond<T> {
-    type Output = V;
-    async fn execute(&mut self) -> Self::Output {
+impl<U: Send + Sync, V: Send + Sync, T: ActionExec<(U, V)>> ActionExec<V> for TupleSecond<T, U> {
+    async fn execute(&mut self) -> V {
         self.action.execute().await.1
     }
 }
 
-impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send> ActionMod<Input> for TupleSecond<V> {
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, U> ActionMod<Input>
+    for TupleSecond<V, U>
+{
     fn modify(&mut self, input: &Input) {
         self.action.modify(input);
     }
@@ -797,11 +808,26 @@ impl<Input: Send + Sync, T: ActionMod<Input> + Sync + Send> ActionMod<Input> for
 }
 
 #[async_trait]
-impl<U: Send + Sync, T: ActionExec<Output = (Result<U>, Result<U>)>> ActionExec for FirstValid<T> {
-    type Output = Result<U>;
-    async fn execute(&mut self) -> Self::Output {
+impl<U: Send + Sync, T: ActionExec<(Result<U>, Result<U>)>> ActionExec<Result<U>>
+    for FirstValid<T>
+{
+    async fn execute(&mut self) -> Result<U> {
         let (first, second) = self.action.execute().await;
         if first.is_ok() {
+            first
+        } else {
+            second
+        }
+    }
+}
+
+#[async_trait]
+impl<U: Send + Sync, T: ActionExec<(Option<U>, Option<U>)>> ActionExec<Option<U>>
+    for FirstValid<T>
+{
+    async fn execute(&mut self) -> Option<U> {
+        let (first, second) = self.action.execute().await;
+        if first.is_some() {
             first
         } else {
             second

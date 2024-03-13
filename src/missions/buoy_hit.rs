@@ -74,12 +74,11 @@ impl<T> Action for DriveToBuoy<'_, T> {}
 impl<T> Action for FindBuoy<'_, T> {}
 
 #[async_trait]
-impl<T> ActionExec for FindBuoy<'_, T>
+impl<T> ActionExec<Result<()>> for FindBuoy<'_, T>
 where
     T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
 {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
+    async fn execute(&mut self) -> Result<()> {
         let camera_aquisition = self.context.get_front_camera_mat();
         let class_of_interest = self.context.get_desired_buoy_gate().await;
 
@@ -97,13 +96,11 @@ where
     }
 }
 #[async_trait]
-impl<T> ActionExec for DriveToBuoyVision<'_, T>
+impl<T> ActionExec<Result<()>> for DriveToBuoyVision<'_, T>
 where
     T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
 {
-    type Output = Result<()>;
-
-    async fn execute(&mut self) -> Self::Output {
+    async fn execute(&mut self) -> Result<()> {
         let camera_aquisition = self.context.get_front_camera_mat();
         let class_of_interest = self.context.get_desired_buoy_gate().await;
 
@@ -141,15 +138,20 @@ where
 }
 
 pub fn buoy_collision_sequence<
+    'a,
     Con: Send
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
         + GetFrontCamMat
         + Unpin,
+    T: Send + Sync,
 >(
-    context: &Con,
-) -> impl ActionExec + '_ {
+    context: &'a Con,
+) -> impl ActionExec<T> + 'a
+where
+    ZeroMovement<'a, Con>: ActionExec<T>,
+{
     const DEPTH: f32 = 1.0;
 
     let forward_power = 0.3;

@@ -16,7 +16,7 @@ use super::{
         ActionWhile, FirstValid, TupleSecond,
     },
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
-    basic::descend_and_go_forward,
+    basic::{descend_and_go_forward, NoOp},
     comms::StartBno055,
     movement::{CountFalse, CountTrue},
     vision::{DetectTarget, VisionNorm},
@@ -30,7 +30,7 @@ pub fn gate_run_complex<
         + GetFrontCamMat,
 >(
     context: &Con,
-) -> impl ActionExec + '_ {
+) -> impl ActionExec<()> + '_ {
     let depth: f32 = -1.0;
 
     ActionSequence::new(
@@ -50,16 +50,16 @@ pub fn adjust_logic<
         + GetMainElectronicsBoard
         + GetFrontCamMat,
     X: 'a
-        + ActionMod<anyhow::Result<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
-        + ActionExec<Output = anyhow::Result<()>>,
+        + ActionMod<Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
+        + ActionExec<anyhow::Result<()>>,
 >(
     context: &'a Con,
     _depth: f32,
     end_condition: X,
-) -> impl ActionExec + 'a {
+) -> impl ActionExec<()> + 'a {
     ActionWhile::new(ActionChain::new(
         VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
-        TupleSecond::new(ActionConcurrent::new(
+        ActionChain::new(
             act_nest!(
                 wrap_action(ActionConcurrent::new, FirstValid::new),
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Earth),
@@ -68,6 +68,6 @@ pub fn adjust_logic<
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
             ),
             end_condition,
-        )),
+        ),
     ))
 }

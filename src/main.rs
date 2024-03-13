@@ -10,9 +10,7 @@ use sw8s_rust_lib::{
         meb::MainElectronicsBoard,
     },
     missions::{
-        action::ActionExec,
-        action_context::FullActionContext,
-        basic::{descend_and_go_forward, gate_run_naive},
+        action::ActionExec, action_context::FullActionContext, basic::descend_and_go_forward,
         example::initial_descent,
     },
     video_source::appsink::Camera,
@@ -252,6 +250,7 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
+        /*
         "gate_run_naive" => {
             let _ = gate_run_naive(&FullActionContext::new(
                 control_board().await,
@@ -264,6 +263,7 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
+        */
         "start_cam" => {
             // This has not been tested
             println!("Opening camera");

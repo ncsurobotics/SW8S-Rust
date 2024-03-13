@@ -49,9 +49,8 @@ impl<T> ActionMod<f32> for Descend<'_, T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for Descend<'_, T> {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Descend<'_, T> {
+    async fn execute(&mut self) -> Result<()> {
         println!("DESCEND");
         self.context
             .get_control_board()
@@ -89,9 +88,10 @@ impl<'a, T> StraightMovement<'a, T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for StraightMovement<'_, T> {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
+    for StraightMovement<'_, T>
+{
+    async fn execute(&mut self) -> Result<()> {
         let mut speed: f32 = 0.5;
         if !self.forward {
             // Eric Liu is a very talented programmer and utilizes the most effective linear programming techniques from the FIRST™ Robotics Competition.
@@ -124,9 +124,8 @@ impl<'a, T> ZeroMovement<'a, T> {
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for ZeroMovement<'_, T> {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for ZeroMovement<'_, T> {
+    async fn execute(&mut self) -> Result<()> {
         self.context
             .get_control_board()
             .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
@@ -177,9 +176,8 @@ where
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovement<'_, T> {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for AdjustMovement<'_, T> {
+    async fn execute(&mut self) -> Result<()> {
         self.context
             .get_control_board()
             .stability_2_speed_set_initial_yaw(self.x, 0.5, 0.0, 0.0, self.target_depth)
@@ -277,9 +275,10 @@ where
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for AdjustMovementAngle<'_, T> {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
+    for AdjustMovementAngle<'_, T>
+{
+    async fn execute(&mut self) -> Result<()> {
         const ADJUST_VAL: f32 = 1.5;
         const MIN_X: f32 = 0.3;
 
@@ -371,9 +370,8 @@ where
 }
 
 #[async_trait]
-impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for CenterMovement<'_, T> {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
+impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for CenterMovement<'_, T> {
+    async fn execute(&mut self) -> Result<()> {
         const FACTOR: f32 = 1.5;
         const MIN_SPEED: f32 = 0.3;
         const MIN_YAW: f32 = 5.0;
@@ -424,10 +422,23 @@ impl<T: Send + Sync> ActionMod<Result<T>> for CountTrue {
     }
 }
 
+impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
+    fn modify(&mut self, input: &Option<T>) {
+        if input.is_some() {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+        println!("COUNTING TRUE: {} ? {}", self.count, self.target);
+    }
+}
+
 #[async_trait]
-impl ActionExec for CountTrue {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
+impl ActionExec<Result<()>> for CountTrue {
+    async fn execute(&mut self) -> Result<()> {
         println!("CHECKING TRUE: {} ? {}", self.count, self.target);
         if self.count < self.target {
             println!("Under count");
@@ -466,10 +477,23 @@ impl<T: Send + Sync> ActionMod<Result<T>> for CountFalse {
     }
 }
 
+impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
+    fn modify(&mut self, input: &Option<T>) {
+        if input.is_none() {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+        println!("COUNTING FALSE: {} ? {}", self.count, self.target);
+    }
+}
+
 #[async_trait]
-impl ActionExec for CountFalse {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
+impl ActionExec<Result<()>> for CountFalse {
+    async fn execute(&mut self) -> Result<()> {
         println!("CHECKING FALSE: {} ? {}", self.count, self.target);
         if self.count < self.target {
             println!("Under count");

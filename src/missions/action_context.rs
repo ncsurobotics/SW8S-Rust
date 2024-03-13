@@ -53,6 +53,10 @@ pub trait GetConfig {
 #[derive(Debug)]
 pub struct EmptyActionContext;
 
+impl Unpin for EmptyActionContext {
+    // add code here
+}
+
 pub struct FullActionContext<'a, T: AsyncWriteExt + Unpin + Send> {
     control_board: &'a ControlBoard<T>,
     main_electronics_board: &'a MainElectronicsBoard,
@@ -113,11 +117,34 @@ impl<T: AsyncWriteExt + Unpin + Send> GetBottomCamMat for FullActionContext<'_, 
     }
 }
 
-/*
-#[async_trait]
-impl<T: AsyncWriteExt + Unpin + Send> GetConfig for FullActionContext<'_, T> {
-    async fn get_config(&self) -> Mat {
-        self.bottom_cam.get_mat().await
+impl GetControlBoard<WriteHalf<SerialStream>> for EmptyActionContext {
+    fn get_control_board(&self) -> &ControlBoard<WriteHalf<SerialStream>> {
+        todo!()
     }
 }
-*/
+
+impl GetMainElectronicsBoard for EmptyActionContext {
+    fn get_main_electronics_board(&self) -> &MainElectronicsBoard {
+        todo!()
+    }
+}
+
+#[async_trait]
+impl GetFrontCamMat for EmptyActionContext {
+    async fn get_front_camera_mat(&self) -> Mat {
+        todo!()
+    }
+    async fn get_desired_buoy_gate(&self) -> Target {
+        todo!()
+    }
+    async fn set_desired_buoy_gate(&mut self, value: Target) -> &Self {
+        todo!()
+    }
+}
+
+#[async_trait]
+impl GetBottomCamMat for EmptyActionContext {
+    async fn get_bottom_camera_mat(&self) -> Mat {
+        todo!()
+    }
+}

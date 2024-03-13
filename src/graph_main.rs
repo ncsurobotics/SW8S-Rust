@@ -2,6 +2,7 @@ use std::fs::create_dir_all;
 
 use futures::{stream, StreamExt};
 use paste::paste;
+use sw8s_rust_lib::missions::action_context::EmptyActionContext;
 use tokio::{fs::write, join};
 
 #[allow(warnings)]
@@ -52,7 +53,6 @@ pub mod generated_actions {
     }
 }
 
-use generated_actions::action_context::EmptyActionContext;
 use generated_actions::graph::{dot_file, draw_svg};
 
 const CONTEXT: EmptyActionContext = EmptyActionContext;
