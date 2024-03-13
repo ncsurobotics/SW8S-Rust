@@ -450,7 +450,7 @@ impl<V: Action, W: Action> Action for ActionParallel<V, W> {
             let mut name = "Parallel";
             let mut color = "blue";
             if parent == "FirstValid" {
-                name = "FirstValid (Parallel)";
+                name = "First Valid (Parallel)";
                 color = "darkgreen";
             }
 
@@ -552,7 +552,7 @@ impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
             let mut name = "Concurrent";
             let mut color = "blue";
             if parent == "FirstValid" {
-                name = "FirstValid (Concurrent)";
+                name = "First Valid (Concurrent)";
                 color = "darkgreen";
             }
 

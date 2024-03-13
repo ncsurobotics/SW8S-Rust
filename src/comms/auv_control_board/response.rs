@@ -174,6 +174,9 @@ mod tests {
 
     use tokio::sync::Mutex;
 
+    #[cfg(feature = "logging")]
+    use std::time::Duration;
+
     static MESSAGE_LOCK: Mutex<()> = Mutex::const_new(());
     #[tokio::test]
     async fn start_not_at_front() {

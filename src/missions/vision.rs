@@ -1,19 +1,19 @@
-use std::fmt::Debug;
-use std::{iter::Sum, marker::PhantomData, ops::Div};
+use std::fmt::{Debug, Display};
+use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};
+use super::graph::DotString;
 use crate::vision::{Draw, Offset2D, RelPos, VisualDetection, VisualDetector};
 use anyhow::{anyhow, bail, Result};
 use async_trait::async_trait;
 use num_traits::{Float, FromPrimitive, Num};
+use uuid::Uuid;
 
 use crate::missions::action_context::GetFrontCamMat;
 #[cfg(feature = "logging")]
 use opencv::{core::Vector, imgcodecs::imwrite};
 #[cfg(feature = "logging")]
 use std::fs::create_dir_all;
-#[cfg(feature = "logging")]
-use uuid::Uuid;
 
 /// Runs a vision routine to obtain the average of object positions
 ///
@@ -179,11 +179,23 @@ impl<T, U, V> DetectTarget<T, U, V> {
     }
 }
 
-impl<T, U, V> Action for DetectTarget<T, U, V> {}
+impl<T: Display, U, V> Action for DetectTarget<T, U, V> {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let id = Uuid::new_v4();
+        DotString {
+            head_ids: vec![id],
+            tail_ids: vec![id],
+            body: format!(
+                "\"{}\" [label = \"Detect {}\", margin = 0];\n",
+                id, self.target
+            ),
+        }
+    }
+}
 
 #[async_trait]
 impl<
-        T: Send + Sync + PartialEq,
+        T: Send + Sync + PartialEq + Display,
         U: Send + Sync + Clone + Into<T> + Debug,
         V: Send + Sync + Debug + Clone,
     > ActionExec for DetectTarget<T, U, V>
@@ -207,7 +219,7 @@ impl<
     }
 }
 
-impl<T, U: Send + Sync + Clone, V: Send + Sync + Clone>
+impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
     ActionMod<anyhow::Result<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
     fn modify(&mut self, input: &anyhow::Result<Vec<VisualDetection<U, V>>>) {

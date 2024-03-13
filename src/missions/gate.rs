@@ -1,8 +1,3 @@
-use std::{iter::Sum, ops::Div};
-
-use anyhow::{anyhow, bail};
-use async_trait::async_trait;
-
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
@@ -11,17 +6,17 @@ use crate::{
     vision::{
         gate_poles::{GatePoles, Target},
         nn_cv2::{OnnxModel, YoloClass},
-        DrawRect2d, Offset2D, VisualDetection,
+        Offset2D, VisualDetection,
     },
 };
 
 use super::{
     action::{
-        wrap_action, Action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence,
+        wrap_action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence,
         ActionWhile, FirstValid, TupleSecond,
     },
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
-    basic::{descend_and_go_forward, NoOp},
+    basic::descend_and_go_forward,
     comms::StartBno055,
     movement::{CountFalse, CountTrue},
     vision::{DetectTarget, VisionNorm},
@@ -70,6 +65,7 @@ pub fn adjust_logic<
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Earth),
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Abydos),
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::LargeGate),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
             ),
             end_condition,
         )),
