@@ -1,19 +1,10 @@
-use crate::vision::{gate_poles::GatePoles, nn_cv2::OnnxModel};
-
 use super::{
-    action::{
-        Action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence, ActionWhile,
-        TupleSecond,
-    },
+    action::{Action, ActionExec, ActionMod, ActionSequence},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
-    comms::StartBno055,
     meb::WaitArm,
-    movement::{
-        AdjustMovementAngle, CountFalse, CountTrue, Descend, StraightMovement, ZeroMovement,
-    },
-    vision::VisionNormOffset,
+    movement::{Descend, StraightMovement, ZeroMovement},
 };
-use crate::missions::action_context::GetFrontCamMat;
+
 use async_trait::async_trait;
 use tokio::{
     io::WriteHalf,
@@ -77,44 +68,6 @@ where
                 ),
                 ZeroMovement::new(context, depth),
             ),
-        ),
-    )
-}
-
-pub fn gate_run_naive<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
->(
-    context: &Con,
-) -> impl ActionExec<()> + '_ {
-    let depth: f32 = -1.0;
-
-    ActionSequence::new(
-        ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        ActionSequence::new(
-            ActionWhile::new(ActionChain::new(
-                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
-                    context,
-                    GatePoles::default(),
-                ),
-                TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovementAngle::new(context, depth),
-                    CountTrue::new(3),
-                )),
-            )),
-            ActionWhile::new(ActionChain::new(
-                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
-                    context,
-                    GatePoles::default(),
-                ),
-                TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovementAngle::new(context, depth),
-                    CountFalse::new(10),
-                )),
-            )),
         ),
     )
 }
