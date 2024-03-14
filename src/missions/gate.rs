@@ -18,7 +18,8 @@ use super::{
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::descend_and_go_forward,
     comms::StartBno055,
-    movement::{AdjustMovementAngle, CountFalse, CountTrue},
+    extra::{CountFalse, CountTrue},
+    movement::AdjustMovementAngle,
     vision::{DetectTarget, VisionNorm, VisionNormOffset},
 };
 

@@ -1,6 +1,11 @@
+use anyhow::anyhow;
 use async_trait::async_trait;
+use uuid::Uuid;
 
-use super::action::{Action, ActionExec, ActionMod};
+use super::{
+    action::{Action, ActionExec, ActionMod},
+    graph::DotString,
+};
 
 /// Development Action that does... nothing
 ///
@@ -97,5 +102,176 @@ impl<T: ActionMod<U>, U: Send + Sync> ActionMod<U> for UnwrapAction<T> {
 impl<T: ActionExec<anyhow::Result<U>>, U: Send + Sync> ActionExec<U> for UnwrapAction<T> {
     async fn execute(&mut self) -> U {
         self.action.execute().await.unwrap()
+    }
+}
+
+#[derive(Debug)]
+pub struct CountTrue {
+    target: u32,
+    count: u32,
+}
+
+impl CountTrue {
+    pub fn new(target: u32) -> Self {
+        CountTrue { target, count: 0 }
+    }
+}
+
+impl Action for CountTrue {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let id = Uuid::new_v4();
+        DotString {
+            head_ids: vec![id],
+            tail_ids: vec![id],
+            body: format!(
+                "\"{}\" [label = \"Consecutive True < {}\", margin = 0];\n",
+                id, self.target
+            ),
+        }
+    }
+}
+
+impl<T: Send + Sync> ActionMod<anyhow::Result<T>> for CountTrue {
+    fn modify(&mut self, input: &anyhow::Result<T>) {
+        if input.is_ok() {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+    }
+}
+
+impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
+    fn modify(&mut self, input: &Option<T>) {
+        if input.is_some() {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+    }
+}
+
+#[async_trait]
+impl ActionExec<anyhow::Result<()>> for CountTrue {
+    async fn execute(&mut self) -> anyhow::Result<()> {
+        if self.count < self.target {
+            Ok(())
+        } else {
+            Err(anyhow!("At count"))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct CountFalse {
+    target: u32,
+    count: u32,
+}
+
+impl CountFalse {
+    pub fn new(target: u32) -> Self {
+        CountFalse { target, count: 0 }
+    }
+}
+
+impl Action for CountFalse {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let id = Uuid::new_v4();
+        DotString {
+            head_ids: vec![id],
+            tail_ids: vec![id],
+            body: format!(
+                "\"{}\" [label = \"Consecutive False < {}\", margin = 0];\n",
+                id, self.target
+            ),
+        }
+    }
+}
+
+impl<T: Send + Sync> ActionMod<anyhow::Result<T>> for CountFalse {
+    fn modify(&mut self, input: &anyhow::Result<T>) {
+        if input.is_err() {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+    }
+}
+
+impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
+    fn modify(&mut self, input: &Option<T>) {
+        if input.is_none() {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+    }
+}
+
+#[async_trait]
+impl ActionExec<anyhow::Result<()>> for CountFalse {
+    async fn execute(&mut self) -> anyhow::Result<()> {
+        if self.count < self.target {
+            Ok(())
+        } else {
+            Err(anyhow!("At count"))
+        }
+    }
+}
+
+/// Transform `value` with `tweak_function`.
+///
+/// Generic action for secondary transformations
+#[derive(Debug)]
+pub struct Tweak<T> {
+    value: T,
+    tweak_function: fn(T) -> T,
+}
+impl<T> Action for Tweak<T> {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let id = Uuid::new_v4();
+        DotString {
+            head_ids: vec![id],
+            tail_ids: vec![id],
+            body: format!(
+                "\"{}\" [label = \"{}\", margin = 0];\n",
+                id,
+                stringify!(self.tweak_function)
+            ),
+        }
+    }
+}
+
+impl<T> Tweak<T> {
+    pub const fn new(value: T, tweak_function: fn(T) -> T) -> Self {
+        Self {
+            value,
+            tweak_function,
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<T> for Tweak<T> {
+    fn modify(&mut self, input: &T) {
+        self.value = input.clone();
+    }
+}
+
+#[async_trait]
+impl<T: Send + Sync + Clone> ActionExec<T> for Tweak<T> {
+    async fn execute(&mut self) -> T {
+        (self.tweak_function)(self.value.clone())
     }
 }

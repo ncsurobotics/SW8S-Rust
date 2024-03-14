@@ -1,20 +1,24 @@
 use crate::comms::control_board::ControlBoard;
 use crate::vision::RelPos;
 use crate::vision::RelPosAngle;
-use anyhow::anyhow;
+
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
+use derive_getters::Getters;
 use futures::FutureExt;
+use num_traits::clamp;
+use num_traits::Float;
 use num_traits::Pow;
-use uuid::Uuid;
+use std::ops::Rem;
+use std::time::Duration;
+use tokio::time::sleep;
 
 use tokio::io::AsyncWrite;
 use tokio::io::WriteHalf;
 use tokio::sync::OnceCell;
 use tokio_serial::SerialStream;
 
-use super::graph::DotString;
 use super::{
     action::{Action, ActionExec, ActionMod},
     action_context::GetControlBoard,
@@ -396,128 +400,270 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Cen
     }
 }
 
+/// Specifies replacement or adjustment (+ value)
+#[derive(Debug, Clone)]
+pub enum AdjustType<T> {
+    Replace(T),
+    Adjust(T),
+}
+
+/// Modification for a stability assist 2 command
+///
+/// When values are None, they do not cause adjustments
+#[derive(Debug, Clone, Default, Getters)]
+pub struct Stability2Adjust {
+    x: Option<AdjustType<f32>>,
+    y: Option<AdjustType<f32>>,
+    target_pitch: Option<AdjustType<f32>>,
+    target_roll: Option<AdjustType<f32>>,
+    target_yaw: Option<AdjustType<f32>>,
+    target_depth: Option<AdjustType<f32>>,
+}
+
+impl Stability2Adjust {
+    /// Convert all the invalid IEEE states into None
+    fn address_ieee(val: AdjustType<f32>) -> Option<AdjustType<f32>> {
+        match val {
+            AdjustType::Replace(val) | AdjustType::Adjust(val)
+                if val.is_nan() | val.is_infinite() | val.is_subnormal() =>
+            {
+                None
+            }
+            val => Some(val),
+        }
+    }
+
+    /// Bounds speeds to [-1, 1]
+    fn bound_speed(val: Option<AdjustType<f32>>) -> Option<AdjustType<f32>> {
+        const MIN_SPEED: f32 = -1.0;
+        const MAX_SPEED: f32 = 1.0;
+
+        val.map(|val| match val {
+            AdjustType::Replace(val) => AdjustType::Replace(clamp(val, MIN_SPEED, MAX_SPEED)),
+            AdjustType::Adjust(val) => AdjustType::Adjust(val),
+        })
+    }
+
+    /// Bounds rotations to 360 degrees
+    fn bound_rot(val: Option<AdjustType<f32>>) -> Option<AdjustType<f32>> {
+        const MAX_DEGREES: f32 = 360.0;
+
+        val.map(|val| match val {
+            AdjustType::Replace(val) => AdjustType::Replace(val.rem(MAX_DEGREES)),
+            AdjustType::Adjust(val) => AdjustType::Adjust(val),
+        })
+    }
+
+    pub fn set_x(&mut self, x: AdjustType<f32>) -> &Self {
+        self.x = Self::bound_speed(Self::address_ieee(x));
+        self
+    }
+
+    pub fn set_y(&mut self, y: AdjustType<f32>) -> &Self {
+        self.y = Self::bound_speed(Self::address_ieee(y));
+        self
+    }
+
+    pub fn set_target_pitch(&mut self, target_pitch: AdjustType<f32>) -> &Self {
+        self.target_pitch = Self::bound_rot(Self::address_ieee(target_pitch));
+        self
+    }
+
+    pub fn set_target_roll(&mut self, target_roll: AdjustType<f32>) -> &Self {
+        self.target_roll = Self::bound_rot(Self::address_ieee(target_roll));
+        self
+    }
+
+    pub fn set_target_yaw(&mut self, target_yaw: AdjustType<f32>) -> &Self {
+        self.target_yaw = Self::bound_rot(Self::address_ieee(target_yaw));
+        self
+    }
+
+    pub fn set_target_depth(&mut self, target_depth: AdjustType<f32>) -> &Self {
+        self.target_depth = Self::bound_rot(Self::address_ieee(target_depth));
+        self
+    }
+}
+
+/// Stores the command to send to stability assist 2
+///
+/// If target_yaw is None, it is set to the current yaw on first execution
+#[derive(Debug, Clone)]
+pub struct Stability2Pos {
+    x: f32,
+    y: f32,
+    target_pitch: f32,
+    target_roll: f32,
+    target_yaw: Option<f32>, // set to current if uninitialized
+    target_depth: f32,
+}
+
+impl Stability2Pos {
+    pub fn new(
+        x: f32,
+        y: f32,
+        target_pitch: f32,
+        target_roll: f32,
+        target_yaw: Option<f32>,
+        target_depth: f32,
+    ) -> Self {
+        Self {
+            x,
+            y,
+            target_pitch,
+            target_roll,
+            target_yaw,
+            target_depth,
+        }
+    }
+
+    /// Executes the position in stability assist
+    pub async fn exec(&mut self, board: &ControlBoard<WriteHalf<SerialStream>>) -> Result<()> {
+        const SLEEP_LEN: Duration = Duration::from_millis(100);
+
+        // Intializes yaw to current value
+        if self.target_yaw.is_none() {
+            // Repeats until an angle measurement exists
+            loop {
+                if let Some(angles) = board.responses().get_angles().await {
+                    self.target_yaw = Some(*angles.yaw());
+                    break;
+                }
+                sleep(SLEEP_LEN).await;
+            }
+        }
+
+        board
+            .stability_2_speed_set(
+                self.x,
+                self.y,
+                self.target_pitch,
+                self.target_roll,
+                self.target_yaw.unwrap(),
+                self.target_depth,
+            )
+            .await
+    }
+
+    /// Sets speed, bounded to [-1, 1]
+    fn set_speed(base: f32, adjuster: Option<AdjustType<f32>>) -> f32 {
+        const MIN_SPEED: f32 = -1.0;
+        const MAX_SPEED: f32 = 1.0;
+
+        adjuster
+            .map(|val| match val {
+                AdjustType::Replace(val) => val,
+                AdjustType::Adjust(val) => clamp(base + val, MIN_SPEED, MAX_SPEED),
+            })
+            .unwrap_or(base)
+    }
+
+    /// Set rotation, bounded to 360 degrees
+    fn set_rot(base: f32, adjuster: Option<AdjustType<f32>>) -> f32 {
+        const MAX_DEGREES: f32 = 360.0;
+
+        adjuster
+            .map(|val| match val {
+                AdjustType::Replace(val) => val,
+                AdjustType::Adjust(val) => (val + base).rem(MAX_DEGREES),
+            })
+            .unwrap_or(base)
+    }
+
+    /// Adjusts the position according to `adjuster`.
+    ///
+    /// The x and y fields are bounded to [-1, 1].
+    /// The pitch, roll, yaw, depth fields wrap around 360 degrees.
+    pub fn adjust(&mut self, adjuster: &Stability2Adjust) -> &Self {
+        self.x = Self::set_speed(self.x, adjuster.x().clone());
+        self.y = Self::set_speed(self.y, adjuster.y().clone());
+
+        self.target_pitch = Self::set_rot(self.target_pitch, adjuster.target_pitch().clone());
+        self.target_roll = Self::set_rot(self.target_roll, adjuster.target_roll().clone());
+        self.target_depth = Self::set_rot(self.target_depth, adjuster.target_depth().clone());
+
+        // Accounting for uninitialized yaw
+        self.target_yaw = if let Some(target_yaw) = self.target_yaw {
+            Some(Self::set_speed(target_yaw, adjuster.target_yaw().clone()))
+        } else if let Some(AdjustType::Replace(adjuster_yaw)) = adjuster.target_yaw() {
+            Some(*adjuster_yaw)
+        } else {
+            None
+        };
+
+        self
+    }
+}
+
+impl Default for Stability2Pos {
+    fn default() -> Self {
+        Self::new(0.0, 0.0, 0.0, 0.0, None, 0.0)
+    }
+}
+
 #[derive(Debug)]
-pub struct CountTrue {
-    target: u32,
-    count: u32,
+pub struct Stability2Movement<'a, T> {
+    context: &'a T,
+    pose: Stability2Pos,
 }
+impl<T> Action for Stability2Movement<'_, T> {}
 
-impl CountTrue {
-    pub fn new(target: u32) -> Self {
-        CountTrue { target, count: 0 }
+impl<'a, T> Stability2Movement<'a, T> {
+    pub const fn new(context: &'a T, pose: Stability2Pos) -> Self {
+        Self { context, pose }
     }
-}
 
-impl Action for CountTrue {
-    fn dot_string(&self, _parent: &str) -> DotString {
-        let id = Uuid::new_v4();
-        DotString {
-            head_ids: vec![id],
-            tail_ids: vec![id],
-            body: format!(
-                "\"{}\" [label = \"Consecutive True < {}\", margin = 0];\n",
-                id, self.target
-            ),
+    pub fn uninitialized(context: &'a T) -> Self {
+        Self {
+            context,
+            pose: Stability2Pos::default(),
         }
     }
 }
 
-impl<T: Send + Sync> ActionMod<Result<T>> for CountTrue {
-    fn modify(&mut self, input: &Result<T>) {
-        if input.is_ok() {
-            self.count += 1;
-            if self.count > self.target {
-                self.count = self.target;
-            }
-        } else {
-            self.count = 0;
-        }
+impl<T> ActionMod<Stability2Pos> for Stability2Movement<'_, T> {
+    fn modify(&mut self, input: &Stability2Pos) {
+        self.pose = input.clone();
     }
 }
 
-impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
-    fn modify(&mut self, input: &Option<T>) {
-        if input.is_some() {
-            self.count += 1;
-            if self.count > self.target {
-                self.count = self.target;
-            }
-        } else {
-            self.count = 0;
-        }
+impl<T> ActionMod<Stability2Adjust> for Stability2Movement<'_, T> {
+    fn modify(&mut self, input: &Stability2Adjust) {
+        self.pose.adjust(input);
     }
 }
 
 #[async_trait]
-impl ActionExec<Result<()>> for CountTrue {
+impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
+    for Stability2Movement<'a, T>
+{
     async fn execute(&mut self) -> Result<()> {
-        if self.count < self.target {
-            Ok(())
-        } else {
-            Err(anyhow!("At count"))
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct CountFalse {
-    target: u32,
-    count: u32,
-}
-
-impl CountFalse {
-    pub fn new(target: u32) -> Self {
-        CountFalse { target, count: 0 }
-    }
-}
-
-impl Action for CountFalse {
-    fn dot_string(&self, _parent: &str) -> DotString {
-        let id = Uuid::new_v4();
-        DotString {
-            head_ids: vec![id],
-            tail_ids: vec![id],
-            body: format!(
-                "\"{}\" [label = \"Consecutive False < {}\", margin = 0];\n",
-                id, self.target
-            ),
-        }
-    }
-}
-
-impl<T: Send + Sync> ActionMod<Result<T>> for CountFalse {
-    fn modify(&mut self, input: &Result<T>) {
-        if input.is_err() {
-            self.count += 1;
-            if self.count > self.target {
-                self.count = self.target;
-            }
-        } else {
-            self.count = 0;
-        }
-    }
-}
-
-impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
-    fn modify(&mut self, input: &Option<T>) {
-        if input.is_none() {
-            self.count += 1;
-            if self.count > self.target {
-                self.count = self.target;
-            }
-        } else {
-            self.count = 0;
-        }
+        self.pose.exec(self.context.get_control_board()).await
     }
 }
 
 #[async_trait]
-impl ActionExec<Result<()>> for CountFalse {
-    async fn execute(&mut self) -> Result<()> {
-        if self.count < self.target {
-            Ok(())
-        } else {
-            Err(anyhow!("At count"))
-        }
+impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<()> for Stability2Movement<'a, T> {
+    async fn execute(&mut self) -> () {
+        let _ = self.pose.exec(self.context.get_control_board()).await;
     }
+}
+///
+/// Generates a yaw adjustment from an x axis set, multiplying by angle_diff
+///
+/// Does not set a yaw adjustment if the x difference is below 0.1
+pub fn linear_yaw_from_x(mut input: Stability2Adjust, angle_diff: f32) -> Stability2Adjust {
+    const MIN_TO_CHANGE_ANGLE: f32 = 0.1;
+    if let Some(AdjustType::Replace(x)) = input.x() {
+        if *x > MIN_TO_CHANGE_ANGLE {
+            input.set_target_yaw(AdjustType::Adjust(x * angle_diff));
+        };
+    };
+    input
+}
+
+/// [`linear_yaw_from_x`] with a default value
+pub fn default_linear_yaw_from_x() -> fn(Stability2Adjust) -> Stability2Adjust {
+    const ANGLE_DIFF: f32 = 7.0;
+    |input| linear_yaw_from_x(input, ANGLE_DIFF)
 }
