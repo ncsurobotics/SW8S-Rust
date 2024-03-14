@@ -1,4 +1,5 @@
 use std::fmt::{Debug, Display};
+use std::ops::Div;
 use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};
@@ -230,5 +231,94 @@ impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
 {
     fn modify(&mut self, input: &Option<Vec<VisualDetection<U, V>>>) {
         self.results = input.as_ref().cloned();
+    }
+}
+
+#[derive(Debug)]
+pub struct Average<T> {
+    values: Vec<T>,
+}
+
+impl<T> Average<T> {
+    pub const fn new() -> Self {
+        Self { values: vec![] }
+    }
+}
+
+impl<T> Action for Average<T> {}
+
+#[async_trait]
+impl<T: Send + Sync + Clone + Sum + Div<usize, Output = T>> ActionExec<Option<T>> for Average<T> {
+    async fn execute(&mut self) -> Option<T> {
+        if self.values.is_empty() {
+            None
+        } else {
+            Some(self.values.clone().into_iter().sum::<T>() / self.values.len())
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<Vec<T>> for Average<T> {
+    fn modify(&mut self, input: &Vec<T>) {
+        self.values = input.clone();
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<Option<Vec<T>>> for Average<T> {
+    fn modify(&mut self, input: &Option<Vec<T>>) {
+        if let Some(input) = input {
+            self.values = input.clone();
+        } else {
+            self.values = vec![];
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<anyhow::Result<Vec<T>>> for Average<T> {
+    fn modify(&mut self, input: &anyhow::Result<Vec<T>>) {
+        if let Ok(input) = input {
+            self.values = input.clone();
+        } else {
+            self.values = vec![];
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct ExtractPosition<T, U> {
+    values: Vec<VisualDetection<T, U>>,
+}
+
+impl<T, U> ExtractPosition<T, U> {
+    pub const fn new() -> Self {
+        Self { values: vec![] }
+    }
+}
+
+impl<T, U> Action for ExtractPosition<T, U> {}
+
+#[async_trait]
+impl<T: Send + Sync, U: Send + Sync + Clone> ActionExec<Vec<U>> for ExtractPosition<T, U> {
+    async fn execute(&mut self) -> Vec<U> {
+        self.values
+            .iter()
+            .map(|val| val.position().clone())
+            .collect()
+    }
+}
+
+impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetection<T, U>>>
+    for ExtractPosition<T, U>
+{
+    fn modify(&mut self, input: &Vec<VisualDetection<T, U>>) {
+        self.values = input.clone();
+    }
+}
+
+impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<VisualDetection<T, U>>
+    for ExtractPosition<T, U>
+{
+    fn modify(&mut self, input: &VisualDetection<T, U>) {
+        self.values = vec![input.clone()];
     }
 }

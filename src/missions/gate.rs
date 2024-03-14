@@ -18,9 +18,9 @@ use super::{
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::descend_and_go_forward,
     comms::StartBno055,
-    extra::{CountFalse, CountTrue},
+    extra::{CountFalse, CountTrue, ToVec, Transform},
     movement::AdjustMovementAngle,
-    vision::{DetectTarget, VisionNorm, VisionNormOffset},
+    vision::{Average, DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
 };
 
 pub fn gate_run_naive<
@@ -106,7 +106,15 @@ pub fn adjust_logic<
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::LargeGate),
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
             ),
-            end_condition,
+            TupleSecond::new(ActionConcurrent::new(
+                act_nest!(
+                    ActionChain::new,
+                    ToVec::new(),
+                    ExtractPosition::new(),
+                    Average::new()
+                ),
+                end_condition,
+            )),
         ),
     ))
 }

@@ -266,15 +266,16 @@ impl ActionExec<anyhow::Result<()>> for CountFalse {
     }
 }
 
-/// Transform `value` with `tweak_function`.
+/// Transform `value` with `transform_function`.
 ///
 /// Generic action for secondary transformations
 #[derive(Debug)]
-pub struct Tweak<T> {
+pub struct Transform<T, U> {
     value: T,
-    tweak_function: fn(T) -> T,
+    transform_function: fn(T) -> U,
 }
-impl<T> Action for Tweak<T> {
+
+impl<T, U> Action for Transform<T, U> {
     fn dot_string(&self, _parent: &str) -> DotString {
         let id = Uuid::new_v4();
         DotString {
@@ -283,30 +284,87 @@ impl<T> Action for Tweak<T> {
             body: format!(
                 "\"{}\" [label = \"{}\", margin = 0];\n",
                 id,
-                stringify!(self.tweak_function)
+                stringify!(self.transform_function)
             ),
         }
     }
 }
 
-impl<T> Tweak<T> {
-    pub const fn new(value: T, tweak_function: fn(T) -> T) -> Self {
+impl<T, U> Transform<T, U> {
+    pub const fn new(value: T, transform_function: fn(T) -> U) -> Self {
         Self {
             value,
-            tweak_function,
+            transform_function,
         }
     }
 }
 
-impl<T: Send + Sync + Clone> ActionMod<T> for Tweak<T> {
+impl<T: Default, U> Transform<T, U> {
+    pub fn new_default(transform_function: fn(T) -> U) -> Self {
+        Self::new(T::default(), transform_function)
+    }
+}
+
+impl<T: Send + Sync + Clone, U> ActionMod<T> for Transform<T, U> {
     fn modify(&mut self, input: &T) {
         self.value = input.clone();
     }
 }
 
 #[async_trait]
-impl<T: Send + Sync + Clone> ActionExec<T> for Tweak<T> {
-    async fn execute(&mut self) -> T {
-        (self.tweak_function)(self.value.clone())
+impl<T: Send + Sync + Clone, U: Send + Sync> ActionExec<U> for Transform<T, U> {
+    async fn execute(&mut self) -> U {
+        (self.transform_function)(self.value.clone())
+    }
+}
+
+/// Transform Option/Result wrapped vector to a vector
+#[derive(Debug)]
+pub struct ToVec<T> {
+    value: Vec<T>,
+}
+
+impl<T> Action for ToVec<T> {}
+
+impl<T> ToVec<T> {
+    pub const fn new() -> Self {
+        Self { value: vec![] }
+    }
+}
+
+impl<T> Default for ToVec<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<Option<U>>
+    for ToVec<T>
+{
+    fn modify(&mut self, input: &Option<U>) {
+        if let Some(input) = input {
+            self.value = input.clone().into_iter().collect();
+        } else {
+            self.value = vec![];
+        }
+    }
+}
+
+impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<anyhow::Result<U>>
+    for ToVec<T>
+{
+    fn modify(&mut self, input: &anyhow::Result<U>) {
+        if let Ok(input) = input {
+            self.value = input.clone().into_iter().collect();
+        } else {
+            self.value = vec![];
+        }
+    }
+}
+
+#[async_trait]
+impl<T: Send + Sync + Clone> ActionExec<Vec<T>> for ToVec<T> {
+    async fn execute(&mut self) -> Vec<T> {
+        self.value.clone()
     }
 }
