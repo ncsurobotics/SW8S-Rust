@@ -36,6 +36,41 @@ impl ActionExec<()> for NoOp {
     async fn execute(&mut self) -> () {}
 }
 
+/// [`NoOp`], but does not display on graph
+#[derive(Debug)]
+pub struct Terminal {}
+
+impl Default for Terminal {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Terminal {
+    pub fn new() -> Self {
+        Terminal {}
+    }
+}
+
+impl Action for Terminal {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        DotString {
+            head_ids: vec![],
+            tail_ids: vec![],
+            body: "".to_string(),
+        }
+    }
+}
+
+impl<T: Send + Sync> ActionMod<T> for Terminal {
+    fn modify(&mut self, _input: &T) {}
+}
+
+#[async_trait]
+impl ActionExec<()> for Terminal {
+    async fn execute(&mut self) -> () {}
+}
+
 /// Always returns a true value
 #[derive(Debug)]
 pub struct AlwaysTrue {}
