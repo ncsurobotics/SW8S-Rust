@@ -1,5 +1,5 @@
 use super::{
-    action::{Action, ActionExec, ActionMod, ActionSequence},
+    action::{Action, ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     meb::WaitArm,
     movement::{Descend, StraightMovement, ZeroMovement},
@@ -70,30 +70,4 @@ where
             ),
         ),
     )
-}
-
-#[derive(Debug)]
-pub struct NoOp {}
-
-impl Default for NoOp {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl NoOp {
-    pub fn new() -> Self {
-        NoOp {}
-    }
-}
-
-impl Action for NoOp {}
-
-impl<T: Send + Sync> ActionMod<T> for NoOp {
-    fn modify(&mut self, _input: &T) {}
-}
-
-#[async_trait]
-impl ActionExec<()> for NoOp {
-    async fn execute(&mut self) -> () {}
 }

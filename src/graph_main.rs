@@ -36,6 +36,9 @@ pub mod generated_actions {
     pub mod vision {
         include!(concat!(env!("OUT_DIR"), "/graph_missions/vision.rs"));
     }
+    pub mod extra {
+        include!(concat!(env!("OUT_DIR"), "/graph_missions/extra.rs"));
+    }
     pub mod movement {
         include!(concat!(env!("OUT_DIR"), "/graph_missions/movement.rs"));
     }
