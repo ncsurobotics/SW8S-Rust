@@ -43,10 +43,10 @@ pub trait ActionExec<T: Send + Sync>: Action + Send + Sync {
 }
 
 /**
- * A trait that can be executed and modified at runtime.
+ * An action that can be modified at runtime.
  */
-pub trait ActionMod<'a, Input: Send + Sync>: Action {
-    fn modify(&mut self, input: &'a Input);
+pub trait ActionMod<Input: Send + Sync>: Action {
+    fn modify(&mut self, input: &Input);
 }
 
 /**
@@ -309,11 +309,8 @@ impl<V: Send + Sync, T: ActionExec<V>, U: ActionExec<V>> ActionExec<(V, V)> for 
     }
 }
 
-impl<
-        Input: Send + Sync,
-        V: for<'a> ActionMod<'a, Input> + Sync + Send,
-        W: for<'a> ActionMod<'a, Input> + Sync + Send,
-    > ActionMod<'_, Input> for DualAction<V, W>
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> + Sync + Send>
+    ActionMod<Input> for DualAction<V, W>
 {
     fn modify(&mut self, input: &Input) {
         self.first.modify(input);
@@ -362,12 +359,8 @@ impl<T, V: Action, W: Action> ActionChain<T, V, W> {
 }
 
 #[async_trait]
-impl<
-        T: Send + Sync,
-        U: Send + Sync,
-        V: ActionExec<T>,
-        W: for<'a> ActionMod<'a, T> + ActionExec<U>,
-    > ActionExec<U> for ActionChain<T, V, W>
+impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionMod<T> + ActionExec<U>>
+    ActionExec<U> for ActionChain<T, V, W>
 {
     async fn execute(&mut self) -> U {
         let _: T = self.first.execute().await;
@@ -376,7 +369,7 @@ impl<
     }
 }
 
-impl<Input: Send + Sync, T, U: for<'a> ActionMod<'a, Input>, V: Action> ActionMod<'_, Input>
+impl<Input: Send + Sync, T, U: ActionMod<Input>, V: Action> ActionMod<Input>
     for ActionChain<T, U, V>
 {
     fn modify(&mut self, input: &Input) {
@@ -633,11 +626,8 @@ impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Y>, W: ActionExec<X>> ActionE
     }
 }
 
-impl<
-        Input: Send + Sync,
-        V: for<'a> ActionMod<'a, Input> + Sync + Send,
-        W: for<'a> ActionMod<'a, Input> + Sync + Send,
-    > ActionMod<'_, Input> for ActionConcurrent<V, W>
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> + Sync + Send>
+    ActionMod<Input> for ActionConcurrent<V, W>
 {
     fn modify(&mut self, input: &Input) {
         self.first.modify(input);
@@ -781,7 +771,7 @@ impl<U: Send + Sync, V: Send + Sync, T: ActionExec<(U, V)>> ActionExec<V> for Tu
     }
 }
 
-impl<Input: Send + Sync, V: for<'a> ActionMod<'a, Input> + Sync + Send, U> ActionMod<'_, Input>
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, U> ActionMod<Input>
     for TupleSecond<V, U>
 {
     fn modify(&mut self, input: &Input) {
@@ -816,9 +806,7 @@ impl<T: Action> FirstValid<T> {
     }
 }
 
-impl<Input: Send + Sync, T: for<'a> ActionMod<'a, Input> + Sync + Send> ActionMod<'_, Input>
-    for FirstValid<T>
-{
+impl<Input: Send + Sync, T: ActionMod<Input> + Sync + Send> ActionMod<Input> for FirstValid<T> {
     fn modify(&mut self, input: &Input) {
         self.action.modify(input);
     }

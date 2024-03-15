@@ -20,8 +20,8 @@ use super::{
     comms::StartBno055,
     extra::{CountFalse, CountTrue, NoOp, OutputType, Terminal, ToVec, Transform},
     movement::{
-        default_linear_yaw_from_x, AdjustMovementAngle, OffsetToPose, Stability2Movement,
-        Stability2Pos, ZeroMovement,
+        default_linear_yaw_from_x, AdjustMovementAngle, LinearYawFromX, OffsetToPose,
+        Stability2Adjust, Stability2Movement, Stability2Pos, ZeroMovement,
     },
     vision::{Average, DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
 };
@@ -94,13 +94,15 @@ pub fn adjust_logic<
         + GetMainElectronicsBoard
         + GetFrontCamMat,
     X: 'a
-        + for<'b> ActionMod<'b, Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
+        + ActionMod<Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
         + ActionExec<anyhow::Result<()>>,
 >(
     context: &'a Con,
-    _depth: f32,
+    depth: f32,
     end_condition: X,
 ) -> impl ActionExec<()> + 'a {
+    const GATE_TRAVERSAL_SPEED: f32 = 0.5;
+
     ActionWhile::new(ActionChain::new(
         VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
         ActionChain::new(
@@ -118,8 +120,11 @@ pub fn adjust_logic<
                     ExtractPosition::new(),
                     Average::new(),
                     OffsetToPose::default(),
-                    Transform::new_default(default_linear_yaw_from_x()),
-                    Stability2Movement::new(context, Stability2Pos::default()),
+                    LinearYawFromX::<Stability2Adjust>::default(),
+                    Stability2Movement::new(
+                        context,
+                        Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth)
+                    ),
                     OutputType::<()>::new()
                 ),
                 end_condition,

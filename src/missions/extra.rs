@@ -29,7 +29,7 @@ impl NoOp {
 
 impl Action for NoOp {}
 
-impl<T: Send + Sync> ActionMod<'_, T> for NoOp {
+impl<T: Send + Sync> ActionMod<T> for NoOp {
     fn modify(&mut self, _input: &T) {}
 }
 
@@ -64,7 +64,7 @@ impl Action for Terminal {
     }
 }
 
-impl<T: Send + Sync> ActionMod<'_, T> for Terminal {
+impl<T: Send + Sync> ActionMod<T> for Terminal {
     fn modify(&mut self, _input: &T) {}
 }
 
@@ -73,7 +73,7 @@ impl ActionExec<()> for Terminal {
     async fn execute(&mut self) -> () {}
 }
 
-/// [`Terminal`], but resolves an ActionExec Type
+/// Nondisplaying action that resolves an ActionExec Type
 #[derive(Debug)]
 pub struct OutputType<T> {
     _phantom_t: PhantomData<T>,
@@ -103,7 +103,7 @@ impl<T> Action for OutputType<T> {
     }
 }
 
-impl<T: Send + Sync> ActionMod<'_, T> for OutputType<T> {
+impl<T: Send + Sync> ActionMod<T> for OutputType<T> {
     fn modify(&mut self, _input: &T) {}
 }
 
@@ -129,7 +129,7 @@ impl Default for AlwaysTrue {
 
 impl Action for AlwaysTrue {}
 
-impl<T: Send + Sync> ActionMod<'_, T> for AlwaysTrue {
+impl<T: Send + Sync> ActionMod<T> for AlwaysTrue {
     fn modify(&mut self, _input: &T) {}
 }
 
@@ -168,7 +168,7 @@ impl<T> UnwrapAction<T> {
 
 impl<T> Action for UnwrapAction<T> {}
 
-impl<T: for<'a> ActionMod<'a, U>, U: Send + Sync> ActionMod<'_, U> for UnwrapAction<T> {
+impl<T: ActionMod<U>, U: Send + Sync> ActionMod<U> for UnwrapAction<T> {
     fn modify(&mut self, input: &U) {
         self.action.modify(input)
     }
@@ -207,7 +207,7 @@ impl Action for CountTrue {
     }
 }
 
-impl<T: Send + Sync> ActionMod<'_, anyhow::Result<T>> for CountTrue {
+impl<T: Send + Sync> ActionMod<anyhow::Result<T>> for CountTrue {
     fn modify(&mut self, input: &anyhow::Result<T>) {
         if input.is_ok() {
             self.count += 1;
@@ -220,7 +220,7 @@ impl<T: Send + Sync> ActionMod<'_, anyhow::Result<T>> for CountTrue {
     }
 }
 
-impl<T: Send + Sync> ActionMod<'_, Option<T>> for CountTrue {
+impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
     fn modify(&mut self, input: &Option<T>) {
         if input.is_some() {
             self.count += 1;
@@ -270,7 +270,7 @@ impl Action for CountFalse {
     }
 }
 
-impl<T: Send + Sync> ActionMod<'_, anyhow::Result<T>> for CountFalse {
+impl<T: Send + Sync> ActionMod<anyhow::Result<T>> for CountFalse {
     fn modify(&mut self, input: &anyhow::Result<T>) {
         if input.is_err() {
             self.count += 1;
@@ -283,7 +283,7 @@ impl<T: Send + Sync> ActionMod<'_, anyhow::Result<T>> for CountFalse {
     }
 }
 
-impl<T: Send + Sync> ActionMod<'_, Option<T>> for CountFalse {
+impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
     fn modify(&mut self, input: &Option<T>) {
         if input.is_none() {
             self.count += 1;
@@ -346,7 +346,7 @@ impl<T: Default, U, V: Fn(T) -> U> Transform<T, U, V> {
     }
 }
 
-impl<T: Send + Sync + Clone, U, V: Fn(T) -> U> ActionMod<'_, T> for Transform<T, U, V> {
+impl<T: Send + Sync + Clone, U, V: Fn(T) -> U> ActionMod<T> for Transform<T, U, V> {
     fn modify(&mut self, input: &T) {
         self.value = input.clone();
     }
@@ -381,7 +381,7 @@ impl<T> Default for ToVec<T> {
     }
 }
 
-impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<'_, Option<U>>
+impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<Option<U>>
     for ToVec<T>
 {
     fn modify(&mut self, input: &Option<U>) {
@@ -393,8 +393,8 @@ impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<
     }
 }
 
-impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone>
-    ActionMod<'_, anyhow::Result<U>> for ToVec<T>
+impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<anyhow::Result<U>>
+    for ToVec<T>
 {
     fn modify(&mut self, input: &anyhow::Result<U>) {
         if let Ok(input) = input {
