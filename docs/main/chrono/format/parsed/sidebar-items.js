@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["set_if_consistent"],"struct":["Parsed"]};
+window.SIDEBAR_ITEMS = {"fn":["resolve_week_date","set_if_consistent"],"struct":["Parsed"]};
