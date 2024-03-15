@@ -698,18 +698,22 @@ impl<T: Send + Sync + Clone> ActionMod<T> for OffsetToMovement<T> {
     }
 }
 
-impl<T: Send + Sync + Clone> ActionMod<Option<T>> for OffsetToMovement<T> {
+impl<T: Send + Sync + Clone + Default> ActionMod<Option<T>> for OffsetToMovement<T> {
     fn modify(&mut self, input: &Option<T>) {
         if let Some(input) = input {
             self.offset = input.clone();
+        } else {
+            self.offset = T::default();
         }
     }
 }
 
-impl<T: Send + Sync + Clone> ActionMod<anyhow::Result<T>> for OffsetToMovement<T> {
+impl<T: Send + Sync + Clone + Default> ActionMod<anyhow::Result<T>> for OffsetToMovement<T> {
     fn modify(&mut self, input: &anyhow::Result<T>) {
         if let Ok(input) = input {
             self.offset = input.clone();
+        } else {
+            self.offset = T::default();
         }
     }
 }
