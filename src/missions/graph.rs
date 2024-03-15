@@ -8,8 +8,18 @@ use graphviz_rust::{cmd::Format, exec, parse, printer::PrinterContext};
 use super::action::Action;
 
 pub fn stripped_type<T: ?Sized>() -> &'static str {
-    let mut raw = type_name::<T>();
-    // Remove generic signatures
+    let raw = type_name::<T>();
+    strip_sig(raw)
+}
+
+pub fn stripped_fn<T: ?Sized>() -> String {
+    let raw = type_name::<T>();
+    let (fn_sig, output) = raw.split("->").collect_tuple().unwrap();
+    let (fn_first, fn_mid, fn_end) = fn_sig.split(['(', ')']).collect_tuple().unwrap();
+    fn_first.to_string() + "(" + strip_sig(fn_mid) + ")" + fn_end + "->" + strip_sig(output)
+}
+
+fn strip_sig(mut raw: &str) -> &str {
     if let Some(idx) = raw.find('<') {
         raw = &raw[0..idx];
     }

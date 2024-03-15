@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use super::{
     action::{Action, ActionExec, ActionMod},
-    graph::{stripped_type, DotString},
+    graph::{stripped_fn, stripped_type, DotString},
 };
 
 /// Development Action that does... nothing
@@ -284,7 +284,7 @@ impl<T, U, V: Fn(T) -> U> Action for Transform<T, U, V> {
             body: format!(
                 "\"{}\" [label = \"{}\", margin = 0];\n",
                 id,
-                stripped_type::<V>()
+                stripped_fn::<V>()
             ),
         }
     }
