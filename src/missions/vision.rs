@@ -219,7 +219,7 @@ impl<
 }
 
 impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
-    ActionMod<anyhow::Result<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
+    ActionMod<'_, anyhow::Result<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
     fn modify(&mut self, input: &anyhow::Result<Vec<VisualDetection<U, V>>>) {
         self.results = input.as_ref().map(|valid| valid.clone()).ok()
@@ -227,7 +227,7 @@ impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
 }
 
 impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
-    ActionMod<Option<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
+    ActionMod<'_, Option<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
     fn modify(&mut self, input: &Option<Vec<VisualDetection<U, V>>>) {
         self.results = input.as_ref().cloned();
@@ -258,13 +258,13 @@ impl<T: Send + Sync + Clone + Sum + Div<usize, Output = T>> ActionExec<Option<T>
     }
 }
 
-impl<T: Send + Sync + Clone> ActionMod<Vec<T>> for Average<T> {
+impl<T: Send + Sync + Clone> ActionMod<'_, Vec<T>> for Average<T> {
     fn modify(&mut self, input: &Vec<T>) {
         self.values = input.clone();
     }
 }
 
-impl<T: Send + Sync + Clone> ActionMod<Option<Vec<T>>> for Average<T> {
+impl<T: Send + Sync + Clone> ActionMod<'_, Option<Vec<T>>> for Average<T> {
     fn modify(&mut self, input: &Option<Vec<T>>) {
         if let Some(input) = input {
             self.values = input.clone();
@@ -274,7 +274,7 @@ impl<T: Send + Sync + Clone> ActionMod<Option<Vec<T>>> for Average<T> {
     }
 }
 
-impl<T: Send + Sync + Clone> ActionMod<anyhow::Result<Vec<T>>> for Average<T> {
+impl<T: Send + Sync + Clone> ActionMod<'_, anyhow::Result<Vec<T>>> for Average<T> {
     fn modify(&mut self, input: &anyhow::Result<Vec<T>>) {
         if let Ok(input) = input {
             self.values = input.clone();
@@ -307,7 +307,7 @@ impl<T: Send + Sync, U: Send + Sync + Clone> ActionExec<Vec<U>> for ExtractPosit
     }
 }
 
-impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetection<T, U>>>
+impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<'_, Vec<VisualDetection<T, U>>>
     for ExtractPosition<T, U>
 {
     fn modify(&mut self, input: &Vec<VisualDetection<T, U>>) {
@@ -315,7 +315,7 @@ impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetecti
     }
 }
 
-impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<VisualDetection<T, U>>
+impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<'_, VisualDetection<T, U>>
     for ExtractPosition<T, U>
 {
     fn modify(&mut self, input: &VisualDetection<T, U>) {

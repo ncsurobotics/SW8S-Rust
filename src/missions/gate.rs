@@ -94,7 +94,7 @@ pub fn adjust_logic<
         + GetMainElectronicsBoard
         + GetFrontCamMat,
     X: 'a
-        + ActionMod<Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
+        + for<'b> ActionMod<'b, Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
         + ActionExec<anyhow::Result<()>>,
 >(
     context: &'a Con,

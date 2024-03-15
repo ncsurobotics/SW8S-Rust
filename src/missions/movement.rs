@@ -49,7 +49,7 @@ impl<'a, T> Descend<'a, T> {
 
 impl<T> Action for Descend<'_, T> {}
 
-impl<T> ActionMod<f32> for Descend<'_, T> {
+impl<T> ActionMod<'_, f32> for Descend<'_, T> {
     fn modify(&mut self, input: &f32) {
         self.target_depth = *input;
     }
@@ -158,13 +158,13 @@ impl<'a, T> AdjustMovement<'a, T> {
     }
 }
 
-impl<T> ActionMod<f32> for AdjustMovement<'_, T> {
+impl<T> ActionMod<'_, f32> for AdjustMovement<'_, T> {
     fn modify(&mut self, input: &f32) {
         self.target_depth = *input;
     }
 }
 
-impl<T, V> ActionMod<Result<V>> for AdjustMovement<'_, T>
+impl<T, V> ActionMod<'_, Result<V>> for AdjustMovement<'_, T>
 where
     V: RelPos<Number = f64> + Sync + Send + Debug,
 {
@@ -212,14 +212,14 @@ impl<'a, T> AdjustMovementAngle<'a, T> {
     }
 }
 
-impl<T> ActionMod<f32> for AdjustMovementAngle<'_, T> {
+impl<T> ActionMod<'_, f32> for AdjustMovementAngle<'_, T> {
     fn modify(&mut self, input: &f32) {
         self.target_depth = *input;
     }
 }
 
 /*
-impl<T, V> ActionMod<Result<V>> for AdjustMovementAngle<'_, T>
+impl<T, V> ActionMod<'_, Result<V>> for AdjustMovementAngle<'_, T>
 where
     V: RelPosAngle<Number = f64> + Sync + Send + Debug,
 {
@@ -254,7 +254,7 @@ async fn angle_base_value<T: AsyncWrite + Unpin>(board: &ControlBoard<T>) -> f32
         .await
 }
 
-impl<T, V> ActionMod<Result<V>> for AdjustMovementAngle<'_, T>
+impl<T, V> ActionMod<'_, Result<V>> for AdjustMovementAngle<'_, T>
 where
     V: RelPos<Number = f64> + Sync + Send + Debug,
 {
@@ -348,13 +348,13 @@ impl<'a, T> CenterMovement<'a, T> {
     }
 }
 
-impl<T> ActionMod<f32> for CenterMovement<'_, T> {
+impl<T> ActionMod<'_, f32> for CenterMovement<'_, T> {
     fn modify(&mut self, input: &f32) {
         self.target_depth = *input;
     }
 }
 
-impl<T, V> ActionMod<Result<V>> for CenterMovement<'_, T>
+impl<T, V> ActionMod<'_, Result<V>> for CenterMovement<'_, T>
 where
     V: RelPosAngle<Number = f64> + Sync + Send + Debug,
 {
@@ -422,6 +422,17 @@ pub struct Stability2Adjust {
 }
 
 impl Stability2Adjust {
+    pub const fn const_default() -> Self {
+        Self {
+            x: None,
+            y: None,
+            target_pitch: None,
+            target_roll: None,
+            target_yaw: None,
+            target_depth: None,
+        }
+    }
+
     /// Convert all the invalid IEEE states into None
     fn address_ieee(val: AdjustType<f32>) -> Option<AdjustType<f32>> {
         match val {
@@ -500,7 +511,7 @@ pub struct Stability2Pos {
 }
 
 impl Stability2Pos {
-    pub fn new(
+    pub const fn new(
         x: f32,
         y: f32,
         target_pitch: f32,
@@ -594,11 +605,15 @@ impl Stability2Pos {
 
         self
     }
+
+    pub const fn const_default() -> Self {
+        Self::new(0.0, 0.0, 0.0, 0.0, None, 0.0)
+    }
 }
 
 impl Default for Stability2Pos {
     fn default() -> Self {
-        Self::new(0.0, 0.0, 0.0, 0.0, None, 0.0)
+        Self::const_default()
     }
 }
 
@@ -623,13 +638,13 @@ impl<'a, T> Stability2Movement<'a, T> {
     }
 }
 
-impl<T> ActionMod<Stability2Pos> for Stability2Movement<'_, T> {
+impl<T> ActionMod<'_, Stability2Pos> for Stability2Movement<'_, T> {
     fn modify(&mut self, input: &Stability2Pos) {
         self.pose = input.clone();
     }
 }
 
-impl<T> ActionMod<Stability2Adjust> for Stability2Movement<'_, T> {
+impl<T> ActionMod<'_, Stability2Adjust> for Stability2Movement<'_, T> {
     fn modify(&mut self, input: &Stability2Adjust) {
         self.pose.adjust(input);
     }
@@ -672,6 +687,34 @@ pub const fn default_linear_yaw_from_x() -> fn(Stability2Adjust) -> Stability2Ad
 }
 
 #[derive(Debug)]
+pub struct LinearYawFromX<'a> {
+    pose: &'a Stability2Adjust,
+}
+
+impl Action for LinearYawFromX<'_> {}
+
+impl LinearYawFromX<'_> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new() -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+impl Default for LinearYawFromX<'_> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<'a> ActionMod<'a, Stability2Adjust> for LinearYawFromX<'a> {
+    fn modify(&mut self, input: &'a Stability2Adjust) {
+        self.pose = input;
+    }
+}
+
+#[derive(Debug)]
 pub struct OffsetToPose<T> {
     offset: T,
 }
@@ -692,13 +735,13 @@ impl<T: Default> Default for OffsetToPose<T> {
     }
 }
 
-impl<T: Send + Sync + Clone> ActionMod<T> for OffsetToPose<T> {
+impl<T: Send + Sync + Clone> ActionMod<'_, T> for OffsetToPose<T> {
     fn modify(&mut self, input: &T) {
         self.offset = input.clone();
     }
 }
 
-impl<T: Send + Sync + Clone + Default> ActionMod<Option<T>> for OffsetToPose<T> {
+impl<T: Send + Sync + Clone + Default> ActionMod<'_, Option<T>> for OffsetToPose<T> {
     fn modify(&mut self, input: &Option<T>) {
         if let Some(input) = input {
             self.offset = input.clone();
@@ -708,7 +751,7 @@ impl<T: Send + Sync + Clone + Default> ActionMod<Option<T>> for OffsetToPose<T> 
     }
 }
 
-impl<T: Send + Sync + Clone + Default> ActionMod<anyhow::Result<T>> for OffsetToPose<T> {
+impl<T: Send + Sync + Clone + Default> ActionMod<'_, anyhow::Result<T>> for OffsetToPose<T> {
     fn modify(&mut self, input: &anyhow::Result<T>) {
         if let Ok(input) = input {
             self.offset = input.clone();
