@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["slice_as_uninit","slice_as_uninit_mut","slice_assume_init_mut","uninit_slice_fill_zero"],"struct":["LazyBool","LazyUsize"]};
