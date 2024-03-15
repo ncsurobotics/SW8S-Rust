@@ -40,7 +40,7 @@ pub trait Draw {
 }
 
 /// Holds x and y offset of object in frame
-#[derive(Debug, Getters, Clone, Copy)]
+#[derive(Debug, Getters, Clone, Copy, Default)]
 pub struct Offset2D<T: Num> {
     x: T,
     y: T,

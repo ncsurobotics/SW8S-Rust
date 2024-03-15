@@ -1,4 +1,5 @@
 use crate::comms::control_board::ControlBoard;
+use crate::vision::Offset2D;
 use crate::vision::RelPos;
 use crate::vision::RelPosAngle;
 
@@ -606,6 +607,7 @@ pub struct Stability2Movement<'a, T> {
     context: &'a T,
     pose: Stability2Pos,
 }
+
 impl<T> Action for Stability2Movement<'_, T> {}
 
 impl<'a, T> Stability2Movement<'a, T> {
@@ -648,6 +650,7 @@ impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<()> for Stabili
         let _ = self.pose.exec(self.context.get_control_board()).await;
     }
 }
+
 ///
 /// Generates a yaw adjustment from an x axis set, multiplying by angle_diff
 ///
@@ -663,7 +666,60 @@ pub fn linear_yaw_from_x(mut input: Stability2Adjust, angle_diff: f32) -> Stabil
 }
 
 /// [`linear_yaw_from_x`] with a default value
-pub fn default_linear_yaw_from_x() -> fn(Stability2Adjust) -> Stability2Adjust {
+pub const fn default_linear_yaw_from_x() -> fn(Stability2Adjust) -> Stability2Adjust {
     const ANGLE_DIFF: f32 = 7.0;
     |input| linear_yaw_from_x(input, ANGLE_DIFF)
+}
+
+#[derive(Debug)]
+pub struct OffsetToMovement<T> {
+    offset: T,
+}
+
+impl<T> Action for OffsetToMovement<T> {}
+
+impl<T> OffsetToMovement<T> {
+    pub const fn new(offset: T) -> Self {
+        Self { offset }
+    }
+}
+
+impl<T: Default> Default for OffsetToMovement<T> {
+    fn default() -> Self {
+        Self {
+            offset: T::default(),
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<T> for OffsetToMovement<T> {
+    fn modify(&mut self, input: &T) {
+        self.offset = input.clone();
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<Option<T>> for OffsetToMovement<T> {
+    fn modify(&mut self, input: &Option<T>) {
+        if let Some(input) = input {
+            self.offset = input.clone();
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<anyhow::Result<T>> for OffsetToMovement<T> {
+    fn modify(&mut self, input: &anyhow::Result<T>) {
+        if let Ok(input) = input {
+            self.offset = input.clone();
+        }
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability2Adjust> for OffsetToMovement<Offset2D<f64>> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut adjust = Stability2Adjust::default();
+        adjust.set_x(AdjustType::Replace(*self.offset.x() as f32));
+        adjust.set_y(AdjustType::Replace(*self.offset.y() as f32));
+        adjust
+    }
 }

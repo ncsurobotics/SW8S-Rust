@@ -12,14 +12,14 @@ use crate::{
 
 use super::{
     action::{
-        wrap_action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence,
-        ActionWhile, FirstValid, TupleSecond,
+        wrap_action, ActionChain, ActionConcurrent, ActionConditional, ActionExec, ActionMod,
+        ActionSequence, ActionWhile, FirstValid, TupleSecond,
     },
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::descend_and_go_forward,
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, ToVec, Transform},
-    movement::AdjustMovementAngle,
+    extra::{CountFalse, CountTrue, NoOp, Terminal, ToVec, Transform},
+    movement::{default_linear_yaw_from_x, AdjustMovementAngle, OffsetToMovement},
     vision::{Average, DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
 };
 
@@ -111,7 +111,9 @@ pub fn adjust_logic<
                     ActionChain::new,
                     ToVec::new(),
                     ExtractPosition::new(),
-                    Average::new()
+                    Average::new(),
+                    OffsetToMovement::default(),
+                    Transform::new_default(default_linear_yaw_from_x())
                 ),
                 end_condition,
             )),

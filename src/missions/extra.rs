@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use super::{
     action::{Action, ActionExec, ActionMod},
-    graph::DotString,
+    graph::{stripped_type, DotString},
 };
 
 /// Development Action that does... nothing
@@ -270,12 +270,12 @@ impl ActionExec<anyhow::Result<()>> for CountFalse {
 ///
 /// Generic action for secondary transformations
 #[derive(Debug)]
-pub struct Transform<T, U> {
+pub struct Transform<T, U, V: Fn(T) -> U> {
     value: T,
-    transform_function: fn(T) -> U,
+    transform_function: V,
 }
 
-impl<T, U> Action for Transform<T, U> {
+impl<T, U, V: Fn(T) -> U> Action for Transform<T, U, V> {
     fn dot_string(&self, _parent: &str) -> DotString {
         let id = Uuid::new_v4();
         DotString {
@@ -284,14 +284,14 @@ impl<T, U> Action for Transform<T, U> {
             body: format!(
                 "\"{}\" [label = \"{}\", margin = 0];\n",
                 id,
-                stringify!(self.transform_function)
+                stripped_type::<V>()
             ),
         }
     }
 }
 
-impl<T, U> Transform<T, U> {
-    pub const fn new(value: T, transform_function: fn(T) -> U) -> Self {
+impl<T, U, V: Fn(T) -> U> Transform<T, U, V> {
+    pub const fn new(value: T, transform_function: V) -> Self {
         Self {
             value,
             transform_function,
@@ -299,20 +299,22 @@ impl<T, U> Transform<T, U> {
     }
 }
 
-impl<T: Default, U> Transform<T, U> {
-    pub fn new_default(transform_function: fn(T) -> U) -> Self {
+impl<T: Default, U, V: Fn(T) -> U> Transform<T, U, V> {
+    pub fn new_default(transform_function: V) -> Self {
         Self::new(T::default(), transform_function)
     }
 }
 
-impl<T: Send + Sync + Clone, U> ActionMod<T> for Transform<T, U> {
+impl<T: Send + Sync + Clone, U, V: Fn(T) -> U> ActionMod<T> for Transform<T, U, V> {
     fn modify(&mut self, input: &T) {
         self.value = input.clone();
     }
 }
 
 #[async_trait]
-impl<T: Send + Sync + Clone, U: Send + Sync> ActionExec<U> for Transform<T, U> {
+impl<T: Send + Sync + Clone, U: Send + Sync, V: Fn(T) -> U + Send + Sync> ActionExec<U>
+    for Transform<T, U, V>
+{
     async fn execute(&mut self) -> U {
         (self.transform_function)(self.value.clone())
     }
