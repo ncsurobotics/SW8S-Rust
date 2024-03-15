@@ -18,8 +18,11 @@ use super::{
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::descend_and_go_forward,
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, NoOp, Terminal, ToVec, Transform},
-    movement::{default_linear_yaw_from_x, AdjustMovementAngle, OffsetToMovement},
+    extra::{CountFalse, CountTrue, NoOp, OutputType, Terminal, ToVec, Transform},
+    movement::{
+        default_linear_yaw_from_x, AdjustMovementAngle, OffsetToPose, Stability2Movement,
+        Stability2Pos, ZeroMovement,
+    },
     vision::{Average, DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
 };
 
@@ -69,14 +72,16 @@ pub fn gate_run_complex<
         + GetFrontCamMat,
 >(
     context: &Con,
-) -> impl ActionExec<()> + '_ {
+) -> impl ActionExec<anyhow::Result<()>> + '_ {
     let depth: f32 = -1.0;
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        ActionSequence::new(
+        act_nest!(
+            ActionSequence::new,
             adjust_logic(context, depth, CountTrue::new(3)),
             adjust_logic(context, depth, CountFalse::new(10)),
+            ZeroMovement::new(context, depth)
         ),
     )
 }
@@ -112,8 +117,10 @@ pub fn adjust_logic<
                     ToVec::new(),
                     ExtractPosition::new(),
                     Average::new(),
-                    OffsetToMovement::default(),
-                    Transform::new_default(default_linear_yaw_from_x())
+                    OffsetToPose::default(),
+                    Transform::new_default(default_linear_yaw_from_x()),
+                    Stability2Movement::new(context, Stability2Pos::default()),
+                    OutputType::<()>::new()
                 ),
                 end_condition,
             )),

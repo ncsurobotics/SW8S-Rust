@@ -672,19 +672,19 @@ pub const fn default_linear_yaw_from_x() -> fn(Stability2Adjust) -> Stability2Ad
 }
 
 #[derive(Debug)]
-pub struct OffsetToMovement<T> {
+pub struct OffsetToPose<T> {
     offset: T,
 }
 
-impl<T> Action for OffsetToMovement<T> {}
+impl<T> Action for OffsetToPose<T> {}
 
-impl<T> OffsetToMovement<T> {
+impl<T> OffsetToPose<T> {
     pub const fn new(offset: T) -> Self {
         Self { offset }
     }
 }
 
-impl<T: Default> Default for OffsetToMovement<T> {
+impl<T: Default> Default for OffsetToPose<T> {
     fn default() -> Self {
         Self {
             offset: T::default(),
@@ -692,13 +692,13 @@ impl<T: Default> Default for OffsetToMovement<T> {
     }
 }
 
-impl<T: Send + Sync + Clone> ActionMod<T> for OffsetToMovement<T> {
+impl<T: Send + Sync + Clone> ActionMod<T> for OffsetToPose<T> {
     fn modify(&mut self, input: &T) {
         self.offset = input.clone();
     }
 }
 
-impl<T: Send + Sync + Clone + Default> ActionMod<Option<T>> for OffsetToMovement<T> {
+impl<T: Send + Sync + Clone + Default> ActionMod<Option<T>> for OffsetToPose<T> {
     fn modify(&mut self, input: &Option<T>) {
         if let Some(input) = input {
             self.offset = input.clone();
@@ -708,7 +708,7 @@ impl<T: Send + Sync + Clone + Default> ActionMod<Option<T>> for OffsetToMovement
     }
 }
 
-impl<T: Send + Sync + Clone + Default> ActionMod<anyhow::Result<T>> for OffsetToMovement<T> {
+impl<T: Send + Sync + Clone + Default> ActionMod<anyhow::Result<T>> for OffsetToPose<T> {
     fn modify(&mut self, input: &anyhow::Result<T>) {
         if let Ok(input) = input {
             self.offset = input.clone();
@@ -719,7 +719,7 @@ impl<T: Send + Sync + Clone + Default> ActionMod<anyhow::Result<T>> for OffsetTo
 }
 
 #[async_trait]
-impl ActionExec<Stability2Adjust> for OffsetToMovement<Offset2D<f64>> {
+impl ActionExec<Stability2Adjust> for OffsetToPose<Offset2D<f64>> {
     async fn execute(&mut self) -> Stability2Adjust {
         let mut adjust = Stability2Adjust::default();
         adjust.set_x(AdjustType::Replace(*self.offset.x() as f32));

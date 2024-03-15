@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use anyhow::anyhow;
 use async_trait::async_trait;
 use uuid::Uuid;
@@ -68,6 +70,45 @@ impl<T: Send + Sync> ActionMod<T> for Terminal {
 
 #[async_trait]
 impl ActionExec<()> for Terminal {
+    async fn execute(&mut self) -> () {}
+}
+
+/// [`Terminal`], but resolves an ActionExec Type
+#[derive(Debug)]
+pub struct OutputType<T> {
+    _phantom_t: PhantomData<T>,
+}
+
+impl<T> Default for OutputType<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T> OutputType<T> {
+    pub fn new() -> Self {
+        OutputType {
+            _phantom_t: PhantomData,
+        }
+    }
+}
+
+impl<T> Action for OutputType<T> {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        DotString {
+            head_ids: vec![],
+            tail_ids: vec![],
+            body: "".to_string(),
+        }
+    }
+}
+
+impl<T: Send + Sync> ActionMod<T> for OutputType<T> {
+    fn modify(&mut self, _input: &T) {}
+}
+
+#[async_trait]
+impl<T: Send + Sync> ActionExec<()> for OutputType<T> {
     async fn execute(&mut self) -> () {}
 }
 
