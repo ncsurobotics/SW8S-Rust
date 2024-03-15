@@ -7,17 +7,14 @@ use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
 use derive_getters::Getters;
-use futures::FutureExt;
 use num_traits::clamp;
-use num_traits::Float;
 use num_traits::Pow;
 use std::ops::Rem;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use tokio::io::AsyncWrite;
 use tokio::io::WriteHalf;
-use tokio::sync::OnceCell;
+
 use tokio_serial::SerialStream;
 
 use super::{
@@ -241,19 +238,6 @@ where
 }
 */
 
-static ANGLE_BASE_VALUE: OnceCell<f32> = OnceCell::const_new();
-async fn angle_base_value<T: AsyncWrite + Unpin>(board: &ControlBoard<T>) -> f32 {
-    *ANGLE_BASE_VALUE
-        .get_or_init(|| async {
-            let mut angles = board.responses().get_angles().await;
-            while angles.is_none() {
-                angles = board.responses().get_angles().await;
-            }
-            *angles.unwrap().yaw()
-        })
-        .await
-}
-
 impl<T, V> ActionMod<Result<V>> for AdjustMovementAngle<'_, T>
 where
     V: RelPos<Number = f64> + Sync + Send + Debug,
@@ -381,6 +365,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Cen
     async fn execute(&mut self) -> Result<()> {
         const FACTOR: f32 = 1.5;
         const MIN_SPEED: f32 = 0.3;
+        #[allow(dead_code)]
         const MIN_YAW: f32 = 5.0;
 
         let mut x = self.x.pow(FACTOR);

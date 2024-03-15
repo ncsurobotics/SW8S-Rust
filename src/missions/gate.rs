@@ -12,16 +12,16 @@ use crate::{
 
 use super::{
     action::{
-        wrap_action, ActionChain, ActionConcurrent, ActionConditional, ActionExec, ActionMod,
-        ActionSequence, ActionWhile, FirstValid, TupleSecond,
+        wrap_action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence,
+        ActionWhile, FirstValid, TupleSecond,
     },
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::descend_and_go_forward,
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, NoOp, OutputType, Terminal, ToVec, Transform},
+    extra::{CountFalse, CountTrue, OutputType, ToVec},
     movement::{
-        default_linear_yaw_from_x, AdjustMovementAngle, LinearYawFromX, OffsetToPose,
-        Stability2Adjust, Stability2Movement, Stability2Pos, ZeroMovement,
+        AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
+        Stability2Pos, ZeroMovement,
     },
     vision::{Average, DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
 };

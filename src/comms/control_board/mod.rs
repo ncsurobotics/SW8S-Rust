@@ -21,9 +21,9 @@ pub mod response;
 pub mod util;
 
 pub enum SensorStatuses {
-    IMU_NR,
-    DEPTH_NR,
-    ALL_GOOD,
+    ImuNr,
+    DepthNr,
+    AllGood,
 }
 
 #[derive(Debug)]
@@ -412,11 +412,11 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         let status_resp = self.write_out(message).await;
         let status_byte = status_resp.unwrap()[0];
         if status_byte & 0x10 != 0x10 {
-            Ok(SensorStatuses::IMU_NR)
+            Ok(SensorStatuses::ImuNr)
         } else if status_byte & 0x01 != 0x01 {
-            return Ok(SensorStatuses::DEPTH_NR);
+            return Ok(SensorStatuses::DepthNr);
         } else {
-            return Ok(SensorStatuses::ALL_GOOD);
+            return Ok(SensorStatuses::AllGood);
         }
     }
 

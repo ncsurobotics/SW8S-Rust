@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use super::{
     action::{Action, ActionExec, ActionMod},
-    graph::{stripped_fn, stripped_type, DotString},
+    graph::{stripped_fn, DotString},
 };
 
 /// Development Action that does... nothing

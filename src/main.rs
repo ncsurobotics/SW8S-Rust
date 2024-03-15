@@ -109,11 +109,11 @@ async fn shutdown_handler() -> UnboundedSender<()> {
         let status = control_board().await.sensor_status_query().await;
 
         match status.unwrap() {
-            SensorStatuses::IMU_NR => {
+            SensorStatuses::ImuNr => {
                 println!("imu not ready");
                 exit(1);
             }
-            SensorStatuses::DEPTH_NR => {
+            SensorStatuses::DepthNr => {
                 println!("depth not ready");
                 exit(1);
             }
