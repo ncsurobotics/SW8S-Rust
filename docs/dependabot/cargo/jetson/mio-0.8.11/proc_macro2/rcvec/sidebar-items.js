@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["RcVec","RcVecBuilder","RcVecIntoIter","RcVecMut"]};

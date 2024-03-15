@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Offset"],"fn":["digit"],"struct":["Date","Datetime","DatetimeKey","DatetimeParseError","Time"]};
