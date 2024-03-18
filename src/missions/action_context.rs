@@ -32,6 +32,7 @@ pub trait GetMainElectronicsBoard: Send + Sync {
 pub trait GetFrontCamMat {
     async fn get_front_camera_mat(&self) -> Mat;
     async fn get_desired_buoy_gate(&self) -> Target;
+    async fn set_desired_buoy_gate(&mut self, value: Target) -> &Self;
 }
 
 /**
@@ -42,8 +43,19 @@ pub trait GetBottomCamMat {
     async fn get_bottom_camera_mat(&self) -> Mat;
 }
 
+/*
+#[async_trait]
+pub trait GetConfig {
+    async fn get_config(&self) -> Configuration;
+}
+*/
+
 #[derive(Debug)]
 pub struct EmptyActionContext;
+
+impl Unpin for EmptyActionContext {
+    // add code here
+}
 
 pub struct FullActionContext<'a, T: AsyncWriteExt + Unpin + Send> {
     control_board: &'a ControlBoard<T>,
@@ -92,11 +104,47 @@ impl<T: AsyncWriteExt + Unpin + Send> GetFrontCamMat for FullActionContext<'_, T
         let res = self.desired_buoy_target.read().await;
         (*res).clone()
     }
+    async fn set_desired_buoy_gate(&mut self, value: Target) -> &Self {
+        *self.desired_buoy_target.write().await = value;
+        self
+    }
 }
 
 #[async_trait]
 impl<T: AsyncWriteExt + Unpin + Send> GetBottomCamMat for FullActionContext<'_, T> {
     async fn get_bottom_camera_mat(&self) -> Mat {
         self.bottom_cam.get_mat().await
+    }
+}
+
+impl GetControlBoard<WriteHalf<SerialStream>> for EmptyActionContext {
+    fn get_control_board(&self) -> &ControlBoard<WriteHalf<SerialStream>> {
+        todo!()
+    }
+}
+
+impl GetMainElectronicsBoard for EmptyActionContext {
+    fn get_main_electronics_board(&self) -> &MainElectronicsBoard {
+        todo!()
+    }
+}
+
+#[async_trait]
+impl GetFrontCamMat for EmptyActionContext {
+    async fn get_front_camera_mat(&self) -> Mat {
+        todo!()
+    }
+    async fn get_desired_buoy_gate(&self) -> Target {
+        todo!()
+    }
+    async fn set_desired_buoy_gate(&mut self, _value: Target) -> &Self {
+        todo!()
+    }
+}
+
+#[async_trait]
+impl GetBottomCamMat for EmptyActionContext {
+    async fn get_bottom_camera_mat(&self) -> Mat {
+        todo!()
     }
 }

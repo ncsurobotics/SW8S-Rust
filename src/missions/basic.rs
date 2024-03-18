@@ -1,17 +1,10 @@
-use crate::vision::{gate_poles::GatePoles, nn_cv2::OnnxModel};
-
 use super::{
-    action::{Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile},
+    action::{Action, ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
-    comms::StartBno055,
-    example::AlwaysTrue,
     meb::WaitArm,
-    movement::StraightMovement,
-    movement::ZeroMovement,
-    movement::{AdjustMovement, Descend},
-    vision::VisionNormOffset,
+    movement::{Descend, StraightMovement, ZeroMovement},
 };
-use crate::missions::action_context::GetFrontCamMat;
+
 use async_trait::async_trait;
 use tokio::{
     io::WriteHalf,
@@ -27,9 +20,8 @@ pub struct DelayAction {
 impl Action for DelayAction {}
 
 #[async_trait]
-impl ActionExec for DelayAction {
-    type Output = ();
-    async fn execute(&mut self) -> Self::Output {
+impl ActionExec<()> for DelayAction {
+    async fn execute(&mut self) -> () {
         println!("BEGIN sleep for {} seconds", self.delay);
         sleep(Duration::from_secs_f32(self.delay)).await;
         println!("END sleep for {} seconds", self.delay);
@@ -48,10 +40,15 @@ impl DelayAction {
  *
  **/
 pub fn descend_and_go_forward<
+    'a,
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard,
+    T: Send + Sync,
 >(
-    context: &Con,
-) -> impl ActionExec + '_ {
+    context: &'a Con,
+) -> impl ActionExec<T> + 'a
+where
+    ZeroMovement<'a, Con>: ActionExec<T>,
+{
     let depth: f32 = -1.0;
 
     // time in seconds that each action will wait until before continuing onto the next action.
@@ -72,29 +69,5 @@ pub fn descend_and_go_forward<
                 ZeroMovement::new(context, depth),
             ),
         ),
-    )
-}
-
-pub fn gate_run<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
->(
-    context: &Con,
-) -> impl ActionExec + '_ {
-    let depth: f32 = -1.0;
-    let model = GatePoles::default();
-
-    ActionSequence::new(
-        ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        ActionWhile::new(ActionSequence::new(
-            ActionChain::new(
-                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(context, model),
-                AdjustMovement::new(context, depth),
-            ),
-            AlwaysTrue::new(),
-        )),
     )
 }

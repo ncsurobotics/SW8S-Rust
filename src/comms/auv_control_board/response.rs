@@ -1,8 +1,12 @@
 use bytes::BufMut;
 use tokio::io::AsyncReadExt;
-use tokio::sync::{Mutex, OnceCell};
+
 #[cfg(feature = "logging")]
-use tokio::{fs::OpenOptions, io::AsyncWriteExt};
+use tokio::{
+    fs::OpenOptions,
+    io::AsyncWriteExt,
+    sync::{Mutex, OnceCell},
+};
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 
@@ -167,8 +171,11 @@ mod tests {
     use super::*;
     use futures::stream;
     use futures::StreamExt;
-    use std::time::Duration;
+
     use tokio::sync::Mutex;
+
+    #[cfg(feature = "logging")]
+    use std::time::Duration;
 
     static MESSAGE_LOCK: Mutex<()> = Mutex::const_new(());
     #[tokio::test]

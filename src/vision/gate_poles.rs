@@ -4,7 +4,7 @@ use opencv::{core::Size, prelude::Mat};
 use crate::load_onnx;
 
 use super::{
-    nn_cv2::{OnnxModel, VisionModel, YoloDetection},
+    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
@@ -17,6 +17,12 @@ pub enum Target {
     Earth,
     Abydos,
     Pole,
+}
+
+impl From<YoloClass<Target>> for Target {
+    fn from(value: YoloClass<Target>) -> Self {
+        value.identifier
+    }
 }
 
 #[derive(Debug)]
