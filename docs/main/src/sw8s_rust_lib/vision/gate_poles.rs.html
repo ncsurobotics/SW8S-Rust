@@ -91,13 +91,19 @@
 <a href="#90" id="90">90</a>
 <a href="#91" id="91">91</a>
 <a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>opencv::{core::Size, prelude::Mat};
 
 <span class="kw">use </span><span class="kw">crate</span>::load_onnx;
 
 <span class="kw">use super</span>::{
-    nn_cv2::{OnnxModel, VisionModel, YoloDetection},
+    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
@@ -110,6 +116,12 @@
     Earth,
     Abydos,
     Pole,
+}
+
+<span class="kw">impl </span>From&lt;YoloClass&lt;Target&gt;&gt; <span class="kw">for </span>Target {
+    <span class="kw">fn </span>from(value: YoloClass&lt;Target&gt;) -&gt; <span class="self">Self </span>{
+        value.identifier
+    }
 }
 
 <span class="attr">#[derive(Debug)]

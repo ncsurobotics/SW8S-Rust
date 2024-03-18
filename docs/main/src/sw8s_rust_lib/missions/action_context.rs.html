@@ -101,6 +101,54 @@
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
 <a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>opencv::core::Mat;
@@ -135,6 +183,7 @@
 </span><span class="kw">pub trait </span>GetFrontCamMat {
     <span class="kw">async fn </span>get_front_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat;
     <span class="kw">async fn </span>get_desired_buoy_gate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Target;
+    <span class="kw">async fn </span>set_desired_buoy_gate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Target) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>;
 }
 
 <span class="doccomment">/**
@@ -145,8 +194,19 @@
     <span class="kw">async fn </span>get_bottom_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat;
 }
 
-<span class="attr">#[derive(Debug)]
+<span class="comment">/*
+#[async_trait]
+pub trait GetConfig {
+    async fn get_config(&amp;self) -&gt; Configuration;
+}
+*/
+
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>EmptyActionContext;
+
+<span class="kw">impl </span>Unpin <span class="kw">for </span>EmptyActionContext {
+    <span class="comment">// add code here
+</span>}
 
 <span class="kw">pub struct </span>FullActionContext&lt;<span class="lifetime">'a</span>, T: AsyncWriteExt + Unpin + Send&gt; {
     control_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ControlBoard&lt;T&gt;,
@@ -195,6 +255,10 @@
         <span class="kw">let </span>res = <span class="self">self</span>.desired_buoy_target.read().<span class="kw">await</span>;
         (<span class="kw-2">*</span>res).clone()
     }
+    <span class="kw">async fn </span>set_desired_buoy_gate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Target) -&gt; <span class="kw-2">&amp;</span><span class="self">Self </span>{
+        <span class="kw-2">*</span><span class="self">self</span>.desired_buoy_target.write().<span class="kw">await </span>= value;
+        <span class="self">self
+    </span>}
 }
 
 <span class="attr">#[async_trait]
@@ -202,5 +266,37 @@
     <span class="kw">async fn </span>get_bottom_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
         <span class="self">self</span>.bottom_cam.get_mat().<span class="kw">await
     </span>}
+}
+
+<span class="kw">impl </span>GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt; <span class="kw">for </span>EmptyActionContext {
+    <span class="kw">fn </span>get_control_board(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt; {
+        <span class="macro">todo!</span>()
+    }
+}
+
+<span class="kw">impl </span>GetMainElectronicsBoard <span class="kw">for </span>EmptyActionContext {
+    <span class="kw">fn </span>get_main_electronics_board(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>MainElectronicsBoard {
+        <span class="macro">todo!</span>()
+    }
+}
+
+<span class="attr">#[async_trait]
+</span><span class="kw">impl </span>GetFrontCamMat <span class="kw">for </span>EmptyActionContext {
+    <span class="kw">async fn </span>get_front_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
+        <span class="macro">todo!</span>()
+    }
+    <span class="kw">async fn </span>get_desired_buoy_gate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Target {
+        <span class="macro">todo!</span>()
+    }
+    <span class="kw">async fn </span>set_desired_buoy_gate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _value: Target) -&gt; <span class="kw-2">&amp;</span><span class="self">Self </span>{
+        <span class="macro">todo!</span>()
+    }
+}
+
+<span class="attr">#[async_trait]
+</span><span class="kw">impl </span>GetBottomCamMat <span class="kw">for </span>EmptyActionContext {
+    <span class="kw">async fn </span>get_bottom_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
+        <span class="macro">todo!</span>()
+    }
 }
 </code></pre></div></section></main></body></html>

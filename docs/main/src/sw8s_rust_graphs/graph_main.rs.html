@@ -58,16 +58,54 @@
 <a href="#57" id="57">57</a>
 <a href="#58" id="58">58</a>
 <a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fs::create_dir_all;
 
 <span class="kw">use </span>futures::{stream, StreamExt};
 <span class="kw">use </span>paste::paste;
 <span class="kw">use </span>sw8s_rust_lib::missions::action_context::EmptyActionContext;
-<span class="kw">use </span>sw8s_rust_lib::missions::graph::{dot_file, draw_svg};
 <span class="kw">use </span>tokio::{fs::write, join};
 
 <span class="attr">#[allow(warnings)]
-</span><span class="kw">mod </span>generated_actions {
+</span><span class="kw">pub mod </span>generated_actions {
     <span class="kw">pub mod </span>basic {
         <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/basic.rs"</span>));
     }
@@ -77,7 +115,47 @@
     <span class="kw">pub mod </span>buoy_hit {
         <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/buoy_hit.rs"</span>));
     }
+    <span class="kw">pub mod </span>buoy_circle {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/buoy_circle.rs"</span>));
+    }
+    <span class="kw">pub mod </span>path_align {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/path_align.rs"</span>));
+    }
+    <span class="kw">pub mod </span>gate {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/gate.rs"</span>));
+    }
+
+    <span class="comment">// TODO: find some way to automate the extras
+    </span><span class="kw">pub mod </span>action_context {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(
+            <span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>),
+            <span class="string">"/graph_missions/action_context.rs"
+        </span>));
+    }
+    <span class="kw">pub mod </span>vision {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/vision.rs"</span>));
+    }
+    <span class="kw">pub mod </span>extra {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/extra.rs"</span>));
+    }
+    <span class="kw">pub mod </span>movement {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/movement.rs"</span>));
+    }
+    <span class="kw">pub mod </span>meb {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/meb.rs"</span>));
+    }
+    <span class="kw">pub mod </span>comms {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/comms.rs"</span>));
+    }
+    <span class="kw">pub mod </span>graph {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/graph.rs"</span>));
+    }
+    <span class="kw">pub mod </span>action {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/action.rs"</span>));
+    }
 }
+
+<span class="kw">use </span>generated_actions::graph::{dot_file, draw_svg};
 
 <span class="kw">const </span>CONTEXT: EmptyActionContext = EmptyActionContext;
 
@@ -97,7 +175,7 @@
 </span><span class="kw">async fn </span>main() {
     create_dir_all(<span class="string">"graphs/"</span>).unwrap();
     <span class="comment">// (name, action) pairs to draw
-    </span><span class="kw">let </span>actions = <span class="macro">graph_actions!</span>(basic, example, buoy_hit);
+    </span><span class="kw">let </span>actions = <span class="macro">graph_actions!</span>(basic, example, buoy_hit, buoy_circle, path_align, gate);
 
     stream::iter(actions)
         .for_each(|(dir_name, action_set)| <span class="kw">async move </span>{

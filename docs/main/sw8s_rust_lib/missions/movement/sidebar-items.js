@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["AdjustMovement","Descend","StraightMovement","ZeroMovement"]};
+window.SIDEBAR_ITEMS = {"enum":["AdjustType"],"fn":["default_linear_yaw_from_x","linear_yaw_from_x"],"struct":["AdjustMovement","AdjustMovementAngle","CenterMovement","Descend","LinearYawFromX","OffsetToPose","Stability2Adjust","Stability2Movement","Stability2Pos","StraightMovement","ZeroMovement"]};

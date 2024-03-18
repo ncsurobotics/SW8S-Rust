@@ -93,19 +93,7 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
-<span class="kw">use </span>async_trait::async_trait;
-<span class="kw">use </span>tokio::io::WriteHalf;
+</pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
 <span class="kw">use </span><span class="kw">crate</span>::act_nest;
@@ -114,6 +102,7 @@
     action::{Action, ActionConcurrent, ActionConditional, ActionExec, ActionSequence, RaceAction},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     basic::DelayAction,
+    extra::{AlwaysTrue, UnwrapAction},
     meb::WaitArm,
     movement::Descend,
 };
@@ -123,10 +112,15 @@
 /// Runs two nested actions in order: Waiting for arm and descending in
 /// parallel, followed by waiting for arm and descending concurrently.
 </span><span class="kw">pub fn </span>initial_descent&lt;
+    <span class="lifetime">'a</span>,
     Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;,
+    T: Send + Sync + <span class="lifetime">'a</span>,
 &gt;(
-    context: <span class="kw-2">&amp;</span>Con,
-) -&gt; <span class="kw">impl </span>ActionExec + <span class="lifetime">'_ </span>{
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Con,
+) -&gt; <span class="kw">impl </span>ActionExec&lt;T&gt; + <span class="lifetime">'a
+</span><span class="kw">where
+    </span>WaitArm&lt;<span class="lifetime">'a</span>, Con&gt;: ActionExec&lt;T&gt;,
+{
     ActionSequence::new(
         ActionConcurrent::new(WaitArm::new(context), Descend::new(context, -<span class="number">0.5</span>)),
         WaitArm::new(context), <span class="comment">//ActionConcurrent::new(WaitArm::new(context), Descend::new(context, -1.0)),
@@ -145,22 +139,33 @@
     )
 }
 
-<span class="kw">pub fn </span>sequence_conditional&lt;T: Send + Sync&gt;(context: <span class="kw-2">&amp;</span>T) -&gt; <span class="kw">impl </span>Action + <span class="lifetime">'_ </span>{
+<span class="kw">pub fn </span>sequence_conditional&lt;
+    Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;,
+&gt;(
+    context: <span class="kw-2">&amp;</span>Con,
+) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
     ActionSequence::new(
         ActionSequence::new(WaitArm::new(context), Descend::new(context, -<span class="number">1.0</span>)),
         ActionConditional::new(
             AlwaysTrue::new(),
             WaitArm::new(context),
-            Descend::new(context, -<span class="number">0.5</span>),
+            UnwrapAction::new(Descend::new(context, -<span class="number">0.5</span>)),
         ),
     )
 }
 
-<span class="kw">pub fn </span>race_conditional&lt;T: Send + Sync&gt;(context: <span class="kw-2">&amp;</span>T) -&gt; <span class="kw">impl </span>Action + <span class="lifetime">'_ </span>{
+<span class="kw">pub fn </span>race_conditional&lt;
+    Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;,
+&gt;(
+    context: <span class="kw-2">&amp;</span>Con,
+) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
     ActionConditional::new(
         AlwaysTrue::new(),
         WaitArm::new(context),
-        RaceAction::new(Descend::new(context, -<span class="number">0.5</span>), DelayAction::new(<span class="number">1.0</span>)),
+        RaceAction::new(
+            UnwrapAction::new(Descend::new(context, -<span class="number">0.5</span>)),
+            DelayAction::new(<span class="number">1.0</span>),
+        ),
     )
 }
 
@@ -169,8 +174,8 @@
     Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;,
 &gt;(
     _context: <span class="kw-2">&amp;</span>Con,
-) -&gt; <span class="kw">impl </span>ActionExec + <span class="lifetime">'_ </span>{
-    ActionSequence::new(
+) -&gt; <span class="kw">impl </span>ActionExec&lt;bool&gt; + <span class="lifetime">'_ </span>{
+    ActionSequence::&lt;bool, <span class="kw">_</span>, <span class="kw">_</span>&gt;::new(
         <span class="macro">act_nest!</span>(
             RaceAction::new,
             AlwaysTrue::new(),
@@ -181,30 +186,5 @@
         ),
         AlwaysTrue::new(),
     )
-}
-
-<span class="attr">#[derive(Debug)]
-</span><span class="kw">pub struct </span>AlwaysTrue {}
-
-<span class="kw">impl </span>AlwaysTrue {
-    <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
-        AlwaysTrue {}
-    }
-}
-
-<span class="kw">impl </span>Default <span class="kw">for </span>AlwaysTrue {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>::new()
-    }
-}
-
-<span class="kw">impl </span>Action <span class="kw">for </span>AlwaysTrue {}
-
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec <span class="kw">for </span>AlwaysTrue {
-    <span class="kw">type </span>Output = <span class="prelude-ty">Result</span>&lt;()&gt;;
-    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
-        <span class="prelude-val">Ok</span>(())
-    }
 }
 </code></pre></div></section></main></body></html>
