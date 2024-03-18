@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BNO055AxisConfig"],"struct":["Angles"]};
