@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Type"],"fn":["next"],"struct":["Dir","Entry","Iter","OwningIter"]};

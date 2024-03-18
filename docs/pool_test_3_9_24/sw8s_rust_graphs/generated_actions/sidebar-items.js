@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["basic","buoy_circle","buoy_hit","example","path_align"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["abort","exit","id"],"struct":["Child","ChildStderr","ChildStdin","ChildStdout","Command","CommandArgs","CommandEnvs","ExitCode","ExitStatus","ExitStatusError","Output","Stdio"],"trait":["Termination"]};
