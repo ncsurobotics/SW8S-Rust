@@ -3,8 +3,10 @@ use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
 use core::fmt::Debug;
+use num_traits::Zero;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
+use crate::missions::action::FirstValid;
 
 use super::{
     action::{Action, ActionExec, ActionMod},
@@ -125,6 +127,10 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec for ZeroMovement<'_
             .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
             .await
     }
+}
+
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send> ActionMod<Input> for ZeroMovement<V> {
+    fn modify(&mut self, input: &Input) {}
 }
 
 #[derive(Debug)]

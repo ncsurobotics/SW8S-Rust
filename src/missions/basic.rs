@@ -1,22 +1,26 @@
-use crate::vision::{gate_poles::GatePoles, nn_cv2::OnnxModel};
+use async_trait::async_trait;
+use tokio::{
+    io::WriteHalf,
+    time::{Duration, sleep},
+};
+use tokio_serial::SerialStream;
+
+use crate::missions::action::FirstValid;
+use crate::missions::action_context::GetFrontCamMat;
+use crate::missions::example::AlwaysTrue;
+use crate::missions::vision::VisionDetect;
+use crate::vision::gate_poles::GatePoles;
 
 use super::{
     action::{
-        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile, TupleSecond,
+        Action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile,
     },
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     comms::StartBno055,
     meb::WaitArm,
-    movement::{AdjustMovement, CountFalse, CountTrue, Descend, StraightMovement, ZeroMovement},
+    movement::{AdjustMovement, Descend, StraightMovement, ZeroMovement},
     vision::VisionNormOffset,
 };
-use crate::missions::action_context::GetFrontCamMat;
-use async_trait::async_trait;
-use tokio::{
-    io::WriteHalf,
-    time::{sleep, Duration},
-};
-use tokio_serial::SerialStream;
 
 #[derive(Debug)]
 pub struct DelayAction {
@@ -76,38 +80,32 @@ pub fn descend_and_go_forward<
 
 pub fn gate_run<
     Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
+    + Sync
+    + GetControlBoard<WriteHalf<SerialStream>>
+    + GetMainElectronicsBoard
+    + GetFrontCamMat,
 >(
     context: &Con,
 ) -> impl ActionExec + '_ {
     let depth: f32 = -1.0;
+    let model = GatePoles::default();
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        ActionSequence::new(
-            ActionWhile::new(ActionChain::new(
-                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
-                    context,
-                    GatePoles::default(),
+        ActionWhile::new(ActionSequence::new(
+            ActionChain::new(
+                ActionChain::new(
+                    VisionDetect::new(context, model),
+                    FirstValid::new(
+                        ActionConcurrent::new(
+                            VisionNormOffset::new(),
+                            ZeroMovement::new(context, depth),
+                        ),
+                    ),
                 ),
-                TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovement::new(context, depth),
-                    CountTrue::new(3),
-                )),
-            )),
-            ActionWhile::new(ActionChain::new(
-                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
-                    context,
-                    GatePoles::default(),
-                ),
-                TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovement::new(context, depth),
-                    CountFalse::new(3),
-                )),
-            )),
-        ),
+                AdjustMovement::new(context, depth),
+            ),
+            AlwaysTrue::new(),
+        )),
     )
 }
