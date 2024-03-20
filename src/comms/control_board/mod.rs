@@ -41,10 +41,20 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
     where
         U: 'static + AsyncRead + Unpin + Send,
     {
-        const THRUSTER_INVS: [bool; 8] = [true, true, false, false, true, false, false, true];
-        #[allow(clippy::approx_constant)]
-        const DOF_SPEEDS: [f32; 6] = [0.7071, 0.7071, 1.0, 0.4413, 1.0, 0.8139];
+        let msg_id = msg_id.unwrap_or_default();
+        let responses = ResponseMap::new(comm_in).await;
+        let this = Self {
+            inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id).into(),
+            initial_angles: Arc::default(),
+        };
+        this.startup().await?;
+        Ok(this)
+    }
 
+    pub async fn unity_new<U>(comm_out: T, comm_in: U, msg_id: Option<MessageId>) -> Result<Self>
+    where
+        U: 'static + AsyncRead + Unpin + Send,
+    {
         let msg_id = msg_id.unwrap_or_default();
         let responses = ResponseMap::new(comm_in).await;
         let this = Self {
@@ -52,13 +62,36 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
             initial_angles: Arc::default(),
         };
 
-        this.init_matrices().await?;
-        this.thruster_inversion_set(&THRUSTER_INVS).await?;
-        this.relative_dof_speed_set_batch(&DOF_SPEEDS).await?;
-        this.bno055_imu_axis_config(BNO055AxisConfig::P6).await?;
+        // swap scene
+        const SETENVU: [u8; 7] = *b"SETENVU";
+        let mut message = Vec::from(SETENVU);
+        message.push(1);
+        this.write_out(message).await?;
+        sleep(Duration::from_secs(5)).await;
+
+        // enable SimCB
+        const SIMCBTOGU: [u8; 9] = *b"SIMCBTOGU";
+        let mut message = Vec::from(SIMCBTOGU);
+        message.push(1);
+        this.write_out_basic(message).await?;
+        sleep(Duration::from_secs(1)).await;
+
+        this.startup().await?;
+        Ok(this)
+    }
+
+    pub async fn startup(&self) -> Result<()> {
+        const THRUSTER_INVS: [bool; 8] = [true, true, false, false, true, false, false, true];
+        #[allow(clippy::approx_constant)]
+        const DOF_SPEEDS: [f32; 6] = [0.7071, 0.7071, 1.0, 0.4413, 1.0, 0.8139];
+
+        self.init_matrices().await?;
+        self.thruster_inversion_set(&THRUSTER_INVS).await?;
+        self.relative_dof_speed_set_batch(&DOF_SPEEDS).await?;
+        self.bno055_imu_axis_config(BNO055AxisConfig::P6).await?;
 
         loop {
-            if let Ok(ret) = timeout(Duration::from_secs(1), this.raw_speed_set([0.0; 8])).await {
+            if let Ok(ret) = timeout(Duration::from_secs(1), self.raw_speed_set([0.0; 8])).await {
                 ret?;
                 break;
             }
@@ -67,9 +100,9 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         // Control board needs time to get its life together
         sleep(Duration::from_secs(5)).await;
 
-        this.stab_tune().await?;
+        self.stab_tune().await?;
 
-        let inner_clone = this.inner.clone();
+        let inner_clone = self.inner.clone();
 
         tokio::spawn(async move {
             loop {
@@ -88,10 +121,10 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         });
 
         // Wait for watchdog to register
-        while this.watchdog_status().await != Some(true) {
+        while self.watchdog_status().await != Some(true) {
             sleep(Duration::from_millis(10)).await;
         }
-        Ok(this)
+        self.raw_speed_set([0.0; 8]).await
     }
 
     async fn init_matrices(&self) -> Result<()> {
@@ -162,6 +195,13 @@ impl ControlBoard<WriteHalf<TcpStream>> {
         let stream = TcpStream::connect(host.to_string() + ":" + port).await?;
         let (comm_in, comm_out) = io::split(stream);
         Self::new(comm_out, comm_in, None).await
+    }
+    pub async fn unity_tcp(host: &str, port: &str) -> Result<Self> {
+        let host = host.to_string();
+
+        let stream = TcpStream::connect(host.to_string() + ":" + port).await?;
+        let (comm_in, comm_out) = io::split(stream);
+        Self::unity_new(comm_out, comm_in, None).await
     }
 }
 
