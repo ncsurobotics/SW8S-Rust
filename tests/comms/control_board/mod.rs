@@ -130,7 +130,17 @@ pub async fn unity_tcp_connect() {
     {
         println!("RAW timeout");
     }
-    sleep(Duration::from_secs(15)).await;
+    sleep(Duration::from_secs(5)).await;
+    control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 90.0, -4.0).await;
+    sleep(Duration::from_secs(5)).await;
+    control_board.stability_2_speed_set(0., 1., 0.0, 0.0, 90.0, -4.0).await;
+    sleep(Duration::from_secs(5)).await;
+
+    const CAPTUREU: [u8; 8] = *b"CAPTUREU";
+    let mut message = Vec::from(CAPTUREU);
+    message.push(4);
+    control_board.write_out(message).await;
+    sleep(Duration::from_secs(1)).await;
     //sleep(Duration::from_secs(1)).await;
     //control_board.raw_speed_set([1., 0.0, 0.0, 0., 0., 0., 0., 0.]).await;
     //sleep(Duration::from_secs(1)).await;
