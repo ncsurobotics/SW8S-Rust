@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["MatExprResult"],"fn":["elemmul_mat_mat","elemmul_mat_matexpr","elemmul_matexpr_mat","elemmul_matexpr_matexpr"],"macro":["impl_ops","impl_ops_core"],"trait":["ElemMul","OpsArg"]};

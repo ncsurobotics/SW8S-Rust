@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CHUNK_SIZE"],"enum":["Error"],"mod":["owned"],"struct":["TrieSetOwned","TrieSetSlice"],"type":["Result","TrieSet"]};
