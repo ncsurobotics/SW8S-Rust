@@ -842,21 +842,6 @@
 <a href="#840" id="840">840</a>
 <a href="#841" id="841">841</a>
 <a href="#842" id="842">842</a>
-<a href="#843" id="843">843</a>
-<a href="#844" id="844">844</a>
-<a href="#845" id="845">845</a>
-<a href="#846" id="846">846</a>
-<a href="#847" id="847">847</a>
-<a href="#848" id="848">848</a>
-<a href="#849" id="849">849</a>
-<a href="#850" id="850">850</a>
-<a href="#851" id="851">851</a>
-<a href="#852" id="852">852</a>
-<a href="#853" id="853">853</a>
-<a href="#854" id="854">854</a>
-<a href="#855" id="855">855</a>
-<a href="#856" id="856">856</a>
-<a href="#857" id="857">857</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>opencv::core::InputArray;
@@ -1697,21 +1682,6 @@
         } <span class="kw">else </span>{
             second
         }
-    }
-}
-
-<span class="doccomment">/**
- * Pipe results of first action into the second action while executing them in parallel
- */
-</span><span class="attr">#[derive(Debug, Clone)]
-</span><span class="kw">pub struct </span>ActionPipe&lt;T: Action, U: Action&gt; {
-    first: T,
-    second: U
-}
-
-<span class="kw">impl</span>&lt;T:Action, U: Action&gt; ActionPipe&lt;T, U&gt; {
-    <span class="kw">fn </span>new(first: T, second: U) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{first, second}
     }
 }
 </code></pre></div></section></main></body></html>
