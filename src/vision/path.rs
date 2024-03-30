@@ -23,9 +23,9 @@ static FORWARD: (f64, f64) = (0.0, -1.0);
 
 #[derive(Debug, PartialEq)]
 pub struct Yuv {
-    y: u8,
-    u: u8,
-    v: u8,
+    pub y: u8,
+    pub u: u8,
+    pub v: u8,
 }
 
 impl From<&VecN<u8, 3>> for Yuv {
@@ -106,49 +106,7 @@ impl Default for Path {
     }
 }
 
-pub struct BuoyPCA {
-    color_bounds: RangeInclusive<Yuv>,
-    width_bounds: RangeInclusive<f64>,
-    num_regions: i32,
-    size: Size,
-    attempts: i32,
-    image: Arc<Mutex<Mat>>,
-}
 
-impl BuoyPCA {
-    pub fn new(
-        color_bounds: RangeInclusive<Yuv>,
-        width_bounds: RangeInclusive<f64>,
-        num_regions: i32,
-        size: Size,
-        attempts: i32,
-    ) -> Self {
-        Self {
-            color_bounds,
-            width_bounds,
-            num_regions,
-            size,
-            attempts,
-            image: Arc::new(Mutex::new(Mat::default())),
-        }
-    }
-}
-
-impl Default for BuoyPCA {
-    fn default() -> Self {
-        BuoyPCA::new(
-            (Yuv { y: 0, u: 0, v: 127 })..=(Yuv {
-                y: 255,
-                u: 100,
-                v: 255,
-            }),
-            20.0..=800.0,
-            2,
-            Size::from((400, 300)),
-            3,
-        )
-    }
-}
 
 fn compute_angle(v1: (f64, f64), v2: (f64, f64)) -> f64 {
     let dot = (v1.0 * v2.0) + (v1.1 * v2.1);
