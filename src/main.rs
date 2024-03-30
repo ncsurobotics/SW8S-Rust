@@ -13,6 +13,7 @@ use sw8s_rust_lib::{
         action::ActionExec,
         action_context::FullActionContext,
         basic::descend_and_go_forward,
+        buoy_circle,
         example::initial_descent,
         gate::{gate_run_complex, gate_run_naive},
         octagon::look_up_octagon,
@@ -328,6 +329,18 @@ async fn run_mission(mission: &str) -> Result<()> {
         }
         "look_up_octagon" => {
             let _ = look_up_octagon(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "buoy_circle" => {
+            let _ = buoy_circle_sequence(&FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,
