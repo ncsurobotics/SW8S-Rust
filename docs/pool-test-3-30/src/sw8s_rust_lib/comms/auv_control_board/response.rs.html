@@ -241,6 +241,8 @@
 <a href="#239" id="239">239</a>
 <a href="#240" id="240">240</a>
 <a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bytes::BufMut;
 <span class="kw">use </span>tokio::io::AsyncReadExt;
 
@@ -380,18 +382,20 @@
 
     <span class="kw">let </span>file_dir = fmt_filename_time(dump_file).<span class="kw">await</span>;
 
-    <span class="kw">let </span><span class="kw-2">mut </span>file = OpenOptions::new()
+    <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>file) = OpenOptions::new()
         .create(<span class="bool-val">true</span>)
         .append(<span class="bool-val">true</span>)
         .open(file_dir)
         .<span class="kw">await
-        </span>.unwrap();
+    </span>{
+        <span class="kw">for </span>msg <span class="kw">in </span>messages.iter() {
+            file.write_all(msg).<span class="kw">await</span>.unwrap()
+        }
 
-    <span class="kw">for </span>msg <span class="kw">in </span>messages.iter() {
-        file.write_all(msg).<span class="kw">await</span>.unwrap()
+        file.flush().<span class="kw">await</span>.unwrap();
+    } <span class="kw">else </span>{
+        <span class="macro">eprintln!</span>(<span class="string">"ERROR OPENING FILE IN LOGGING"</span>);
     }
-
-    file.flush().<span class="kw">await</span>.unwrap();
 }
 
 <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]

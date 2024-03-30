@@ -842,6 +842,9 @@
 <a href="#840" id="840">840</a>
 <a href="#841" id="841">841</a>
 <a href="#842" id="842">842</a>
+<a href="#843" id="843">843</a>
+<a href="#844" id="844">844</a>
+<a href="#845" id="845">845</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>opencv::core::InputArray;
@@ -1572,10 +1575,13 @@
 }
 
 <span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;U: Send + Sync, T: ActionExec&lt;<span class="prelude-ty">Result</span>&lt;U&gt;&gt;&gt; ActionExec&lt;U&gt; <span class="kw">for </span>ActionWhile&lt;T&gt; {
+</span><span class="kw">impl</span>&lt;U: Send + Sync + Default, T: ActionExec&lt;<span class="prelude-ty">Result</span>&lt;U&gt;&gt;&gt; ActionExec&lt;U&gt; <span class="kw">for </span>ActionWhile&lt;T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; U {
+        <span class="kw">let </span><span class="kw-2">mut </span>result = U::default();
         <span class="kw">loop </span>{
-            <span class="kw">if let </span><span class="prelude-val">Ok</span>(result) = <span class="self">self</span>.action.execute().<span class="kw">await </span>{
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(new_result) = <span class="self">self</span>.action.execute().<span class="kw">await </span>{
+                result = new_result;
+            } <span class="kw">else </span>{
                 <span class="kw">return </span>result;
             }
         }
