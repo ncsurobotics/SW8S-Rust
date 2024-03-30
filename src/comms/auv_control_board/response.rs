@@ -137,18 +137,20 @@ pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_fi
 
     let file_dir = fmt_filename_time(dump_file).await;
 
-    let mut file = OpenOptions::new()
+    if let Ok(mut file) = OpenOptions::new()
         .create(true)
         .append(true)
         .open(file_dir)
         .await
-        .unwrap();
+    {
+        for msg in messages.iter() {
+            file.write_all(msg).await.unwrap()
+        }
 
-    for msg in messages.iter() {
-        file.write_all(msg).await.unwrap()
+        file.flush().await.unwrap();
+    } else {
+        eprintln!("ERROR OPENING FILE IN LOGGING");
     }
-
-    file.flush().await.unwrap();
 }
 
 #[cfg(feature = "logging")]

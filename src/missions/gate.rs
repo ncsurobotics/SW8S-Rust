@@ -104,6 +104,7 @@ pub fn adjust_logic<
 ) -> impl ActionExec<()> + 'a {
     const GATE_TRAVERSAL_SPEED: f32 = 0.5;
 
+    println!("Fire adjust logic");
     ActionWhile::new(ActionChain::new(
         VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
         ActionChain::new(
