@@ -13,8 +13,9 @@ use super::{
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     basic::DelayAction,
     example::initial_descent,
+    extra::NoOp,
     meb::WaitArm,
-    movement::Descend,
+    movement::{Descend, Stability2Movement, Stability2Pos},
 };
 
 /// Looks up at octagon
@@ -22,6 +23,14 @@ pub fn look_up_octagon<
     Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
 >(
     context: &Con,
-) -> impl ActionExec + '_ {
-    ActionSequence::new(initial_descent(context), NoOp::new())
+) -> impl ActionExec<()> + '_ {
+    const DEPTH: f32 = 1.0;
+
+    ActionSequence::new(
+        initial_descent(context),
+        Stability2Movement::new(
+            context,
+            Stability2Pos::new(0.0, 0.0, 0.0, 180.0, None, DEPTH),
+        ),
+    )
 }

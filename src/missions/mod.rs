@@ -10,5 +10,6 @@ pub mod gate;
 pub mod graph;
 pub mod meb;
 pub mod movement;
+pub mod octagon;
 pub mod path_align;
 pub mod vision;
