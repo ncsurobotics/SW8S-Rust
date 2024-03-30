@@ -1,4 +1,7 @@
-use std::ops::RangeInclusive;
+use std::{
+    ops::{Deref, RangeInclusive},
+    sync::Arc,
+};
 
 use itertools::Itertools;
 use opencv::{
@@ -6,6 +9,7 @@ use opencv::{
     imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
     prelude::{Mat, MatTraitConst},
 };
+use std::sync::Mutex;
 
 use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
 
@@ -58,12 +62,12 @@ pub struct Path {
     num_regions: i32,
     size: Size,
     attempts: i32,
-    image: Mat,
+    image: Arc<Mutex<Mat>>,
 }
 
 impl Path {
-    pub fn image(&self) -> &Mat {
-        &self.image
+    pub fn image(&self) -> Mat {
+        self.image.lock().unwrap().clone()
     }
 }
 
@@ -81,7 +85,7 @@ impl Path {
             num_regions,
             size,
             attempts,
-            image: Mat::default(),
+            image: Arc::new(Mutex::new(Mat::default())),
         }
     }
 }
@@ -117,6 +121,8 @@ impl VisualDetector<i32> for Path {
         &mut self,
         input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
+        let mut self_image = self.image.lock().unwrap().clone();
+
         let image = resize(input_image, &self.size)?;
         let mut yuv_image = Mat::default();
 
@@ -124,7 +130,7 @@ impl VisualDetector<i32> for Path {
         yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
         let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
 
-        cvt_color(&yuv_image, &mut self.image, COLOR_YUV2RGB, 0).unwrap();
+        cvt_color(&yuv_image, &mut self_image, COLOR_YUV2RGB, 0).unwrap();
 
         yuv_image
             .iter::<VecN<u8, 3>>()
@@ -170,9 +176,9 @@ impl VisualDetector<i32> for Path {
 
                 let p_vec = PosVector::new(
                     ((pca_output.mean().get(0).unwrap()) - image_center.0)
-                        + (self.image.size().unwrap().width as f64) / 2.0,
+                        + (self_image.size().unwrap().width as f64) / 2.0,
                     (pca_output.mean().get(1).unwrap()) - image_center.1
-                        + (self.image.size().unwrap().height as f64) / 2.0,
+                        + (self_image.size().unwrap().height as f64) / 2.0,
                     compute_angle(
                         (
                             pca_output.pca_vector().get(length_idx).unwrap(),
@@ -194,7 +200,108 @@ impl VisualDetector<i32> for Path {
     }
 
     fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
-        let img_size = self.image.size().unwrap();
+        let self_image = self.image.lock().unwrap();
+        let img_size = self_image.size().unwrap();
+        Self::Position::new(
+            ((*pos.x() / (img_size.width as f64)) - 0.5) * 2.0,
+            ((*pos.y() / (img_size.height as f64)) - 0.5) * 2.0,
+            *pos.angle(),
+            *pos.width() / (img_size.width as f64),
+            *pos.length() / (img_size.height as f64),
+            *pos.length_2() / (img_size.height as f64),
+        )
+    }
+}
+
+impl VisualDetector<f64> for Path {
+    type ClassEnum = bool;
+    type Position = PosVector;
+
+    fn detect(
+        &mut self,
+        input_image: &Mat,
+    ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
+        let image = resize(input_image, &self.size)?;
+        let mut yuv_image = Mat::default();
+
+        let mut self_image = self.image.lock().unwrap().clone();
+
+        cvt_color(&image, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
+        yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
+        let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
+
+        cvt_color(&yuv_image, &mut self_image, COLOR_YUV2RGB, 0).unwrap();
+
+        yuv_image
+            .iter::<VecN<u8, 3>>()
+            .unwrap()
+            .sorted_by(|(_, val), (_, n_val)| Ord::cmp(val.as_slice(), n_val.as_slice()))
+            .dedup_by(|(_, val), (_, n_val)| val == n_val)
+            .map(|(_, val)| {
+                let mut bin_image = Mat::default();
+                in_range(&yuv_image, &val, &val, &mut bin_image).unwrap();
+                let on_points = cvt_binary_to_points(&bin_image.try_into_typed().unwrap());
+                let pca_output = binary_pca(&on_points, 0).unwrap();
+
+                let (length_idx, width_idx) = if pca_output.pca_value().get(1).unwrap()
+                    > pca_output.pca_value().get(0).unwrap()
+                {
+                    (1, 0)
+                } else {
+                    (0, 1)
+                };
+                // width bounds have a temp fix -- not sure why output is so large
+                let width = pca_output.pca_value().get(width_idx).unwrap() / 100.0;
+                let length = pca_output.pca_value().get(length_idx).unwrap();
+                let length_2 = pca_output.pca_vector().get(length_idx + 1).unwrap();
+
+                println!("Testing for valid...");
+                println!("\tself.width_bounds = {:?}", self.width_bounds);
+                println!("\tself.width = {:?}", width);
+                println!(
+                    "\tcontained_width = {:?}",
+                    self.width_bounds.contains(&width)
+                );
+                println!();
+                println!("\tYUV range = {:?}", self.color_bounds);
+                println!("\tYUV val = {:?}", Yuv::from(&val));
+                println!(
+                    "\tcontained_color = {:?}",
+                    Yuv::from(&val).in_range(&self.color_bounds)
+                );
+                println!();
+
+                let valid = self.width_bounds.contains(&width)
+                    && Yuv::from(&val).in_range(&self.color_bounds);
+
+                let p_vec = PosVector::new(
+                    ((pca_output.mean().get(0).unwrap()) - image_center.0)
+                        + (self_image.size().unwrap().width as f64) / 2.0,
+                    (pca_output.mean().get(1).unwrap()) - image_center.1
+                        + (self_image.size().unwrap().height as f64) / 2.0,
+                    compute_angle(
+                        (
+                            pca_output.pca_vector().get(length_idx).unwrap(),
+                            pca_output.pca_vector().get(length_idx + 1).unwrap(),
+                        ),
+                        FORWARD,
+                    ),
+                    width,
+                    length / 300.0,
+                    length_2,
+                );
+
+                Ok(VisualDetection {
+                    class: valid,
+                    position: p_vec,
+                })
+            })
+            .collect()
+    }
+
+    fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
+        let self_image = self.image.lock().unwrap();
+        let img_size = self_image.size().unwrap();
         Self::Position::new(
             ((*pos.x() / (img_size.width as f64)) - 0.5) * 2.0,
             ((*pos.y() / (img_size.height as f64)) - 0.5) * 2.0,

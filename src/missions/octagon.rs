@@ -3,19 +3,20 @@ use async_trait::async_trait;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
-use crate::act_nest;
+use crate::{act_nest, vision::path::Path};
 
 use super::{
     action::{
         Action, ActionConcurrent, ActionConditional, ActionExec, ActionMod, ActionSequence,
         RaceAction,
     },
-    action_context::{GetControlBoard, GetMainElectronicsBoard},
+    action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     example::initial_descent,
     extra::NoOp,
     meb::WaitArm,
     movement::{Descend, Stability2Movement, Stability2Pos},
+    vision::VisionNorm,
 };
 
 /// Looks up at octagon
@@ -32,5 +33,20 @@ pub fn look_up_octagon<
             context,
             Stability2Pos::new(0.0, 0.0, 0.0, 180.0, None, DEPTH),
         ),
+    )
+}
+
+pub fn stub<
+    Con: Send
+        + Sync
+        + GetMainElectronicsBoard
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetFrontCamMat,
+>(
+    context: &Con,
+) -> impl ActionExec<()> + '_ {
+    ActionSequence::new(
+        VisionNorm::<Con, Path, f64>::new(context, Path::default()),
+        NoOp::new(),
     )
 }

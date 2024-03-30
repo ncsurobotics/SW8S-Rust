@@ -77,3 +77,34 @@ impl Draw for VisualDetection<bool, PosVector> {
         Ok(())
     }
 }
+
+impl Draw for PosVector {
+    fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
+        let color = Scalar::from((0.0, 255.0, 0.0));
+
+        imgproc::circle(
+            canvas,
+            Point::new(*self.x() as i32, *self.y() as i32),
+            10,
+            color,
+            2,
+            LINE_8,
+            0,
+        )?;
+
+        imgproc::arrowed_line(
+            canvas,
+            Point::new(*self.x() as i32, *self.y() as i32),
+            Point::new(
+                (self.x() + 0.02 * self.length() * self.length()) as i32,
+                (self.y() + 0.4 * self.length_2() * self.length()) as i32,
+            ),
+            color,
+            2,
+            LINE_8,
+            0,
+            0.1,
+        )?;
+        Ok(())
+    }
+}
