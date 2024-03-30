@@ -8,7 +8,7 @@ use crate::{
     vision::{
         buoy,
         nn_cv2::OnnxModel,
-        path::{ Path, Yuv},
+        path::{Path, Yuv},
         Offset2D, VisualDetection, VisualDetector,
     },
 };
@@ -22,8 +22,8 @@ use super::{
 
 use anyhow::Result;
 use async_trait::async_trait;
-use opencv::core::Size;
 use core::fmt::Debug;
+use opencv::core::Size;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
@@ -86,7 +86,7 @@ pub fn buoy_circle_sequence<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    const DEPTH: f32 = -1.0;
+    const DEPTH: f32 = -0.5;
 
     let lateral_power = 0.3;
     let delay_s = 5.0;
@@ -101,17 +101,24 @@ pub fn buoy_circle_sequence<
         ActionSequence::new(delay_action, ZeroMovement::new(context, DEPTH)),
         act_nest!(
             ActionChain::new,
-            VisionNorm::<Con, Path, f64>::new(context, Path::new(
-                (Yuv { y: 128, u: 0, v: 127 })..=(Yuv {
-                    y: 255,
-                    u: 100,
-                    v: 255,
-                }),
-                20.0..=800.0,
-                4,
-                Size::from((400, 300)),
-                3,
-            )),
+            VisionNorm::<Con, Path, f64>::new(
+                context,
+                Path::new(
+                    (Yuv {
+                        y: 128,
+                        u: 0,
+                        v: 127
+                    })..=(Yuv {
+                        y: 255,
+                        u: 100,
+                        v: 255,
+                    }),
+                    20.0..=800.0,
+                    4,
+                    Size::from((400, 300)),
+                    3,
+                )
+            ),
             ToVec::new(),
             ExtractPosition::new(),
             Average::new(),
