@@ -13,7 +13,7 @@ use sw8s_rust_lib::{
         action::ActionExec,
         action_context::FullActionContext,
         basic::descend_and_go_forward,
-        buoy_circle,
+        circle_buoy::buoy_circle_sequence,
         example::initial_descent,
         gate::{gate_run_complex, gate_run_naive},
         octagon::look_up_octagon,

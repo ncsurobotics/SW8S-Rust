@@ -3,6 +3,7 @@ pub mod action_context;
 pub mod basic;
 pub mod buoy_circle;
 pub mod buoy_hit;
+pub mod circle_buoy;
 pub mod comms;
 pub mod example;
 pub mod extra;
