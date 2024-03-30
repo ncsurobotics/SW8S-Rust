@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["compute_angle"],"static":["FORWARD"],"struct":["Path","Yuv"]};
+window.SIDEBAR_ITEMS = {"fn":["compute_angle"],"static":["FORWARD"],"struct":["BuoyPCA","Path","Yuv"]};
