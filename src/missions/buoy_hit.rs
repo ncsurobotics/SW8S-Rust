@@ -143,11 +143,7 @@ pub fn buoy_collision_sequence<
     Con: Send
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetFrontCamMat
-        + Unpin,
->(
-    context: &Con,
+        + GetMainElectronicsBoard    // Create and return the outer ActionSequence
 ) -> impl ActionExec + '_ {
     const DEPTH: f32 = 1.0;
 
