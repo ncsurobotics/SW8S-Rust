@@ -840,18 +840,3 @@ impl<U: Send + Sync, T: ActionExec<(Option<U>, Option<U>)>> ActionExec<Option<U>
         }
     }
 }
-
-/**
- * Pipe results of first action into the second action while executing them in parallel
- */
-#[derive(Debug, Clone)]
-pub struct ActionPipe<T: Action, U: Action> {
-    first: T,
-    second: U
-}
-
-impl<T:Action, U: Action> ActionPipe<T, U> {
-    fn new(first: T, second: U) -> Self {
-        Self {first, second}
-    }
-}
