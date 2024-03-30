@@ -727,10 +727,13 @@ impl<T: Action> ActionWhile<T> {
 }
 
 #[async_trait]
-impl<U: Send + Sync, T: ActionExec<Result<U>>> ActionExec<U> for ActionWhile<T> {
+impl<U: Send + Sync + Default, T: ActionExec<Result<U>>> ActionExec<U> for ActionWhile<T> {
     async fn execute(&mut self) -> U {
+        let mut result = U::default();
         loop {
-            if let Ok(result) = self.action.execute().await {
+            if let Ok(new_result) = self.action.execute().await {
+                result = new_result;
+            } else {
                 return result;
             }
         }

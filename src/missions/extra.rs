@@ -217,6 +217,7 @@ impl<T: Send + Sync> ActionMod<anyhow::Result<T>> for CountTrue {
         } else {
             self.count = 0;
         }
+        println!("Update true count: {}", self.count);
     }
 }
 
@@ -230,6 +231,7 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
         } else {
             self.count = 0;
         }
+        println!("Update true count: {}", self.count);
     }
 }
 
@@ -281,6 +283,7 @@ impl<T: Send + Sync> ActionMod<anyhow::Result<T>> for CountFalse {
         } else {
             self.count = 0;
         }
+        println!("Update false count: {}", self.count);
     }
 }
 
@@ -294,6 +297,7 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
         } else {
             self.count = 0;
         }
+        println!("Update false count: {}", self.count);
     }
 }
 
