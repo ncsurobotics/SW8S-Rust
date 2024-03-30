@@ -343,6 +343,19 @@
 <a href="#341" id="341">341</a>
 <a href="#342" id="342">342</a>
 <a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -358,6 +371,7 @@
         action::ActionExec,
         action_context::FullActionContext,
         basic::descend_and_go_forward,
+        buoy_circle,
         example::initial_descent,
         gate::{gate_run_complex, gate_run_naive},
         octagon::look_up_octagon,
@@ -673,6 +687,18 @@
         }
         <span class="string">"look_up_octagon" </span>=&gt; {
             <span class="kw">let _ </span>= look_up_octagon(<span class="kw-2">&amp;</span>FullActionContext::new(
+                control_board().<span class="kw">await</span>,
+                meb().<span class="kw">await</span>,
+                front_cam().<span class="kw">await</span>,
+                bottom_cam().<span class="kw">await</span>,
+                gate_target().<span class="kw">await</span>,
+            ))
+            .execute()
+            .<span class="kw">await</span>;
+            <span class="prelude-val">Ok</span>(())
+        }
+        <span class="string">"buoy_circle" </span>=&gt; {
+            <span class="kw">let _ </span>= buoy_circle_sequence(<span class="kw-2">&amp;</span>FullActionContext::new(
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
