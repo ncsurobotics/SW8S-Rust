@@ -3,6 +3,7 @@ use tokio_serial::SerialStream;
 
 use crate::{
     act_nest,
+    missions::movement::StripY,
     vision::{
         gate_poles::{GatePoles, Target},
         nn_cv2::{OnnxModel, YoloClass},
@@ -123,6 +124,7 @@ pub fn adjust_logic<
                     Average::new(),
                     OffsetToPose::default(),
                     LinearYawFromX::<Stability2Adjust>::default(),
+                    StripY::default(),
                     Stability2Movement::new(
                         context,
                         Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth)
