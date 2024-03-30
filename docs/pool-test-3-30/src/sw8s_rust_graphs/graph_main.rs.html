@@ -98,6 +98,17 @@
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
 <a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fs::create_dir_all;
 
 <span class="kw">use </span>futures::{stream, StreamExt};
@@ -124,6 +135,9 @@
     }
     <span class="kw">pub mod </span>gate {
         <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/gate.rs"</span>));
+    }
+    <span class="kw">pub mod </span>circle_buoy {
+        <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/graph_missions/circle_buoy.rs"</span>));
     }
 
     <span class="comment">// TODO: find some way to automate the extras
@@ -176,7 +190,15 @@
 </span><span class="kw">async fn </span>main() {
     create_dir_all(<span class="string">"graphs/"</span>).unwrap();
     <span class="comment">// (name, action) pairs to draw
-    </span><span class="kw">let </span>actions = <span class="macro">graph_actions!</span>(basic, example, buoy_hit, buoy_circle, path_align, gate);
+    </span><span class="kw">let </span>actions = <span class="macro">graph_actions!</span>(
+        basic,
+        example,
+        buoy_hit,
+        buoy_circle,
+        path_align,
+        gate,
+        circle_buoy
+    );
 
     stream::iter(actions)
         .for_each(|(dir_name, action_set)| <span class="kw">async move </span>{
