@@ -87,7 +87,7 @@
 };
 <span class="kw">use </span>tokio_serial::SerialStream;
 
-<span class="attr">#[derive(Debug)]
+<span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>DelayAction {
     delay: f32, <span class="comment">// delay in seconds before the next action occurs.
 </span>}
