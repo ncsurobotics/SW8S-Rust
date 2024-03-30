@@ -277,6 +277,11 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
+        "camera" => {
+            let _ = front_cam().await;
+            let _ = bottom_cam().await;
+            Ok(())
+        }
         x => bail!("Invalid argument: [{x}]"),
     }
 }
