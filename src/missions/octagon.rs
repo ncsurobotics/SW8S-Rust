@@ -25,14 +25,28 @@ pub fn look_up_octagon<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    const DEPTH: f32 = 1.0;
+    const DEPTH: f32 = -2.5;
 
-    ActionSequence::new(
-        initial_descent(context),
-        Stability2Movement::new(
-            context,
-            Stability2Pos::new(0.0, 0.0, 0.0, 180.0, None, DEPTH),
+    ActionSequence::<(), _, _>::new(
+        act_nest!(
+            ActionSequence::<(), _, _>::new,
+            initial_descent(context),
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(0.0, 0.0, 90.0, 0.0, None, DEPTH),
+            ),
+            DelayAction::new(5.0),
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(0.0, 0.0, 180.0, 0.0, None, DEPTH),
+            ),
+            DelayAction::new(5.0),
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(0.0, 0.0, 180.0, 0.0, None, DEPTH),
+            ),
         ),
+        DelayAction::new(30.0),
     )
 }
 
