@@ -1,0 +1,628 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Mutable methods for core::Mat"><title>MatTrait in opencv::opencv::hub::core - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../opencv/index.html">opencv</a><span class="version">0.88.8</span></h2></div><h2 class="location"><a href="#">MatTrait</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.as_raw_mut_Mat">as_raw_mut_Mat</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.addref">addref</a></li><li><a href="#method.adjust_roi">adjust_roi</a></li><li><a href="#method.at_2d_mut">at_2d_mut</a></li><li><a href="#method.at_3d_mut">at_3d_mut</a></li><li><a href="#method.at_mut">at_mut</a></li><li><a href="#method.at_nd_mut">at_nd_mut</a></li><li><a href="#method.at_pt_mut">at_pt_mut</a></li><li><a href="#method.create_nd">create_nd</a></li><li><a href="#method.create_nd_vec">create_nd_vec</a></li><li><a href="#method.create_rows_cols">create_rows_cols</a></li><li><a href="#method.create_size">create_size</a></li><li><a href="#method.data_mut">data_mut</a></li><li><a href="#method.deallocate">deallocate</a></li><li><a href="#method.pop_back">pop_back</a></li><li><a href="#method.pop_back_def">pop_back_def</a></li><li><a href="#method.ptr_2d_mut">ptr_2d_mut</a></li><li><a href="#method.ptr_3d_mut">ptr_3d_mut</a></li><li><a href="#method.ptr_mut">ptr_mut</a></li><li><a href="#method.ptr_mut_def">ptr_mut_def</a></li><li><a href="#method.ptr_nd_mut">ptr_nd_mut</a></li><li><a href="#method.push_back">push_back</a></li><li><a href="#method.release">release</a></li><li><a href="#method.reserve">reserve</a></li><li><a href="#method.reserve_buffer">reserve_buffer</a></li><li><a href="#method.resize">resize</a></li><li><a href="#method.resize_with_default">resize_with_default</a></li><li><a href="#method.set">set</a></li><li><a href="#method.set_1">set_1</a></li><li><a href="#method.set_cols">set_cols</a></li><li><a href="#method.set_data">set_data</a></li><li><a href="#method.set_dims">set_dims</a></li><li><a href="#method.set_flags">set_flags</a></li><li><a href="#method.set_matexpr">set_matexpr</a></li><li><a href="#method.set_rows">set_rows</a></li><li><a href="#method.set_scalar">set_scalar</a></li><li><a href="#method.set_size">set_size</a></li><li><a href="#method.set_to">set_to</a></li><li><a href="#method.set_to_def">set_to_def</a></li><li><a href="#method.set_u">set_u</a></li><li><a href="#method.u">u</a></li><li><a href="#method.update_continuity_flag">update_continuity_flag</a></li></ul><h3><a href="#object-safety">Object Safety</a></h3><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In opencv::opencv::hub::core</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="../../../index.html">opencv</a>::<wbr><a href="../../index.html">opencv</a>::<wbr><a href="../index.html">hub</a>::<wbr><a href="index.html">core</a>::<wbr><a class="trait" href="#">MatTrait</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16672-17557">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait MatTrait: <a class="trait" href="trait.MatTraitConst.html" title="trait opencv::opencv::hub::core::MatTraitConst">MatTraitConst</a> {
+<details class="toggle type-contents-toggle"><summary class="hideme"><span>Show 42 methods</span></summary>    // Required method
+    fn <a href="#tymethod.as_raw_mut_Mat" class="fn">as_raw_mut_Mat</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="enum" href="../../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a>;
+
+    // Provided methods
+    fn <a href="#method.set_flags" class="fn">set_flags</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_dims" class="fn">set_dims</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_rows" class="fn">set_rows</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_cols" class="fn">set_cols</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.data_mut" class="fn">data_mut</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a> { ... }
+<span class="item-spacer"></span>    unsafe fn <a href="#method.set_data" class="fn">set_data</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*const </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.u" class="fn">u</a>(&amp;mut self) -&gt; <a class="struct" href="struct.UMatData.html" title="struct opencv::opencv::hub::core::UMatData">UMatData</a> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_u" class="fn">set_u</a>(&amp;mut self, val: &amp;<a class="struct" href="struct.UMatData.html" title="struct opencv::opencv::hub::core::UMatData">UMatData</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_size" class="fn">set_size</a>(&amp;mut self, val: <a class="struct" href="struct.MatSize.html" title="struct opencv::opencv::hub::core::MatSize">MatSize</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set" class="fn">set</a>(&amp;mut self, m: &amp;<a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_matexpr" class="fn">set_matexpr</a>(&amp;mut self, expr: &amp;<a class="struct" href="struct.MatExpr.html" title="struct opencv::opencv::hub::core::MatExpr">MatExpr</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_scalar" class="fn">set_scalar</a>(&amp;mut self, s: <a class="type" href="type.Scalar.html" title="type opencv::opencv::hub::core::Scalar">Scalar</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_to" class="fn">set_to</a>(
+        &amp;mut self,
+        value: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+        mask: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_to_def" class="fn">set_to_def</a>(&amp;mut self, value: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>&gt; { ... }
+<span class="item-spacer"></span>    unsafe fn <a href="#method.create_rows_cols" class="fn">create_rows_cols</a>(
+        &amp;mut self,
+        rows: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+        cols: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+        typ: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    unsafe fn <a href="#method.create_size" class="fn">create_size</a>(&amp;mut self, size: <a class="type" href="type.Size.html" title="type opencv::opencv::hub::core::Size">Size</a>, typ: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    unsafe fn <a href="#method.create_nd" class="fn">create_nd</a>(&amp;mut self, sizes: &amp;[<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>], typ: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    unsafe fn <a href="#method.create_nd_vec" class="fn">create_nd_vec</a>(
+        &amp;mut self,
+        sizes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>&gt;,
+        typ: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.addref" class="fn">addref</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.release" class="fn">release</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.deallocate" class="fn">deallocate</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.reserve" class="fn">reserve</a>(&amp;mut self, sz: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.reserve_buffer" class="fn">reserve_buffer</a>(&amp;mut self, sz: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.resize" class="fn">resize</a>(&amp;mut self, sz: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.resize_with_default" class="fn">resize_with_default</a>(&amp;mut self, sz: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>, s: <a class="type" href="type.Scalar.html" title="type opencv::opencv::hub::core::Scalar">Scalar</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.push_back" class="fn">push_back</a>(&amp;mut self, m: &amp;<a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.pop_back" class="fn">pop_back</a>(&amp;mut self, nelems: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.pop_back_def" class="fn">pop_back_def</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.adjust_roi" class="fn">adjust_roi</a>(
+        &amp;mut self,
+        dtop: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+        dbottom: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+        dleft: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+        dright: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.ptr_mut" class="fn">ptr_mut</a>(&amp;mut self, i0: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.ptr_mut_def" class="fn">ptr_mut_def</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.ptr_2d_mut" class="fn">ptr_2d_mut</a>(&amp;mut self, row: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>, col: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.ptr_3d_mut" class="fn">ptr_3d_mut</a>(&amp;mut self, i0: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>, i1: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>, i2: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.ptr_nd_mut" class="fn">ptr_nd_mut</a>(&amp;mut self, idx: &amp;[<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>]) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.at_mut" class="fn">at_mut</a>&lt;T: <a class="trait" href="../../../manual/core/data_type/trait.DataType.html" title="trait opencv::manual::core::data_type::DataType">DataType</a>&gt;(&amp;mut self, i0: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.reference.html">&amp;mut T</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.at_2d_mut" class="fn">at_2d_mut</a>&lt;T: <a class="trait" href="../../../manual/core/data_type/trait.DataType.html" title="trait opencv::manual::core::data_type::DataType">DataType</a>&gt;(&amp;mut self, row: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>, col: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.reference.html">&amp;mut T</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.at_3d_mut" class="fn">at_3d_mut</a>&lt;T: <a class="trait" href="../../../manual/core/data_type/trait.DataType.html" title="trait opencv::manual::core::data_type::DataType">DataType</a>&gt;(
+        &amp;mut self,
+        i0: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+        i1: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+        i2: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.reference.html">&amp;mut T</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.at_nd_mut" class="fn">at_nd_mut</a>&lt;T: <a class="trait" href="../../../manual/core/data_type/trait.DataType.html" title="trait opencv::manual::core::data_type::DataType">DataType</a>&gt;(&amp;mut self, idx: &amp;[<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>]) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.reference.html">&amp;mut T</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.at_pt_mut" class="fn">at_pt_mut</a>&lt;T: <a class="trait" href="../../../manual/core/data_type/trait.DataType.html" title="trait opencv::manual::core::data_type::DataType">DataType</a>&gt;(&amp;mut self, pt: <a class="type" href="type.Point.html" title="type opencv::opencv::hub::core::Point">Point</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.reference.html">&amp;mut T</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_1" class="fn">set_1</a>(&amp;mut self, m: <a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.update_continuity_flag" class="fn">update_continuity_flag</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt; { ... }
+</details>}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Mutable methods for <a href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">core::Mat</a></p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><section id="tymethod.as_raw_mut_Mat" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16673">source</a><h4 class="code-header">fn <a href="#tymethod.as_raw_mut_Mat" class="fn">as_raw_mut_Mat</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="enum" href="../../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a></h4></section></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.set_flags" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16681-16684">source</a><h4 class="code-header">fn <a href="#method.set_flags" class="fn">set_flags</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>)</h4></section></summary><div class="docblock"><p>! includes several bit-fields:</p>
+<ul>
+<li>the magic signature</li>
+<li>continuity flag</li>
+<li>depth</li>
+<li>number of channels</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_dims" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16688-16691">source</a><h4 class="code-header">fn <a href="#method.set_dims" class="fn">set_dims</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>)</h4></section></summary><div class="docblock"><p>the matrix dimensionality, &gt;= 2</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_rows" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16695-16698">source</a><h4 class="code-header">fn <a href="#method.set_rows" class="fn">set_rows</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>)</h4></section></summary><div class="docblock"><p>the number of rows and columns or (-1, -1) when the matrix has more than 2 dimensions</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_cols" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16702-16705">source</a><h4 class="code-header">fn <a href="#method.set_cols" class="fn">set_cols</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>)</h4></section></summary><div class="docblock"><p>the number of rows and columns or (-1, -1) when the matrix has more than 2 dimensions</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.data_mut" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16709-16712">source</a><h4 class="code-header">fn <a href="#method.data_mut" class="fn">data_mut</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a></h4></section></summary><div class="docblock"><p>pointer to the data</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_data" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16716-16719">source</a><h4 class="code-header">unsafe fn <a href="#method.set_data" class="fn">set_data</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*const </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>)</h4></section></summary><div class="docblock"><p>pointer to the data</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.u" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16723-16727">source</a><h4 class="code-header">fn <a href="#method.u" class="fn">u</a>(&amp;mut self) -&gt; <a class="struct" href="struct.UMatData.html" title="struct opencv::opencv::hub::core::UMatData">UMatData</a></h4></section></summary><div class="docblock"><p>interaction with UMat</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_u" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16731-16734">source</a><h4 class="code-header">fn <a href="#method.set_u" class="fn">set_u</a>(&amp;mut self, val: &amp;<a class="struct" href="struct.UMatData.html" title="struct opencv::opencv::hub::core::UMatData">UMatData</a>)</h4></section></summary><div class="docblock"><p>interaction with UMat</p>
+</div></details><section id="method.set_size" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16737-16740">source</a><h4 class="code-header">fn <a href="#method.set_size" class="fn">set_size</a>(&amp;mut self, val: <a class="struct" href="struct.MatSize.html" title="struct opencv::opencv::hub::core::MatSize">MatSize</a>)</h4></section><details class="toggle method-toggle" open><summary><section id="method.set" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16751-16757">source</a><h4 class="code-header">fn <a href="#method.set" class="fn">set</a>(&amp;mut self, m: &amp;<a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>assignment operators</p>
+<p>These are available assignment operators. Since they all are very different, make sure to read the
+operator parameters description.</p>
+<h6 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h6>
+<ul>
+<li>m: Assigned, right-hand-side matrix. Matrix assignment is an O(1) operation. This means that
+no data is copied but the data is shared and the reference counter, if any, is incremented. Before
+assigning new data, the old data is de-referenced via Mat::release .</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_matexpr" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16776-16782">source</a><h4 class="code-header">fn <a href="#method.set_matexpr" class="fn">set_matexpr</a>(&amp;mut self, expr: &amp;<a class="struct" href="struct.MatExpr.html" title="struct opencv::opencv::hub::core::MatExpr">MatExpr</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>assignment operators</p>
+<p>These are available assignment operators. Since they all are very different, make sure to read the
+operator parameters description.</p>
+<h6 id="parameters-1"><a class="doc-anchor" href="#parameters-1">§</a>Parameters</h6>
+<ul>
+<li>m: Assigned, right-hand-side matrix. Matrix assignment is an O(1) operation. This means that
+no data is copied but the data is shared and the reference counter, if any, is incremented. Before
+assigning new data, the old data is de-referenced via Mat::release .</li>
+</ul>
+<h6 id="overloaded-parameters"><a class="doc-anchor" href="#overloaded-parameters">§</a>Overloaded parameters</h6>
+<ul>
+<li>expr: Assigned matrix expression object. As opposite to the first form of the assignment
+operation, the second form can reuse already allocated matrix if it has the right size and type to
+fit the matrix expression result. It is automatically handled by the real function that the matrix
+expressions is expanded to. For example, C=A+B is expanded to add(A, B, C), and add takes care of
+automatic C reallocation.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_scalar" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16788-16794">source</a><h4 class="code-header">fn <a href="#method.set_scalar" class="fn">set_scalar</a>(&amp;mut self, s: <a class="type" href="type.Scalar.html" title="type opencv::opencv::hub::core::Scalar">Scalar</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Sets all or some of the array elements to the specified value.</p>
+<h6 id="parameters-2"><a class="doc-anchor" href="#parameters-2">§</a>Parameters</h6>
+<ul>
+<li>s: Assigned scalar converted to the actual array type.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_to" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16807-16816">source</a><h4 class="code-header">fn <a href="#method.set_to" class="fn">set_to</a>(
+    &amp;mut self,
+    value: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    mask: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>&gt;</h4></section></summary><div class="docblock"><p>Sets all or some of the array elements to the specified value.</p>
+<p>This is an advanced variant of the Mat::operator=(const Scalar&amp; s) operator.</p>
+<h6 id="parameters-3"><a class="doc-anchor" href="#parameters-3">§</a>Parameters</h6>
+<ul>
+<li>value: Assigned scalar converted to the actual array type.</li>
+<li>mask: Operation mask of the same size as *this. Its non-zero elements indicate which matrix
+elements need to be copied. The mask has to be of type CV_8U and can have 1 or multiple channels</li>
+</ul>
+<h6 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h6>
+<ul>
+<li>mask: noArray()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.set_to_def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16830-16838">source</a><h4 class="code-header">fn <a href="#method.set_to_def" class="fn">set_to_def</a>(&amp;mut self, value: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>&gt;</h4></section></summary><div class="docblock"><p>Sets all or some of the array elements to the specified value.</p>
+<p>This is an advanced variant of the Mat::operator=(const Scalar&amp; s) operator.</p>
+<h6 id="parameters-4"><a class="doc-anchor" href="#parameters-4">§</a>Parameters</h6>
+<ul>
+<li>value: Assigned scalar converted to the actual array type.</li>
+<li>mask: Operation mask of the same size as *this. Its non-zero elements indicate which matrix
+elements need to be copied. The mask has to be of type CV_8U and can have 1 or multiple channels</li>
+</ul>
+<h6 id="note"><a class="doc-anchor" href="#note">§</a>Note</h6>
+<p>This alternative version of <a href="trait.MatTrait.html#method.set_to" title="method opencv::opencv::hub::core::MatTrait::set_to">MatTrait::set_to</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>mask: noArray()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.create_rows_cols" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16876-16882">source</a><h4 class="code-header">unsafe fn <a href="#method.create_rows_cols" class="fn">create_rows_cols</a>(
+    &amp;mut self,
+    rows: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+    cols: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+    typ: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Allocates new array data if needed.</p>
+<p>This is one of the key Mat methods. Most new-style OpenCV functions and methods that produce arrays
+call this method for each output array. The method uses the following algorithm:</p>
+<p>-# If the current array shape and the type match the new ones, return immediately. Otherwise,
+de-reference the previous data by calling Mat::release.
+-# Initialize the new header.
+-# Allocate the new data of total()*elemSize() bytes.
+-# Allocate the new, associated with the data, reference counter and set it to 1.</p>
+<p>Such a scheme makes the memory management robust and efficient at the same time and helps avoid
+extra typing for you. This means that usually there is no need to explicitly allocate output arrays.
+That is, instead of writing:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat color;
+   ...
+   Mat gray(color.rows, color.cols, color.depth());
+   cvtColor(color, gray, COLOR_BGR2GRAY);
+</code></pre></div>
+<p>you can simply write:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat color;
+   ...
+   Mat gray;
+   cvtColor(color, gray, COLOR_BGR2GRAY);
+</code></pre></div>
+<p>because cvtColor, as well as the most of OpenCV functions, calls Mat::create() for the output array
+internally.</p>
+<h6 id="parameters-5"><a class="doc-anchor" href="#parameters-5">§</a>Parameters</h6>
+<ul>
+<li>rows: New number of rows.</li>
+<li>cols: New number of columns.</li>
+<li>type: New matrix type.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.create_size" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16925-16931">source</a><h4 class="code-header">unsafe fn <a href="#method.create_size" class="fn">create_size</a>(&amp;mut self, size: <a class="type" href="type.Size.html" title="type opencv::opencv::hub::core::Size">Size</a>, typ: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Allocates new array data if needed.</p>
+<p>This is one of the key Mat methods. Most new-style OpenCV functions and methods that produce arrays
+call this method for each output array. The method uses the following algorithm:</p>
+<p>-# If the current array shape and the type match the new ones, return immediately. Otherwise,
+de-reference the previous data by calling Mat::release.
+-# Initialize the new header.
+-# Allocate the new data of total()*elemSize() bytes.
+-# Allocate the new, associated with the data, reference counter and set it to 1.</p>
+<p>Such a scheme makes the memory management robust and efficient at the same time and helps avoid
+extra typing for you. This means that usually there is no need to explicitly allocate output arrays.
+That is, instead of writing:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat color;
+   ...
+   Mat gray(color.rows, color.cols, color.depth());
+   cvtColor(color, gray, COLOR_BGR2GRAY);
+</code></pre></div>
+<p>you can simply write:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat color;
+   ...
+   Mat gray;
+   cvtColor(color, gray, COLOR_BGR2GRAY);
+</code></pre></div>
+<p>because cvtColor, as well as the most of OpenCV functions, calls Mat::create() for the output array
+internally.</p>
+<h6 id="parameters-6"><a class="doc-anchor" href="#parameters-6">§</a>Parameters</h6>
+<ul>
+<li>rows: New number of rows.</li>
+<li>cols: New number of columns.</li>
+<li>type: New matrix type.</li>
+</ul>
+<h6 id="overloaded-parameters-1"><a class="doc-anchor" href="#overloaded-parameters-1">§</a>Overloaded parameters</h6>
+<ul>
+<li>size: Alternative new matrix size specification: Size(cols, rows)</li>
+<li>type: New matrix type.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.create_nd" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#16975-16981">source</a><h4 class="code-header">unsafe fn <a href="#method.create_nd" class="fn">create_nd</a>(&amp;mut self, sizes: &amp;[<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>], typ: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Allocates new array data if needed.</p>
+<p>This is one of the key Mat methods. Most new-style OpenCV functions and methods that produce arrays
+call this method for each output array. The method uses the following algorithm:</p>
+<p>-# If the current array shape and the type match the new ones, return immediately. Otherwise,
+de-reference the previous data by calling Mat::release.
+-# Initialize the new header.
+-# Allocate the new data of total()*elemSize() bytes.
+-# Allocate the new, associated with the data, reference counter and set it to 1.</p>
+<p>Such a scheme makes the memory management robust and efficient at the same time and helps avoid
+extra typing for you. This means that usually there is no need to explicitly allocate output arrays.
+That is, instead of writing:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat color;
+   ...
+   Mat gray(color.rows, color.cols, color.depth());
+   cvtColor(color, gray, COLOR_BGR2GRAY);
+</code></pre></div>
+<p>you can simply write:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat color;
+   ...
+   Mat gray;
+   cvtColor(color, gray, COLOR_BGR2GRAY);
+</code></pre></div>
+<p>because cvtColor, as well as the most of OpenCV functions, calls Mat::create() for the output array
+internally.</p>
+<h6 id="parameters-7"><a class="doc-anchor" href="#parameters-7">§</a>Parameters</h6>
+<ul>
+<li>rows: New number of rows.</li>
+<li>cols: New number of columns.</li>
+<li>type: New matrix type.</li>
+</ul>
+<h6 id="overloaded-parameters-2"><a class="doc-anchor" href="#overloaded-parameters-2">§</a>Overloaded parameters</h6>
+<ul>
+<li>ndims: New array dimensionality.</li>
+<li>sizes: Array of integers specifying a new array shape.</li>
+<li>type: New matrix type.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.create_nd_vec" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17024-17030">source</a><h4 class="code-header">unsafe fn <a href="#method.create_nd_vec" class="fn">create_nd_vec</a>(&amp;mut self, sizes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>&gt;, typ: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Allocates new array data if needed.</p>
+<p>This is one of the key Mat methods. Most new-style OpenCV functions and methods that produce arrays
+call this method for each output array. The method uses the following algorithm:</p>
+<p>-# If the current array shape and the type match the new ones, return immediately. Otherwise,
+de-reference the previous data by calling Mat::release.
+-# Initialize the new header.
+-# Allocate the new data of total()*elemSize() bytes.
+-# Allocate the new, associated with the data, reference counter and set it to 1.</p>
+<p>Such a scheme makes the memory management robust and efficient at the same time and helps avoid
+extra typing for you. This means that usually there is no need to explicitly allocate output arrays.
+That is, instead of writing:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat color;
+   ...
+   Mat gray(color.rows, color.cols, color.depth());
+   cvtColor(color, gray, COLOR_BGR2GRAY);
+</code></pre></div>
+<p>you can simply write:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat color;
+   ...
+   Mat gray;
+   cvtColor(color, gray, COLOR_BGR2GRAY);
+</code></pre></div>
+<p>because cvtColor, as well as the most of OpenCV functions, calls Mat::create() for the output array
+internally.</p>
+<h6 id="parameters-8"><a class="doc-anchor" href="#parameters-8">§</a>Parameters</h6>
+<ul>
+<li>rows: New number of rows.</li>
+<li>cols: New number of columns.</li>
+<li>type: New matrix type.</li>
+</ul>
+<h6 id="overloaded-parameters-3"><a class="doc-anchor" href="#overloaded-parameters-3">§</a>Overloaded parameters</h6>
+<ul>
+<li>sizes: Array of integers specifying a new array shape.</li>
+<li>type: New matrix type.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.addref" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17041-17047">source</a><h4 class="code-header">fn <a href="#method.addref" class="fn">addref</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Increments the reference counter.</p>
+<p>The method increments the reference counter associated with the matrix data. If the matrix header
+points to an external data set (see Mat::Mat ), the reference counter is NULL, and the method has no
+effect in this case. Normally, to avoid memory leaks, the method should not be called explicitly. It
+is called implicitly by the matrix assignment operator. The reference counter increment is an atomic
+operation on the platforms that support it. Thus, it is safe to operate on the same matrices
+asynchronously in different threads.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.release" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17062-17068">source</a><h4 class="code-header">fn <a href="#method.release" class="fn">release</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Decrements the reference counter and deallocates the matrix if needed.</p>
+<p>The method decrements the reference counter associated with the matrix data. When the reference
+counter reaches 0, the matrix data is deallocated and the data and the reference counter pointers
+are set to NULL’s. If the matrix header points to an external data set (see Mat::Mat ), the
+reference counter is NULL, and the method has no effect in this case.</p>
+<p>This method can be called manually to force the matrix data deallocation. But since this method is
+automatically called in the destructor, or by any other method that changes the data pointer, it is
+usually not needed. The reference counter decrement and check for 0 is an atomic operation on the
+platforms that support it. Thus, it is safe to operate on the same matrices asynchronously in
+different threads.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.deallocate" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17072-17078">source</a><h4 class="code-header">fn <a href="#method.deallocate" class="fn">deallocate</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>internal use function, consider to use ‘release’ method instead; deallocates the matrix data</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.reserve" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17088-17094">source</a><h4 class="code-header">fn <a href="#method.reserve" class="fn">reserve</a>(&amp;mut self, sz: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Reserves space for the certain number of rows.</p>
+<p>The method reserves space for sz rows. If the matrix already has enough space to store sz rows,
+nothing happens. If the matrix is reallocated, the first Mat::rows rows are preserved. The method
+emulates the corresponding method of the STL vector class.</p>
+<h6 id="parameters-9"><a class="doc-anchor" href="#parameters-9">§</a>Parameters</h6>
+<ul>
+<li>sz: Number of rows.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.reserve_buffer" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17103-17109">source</a><h4 class="code-header">fn <a href="#method.reserve_buffer" class="fn">reserve_buffer</a>(&amp;mut self, sz: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Reserves space for the certain number of bytes.</p>
+<p>The method reserves space for sz bytes. If the matrix already has enough space to store sz bytes,
+nothing happens. If matrix has to be reallocated its previous content could be lost.</p>
+<h6 id="parameters-10"><a class="doc-anchor" href="#parameters-10">§</a>Parameters</h6>
+<ul>
+<li>sz: Number of bytes.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.resize" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17119-17125">source</a><h4 class="code-header">fn <a href="#method.resize" class="fn">resize</a>(&amp;mut self, sz: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Changes the number of matrix rows.</p>
+<p>The methods change the number of matrix rows. If the matrix is reallocated, the first
+min(Mat::rows, sz) rows are preserved. The methods emulate the corresponding methods of the STL
+vector class.</p>
+<h6 id="parameters-11"><a class="doc-anchor" href="#parameters-11">§</a>Parameters</h6>
+<ul>
+<li>sz: New number of rows.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.resize_with_default" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17140-17146">source</a><h4 class="code-header">fn <a href="#method.resize_with_default" class="fn">resize_with_default</a>(&amp;mut self, sz: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>, s: <a class="type" href="type.Scalar.html" title="type opencv::opencv::hub::core::Scalar">Scalar</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Changes the number of matrix rows.</p>
+<p>The methods change the number of matrix rows. If the matrix is reallocated, the first
+min(Mat::rows, sz) rows are preserved. The methods emulate the corresponding methods of the STL
+vector class.</p>
+<h6 id="parameters-12"><a class="doc-anchor" href="#parameters-12">§</a>Parameters</h6>
+<ul>
+<li>sz: New number of rows.</li>
+</ul>
+<h6 id="overloaded-parameters-4"><a class="doc-anchor" href="#overloaded-parameters-4">§</a>Overloaded parameters</h6>
+<ul>
+<li>sz: New number of rows.</li>
+<li>s: Value assigned to the newly added elements.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.push_back" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17160-17166">source</a><h4 class="code-header">fn <a href="#method.push_back" class="fn">push_back</a>(&amp;mut self, m: &amp;<a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Adds elements to the bottom of the matrix.</p>
+<p>The methods add one or more elements to the bottom of the matrix. They emulate the corresponding
+method of the STL vector class. When elem is Mat , its type and the number of columns must be the
+same as in the container matrix.</p>
+<h6 id="parameters-13"><a class="doc-anchor" href="#parameters-13">§</a>Parameters</h6>
+<ul>
+<li>elem: Added element(s).</li>
+</ul>
+<h6 id="overloaded-parameters-5"><a class="doc-anchor" href="#overloaded-parameters-5">§</a>Overloaded parameters</h6>
+<ul>
+<li>m: Added line(s).</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.pop_back" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17178-17184">source</a><h4 class="code-header">fn <a href="#method.pop_back" class="fn">pop_back</a>(&amp;mut self, nelems: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Removes elements from the bottom of the matrix.</p>
+<p>The method removes one or more rows from the bottom of the matrix.</p>
+<h6 id="parameters-14"><a class="doc-anchor" href="#parameters-14">§</a>Parameters</h6>
+<ul>
+<li>nelems: Number of removed rows. If it is greater than the total number of rows, an exception
+is thrown.</li>
+</ul>
+<h6 id="c-default-parameters-1"><a class="doc-anchor" href="#c-default-parameters-1">§</a>C++ default parameters</h6>
+<ul>
+<li>nelems: 1</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.pop_back_def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17197-17203">source</a><h4 class="code-header">fn <a href="#method.pop_back_def" class="fn">pop_back_def</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Removes elements from the bottom of the matrix.</p>
+<p>The method removes one or more rows from the bottom of the matrix.</p>
+<h6 id="parameters-15"><a class="doc-anchor" href="#parameters-15">§</a>Parameters</h6>
+<ul>
+<li>nelems: Number of removed rows. If it is greater than the total number of rows, an exception
+is thrown.</li>
+</ul>
+<h6 id="note-1"><a class="doc-anchor" href="#note-1">§</a>Note</h6>
+<p>This alternative version of <a href="trait.MatTrait.html#method.pop_back" title="method opencv::opencv::hub::core::MatTrait::pop_back">MatTrait::pop_back</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>nelems: 1</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.adjust_roi" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17235-17242">source</a><h4 class="code-header">fn <a href="#method.adjust_roi" class="fn">adjust_roi</a>(
+    &amp;mut self,
+    dtop: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+    dbottom: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+    dleft: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+    dright: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>&gt;</h4></section></summary><div class="docblock"><p>Adjusts a submatrix size and position within the parent matrix.</p>
+<p>The method is complimentary to Mat::locateROI . The typical use of these functions is to determine
+the submatrix position within the parent matrix and then shift the position somehow. Typically, it
+can be required for filtering operations when pixels outside of the ROI should be taken into
+account. When all the method parameters are positive, the ROI needs to grow in all directions by the
+specified amount, for example:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   A.adjustROI(2, 2, 2, 2);
+</code></pre></div>
+<p>In this example, the matrix size is increased by 4 elements in each direction. The matrix is shifted
+by 2 elements to the left and 2 elements up, which brings in all the necessary pixels for the
+filtering with the 5x5 kernel.</p>
+<p>adjustROI forces the adjusted ROI to be inside of the parent matrix that is boundaries of the
+adjusted ROI are constrained by boundaries of the parent matrix. For example, if the submatrix A is
+located in the first row of a parent matrix and you called A.adjustROI(2, 2, 2, 2) then A will not
+be increased in the upward direction.</p>
+<p>The function is used internally by the OpenCV filtering functions, like filter2D , morphological
+operations, and so on.</p>
+<h6 id="parameters-16"><a class="doc-anchor" href="#parameters-16">§</a>Parameters</h6>
+<ul>
+<li>dtop: Shift of the top submatrix boundary upwards.</li>
+<li>dbottom: Shift of the bottom submatrix boundary downwards.</li>
+<li>dleft: Shift of the left submatrix boundary to the left.</li>
+<li>dright: Shift of the right submatrix boundary to the right.</li>
+</ul>
+<h6 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h6>
+<p>copyMakeBorder</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.ptr_mut" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17254-17260">source</a><h4 class="code-header">fn <a href="#method.ptr_mut" class="fn">ptr_mut</a>(&amp;mut self, i0: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a pointer to the specified matrix row.</p>
+<p>The methods return <code>uchar*</code> or typed pointer to the specified matrix row. See the sample in
+Mat::isContinuous to know how to use these methods.</p>
+<h6 id="parameters-17"><a class="doc-anchor" href="#parameters-17">§</a>Parameters</h6>
+<ul>
+<li>i0: A 0-based row index.</li>
+</ul>
+<h6 id="c-default-parameters-2"><a class="doc-anchor" href="#c-default-parameters-2">§</a>C++ default parameters</h6>
+<ul>
+<li>i0: 0</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.ptr_mut_def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17273-17279">source</a><h4 class="code-header">fn <a href="#method.ptr_mut_def" class="fn">ptr_mut_def</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a pointer to the specified matrix row.</p>
+<p>The methods return <code>uchar*</code> or typed pointer to the specified matrix row. See the sample in
+Mat::isContinuous to know how to use these methods.</p>
+<h6 id="parameters-18"><a class="doc-anchor" href="#parameters-18">§</a>Parameters</h6>
+<ul>
+<li>i0: A 0-based row index.</li>
+</ul>
+<h6 id="note-2"><a class="doc-anchor" href="#note-2">§</a>Note</h6>
+<p>This alternative version of <a href="trait.MatTrait.html#method.ptr_mut" title="method opencv::opencv::hub::core::MatTrait::ptr_mut">MatTrait::ptr_mut</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>i0: 0</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.ptr_2d_mut" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17293-17299">source</a><h4 class="code-header">fn <a href="#method.ptr_2d_mut" class="fn">ptr_2d_mut</a>(&amp;mut self, row: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>, col: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a pointer to the specified matrix row.</p>
+<p>The methods return <code>uchar*</code> or typed pointer to the specified matrix row. See the sample in
+Mat::isContinuous to know how to use these methods.</p>
+<h6 id="parameters-19"><a class="doc-anchor" href="#parameters-19">§</a>Parameters</h6>
+<ul>
+<li>i0: A 0-based row index.</li>
+</ul>
+<h6 id="overloaded-parameters-6"><a class="doc-anchor" href="#overloaded-parameters-6">§</a>Overloaded parameters</h6>
+<ul>
+<li>row: Index along the dimension 0</li>
+<li>col: Index along the dimension 1</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.ptr_3d_mut" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17310-17316">source</a><h4 class="code-header">fn <a href="#method.ptr_3d_mut" class="fn">ptr_3d_mut</a>(&amp;mut self, i0: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>, i1: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>, i2: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a pointer to the specified matrix row.</p>
+<p>The methods return <code>uchar*</code> or typed pointer to the specified matrix row. See the sample in
+Mat::isContinuous to know how to use these methods.</p>
+<h6 id="parameters-20"><a class="doc-anchor" href="#parameters-20">§</a>Parameters</h6>
+<ul>
+<li>i0: A 0-based row index.</li>
+</ul>
+<h6 id="overloaded-parameters-7"><a class="doc-anchor" href="#overloaded-parameters-7">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.ptr_nd_mut" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17327-17333">source</a><h4 class="code-header">fn <a href="#method.ptr_nd_mut" class="fn">ptr_nd_mut</a>(&amp;mut self, idx: &amp;[<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>]) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.pointer.html">*mut </a><a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.u8.html">u8</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a pointer to the specified matrix row.</p>
+<p>The methods return <code>uchar*</code> or typed pointer to the specified matrix row. See the sample in
+Mat::isContinuous to know how to use these methods.</p>
+<h6 id="parameters-21"><a class="doc-anchor" href="#parameters-21">§</a>Parameters</h6>
+<ul>
+<li>i0: A 0-based row index.</li>
+</ul>
+<h6 id="overloaded-parameters-8"><a class="doc-anchor" href="#overloaded-parameters-8">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.at_mut" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17370-17372">source</a><h4 class="code-header">fn <a href="#method.at_mut" class="fn">at_mut</a>&lt;T: <a class="trait" href="../../../manual/core/data_type/trait.DataType.html" title="trait opencv::manual::core::data_type::DataType">DataType</a>&gt;(&amp;mut self, i0: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.reference.html">&amp;mut T</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a reference to the specified array element.</p>
+<p>The template methods return a reference to the specified array element. For the sake of higher
+performance, the index range checks are only performed in the Debug configuration.</p>
+<p>Note that the variants with a single index (i) can be used to access elements of single-row or
+single-column 2-dimensional arrays. That is, if, for example, A is a 1 x N floating-point matrix and
+B is an M x 1 integer matrix, you can simply write <code>A.at&lt;float&gt;(k+4)</code> and <code>B.at&lt;int&gt;(2*i+1)</code>
+instead of <code>A.at&lt;float&gt;(0,k+4)</code> and <code>B.at&lt;int&gt;(2*i+1,0)</code>, respectively.</p>
+<p>The example below initializes a Hilbert matrix:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat H(100, 100, CV_64F);
+   for(int i = 0; i &lt; H.rows; i++)
+       for(int j = 0; j &lt; H.cols; j++)
+           H.at&lt;double&gt;(i,j)=1./(i+j+1);
+</code></pre></div>
+<p>Keep in mind that the size identifier used in the at operator cannot be chosen at random. It depends
+on the image from which you are trying to retrieve the data. The table below gives a better insight in this:</p>
+<ul>
+<li>If matrix is of type <code>CV_8U</code> then use <code>Mat.at&lt;uchar&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_8S</code> then use <code>Mat.at&lt;schar&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_16U</code> then use <code>Mat.at&lt;ushort&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_16S</code> then use <code>Mat.at&lt;short&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_32S</code>  then use <code>Mat.at&lt;int&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_32F</code>  then use <code>Mat.at&lt;float&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_64F</code> then use <code>Mat.at&lt;double&gt;(y,x)</code>.</li>
+</ul>
+<h6 id="parameters-22"><a class="doc-anchor" href="#parameters-22">§</a>Parameters</h6>
+<ul>
+<li>i0: Index along the dimension 0</li>
+</ul>
+<h6 id="c-default-parameters-3"><a class="doc-anchor" href="#c-default-parameters-3">§</a>C++ default parameters</h6>
+<ul>
+<li>i0: 0</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.at_2d_mut" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17411-17413">source</a><h4 class="code-header">fn <a href="#method.at_2d_mut" class="fn">at_2d_mut</a>&lt;T: <a class="trait" href="../../../manual/core/data_type/trait.DataType.html" title="trait opencv::manual::core::data_type::DataType">DataType</a>&gt;(&amp;mut self, row: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>, col: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.reference.html">&amp;mut T</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a reference to the specified array element.</p>
+<p>The template methods return a reference to the specified array element. For the sake of higher
+performance, the index range checks are only performed in the Debug configuration.</p>
+<p>Note that the variants with a single index (i) can be used to access elements of single-row or
+single-column 2-dimensional arrays. That is, if, for example, A is a 1 x N floating-point matrix and
+B is an M x 1 integer matrix, you can simply write <code>A.at&lt;float&gt;(k+4)</code> and <code>B.at&lt;int&gt;(2*i+1)</code>
+instead of <code>A.at&lt;float&gt;(0,k+4)</code> and <code>B.at&lt;int&gt;(2*i+1,0)</code>, respectively.</p>
+<p>The example below initializes a Hilbert matrix:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat H(100, 100, CV_64F);
+   for(int i = 0; i &lt; H.rows; i++)
+       for(int j = 0; j &lt; H.cols; j++)
+           H.at&lt;double&gt;(i,j)=1./(i+j+1);
+</code></pre></div>
+<p>Keep in mind that the size identifier used in the at operator cannot be chosen at random. It depends
+on the image from which you are trying to retrieve the data. The table below gives a better insight in this:</p>
+<ul>
+<li>If matrix is of type <code>CV_8U</code> then use <code>Mat.at&lt;uchar&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_8S</code> then use <code>Mat.at&lt;schar&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_16U</code> then use <code>Mat.at&lt;ushort&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_16S</code> then use <code>Mat.at&lt;short&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_32S</code>  then use <code>Mat.at&lt;int&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_32F</code>  then use <code>Mat.at&lt;float&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_64F</code> then use <code>Mat.at&lt;double&gt;(y,x)</code>.</li>
+</ul>
+<h6 id="parameters-23"><a class="doc-anchor" href="#parameters-23">§</a>Parameters</h6>
+<ul>
+<li>i0: Index along the dimension 0</li>
+</ul>
+<h6 id="overloaded-parameters-9"><a class="doc-anchor" href="#overloaded-parameters-9">§</a>Overloaded parameters</h6>
+<ul>
+<li>row: Index along the dimension 0</li>
+<li>col: Index along the dimension 1</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.at_3d_mut" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17453-17455">source</a><h4 class="code-header">fn <a href="#method.at_3d_mut" class="fn">at_3d_mut</a>&lt;T: <a class="trait" href="../../../manual/core/data_type/trait.DataType.html" title="trait opencv::manual::core::data_type::DataType">DataType</a>&gt;(
+    &amp;mut self,
+    i0: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+    i1: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>,
+    i2: <a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.reference.html">&amp;mut T</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a reference to the specified array element.</p>
+<p>The template methods return a reference to the specified array element. For the sake of higher
+performance, the index range checks are only performed in the Debug configuration.</p>
+<p>Note that the variants with a single index (i) can be used to access elements of single-row or
+single-column 2-dimensional arrays. That is, if, for example, A is a 1 x N floating-point matrix and
+B is an M x 1 integer matrix, you can simply write <code>A.at&lt;float&gt;(k+4)</code> and <code>B.at&lt;int&gt;(2*i+1)</code>
+instead of <code>A.at&lt;float&gt;(0,k+4)</code> and <code>B.at&lt;int&gt;(2*i+1,0)</code>, respectively.</p>
+<p>The example below initializes a Hilbert matrix:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat H(100, 100, CV_64F);
+   for(int i = 0; i &lt; H.rows; i++)
+       for(int j = 0; j &lt; H.cols; j++)
+           H.at&lt;double&gt;(i,j)=1./(i+j+1);
+</code></pre></div>
+<p>Keep in mind that the size identifier used in the at operator cannot be chosen at random. It depends
+on the image from which you are trying to retrieve the data. The table below gives a better insight in this:</p>
+<ul>
+<li>If matrix is of type <code>CV_8U</code> then use <code>Mat.at&lt;uchar&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_8S</code> then use <code>Mat.at&lt;schar&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_16U</code> then use <code>Mat.at&lt;ushort&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_16S</code> then use <code>Mat.at&lt;short&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_32S</code>  then use <code>Mat.at&lt;int&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_32F</code>  then use <code>Mat.at&lt;float&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_64F</code> then use <code>Mat.at&lt;double&gt;(y,x)</code>.</li>
+</ul>
+<h6 id="parameters-24"><a class="doc-anchor" href="#parameters-24">§</a>Parameters</h6>
+<ul>
+<li>i0: Index along the dimension 0</li>
+</ul>
+<h6 id="overloaded-parameters-10"><a class="doc-anchor" href="#overloaded-parameters-10">§</a>Overloaded parameters</h6>
+<ul>
+<li>i0: Index along the dimension 0</li>
+<li>i1: Index along the dimension 1</li>
+<li>i2: Index along the dimension 2</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.at_nd_mut" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17493-17495">source</a><h4 class="code-header">fn <a href="#method.at_nd_mut" class="fn">at_nd_mut</a>&lt;T: <a class="trait" href="../../../manual/core/data_type/trait.DataType.html" title="trait opencv::manual::core::data_type::DataType">DataType</a>&gt;(&amp;mut self, idx: &amp;[<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.i32.html">i32</a>]) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.reference.html">&amp;mut T</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a reference to the specified array element.</p>
+<p>The template methods return a reference to the specified array element. For the sake of higher
+performance, the index range checks are only performed in the Debug configuration.</p>
+<p>Note that the variants with a single index (i) can be used to access elements of single-row or
+single-column 2-dimensional arrays. That is, if, for example, A is a 1 x N floating-point matrix and
+B is an M x 1 integer matrix, you can simply write <code>A.at&lt;float&gt;(k+4)</code> and <code>B.at&lt;int&gt;(2*i+1)</code>
+instead of <code>A.at&lt;float&gt;(0,k+4)</code> and <code>B.at&lt;int&gt;(2*i+1,0)</code>, respectively.</p>
+<p>The example below initializes a Hilbert matrix:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat H(100, 100, CV_64F);
+   for(int i = 0; i &lt; H.rows; i++)
+       for(int j = 0; j &lt; H.cols; j++)
+           H.at&lt;double&gt;(i,j)=1./(i+j+1);
+</code></pre></div>
+<p>Keep in mind that the size identifier used in the at operator cannot be chosen at random. It depends
+on the image from which you are trying to retrieve the data. The table below gives a better insight in this:</p>
+<ul>
+<li>If matrix is of type <code>CV_8U</code> then use <code>Mat.at&lt;uchar&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_8S</code> then use <code>Mat.at&lt;schar&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_16U</code> then use <code>Mat.at&lt;ushort&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_16S</code> then use <code>Mat.at&lt;short&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_32S</code>  then use <code>Mat.at&lt;int&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_32F</code>  then use <code>Mat.at&lt;float&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_64F</code> then use <code>Mat.at&lt;double&gt;(y,x)</code>.</li>
+</ul>
+<h6 id="parameters-25"><a class="doc-anchor" href="#parameters-25">§</a>Parameters</h6>
+<ul>
+<li>i0: Index along the dimension 0</li>
+</ul>
+<h6 id="overloaded-parameters-11"><a class="doc-anchor" href="#overloaded-parameters-11">§</a>Overloaded parameters</h6>
+<ul>
+<li>idx: Array of Mat::dims indices.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.at_pt_mut" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17534-17536">source</a><h4 class="code-header">fn <a href="#method.at_pt_mut" class="fn">at_pt_mut</a>&lt;T: <a class="trait" href="../../../manual/core/data_type/trait.DataType.html" title="trait opencv::manual::core::data_type::DataType">DataType</a>&gt;(&amp;mut self, pt: <a class="type" href="type.Point.html" title="type opencv::opencv::hub::core::Point">Point</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.reference.html">&amp;mut T</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a reference to the specified array element.</p>
+<p>The template methods return a reference to the specified array element. For the sake of higher
+performance, the index range checks are only performed in the Debug configuration.</p>
+<p>Note that the variants with a single index (i) can be used to access elements of single-row or
+single-column 2-dimensional arrays. That is, if, for example, A is a 1 x N floating-point matrix and
+B is an M x 1 integer matrix, you can simply write <code>A.at&lt;float&gt;(k+4)</code> and <code>B.at&lt;int&gt;(2*i+1)</code>
+instead of <code>A.at&lt;float&gt;(0,k+4)</code> and <code>B.at&lt;int&gt;(2*i+1,0)</code>, respectively.</p>
+<p>The example below initializes a Hilbert matrix:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   Mat H(100, 100, CV_64F);
+   for(int i = 0; i &lt; H.rows; i++)
+       for(int j = 0; j &lt; H.cols; j++)
+           H.at&lt;double&gt;(i,j)=1./(i+j+1);
+</code></pre></div>
+<p>Keep in mind that the size identifier used in the at operator cannot be chosen at random. It depends
+on the image from which you are trying to retrieve the data. The table below gives a better insight in this:</p>
+<ul>
+<li>If matrix is of type <code>CV_8U</code> then use <code>Mat.at&lt;uchar&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_8S</code> then use <code>Mat.at&lt;schar&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_16U</code> then use <code>Mat.at&lt;ushort&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_16S</code> then use <code>Mat.at&lt;short&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_32S</code>  then use <code>Mat.at&lt;int&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_32F</code>  then use <code>Mat.at&lt;float&gt;(y,x)</code>.</li>
+<li>If matrix is of type <code>CV_64F</code> then use <code>Mat.at&lt;double&gt;(y,x)</code>.</li>
+</ul>
+<h6 id="parameters-26"><a class="doc-anchor" href="#parameters-26">§</a>Parameters</h6>
+<ul>
+<li>i0: Index along the dimension 0</li>
+</ul>
+<h6 id="overloaded-parameters-12"><a class="doc-anchor" href="#overloaded-parameters-12">§</a>Overloaded parameters</h6>
+<p>special versions for 2D arrays (especially convenient for referencing image pixels)</p>
+<ul>
+<li>pt: Element position specified as Point(j,i) .</li>
+</ul>
+</div></details><section id="method.set_1" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17539-17545">source</a><h4 class="code-header">fn <a href="#method.set_1" class="fn">set_1</a>(&amp;mut self, m: <a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section><details class="toggle method-toggle" open><summary><section id="method.update_continuity_flag" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17549-17555">source</a><h4 class="code-header">fn <a href="#method.update_continuity_flag" class="fn">update_continuity_flag</a>(&amp;mut self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>internal use method: updates the continuity flag</p>
+</div></details></div><h2 id="object-safety" class="section-header">Object Safety<a href="#object-safety" class="anchor">§</a></h2><div class="object-safety-info">This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.77.1/reference/items/traits.html#object-safety">object safe</a>.</div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-MatTrait-for-Mat" class="impl"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-ebbde2b06892c2c3/out/opencv/core.rs.html#17781-17783">source</a><a href="#impl-MatTrait-for-Mat" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a> for <a class="struct" href="struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a></h3></section><section id="impl-MatTrait-for-Mat_%3CT%3E" class="impl"><a class="src rightside" href="../../../../src/opencv/manual/core/mat/mat_.rs.html#99-104">source</a><a href="#impl-MatTrait-for-Mat_%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a> for <a class="struct" href="../../../manual/core/mat/mat_/struct.Mat_.html" title="struct opencv::manual::core::mat::mat_::Mat_">Mat_</a>&lt;T&gt;</h3></section></div><script src="../../../../trait.impl/opencv/opencv/hub/core/trait.MatTrait.js" async></script></section></div></main></body></html>
