@@ -110,6 +110,17 @@
 <a href="#108" id="108">108</a>
 <a href="#109" id="109">109</a>
 <a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     act_nest,
     missions::{
@@ -120,7 +131,7 @@
     vision::{
         buoy,
         nn_cv2::OnnxModel,
-        path::{BuoyPCA, Path},
+        path::{ Path, Yuv},
         Offset2D, VisualDetection, VisualDetector,
     },
 };
@@ -134,6 +145,7 @@
 
 <span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>async_trait::async_trait;
+<span class="kw">use </span>opencv::core::Size;
 <span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
@@ -212,7 +224,17 @@
         ActionSequence::new(delay_action, ZeroMovement::new(context, DEPTH)),
         <span class="macro">act_nest!</span>(
             ActionChain::new,
-            VisionNorm::&lt;Con, Path, f64&gt;::new(context, Path::default()),
+            VisionNorm::&lt;Con, Path, f64&gt;::new(context, Path::new(
+                (Yuv { y: <span class="number">128</span>, u: <span class="number">0</span>, v: <span class="number">127 </span>})..=(Yuv {
+                    y: <span class="number">255</span>,
+                    u: <span class="number">100</span>,
+                    v: <span class="number">255</span>,
+                }),
+                <span class="number">20.0</span>..=<span class="number">800.0</span>,
+                <span class="number">4</span>,
+                Size::from((<span class="number">400</span>, <span class="number">300</span>)),
+                <span class="number">3</span>,
+            )),
             ToVec::new(),
             ExtractPosition::new(),
             Average::new(),
