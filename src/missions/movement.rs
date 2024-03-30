@@ -167,7 +167,7 @@ where
 {
     fn modify(&mut self, input: &Result<V>) {
         if let Ok(input) = input {
-            println!("Modify value: {:?}", input);
+            println!("Modify value: {:#?}", input);
             if !input.offset().x().is_nan() || !input.offset().y().is_nan() {
                 self.x = *input.offset().x() as f32;
             } else {
@@ -222,7 +222,7 @@ where
 {
     fn modify(&mut self, input: &Result<V>) {
         if let Ok(input) = input {
-            println!("Modify value: {:?}", input);
+            println!("Modify value: {:#?}", input);
             if !input.offset().x().is_nan() && !input.offset().y().is_nan() {
                 self.x = *input.offset().x() as f32;
                 self.yaw = *input.offset_angle().angle() as f32;
@@ -247,7 +247,7 @@ where
         const ANGLE_DIFF: f32 = 7.0;
 
         if let Ok(input) = input {
-            println!("Modify value: {:?}", input);
+            println!("Modify value: {:#?}", input);
             if !input.offset().x().is_nan() && !input.offset().y().is_nan() {
                 self.x = *input.offset().x() as f32;
                 self.yaw_adjust -= if self.x.abs() > MIN_TO_CHANGE_ANGLE {
@@ -286,7 +286,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
             0.0
         };
         println!(
-            "Current Yaw: {:?}",
+            "Current Yaw: {:#?}",
             self.context
                 .get_control_board()
                 .responses()
@@ -344,7 +344,7 @@ where
 {
     fn modify(&mut self, input: &Result<V>) {
         if let Ok(input) = input {
-            println!("Modify value: {:?}", input);
+            println!("Modify value: {:#?}", input);
             if !input.offset().x().is_nan() && !input.offset().y().is_nan() {
                 self.x = *input.offset().x() as f32;
                 self.y = *input.offset().y() as f32;
@@ -530,6 +530,8 @@ impl Stability2Pos {
             }
         }
 
+        println!("Stability 2 speed set: {:#?}", self);
+
         board
             .stability_2_speed_set(
                 self.x,
@@ -572,6 +574,9 @@ impl Stability2Pos {
     /// The x and y fields are bounded to [-1, 1].
     /// The pitch, roll, yaw, depth fields wrap around 360 degrees.
     pub fn adjust(&mut self, adjuster: &Stability2Adjust) -> &Self {
+        println!("Stability 2 pre-adjust: {:#?}", self);
+        println!("Adjuster: {:#?}", adjuster);
+
         self.x = Self::set_speed(self.x, adjuster.x().clone());
         self.y = Self::set_speed(self.y, adjuster.y().clone());
 
@@ -581,13 +586,14 @@ impl Stability2Pos {
 
         // Accounting for uninitialized yaw
         self.target_yaw = if let Some(target_yaw) = self.target_yaw {
-            Some(Self::set_speed(target_yaw, adjuster.target_yaw().clone()))
+            Some(Self::set_rot(target_yaw, adjuster.target_yaw().clone()))
         } else if let Some(AdjustType::Replace(adjuster_yaw)) = adjuster.target_yaw() {
             Some(*adjuster_yaw)
         } else {
             None
         };
 
+        println!("Stability 2 post-adjust: {:#?}", self);
         self
     }
 
@@ -722,6 +728,57 @@ impl ActionExec<Stability2Adjust> for LinearYawFromX<&Stability2Adjust> {
 impl ActionExec<Stability2Adjust> for LinearYawFromX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         linear_yaw_from_x(self.pose.clone(), self.angle_diff)
+    }
+}
+
+#[derive(Debug)]
+pub struct StripY<T> {
+    pose: T,
+}
+
+impl<T> Action for StripY<T> {}
+
+impl StripY<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new() -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+impl<T: Default> StripY<T> {
+    pub fn new() -> Self {
+        Self { pose: T::default() }
+    }
+}
+
+impl<T: Default> Default for StripY<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for StripY<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability2Adjust> for StripY<&Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut pose = self.pose.clone();
+        pose.y = None;
+        pose
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability2Adjust> for StripY<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        self.pose.y = None;
+        self.pose.clone()
     }
 }
 
