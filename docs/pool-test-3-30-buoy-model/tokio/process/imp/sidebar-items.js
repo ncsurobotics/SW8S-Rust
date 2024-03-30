@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Child"],"fn":["convert_to_blocking_file","convert_to_stdio","get_orphan_queue","set_nonblocking","spawn_child","stdio"],"mod":["orphan","pidfd_reaper","reap"],"struct":["ChildStdio","GlobalOrphanQueue","Pipe"]};
