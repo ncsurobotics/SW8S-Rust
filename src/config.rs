@@ -12,6 +12,7 @@ pub struct ConfigFile {
     pub meb_path: String,
     pub front_cam: String,
     pub bottom_cam: String,
+    pub standard_depth: f32,
 }
 
 impl Default for ConfigFile {
@@ -19,8 +20,9 @@ impl Default for ConfigFile {
         Self {
             control_board_path: "/dev/ttyACM0".to_string(),
             meb_path: "/dev/ttyACM2".to_string(),
-            front_cam: "/dev/video1".to_string(),
-            bottom_cam: "/dev/video0".to_string(),
+            front_cam: "/dev/video0".to_string(),
+            bottom_cam: "/dev/video1".to_string(),
+            standard_depth: 1.0,
         }
     }
 }

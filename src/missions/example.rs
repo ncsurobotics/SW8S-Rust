@@ -1,17 +1,13 @@
-use anyhow::Result;
-use async_trait::async_trait;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
 use crate::act_nest;
 
 use super::{
-    action::{
-        Action, ActionConcurrent, ActionConditional, ActionExec, ActionMod, ActionSequence,
-        RaceAction,
-    },
+    action::{Action, ActionConcurrent, ActionConditional, ActionExec, ActionSequence, RaceAction},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
     basic::DelayAction,
+    extra::{AlwaysTrue, UnwrapAction},
     meb::WaitArm,
     movement::Descend,
 };
@@ -21,10 +17,15 @@ use super::{
 /// Runs two nested actions in order: Waiting for arm and descending in
 /// parallel, followed by waiting for arm and descending concurrently.
 pub fn initial_descent<
+    'a,
     Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
+    T: Send + Sync + 'a,
 >(
-    context: &Con,
-) -> impl ActionExec + '_ {
+    context: &'a Con,
+) -> impl ActionExec<T> + 'a
+where
+    WaitArm<'a, Con>: ActionExec<T>,
+{
     ActionSequence::new(
         ActionConcurrent::new(WaitArm::new(context), Descend::new(context, -0.5)),
         WaitArm::new(context), //ActionConcurrent::new(WaitArm::new(context), Descend::new(context, -1.0)),
@@ -43,22 +44,33 @@ pub fn always_wait<T: Send + Sync>(context: &T) -> impl Action + '_ {
     )
 }
 
-pub fn sequence_conditional<T: Send + Sync>(context: &T) -> impl Action + '_ {
+pub fn sequence_conditional<
+    Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
+>(
+    context: &Con,
+) -> impl ActionExec<()> + '_ {
     ActionSequence::new(
         ActionSequence::new(WaitArm::new(context), Descend::new(context, -1.0)),
         ActionConditional::new(
             AlwaysTrue::new(),
             WaitArm::new(context),
-            Descend::new(context, -0.5),
+            UnwrapAction::new(Descend::new(context, -0.5)),
         ),
     )
 }
 
-pub fn race_conditional<T: Send + Sync>(context: &T) -> impl Action + '_ {
+pub fn race_conditional<
+    Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
+>(
+    context: &Con,
+) -> impl ActionExec<()> + '_ {
     ActionConditional::new(
         AlwaysTrue::new(),
         WaitArm::new(context),
-        RaceAction::new(Descend::new(context, -0.5), DelayAction::new(1.0)),
+        RaceAction::new(
+            UnwrapAction::new(Descend::new(context, -0.5)),
+            DelayAction::new(1.0),
+        ),
     )
 }
 
@@ -67,8 +79,8 @@ pub fn race_many<
     Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard<WriteHalf<SerialStream>>,
 >(
     _context: &Con,
-) -> impl ActionExec + '_ {
-    ActionSequence::new(
+) -> impl ActionExec<bool> + '_ {
+    ActionSequence::<bool, _, _>::new(
         act_nest!(
             RaceAction::new,
             AlwaysTrue::new(),
@@ -79,32 +91,4 @@ pub fn race_many<
         ),
         AlwaysTrue::new(),
     )
-}
-
-#[derive(Debug)]
-pub struct AlwaysTrue {}
-
-impl AlwaysTrue {
-    pub fn new() -> Self {
-        AlwaysTrue {}
-    }
-}
-impl Default for AlwaysTrue {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Action for AlwaysTrue {}
-
-impl<T: Send + Sync> ActionMod<T> for AlwaysTrue {
-    fn modify(&mut self, _input: &T) {}
-}
-
-#[async_trait]
-impl ActionExec for AlwaysTrue {
-    type Output = Result<()>;
-    async fn execute(&mut self) -> Self::Output {
-        Ok(())
-    }
 }

@@ -1,7 +1,12 @@
 # Derived from: https://github.com/dnaka91/advent-of-code/blob/main/.github/workflows/docs.yml
 name: github-pages-docs
 
-on: ["push"]
+on:
+  push:
+    branches:
+      - '**'
+      - '!gh-pages'
+      - '!mutex_gh_pages'
 
 env:
   CARGO_TERM_COLOR: always
@@ -43,6 +48,10 @@ jobs:
         run: echo '<meta http-equiv="refresh" content="0;url=sw8s_rust_lib/index.html">' > target/doc/index.html
       - name: Remove lock file
         run: rm target/doc/.lock
+
+      - uses: ben-z/gh-action-mutex@v1.0-alpha-8
+        with:
+          branch: gh-pages-mutex
 
       - name: Deploy to GitHub Pages
         id: deployment

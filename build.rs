@@ -7,7 +7,7 @@ mod graphing {
     use std::fs::{create_dir_all, read_dir, read_to_string, write};
     use std::path::{Path, PathBuf};
     use syn::fold::{fold_item_fn, fold_use_path, Fold};
-    use syn::punctuated::Punctuated;
+
     use syn::{
         parse_file, Ident, ItemFn, ReturnType, Token, Type, TypeParamBound, UsePath, UseTree,
     };
@@ -34,14 +34,19 @@ mod graphing {
                         if let TypeParamBound::Trait(ref mut t) = bound {
                             t.path.segments.iter_mut().for_each(|seg| {
                                 if seg.ident == "ActionExec" {
-                                    seg.ident = Ident::new("GraphAction", seg.ident.span());
-                                    self.actions.push(j.sig.ident.to_string());
+                                    seg.ident = Ident::new("GraphActionExec", seg.ident.span());
 
+                                    if j.sig.inputs.len() == 1 {
+                                        self.actions.push(j.sig.ident.to_string());
+                                    }
+
+                                    /*
                                     j.sig.generics.type_params_mut().for_each(|param| {
                                         if param.ident == "Con" {
                                             param.bounds = Punctuated::new()
                                         }
                                     });
+                                    */
                                 }
                             });
                         }
@@ -120,14 +125,14 @@ mod graphing {
             })
             .for_each(|(path, file, actions)| {
                 let actions_str =
-                    "pub fn graph_actions<T>(context: &T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
+                    "pub fn graph_actions<T: GraphActionContext::GetMainElectronicsBoard + GraphActionContext::GetControlBoard<tokio::io::WriteHalf<tokio_serial::SerialStream>> + GraphActionContext::GetFrontCamMat + Send + Sync + std::marker::Unpin>(context: &T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
                         .to_string()
                         + &actions
                             .into_iter()
                             .fold("".to_string(), |acc, x| acc + &format!("(\"{x}\".to_string(), Box::new({x}(context))),"))
                         + "]}";
                 let file_contents =
-                    quote! { use sw8s_rust_lib::missions::action::Action as GraphAction; #file };
+                    quote! { use sw8s_rust_lib::missions::action::Action as GraphAction; use sw8s_rust_lib::missions::action::ActionExec as GraphActionExec; use sw8s_rust_lib::missions::action_context as GraphActionContext; #file };
                 let output_loc = out_path.join(path.strip_prefix::<PathBuf>("src/missions".into()).unwrap());
                 create_dir_all(output_loc.parent().unwrap()).unwrap();
                 write(

@@ -1,7 +1,12 @@
 # Derived from: https://github.com/dnaka91/advent-of-code/blob/main/.github/workflows/docs.yml
 name: github-pages-graphs
 
-on: ["push"]
+on:
+  push:
+    branches:
+      - '**'
+      - '!gh-pages'
+      - '!mutex_gh_pages'
 
 env:
   CARGO_TERM_COLOR: always
@@ -82,6 +87,10 @@ jobs:
           printf '\t%s\n' '</ul>' >> index.html
           printf '\t%s\n' '</body>' >> index.html
           printf '%s\n' '</html>' >> index.html
+
+      - uses: ben-z/gh-action-mutex@v1.0-alpha-8
+        with:
+          branch: gh-pages-mutex
 
       - name: Deploy to GitHub Pages
         id: deployment

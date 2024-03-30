@@ -10,10 +10,8 @@ use sw8s_rust_lib::{
         meb::MainElectronicsBoard,
     },
     missions::{
-        action::ActionExec,
-        action_context::FullActionContext,
-        basic::{descend_and_go_forward, gate_run},
-        example::initial_descent,
+        action::ActionExec, action_context::FullActionContext, basic::descend_and_go_forward,
+        example::initial_descent, gate::gate_run_naive,
     },
     video_source::appsink::Camera,
     vision::buoy::Target,
@@ -28,7 +26,7 @@ use tokio::{
     time::{sleep, timeout},
 };
 use tokio_serial::SerialStream;
-mod config;
+pub mod config;
 use std::time::Duration;
 
 static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<SerialStream>>> = OnceCell::const_new();
@@ -111,11 +109,11 @@ async fn shutdown_handler() -> UnboundedSender<()> {
         let status = control_board().await.sensor_status_query().await;
 
         match status.unwrap() {
-            SensorStatuses::IMU_NR => {
+            SensorStatuses::ImuNr => {
                 println!("imu not ready");
                 exit(1);
             }
-            SensorStatuses::DEPTH_NR => {
+            SensorStatuses::DepthNr => {
                 println!("depth not ready");
                 exit(1);
             }
@@ -252,8 +250,42 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
-        "gate_run" => {
+        "gate_run_naive" => {
+            let _ = gate_run_naive(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "start_cam" => {
+            // This has not been tested
+            println!("Opening camera");
+            front_cam().await;
+            bottom_cam().await;
             println!("Opened camera");
+            Ok(())
+        }
+        /*
+        "path_align" => {
+            bail!("TODO");
+            let _ = path_align(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "buoy_circle" => {
+            bail!("TODO");
             let _ = gate_run(&FullActionContext::new(
                 control_board().await,
                 meb().await,
@@ -265,6 +297,7 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
+        */
         "example" => {
             let _ = initial_descent(&FullActionContext::new(
                 control_board().await,
