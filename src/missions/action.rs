@@ -1,5 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use opencv::core::InputArray;
 use core::fmt::Debug;
 use std::{marker::PhantomData, sync::Arc, thread};
 use tokio::{join, runtime::Handle, sync::Mutex};
@@ -837,5 +838,20 @@ impl<U: Send + Sync, T: ActionExec<(Option<U>, Option<U>)>> ActionExec<Option<U>
         } else {
             second
         }
+    }
+}
+
+/**
+ * Pipe results of first action into the second action while executing them in parallel
+ */
+#[derive(Debug, Clone)]
+pub struct ActionPipe<T: Action, U: Action> {
+    first: T,
+    second: U
+}
+
+impl<T:Action, U: Action> ActionPipe<T, U> {
+    fn new(first: T, second: U) -> Self {
+        Self {first, second}
     }
 }

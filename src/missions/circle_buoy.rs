@@ -27,17 +27,6 @@ pub struct CircleBuoy <'a, T> {
     lateral_power: f32,
 }
 
-
-impl<'a, T> FindBuoy<'a, T> {
-    pub fn new(context: &'a T) -> Self {
-        FindBuoy {
-            context,
-            target_depth,
-            lateral_power: f32,
-        }
-    }
-}
-
 impl<'a, T> CircleBuoy <'a, T> {
     pub fn new(context: &'a T, target_depth: f32, forward_power: f32) -> Self {
         CircleBuoy {
@@ -61,13 +50,25 @@ where
 
     }
 }
+
 #[async_trait]
 impl<T> ActionExec for CircleBuoy<'_, T>
 where
     T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
 {
     async fn execute(&mut self) {
-        self.context.get_control_board().stability_2_speed_set();
+        self.context.get_control_board().stability_2_speed_set(0, lateral_power, 0, 0, 0, target_depth);
+    }
+}
+
+#[async_trait]
+impl<T> ActionMod for CircleBuoy<'_, T>
+where
+    T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
+{
+    async fn modify(&mut self, input: &Input) {
+        let rotation = 30 * input;
+        self.context.get_control_board().stability_2_speed_set(0, lateral_power, 0, 0, rotation, target_depth);
     }
 }
 
@@ -92,8 +93,10 @@ pub fn buoy_circle_sequence<
     let zero_movement = ZeroMovement::new(context, DEPTH);
 
     // Create the inner ActionSequence
-    let inner_sequence = ActionSequence::new(
+    let sequence = ActionSequence::new(
         ActionSequence::new(delay_action, zero_movement),
-        ActionParallel::new(FindBuoy::new(), CircleBuoy::new())
+        VisionNorm::<Con, Path, f64>::new(context, BuoyPCA::default()),
     );
+
+    return sequence;
 }
