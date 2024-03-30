@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["iso_week_from_yof"],"struct":["IsoWeek"]};
+window.SIDEBAR_ITEMS = {"struct":["IsoWeek"]};

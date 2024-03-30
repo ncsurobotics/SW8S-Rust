@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["dot_file","draw_svg","stripped_type"],"struct":["DotString"]};
+window.SIDEBAR_ITEMS = {"fn":["dot_file","draw_svg","indent_lines","reorder_dot_strings","strip_sig","stripped_fn","stripped_type"],"struct":["DotString"]};

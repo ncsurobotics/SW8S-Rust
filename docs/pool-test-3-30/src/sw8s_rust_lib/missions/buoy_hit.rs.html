@@ -182,17 +182,17 @@
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
 <a href="#182" id="182">182</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::vision::{
-    buoy::{<span class="self">self</span>, Buoy},
-    nn_cv2::OnnxModel,
-    VisualDetector,
-};
-
-<span class="kw">use super</span>::{
+<a href="#183" id="183">183</a>
+</pre></div><pre class="rust"><code><span class="kw">use super</span>::{
     action::{Action, ActionExec, ActionSequence, ActionWhile},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::{StraightMovement, ZeroMovement},
+};
+<span class="kw">use </span><span class="kw">crate</span>::vision::{
+    buoy::{<span class="self">self</span>, Buoy},
+    nn_cv2::OnnxModel,
+    VisualDetector,
 };
 
 <span class="kw">use </span>anyhow::Result;
@@ -262,12 +262,11 @@
 <span class="kw">impl</span>&lt;T&gt; Action <span class="kw">for </span>FindBuoy&lt;<span class="lifetime">'_</span>, T&gt; {}
 
 <span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T&gt; ActionExec <span class="kw">for </span>FindBuoy&lt;<span class="lifetime">'_</span>, T&gt;
+</span><span class="kw">impl</span>&lt;T&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>FindBuoy&lt;<span class="lifetime">'_</span>, T&gt;
 <span class="kw">where
     </span>T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt; + GetFrontCamMat + Sync + Unpin,
 {
-    <span class="kw">type </span>Output = <span class="prelude-ty">Result</span>&lt;()&gt;;
-    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>camera_aquisition = <span class="self">self</span>.context.get_front_camera_mat();
         <span class="kw">let </span>class_of_interest = <span class="self">self</span>.context.get_desired_buoy_gate().<span class="kw">await</span>;
 
@@ -285,13 +284,11 @@
     }
 }
 <span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T&gt; ActionExec <span class="kw">for </span>DriveToBuoyVision&lt;<span class="lifetime">'_</span>, T&gt;
+</span><span class="kw">impl</span>&lt;T&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>DriveToBuoyVision&lt;<span class="lifetime">'_</span>, T&gt;
 <span class="kw">where
     </span>T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt; + GetFrontCamMat + Sync + Unpin,
 {
-    <span class="kw">type </span>Output = <span class="prelude-ty">Result</span>&lt;()&gt;;
-
-    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="self">Self</span>::Output {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>camera_aquisition = <span class="self">self</span>.context.get_front_camera_mat();
         <span class="kw">let </span>class_of_interest = <span class="self">self</span>.context.get_desired_buoy_gate().<span class="kw">await</span>;
 
@@ -330,15 +327,20 @@
 
 <span class="comment">// Create and return the outer ActionSequence
 </span><span class="kw">pub fn </span>buoy_collision_sequence&lt;
+    <span class="lifetime">'a</span>,
     Con: Send
         + Sync
         + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;
         + GetMainElectronicsBoard
         + GetFrontCamMat
         + Unpin,
+    T: Send + Sync,
 &gt;(
-    context: <span class="kw-2">&amp;</span>Con,
-) -&gt; <span class="kw">impl </span>ActionExec + <span class="lifetime">'_ </span>{
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Con,
+) -&gt; <span class="kw">impl </span>ActionExec&lt;T&gt; + <span class="lifetime">'a
+</span><span class="kw">where
+    </span>ZeroMovement&lt;<span class="lifetime">'a</span>, Con&gt;: ActionExec&lt;T&gt;,
+{
     <span class="kw">const </span>DEPTH: f32 = <span class="number">1.0</span>;
 
     <span class="kw">let </span>forward_power = <span class="number">0.3</span>;

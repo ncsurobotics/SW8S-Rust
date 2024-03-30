@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["VisionNormOffset"]};
+window.SIDEBAR_ITEMS = {"struct":["Average","DetectTarget","ExtractPosition","VisionNorm","VisionNormOffset"]};

@@ -66,6 +66,8 @@
 <a href="#64" id="64">64</a>
 <a href="#65" id="65">65</a>
 <a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
     fs::read_to_string,
     fs::write,
@@ -80,6 +82,7 @@
     <span class="kw">pub </span>meb_path: String,
     <span class="kw">pub </span>front_cam: String,
     <span class="kw">pub </span>bottom_cam: String,
+    <span class="kw">pub </span>standard_depth: f32,
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>ConfigFile {
@@ -87,8 +90,9 @@
         <span class="self">Self </span>{
             control_board_path: <span class="string">"/dev/ttyACM0"</span>.to_string(),
             meb_path: <span class="string">"/dev/ttyACM2"</span>.to_string(),
-            front_cam: <span class="string">"/dev/video1"</span>.to_string(),
-            bottom_cam: <span class="string">"/dev/video0"</span>.to_string(),
+            front_cam: <span class="string">"/dev/video0"</span>.to_string(),
+            bottom_cam: <span class="string">"/dev/video1"</span>.to_string(),
+            standard_depth: <span class="number">1.0</span>,
         }
     }
 }

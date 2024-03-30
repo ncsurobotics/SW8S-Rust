@@ -287,6 +287,62 @@
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
 <a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -301,8 +357,10 @@
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
-        basic::{descend_and_go_forward, gate_run},
+        basic::descend_and_go_forward,
         example::initial_descent,
+        gate::{gate_run_complex, gate_run_naive},
+        octagon::look_up_octagon,
     },
     video_source::appsink::Camera,
     vision::buoy::Target,
@@ -317,7 +375,7 @@
     time::{sleep, timeout},
 };
 <span class="kw">use </span>tokio_serial::SerialStream;
-<span class="kw">mod </span>config;
+<span class="kw">pub mod </span>config;
 <span class="kw">use </span>std::time::Duration;
 
 <span class="kw">static </span>CONTROL_BOARD_CELL: OnceCell&lt;ControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; = OnceCell::const_new();
@@ -400,11 +458,11 @@
         <span class="kw">let </span>status = control_board().<span class="kw">await</span>.sensor_status_query().<span class="kw">await</span>;
 
         <span class="kw">match </span>status.unwrap() {
-            SensorStatuses::IMU_NR =&gt; {
+            SensorStatuses::ImuNr =&gt; {
                 <span class="macro">println!</span>(<span class="string">"imu not ready"</span>);
                 exit(<span class="number">1</span>);
             }
-            SensorStatuses::DEPTH_NR =&gt; {
+            SensorStatuses::DepthNr =&gt; {
                 <span class="macro">println!</span>(<span class="string">"depth not ready"</span>);
                 exit(<span class="number">1</span>);
             }
@@ -541,9 +599,8 @@
             .<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }
-        <span class="string">"gate_run" </span>=&gt; {
-            <span class="macro">println!</span>(<span class="string">"Opened camera"</span>);
-            <span class="kw">let _ </span>= gate_run(<span class="kw-2">&amp;</span>FullActionContext::new(
+        <span class="string">"gate_run_naive" </span>=&gt; {
+            <span class="kw">let _ </span>= gate_run_naive(<span class="kw-2">&amp;</span>FullActionContext::new(
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
@@ -554,7 +611,55 @@
             .<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }
-        <span class="string">"example" </span>=&gt; {
+        <span class="string">"gate_run_complex" </span>=&gt; {
+            <span class="kw">let _ </span>= gate_run_complex(<span class="kw-2">&amp;</span>FullActionContext::new(
+                control_board().<span class="kw">await</span>,
+                meb().<span class="kw">await</span>,
+                front_cam().<span class="kw">await</span>,
+                bottom_cam().<span class="kw">await</span>,
+                gate_target().<span class="kw">await</span>,
+            ))
+            .execute()
+            .<span class="kw">await</span>;
+            <span class="prelude-val">Ok</span>(())
+        }
+        <span class="string">"start_cam" </span>=&gt; {
+            <span class="comment">// This has not been tested
+            </span><span class="macro">println!</span>(<span class="string">"Opening camera"</span>);
+            front_cam().<span class="kw">await</span>;
+            bottom_cam().<span class="kw">await</span>;
+            <span class="macro">println!</span>(<span class="string">"Opened camera"</span>);
+            <span class="prelude-val">Ok</span>(())
+        }
+        <span class="comment">/*
+        "path_align" =&gt; {
+            bail!("TODO");
+            let _ = path_align(&amp;FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "buoy_circle" =&gt; {
+            bail!("TODO");
+            let _ = gate_run(&amp;FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        */
+        </span><span class="string">"example" </span>=&gt; {
             <span class="kw">let _ </span>= initial_descent(<span class="kw-2">&amp;</span>FullActionContext::new(
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
@@ -566,9 +671,16 @@
             .<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }
-        <span class="string">"camera" </span>=&gt; {
-            <span class="kw">let _ </span>= front_cam().<span class="kw">await</span>;
-            <span class="kw">let _ </span>= bottom_cam().<span class="kw">await</span>;
+        <span class="string">"look_up_octagon" </span>=&gt; {
+            <span class="kw">let _ </span>= look_up_octagon(<span class="kw-2">&amp;</span>FullActionContext::new(
+                control_board().<span class="kw">await</span>,
+                meb().<span class="kw">await</span>,
+                front_cam().<span class="kw">await</span>,
+                bottom_cam().<span class="kw">await</span>,
+                gate_target().<span class="kw">await</span>,
+            ))
+            .execute()
+            .<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }
         x =&gt; <span class="macro">bail!</span>(<span class="string">"Invalid argument: [{x}]"</span>),

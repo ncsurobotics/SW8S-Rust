@@ -4,7 +4,7 @@ var srcIndex = new Map(JSON.parse('[\
 ["bitflags",["",[],["external.rs","internal.rs","iter.rs","lib.rs","parser.rs","public.rs","traits.rs"]]],\
 ["bytes",["",[["buf",[],["buf_impl.rs","buf_mut.rs","chain.rs","iter.rs","limit.rs","mod.rs","reader.rs","take.rs","uninit_slice.rs","vec_deque.rs","writer.rs"]],["fmt",[],["debug.rs","hex.rs","mod.rs"]]],["bytes.rs","bytes_mut.rs","lib.rs","loom.rs"]]],\
 ["cfg_if",["",[],["lib.rs"]]],\
-["chrono",["",[["datetime",[],["mod.rs"]],["format",[],["formatting.rs","locales.rs","mod.rs","parse.rs","parsed.rs","scan.rs","strftime.rs"]],["naive",[["datetime",[],["mod.rs"]],["time",[],["mod.rs"]]],["date.rs","internals.rs","isoweek.rs","mod.rs"]],["offset",[["local",[["tz_info",[],["mod.rs","parser.rs","rule.rs","timezone.rs"]]],["mod.rs","unix.rs"]]],["fixed.rs","mod.rs","utc.rs"]]],["date.rs","lib.rs","month.rs","round.rs","time_delta.rs","traits.rs","weekday.rs"]]],\
+["chrono",["",[["datetime",[],["mod.rs"]],["format",[],["formatting.rs","locales.rs","mod.rs","parse.rs","parsed.rs","scan.rs","strftime.rs"]],["naive",[["date",[],["mod.rs"]],["datetime",[],["mod.rs"]],["time",[],["mod.rs"]]],["internals.rs","isoweek.rs","mod.rs"]],["offset",[["local",[["tz_info",[],["mod.rs","parser.rs","rule.rs","timezone.rs"]]],["mod.rs","unix.rs"]]],["fixed.rs","mod.rs","utc.rs"]]],["date.rs","lib.rs","month.rs","round.rs","time_delta.rs","traits.rs","weekday.rs"]]],\
 ["derive_getters",["",[],["dissolve.rs","extract.rs","faultmsg.rs","getters.rs","lib.rs"]]],\
 ["dot_generator",["",[],["lib.rs"]]],\
 ["dot_structures",["",[],["lib.rs"]]],\
@@ -69,7 +69,7 @@ var srcIndex = new Map(JSON.parse('[\
 ["static_assertions",["",[],["assert_cfg.rs","assert_eq_align.rs","assert_eq_size.rs","assert_fields.rs","assert_impl.rs","assert_obj_safe.rs","assert_trait.rs","assert_type.rs","const_assert.rs","lib.rs"]]],\
 ["sw8s_rust",["",[],["config.rs","main.rs"]]],\
 ["sw8s_rust_graphs",["",[],["graph_main.rs"]]],\
-["sw8s_rust_lib",["",[["comms",[["auv_control_board",[],["mod.rs","response.rs","util.rs"]],["control_board",[],["mod.rs","response.rs","util.rs"]],["meb",[],["mod.rs","response.rs"]]],["mod.rs"]],["missions",[],["action.rs","action_context.rs","basic.rs","buoy_hit.rs","comms.rs","example.rs","graph.rs","meb.rs","mod.rs","movement.rs","vision.rs"]],["video_source",[],["appsink.rs","mod.rs"]],["vision",[],["buoy.rs","gate.rs","gate_poles.rs","image_prep.rs","mod.rs","nn_cv2.rs","path.rs","pca.rs","yolo_model.rs"]]],["lib.rs"]]],\
+["sw8s_rust_lib",["",[["comms",[["auv_control_board",[],["mod.rs","response.rs","util.rs"]],["control_board",[],["mod.rs","response.rs","util.rs"]],["meb",[],["mod.rs","response.rs"]]],["mod.rs"]],["missions",[],["action.rs","action_context.rs","basic.rs","buoy_circle.rs","buoy_hit.rs","comms.rs","example.rs","extra.rs","gate.rs","graph.rs","meb.rs","mod.rs","movement.rs","octagon.rs","path_align.rs","vision.rs"]],["video_source",[],["appsink.rs","mod.rs"]],["vision",[],["buoy.rs","gate.rs","gate_poles.rs","image_prep.rs","mod.rs","nn_cv2.rs","path.rs","pca.rs","yolo_model.rs"]]],["lib.rs"]]],\
 ["tempfile",["",[["file",[["imp",[],["mod.rs","unix.rs"]]],["mod.rs"]]],["dir.rs","error.rs","lib.rs","spooled.rs","util.rs"]]],\
 ["thiserror",["",[],["aserror.rs","display.rs","lib.rs"]]],\
 ["thiserror_impl",["",[],["ast.rs","attr.rs","expand.rs","fmt.rs","generics.rs","lib.rs","prop.rs","valid.rs"]]],\
