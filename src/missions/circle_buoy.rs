@@ -76,6 +76,8 @@ pub fn buoy_circle_sequence<
 
     // Create the inner ActionSequence
     let sequence = ActionSequence::new(
+        delay_action, 
+        zero_movement,
         ActionSequence::new(delay_action, zero_movement),
         ActionChain(VisionNorm::<Con, Path, f64>::new(context, BuoyPCA::default()),
                     CircleBuoy::new())
