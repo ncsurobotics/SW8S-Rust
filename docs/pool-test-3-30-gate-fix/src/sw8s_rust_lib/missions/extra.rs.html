@@ -415,6 +415,10 @@
 <a href="#413" id="413">413</a>
 <a href="#414" id="414">414</a>
 <a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>anyhow::anyhow;
@@ -634,6 +638,7 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
+        <span class="macro">println!</span>(<span class="string">"Update true count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
@@ -647,6 +652,7 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
+        <span class="macro">println!</span>(<span class="string">"Update true count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
@@ -698,6 +704,7 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
+        <span class="macro">println!</span>(<span class="string">"Update false count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
@@ -711,6 +718,7 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
+        <span class="macro">println!</span>(<span class="string">"Update false count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
