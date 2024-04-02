@@ -40,7 +40,7 @@ var srcIndex = new Map(JSON.parse('[\
 ["num_cpus",["",[],["lib.rs","linux.rs"]]],\
 ["num_traits",["",[["ops",[],["bytes.rs","checked.rs","euclid.rs","inv.rs","mod.rs","mul_add.rs","overflowing.rs","saturating.rs","wrapping.rs"]]],["bounds.rs","cast.rs","float.rs","identities.rs","int.rs","lib.rs","macros.rs","pow.rs","real.rs","sign.rs"]]],\
 ["once_cell",["",[],["imp_std.rs","lib.rs","race.rs"]]],\
-["opencv",["",[["manual",[["core",[["mat",[],["mat_.rs"]],["ptr",[],["ptr_extern.rs","ptr_f32.rs"]],["vec",[],["operations.rs"]],["vector",[],["iter.rs","vector_extern.rs"]]],["affine3.rs","data_type.rs","gpumat.rs","input_output_array.rs","mat.rs","mat_ops.rs","matx.rs","point.rs","point3.rs","ptr.rs","rect.rs","scalar.rs","size.rs","sized.rs","tuple.rs","vec.rs","vector.rs"]],["types",[],["abstract_ref.rs"]]],["core.rs","dnn.rs","mod.rs","sys.rs","types.rs"]],["traits",[],["boxed.rs","mod.rs","opencv_type.rs"]]],["cond_macros.rs","error.rs","lib.rs","opencv.rs","templ.rs"]]],\
+["opencv",["",[["manual",[["core",[["mat",[],["mat_.rs"]],["ptr",[],["ptr_extern.rs","ptr_f32.rs"]],["vec",[],["operations.rs"]],["vector",[],["iter.rs","vector_extern.rs"]]],["affine3.rs","data_type.rs","gpumat.rs","input_output_array.rs","mat.rs","mat_ops.rs","matx.rs","point.rs","point3.rs","ptr.rs","rect.rs","scalar.rs","size.rs","sized.rs","tuple.rs","vec.rs","vector.rs"]],["types",[],["abstract_ref.rs"]]],["core.rs","dnn.rs","mod.rs","sys.rs","types.rs"]],["traits",[],["boxed.rs","mod.rs","opencv_type.rs"]]],["boxed_ref.rs","cond_macros.rs","error.rs","lib.rs","opencv.rs","templ.rs"]]],\
 ["parking_lot",["",[],["condvar.rs","deadlock.rs","elision.rs","fair_mutex.rs","lib.rs","mutex.rs","once.rs","raw_fair_mutex.rs","raw_mutex.rs","raw_rwlock.rs","remutex.rs","rwlock.rs","util.rs"]]],\
 ["parking_lot_core",["",[["thread_parker",[],["linux.rs","mod.rs"]]],["lib.rs","parking_lot.rs","spinwait.rs","util.rs","word_lock.rs"]]],\
 ["paste",["",[],["attr.rs","error.rs","lib.rs","segment.rs"]]],\
@@ -82,6 +82,6 @@ var srcIndex = new Map(JSON.parse('[\
 ["ucd_trie",["",[],["lib.rs","owned.rs"]]],\
 ["unicode_ident",["",[],["lib.rs","tables.rs"]]],\
 ["uuid",["",[],["builder.rs","error.rs","external.rs","fmt.rs","lib.rs","macros.rs","parser.rs","rng.rs","timestamp.rs","v4.rs"]]],\
-["winnow",["",[["ascii",[],["mod.rs"]],["binary",[["bits",[],["mod.rs"]]],["mod.rs"]],["combinator",[],["branch.rs","core.rs","mod.rs","multi.rs","parser.rs","sequence.rs"]],["stream",[],["impls.rs","mod.rs"]],["token",[],["mod.rs"]],["trace",[],["mod.rs"]]],["error.rs","lib.rs","macros.rs","parser.rs"]]]\
+["winnow",["",[["ascii",[],["mod.rs"]],["binary",[["bits",[],["mod.rs"]]],["mod.rs"]],["combinator",[["debug",[],["mod.rs"]]],["branch.rs","core.rs","mod.rs","multi.rs","parser.rs","sequence.rs"]],["macros",[],["dispatch.rs","mod.rs","seq.rs"]],["stream",[],["impls.rs","mod.rs"]],["token",[],["mod.rs"]]],["error.rs","lib.rs","parser.rs"]]]\
 ]'));
 createSrcSidebar();

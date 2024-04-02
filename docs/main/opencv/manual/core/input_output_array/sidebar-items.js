@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["ToInputArray","ToInputOutputArray","ToOutputArray"]};
+window.SIDEBAR_ITEMS = {"fn":["call_input_array","call_output_array"],"trait":["ToInputArray","ToInputOutputArray","ToOutputArray"]};
