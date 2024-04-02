@@ -4,7 +4,7 @@ use itertools::Itertools;
 use opencv::{
     core::{in_range, Size, VecN},
     imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
-    prelude::{Mat, MatTraitConst},
+    prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
 
 use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
