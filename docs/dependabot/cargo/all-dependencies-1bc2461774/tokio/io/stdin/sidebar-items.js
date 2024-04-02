@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["stdin"],"mod":["sys"],"struct":["Stdin"]};

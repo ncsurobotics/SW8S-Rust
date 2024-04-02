@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["SpooledData"],"fn":["spooled_tempfile"],"struct":["SpooledTempFile"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["TransferState"],"fn":["copy_bidirectional","transfer_one_direction"]};

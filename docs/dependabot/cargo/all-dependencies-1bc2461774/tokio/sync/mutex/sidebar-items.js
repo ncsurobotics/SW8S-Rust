@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["MappedMutexGuard","MappedMutexGuardInner","Mutex","MutexGuard","MutexGuardInner","OwnedMappedMutexGuard","OwnedMappedMutexGuardInner","OwnedMutexGuard","OwnedMutexGuardInner","TryLockError"]};
