@@ -331,6 +331,9 @@
 <a href="#329" id="329">329</a>
 <a href="#330" id="330">330</a>
 <a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::hash::Hash;
 <span class="kw">use </span>std::ops::Deref;
 
@@ -507,6 +510,7 @@
 /// # Examples
 /// ```
 /// use opencv::core::{Mat, Mat_, Point, VecN};
+/// use opencv::prelude::MatTraitConstManual;
 /// use sw8s_rust_lib::vision::image_prep::cvt_binary_to_points;
 ///
 /// let raw_mat: [u8; 7] = [0, 0, 0, 255, 255, 0, 0];
@@ -551,6 +555,7 @@
 /// # Examples:
 /// ```
 /// use opencv::core::{Mat, Mat_};
+/// use opencv::prelude::MatTraitConstManual;
 /// use sw8s_rust_lib::vision::image_prep::unique_colors;
 ///
 /// let raw_mat: [u8; 7] = [0, 5, 32, 32, 5, 0, 1];
@@ -600,6 +605,7 @@
 /// # Examples:
 /// ```
 /// use opencv::core::{Mat, Mat_, VecN};
+/// use opencv::prelude::MatTraitConstManual;
 /// use sw8s_rust_lib::vision::image_prep::unique_colors_vec;
 ///
 /// let raw_mat: [VecN&lt;u8, 2&gt;; 1] = [VecN::from_array([0, 0])];
