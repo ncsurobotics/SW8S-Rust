@@ -8,7 +8,7 @@ use opencv::{
         CV_32F, CV_32FC3, CV_64F, CV_8U, KMEANS_PP_CENTERS, ROTATE_90_COUNTERCLOCKWISE,
     },
     imgproc::{self},
-    prelude::{Mat, MatSizeTraitConst, MatTrait, MatTraitConst},
+    prelude::{Mat, MatSizeTraitConst, MatTrait, MatTraitConst, MatTraitConstManual},
 };
 
 use anyhow::Result;
@@ -23,7 +23,7 @@ use anyhow::Result;
 /// ```
 /// use opencv::{
 ///     core::{Mat, Size},
-///     prelude::{MatTraitConst, MatSizeTraitConst},
+///     prelude::{MatTraitConst, MatTraitConstManual, MatSizeTraitConst},
 /// };
 /// use sw8s_rust_lib::vision::image_prep::resize;
 ///
@@ -84,7 +84,7 @@ pub fn check_bounds(image: &Mat, bounds: &Size) -> bool {
 /// ```
 /// use opencv::{
 ///     core::{Mat, Size},
-///     prelude::{MatTraitConst, MatSizeTraitConst},
+///     prelude::{MatTraitConst, MatTraitConstManual, MatSizeTraitConst},
 /// };
 /// use sw8s_rust_lib::vision::image_prep::slice_number;
 ///
