@@ -1,0 +1,651 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/graphviz-rust-0.8.0/src/attributes/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="graphviz_rust" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../graphviz_rust/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<a href="#2" id="2">2</a>
+<a href="#3" id="3">3</a>
+<a href="#4" id="4">4</a>
+<a href="#5" id="5">5</a>
+<a href="#6" id="6">6</a>
+<a href="#7" id="7">7</a>
+<a href="#8" id="8">8</a>
+<a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+<a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
+<a href="#41" id="41">41</a>
+<a href="#42" id="42">42</a>
+<a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
+<a href="#46" id="46">46</a>
+<a href="#47" id="47">47</a>
+<a href="#48" id="48">48</a>
+<a href="#49" id="49">49</a>
+<a href="#50" id="50">50</a>
+<a href="#51" id="51">51</a>
+<a href="#52" id="52">52</a>
+<a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+</pre></div><pre class="rust"><code><span class="attr">#![allow(non_snake_case)]
+</span><span class="doccomment">//! graphviz [`attributes`]
+//!
+//! [`attributes`]: https://graphviz.org/doc/info/attrs.html
+//! # Examples:
+//! ```rust
+//! use dot_generator::*;
+//! use dot_structures::*;
+//! use graphviz_rust::attributes::{color, color_name, GraphAttributes, NodeAttributes};
+//! use into_attr::IntoAttribute;
+//! fn test() {
+//!     assert_eq!(GraphAttributes::center(true), attr!("center", true));
+//!     assert_eq!(
+//!         NodeAttributes::color(color_name::antiquewhite1),
+//!         attr!("color", "antiquewhite1")
+//!     );
+//!     assert_eq!(color::default().into_attr(), attr!("color", "black"));
+//! }
+//! ```
+</span><span class="kw">mod </span>generate;
+<span class="kw">use </span>std::fmt::{Display, Formatter};
+
+<span class="kw">use </span>dot_generator::{attr, id};
+<span class="kw">use </span>dot_structures::<span class="kw-2">*</span>;
+<span class="kw">use </span>into_attr::IntoAttribute;
+<span class="kw">use </span>into_attr_derive::IntoAttribute;
+
+<span class="kw">use crate</span>::{as_item, generate_attr};
+
+<span class="doccomment">/// The attributes appearing on the node
+</span><span class="kw">pub enum </span>NodeAttributes {}
+<span class="doccomment">/// The attributes appearing on the edge
+</span><span class="kw">pub enum </span>EdgeAttributes {}
+<span class="doccomment">/// The attributes appearing on the root graph
+</span><span class="kw">pub enum </span>GraphAttributes {}
+<span class="doccomment">/// The attributes appearing on the subgraph
+</span><span class="kw">pub enum </span>SubgraphAttributes {}
+
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>_background <span class="kw">for </span>GraphAttributes; String; <span class="string">"&lt;none&gt;"</span>.to_string() );
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>area <span class="kw">for </span>NodeAttributes, SubgraphAttributes; f32; <span class="number">1.0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>arrowhead <span class="kw">for </span>EdgeAttributes;
+    <span class="comment">//region values
+    </span>normal,dot,odot,none,empty,diamond,ediamond,odiamond,box_,open,vee,halfopen,obox,
+    crow,invempty,tee,invodot,invdot,inv;
+    normal
+    <span class="comment">//endregion
+</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>arrowtail <span class="kw">for </span>EdgeAttributes;
+    <span class="comment">//region values
+    </span>normal,dot,odot,none,empty,diamond,ediamond,odiamond,box_,open,vee,halfopen,obox,
+    crow,invempty,tee,invodot,invdot,inv;
+    normal
+    <span class="comment">//endregion
+</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>arrowsize <span class="kw">for </span>EdgeAttributes; f32; <span class="number">0.0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>bb <span class="kw">for </span>GraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>center <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>charset <span class="kw">for </span>GraphAttributes; String;<span class="string">"UTF-8"</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>class <span class="kw">for </span>GraphAttributes,NodeAttributes,EdgeAttributes,SubgraphAttributes;String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>colorscheme <span class="kw">for </span>GraphAttributes,NodeAttributes,EdgeAttributes,SubgraphAttributes;String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>comment <span class="kw">for </span>GraphAttributes,NodeAttributes,EdgeAttributes;String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>compound <span class="kw">for </span>GraphAttributes;bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>concentrate <span class="kw">for </span>GraphAttributes;bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>Damping <span class="kw">for </span>GraphAttributes;f32;<span class="number">0.99</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>decorate <span class="kw">for </span>EdgeAttributes;bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>defaultdist <span class="kw">for </span>GraphAttributes;f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>constraint <span class="kw">for </span>EdgeAttributes;bool;<span class="bool-val">true</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>dim <span class="kw">for </span>GraphAttributes;i32;<span class="number">2</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>dimen <span class="kw">for </span>GraphAttributes;i32;<span class="number">2</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>clusterrank <span class="kw">for </span>GraphAttributes; local,global,none; local);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>dir <span class="kw">for </span>EdgeAttributes; forward,back,both,none; forward);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>diredgeconstraints <span class="kw">for </span>GraphAttributes; bool; <span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>distortion <span class="kw">for </span>NodeAttributes; f32; <span class="number">0.0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>dpi <span class="kw">for </span>GraphAttributes; f32; <span class="number">96.0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>dedgehrefpi <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>edgetarget <span class="kw">for </span>EdgeAttributes; String );
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>edgetooltip <span class="kw">for </span>EdgeAttributes; String );
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>edgeURL <span class="kw">for </span>EdgeAttributes; String );
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>epsilon <span class="kw">for </span>GraphAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>esep <span class="kw">for </span>GraphAttributes; f32;<span class="number">3.0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>fixedsize <span class="kw">for </span>NodeAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>fontname <span class="kw">for </span>NodeAttributes,GraphAttributes,EdgeAttributes,SubgraphAttributes; String;<span class="string">"Times-Roman"</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>href <span class="kw">for </span>NodeAttributes,GraphAttributes,EdgeAttributes,SubgraphAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>id <span class="kw">for </span>NodeAttributes,GraphAttributes,EdgeAttributes,SubgraphAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>fontsize <span class="kw">for </span>NodeAttributes,GraphAttributes,EdgeAttributes,SubgraphAttributes; f32;<span class="number">14.0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>fontnames <span class="kw">for </span>GraphAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>fontpath <span class="kw">for </span>GraphAttributes; String;<span class="string">"&lt;system-dependent&gt;"</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>forcelabels <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">true</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>gradientangle <span class="kw">for </span>NodeAttributes,GraphAttributes,SubgraphAttributes; i32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>group <span class="kw">for </span>NodeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>head_lp <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>headclip <span class="kw">for </span>EdgeAttributes; bool;<span class="bool-val">true</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>headhref <span class="kw">for </span>EdgeAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>headlabel <span class="kw">for </span>EdgeAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>headtarget <span class="kw">for </span>EdgeAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>headtooltip <span class="kw">for </span>EdgeAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>headURL <span class="kw">for </span>EdgeAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>height <span class="kw">for </span>NodeAttributes; f32;<span class="number">0.5</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>image <span class="kw">for </span>NodeAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>imagepos <span class="kw">for </span>NodeAttributes; String;<span class="string">"mc"</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>imagescale <span class="kw">for </span>NodeAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>imagepath <span class="kw">for </span>GraphAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>inputscale <span class="kw">for </span>GraphAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>K <span class="kw">for </span>GraphAttributes,SubgraphAttributes; f32;<span class="number">0.3</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>label <span class="kw">for </span>NodeAttributes,GraphAttributes,EdgeAttributes,SubgraphAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>label_scheme <span class="kw">for  </span>GraphAttributes; i32;<span class="number">0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labelangle <span class="kw">for  </span>EdgeAttributes; f32;-<span class="number">25.0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labeldistance <span class="kw">for  </span>EdgeAttributes; f32;<span class="number">1.0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labelfloat <span class="kw">for  </span>EdgeAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labelfontname <span class="kw">for  </span>EdgeAttributes; String;<span class="string">"Times-Roman"</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labelfontsize <span class="kw">for  </span>EdgeAttributes; f32;<span class="number">14.0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labelhref <span class="kw">for  </span>EdgeAttributes; String;<span class="string">""</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labeljust <span class="kw">for  </span>GraphAttributes,SubgraphAttributes; String;<span class="string">"c"</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labelloc <span class="kw">for  </span>GraphAttributes,SubgraphAttributes,NodeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labeltarget <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labeltooltip <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labelURL <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>landscape <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>layer <span class="kw">for </span>EdgeAttributes,NodeAttributes,SubgraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>layerlistsep <span class="kw">for </span>GraphAttributes; String;<span class="string">","</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>layers <span class="kw">for </span>GraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>layerselect <span class="kw">for </span>GraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>layersep <span class="kw">for </span>GraphAttributes; String;<span class="string">":\t "</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>layout <span class="kw">for </span>GraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>len <span class="kw">for </span>EdgeAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>levels <span class="kw">for </span>GraphAttributes; i32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>levelsgap <span class="kw">for </span>GraphAttributes; f32;<span class="number">0.0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>lhead <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>lheight <span class="kw">for </span>GraphAttributes,SubgraphAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>lwidth <span class="kw">for </span>GraphAttributes,SubgraphAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>lp <span class="kw">for </span>GraphAttributes,SubgraphAttributes,EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>margin <span class="kw">for </span>GraphAttributes,SubgraphAttributes,NodeAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>ltail <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>maxiter <span class="kw">for </span>GraphAttributes; i32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>mclimit <span class="kw">for </span>GraphAttributes; f32;<span class="number">1.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>mindist <span class="kw">for </span>GraphAttributes; f32;<span class="number">1.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>minlen <span class="kw">for </span>EdgeAttributes; i32;<span class="number">1</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>mode <span class="kw">for </span>GraphAttributes; String;<span class="string">"major"</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>model <span class="kw">for </span>GraphAttributes; String;<span class="string">"shortpath"</span>.to_string());
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>mosek <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>newrank <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>nodesep <span class="kw">for </span>GraphAttributes; f32;<span class="number">0.25</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>normalize <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>notranslate <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>nslimit <span class="kw">for </span>GraphAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>nslimit1 <span class="kw">for </span>GraphAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>ordering <span class="kw">for </span>GraphAttributes,NodeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>orientation <span class="kw">for </span>GraphAttributes,NodeAttributes; f32;<span class="number">0.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>outputorder <span class="kw">for </span>GraphAttributes; breadthfirst,nodesfirst,edgesfirst;breadthfirst);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>nojustify <span class="kw">for </span>GraphAttributes,NodeAttributes,SubgraphAttributes,EdgeAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>overlap <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">true</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>overlap_shrink <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">true</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>pack <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>overlap_scaling <span class="kw">for </span>GraphAttributes; f32;-<span class="number">4.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>pad <span class="kw">for </span>GraphAttributes; f32;<span class="number">0.0555</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>page <span class="kw">for </span>GraphAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>packmode <span class="kw">for </span>GraphAttributes; node,clust,graph,array;node);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>pagedir <span class="kw">for </span>GraphAttributes; BL,BR,TL,TR,RB,RT,LB,LT;BL);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>penwidth <span class="kw">for </span>SubgraphAttributes,NodeAttributes,EdgeAttributes; f32;<span class="number">1.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>peripheries <span class="kw">for </span>SubgraphAttributes,NodeAttributes; i32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>pin <span class="kw">for </span>NodeAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>pos <span class="kw">for </span>NodeAttributes,EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>quadtree <span class="kw">for </span>GraphAttributes; normal,fast,none;normal);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>quantum <span class="kw">for </span>GraphAttributes; f32;<span class="number">0.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>rank <span class="kw">for </span>SubgraphAttributes; same,min,source,max,sink);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>rankdir <span class="kw">for </span>GraphAttributes; TB,BT,LR,RL;TB);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>ranksep <span class="kw">for </span>GraphAttributes; f32;<span class="number">0.5</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>ratio <span class="kw">for </span>GraphAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>rects <span class="kw">for </span>NodeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>regular <span class="kw">for </span>NodeAttributes; bool;<span class="bool-val">false</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>remincross <span class="kw">for </span>GraphAttributes; bool;<span class="bool-val">true</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>repulsiveforce <span class="kw">for </span>GraphAttributes; f32;<span class="number">1.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>resolution <span class="kw">for </span>GraphAttributes; f32;<span class="number">96.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>root <span class="kw">for </span>GraphAttributes,NodeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>rotate <span class="kw">for </span>GraphAttributes; i32;<span class="number">0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>rotation <span class="kw">for </span>GraphAttributes; f32;<span class="number">0.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>samehead <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>sametail <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>samplepoints <span class="kw">for </span>NodeAttributes; i32;<span class="number">8</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>searchsize <span class="kw">for </span>GraphAttributes; i32;<span class="number">30</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>scale <span class="kw">for </span>GraphAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>sep <span class="kw">for </span>GraphAttributes; f32;<span class="number">4.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>shapefile <span class="kw">for </span>NodeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>shape <span class="kw">for </span>NodeAttributes;
+    <span class="comment">//region values
+    </span>box_,polygon,ellipse,oval,circle,point,egg,triangle,plaintext,plain,diamond,trapezium,
+    parallelogram,house,pentagon,hexagon,septagon,octagon,doublecircle,doubleoctagon,tripleoctagon,
+    invtriangle,invtrapezium,invhouse,Mdiamond,Msquare,Mcircle,rect,rectangle,square,star,none,
+    underline,cylinder,note,tab,folder,box3d,component,promoter,cds,terminator,utr,primersite,
+    restrictionsite,fivepoverhang,threepoverhang,noverhang,assembly,signature,insulator,ribosite,
+    rnastab,proteasesite,proteinstab,rpromoter,rarrow,larrow,lpromoter;
+    ellipse
+    <span class="comment">//endregion
+</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>showboxes <span class="kw">for </span>NodeAttributes,GraphAttributes,EdgeAttributes; i32;<span class="number">0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>sides <span class="kw">for </span>NodeAttributes; i32;<span class="number">4</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>skew <span class="kw">for </span>NodeAttributes; f32;<span class="number">0.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">enum </span>smoothing <span class="kw">for </span>GraphAttributes; none,avg_dist,graph_dist,power_dist,rng,spring,triangle;none);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>size <span class="kw">for </span>GraphAttributes; f32);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>sortv <span class="kw">for </span>GraphAttributes,SubgraphAttributes,NodeAttributes; i32;<span class="number">0</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>splines <span class="kw">for </span>GraphAttributes; bool);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>start <span class="kw">for </span>GraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>style <span class="kw">for </span>GraphAttributes,EdgeAttributes,NodeAttributes,SubgraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>stylesheet <span class="kw">for </span>GraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>tail_lp <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>tailhref <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>taillabel <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>tailtarget <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>tailtooltip <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>tailURL <span class="kw">for </span>EdgeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>target <span class="kw">for </span>EdgeAttributes,GraphAttributes,NodeAttributes,SubgraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>tooltip <span class="kw">for </span>EdgeAttributes,GraphAttributes,NodeAttributes,SubgraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>URL <span class="kw">for </span>EdgeAttributes,GraphAttributes,NodeAttributes,SubgraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>tailclip <span class="kw">for </span>EdgeAttributes; bool;<span class="bool-val">true</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>truecolor <span class="kw">for </span>GraphAttributes; bool);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>vertices <span class="kw">for </span>NodeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>viewport <span class="kw">for </span>GraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>voro_margin <span class="kw">for </span>GraphAttributes; f32;<span class="number">0.05</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>weight <span class="kw">for </span>EdgeAttributes; i32;<span class="number">1</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>width <span class="kw">for </span>NodeAttributes; f32;<span class="number">0.75</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>xdotversion <span class="kw">for </span>GraphAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>xlabel <span class="kw">for </span>EdgeAttributes,NodeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>xlp <span class="kw">for </span>EdgeAttributes,NodeAttributes; String);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>z <span class="kw">for </span>NodeAttributes; f32;<span class="number">0.</span>);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>bgcolor <span class="kw">for </span>GraphAttributes,SubgraphAttributes; color_name);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>color <span class="kw">for </span>EdgeAttributes,SubgraphAttributes,NodeAttributes; color_name;color_name::black);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>fillcolor <span class="kw">for </span>EdgeAttributes,SubgraphAttributes,NodeAttributes; color_name);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>fontcolor <span class="kw">for </span>GraphAttributes,EdgeAttributes,SubgraphAttributes,NodeAttributes; color_name);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>labelfontcolor <span class="kw">for </span>EdgeAttributes; color_name;color_name::black);
+<span class="macro">generate_attr!</span>(<span class="kw">struct </span>pencolor <span class="kw">for </span>SubgraphAttributes; color_name;color_name::black);
+
+<span class="comment">// support of the x11 color scheme
+</span><span class="macro">generate_attr!</span>(<span class="kw">enum </span>color_name;
+    <span class="comment">//region values
+    </span>aliceblue,antiquewhite,antiquewhite1,antiquewhite2,antiquewhite3,antiquewhite4,aqua,aquamarine,
+    aquamarine1,aquamarine2,aquamarine3,aquamarine4,azure,azure1,azure2,azure3,azure4,beige,bisque,
+    bisque1,bisque2,bisque3,bisque4,black,blanchedalmond,blue,blue1,blue2,blue3,blue4,blueviolet,
+    brown,brown1,brown2,brown3,brown4,burlywood,burlywood1,burlywood2,burlywood3,burlywood4,
+    cadetblue,cadetblue1,cadetblue2,cadetblue3,cadetblue4,chartreuse,chartreuse1,chartreuse2,
+    chartreuse3,chartreuse4,chocolate,chocolate1,chocolate2,chocolate3,chocolate4,coral,coral1,
+    coral2,coral3,coral4,cornflowerblue,cornsilk,cornsilk1,cornsilk2,cornsilk3,cornsilk4,crimson,
+    cyan,cyan1,cyan2,cyan3,cyan4,darkblue,darkcyan,darkgoldenrod,darkgoldenrod1,darkgoldenrod2,
+    darkgoldenrod3,darkgoldenrod4,darkgray,darkgreen,darkgrey,darkkhaki,darkmagenta,darkolivegreen,
+    darkolivegreen1,darkolivegreen2,darkolivegreen3,darkolivegreen4,darkorange,darkorange1,
+    darkorange2,darkorange3,darkorange4,darkorchid,darkorchid1,darkorchid2,darkorchid3,darkorchid4,
+    darkred,darksalmon,darkseagreen,darkseagreen1,darkseagreen2,darkseagreen3,darkseagreen4,
+    darkslateblue,darkslategray,darkslategray1,darkslategray2,darkslategray3,darkslategray4,
+    darkslategrey,darkturquoise,darkviolet,deeppink,deeppink1,deeppink2,deeppink3,deeppink4,
+    deepskyblue,deepskyblue1,deepskyblue2,deepskyblue3,deepskyblue4,dimgray,dimgrey,dodgerblue,
+    dodgerblue1,dodgerblue2,dodgerblue3,dodgerblue4,firebrick,firebrick1,firebrick2,firebrick3,
+    firebrick4,floralwhite,forestgreen,fuchsia,gainsboro,ghostwhite,gold,gold1,gold2,gold3,
+    gold4,goldenrod,goldenrod1,goldenrod2,goldenrod3,goldenrod4,gray,gray0,gray1,gray10,
+    gray100,gray11,gray12,gray13,gray14,gray15,gray16,gray17,gray18,gray19,gray2,gray20,gray21,
+    gray22,gray23,gray24,gray25,gray26,gray27,gray28,gray29,gray3,gray30,gray31,gray32,gray33,
+    gray34,gray35,gray36,gray37,gray38,gray39,gray4,gray40,gray41,gray42,gray43,gray44,gray45,
+    gray46,gray47,gray48,gray49,gray5,gray50,gray51,gray52,gray53,gray54,gray55,gray56,gray57,
+    gray58,gray59,gray6,gray60,gray61,gray62,gray63,gray64,gray65,gray66,gray67,gray68,gray69,
+    gray7,gray70,gray71,gray72,gray73,gray74,gray75,gray76,gray77,gray78,gray79,gray8,gray80,
+    gray81,gray82,gray83,gray84,gray85,gray86,gray87,gray88,gray89,gray9,gray90,gray91,gray92,
+    gray93,gray94,gray95,gray96,gray97,gray98,gray99,green,green1,green2,green3,green4,greenyellow,
+    grey,grey0,grey1,grey10,grey100,grey11,grey12,grey13,grey14,grey15,grey16,grey17,grey18,
+    grey19,grey2,grey20,grey21,grey22,grey23,grey24,grey25,grey26,grey27,grey28,grey29,grey3,
+    grey30,grey31,grey32,grey33,grey34,grey35,grey36,grey37,grey38,grey39,grey4,grey40,grey41,
+    grey42,grey43,grey44,grey45,grey46,grey47,grey48,grey49,grey5,grey50,grey51,grey52,grey53,
+    grey54,grey55,grey56,grey57,grey58,grey59,grey6,grey60,grey61,grey62,grey63,grey64,grey65,
+    grey66,grey67,grey68,grey69,grey7,grey70,grey71,grey72,grey73,grey74,grey75,grey76,grey77,
+    grey78,grey79,grey8,grey80,grey81,grey82,grey83,grey84,grey85,grey86,grey87,grey88,grey89,
+    grey9,grey90,grey91,grey92,grey93,grey94,grey95,grey96,grey97,grey98,grey99,honeydew,honeydew1,
+    honeydew2,honeydew3,honeydew4,hotpink,hotpink1,hotpink2,hotpink3,hotpink4,indianred,indianred1,
+    indianred2,indianred3,indianred4,indigo,invis,ivory,ivory1,ivory2,ivory3,ivory4,khaki,khaki1,
+    khaki2,khaki3,khaki4,lavender,lavenderblush,lavenderblush1,lavenderblush2,lavenderblush3,
+    lavenderblush4,lawngreen,lemonchiffon,lemonchiffon1,lemonchiffon2,lemonchiffon3,lemonchiffon4,
+    lightblue,lightblue1,lightblue2,lightblue3,lightblue4,lightcoral,lightcyan,lightcyan1,
+    lightcyan2,lightcyan3,lightcyan4,lightgoldenrod,lightgoldenrod1,lightgoldenrod2,lightgoldenrod3,
+    lightgoldenrod4,lightgoldenrodyellow,lightgray,lightgreen,lightgrey,lightpink,lightpink1,
+    lightpink2,lightpink3,lightpink4,lightsalmon,lightsalmon1,lightsalmon2,lightsalmon3,
+    lightsalmon4,lightseagreen,lightskyblue,lightskyblue1,lightskyblue2,lightskyblue3,
+    lightskyblue4,lightslateblue,lightslategray,lightslategrey,lightsteelblue,lightsteelblue1,
+    lightsteelblue2,lightsteelblue3,lightsteelblue4,lightyellow,lightyellow1,lightyellow2,
+    lightyellow3,lightyellow4,lime,limegreen,linen,magenta,magenta1,magenta2,magenta3,
+    magenta4,maroon,maroon1,maroon2,maroon3,maroon4,mediumaquamarine,mediumblue,mediumorchid,
+    mediumorchid1,mediumorchid2,mediumorchid3,mediumorchid4,mediumpurple,mediumpurple1,
+    mediumpurple2,mediumpurple3,mediumpurple4,mediumseagreen,mediumslateblue,mediumspringgreen,
+    mediumturquoise,mediumvioletred,midnightblue,mintcream,mistyrose,mistyrose1,mistyrose2,
+    mistyrose3,mistyrose4,moccasin,navajowhite,navajowhite1,navajowhite2,navajowhite3,navajowhite4,
+    navy,navyblue,none,oldlace,olive,olivedrab,olivedrab1,olivedrab2,olivedrab3,olivedrab4,
+    orange,orange1,orange2,orange3,orange4,orangered,orangered1,orangered2,orangered3,orangered4,
+    orchid,orchid1,orchid2,orchid3,orchid4,palegoldenrod,palegreen,palegreen1,palegreen2,
+    palegreen3,palegreen4,paleturquoise,paleturquoise1,paleturquoise2,paleturquoise3,paleturquoise4,
+    palevioletred,palevioletred1,palevioletred2,palevioletred3,palevioletred4,papayawhip,
+    peachpuff,peachpuff1,peachpuff2,peachpuff3,peachpuff4,peru,pink,pink1,pink2,pink3,pink4,
+    plum,plum1,plum2,plum3,plum4,powderblue,purple,purple1,purple2,purple3,purple4,rebeccapurple,
+    red,red1,red2,red3,red4,rosybrown,rosybrown1,rosybrown2,rosybrown3,rosybrown4,royalblue,
+    royalblue1,royalblue2,royalblue3,royalblue4,saddlebrown,salmon,salmon1,salmon2,salmon3,salmon4,
+    sandybrown,seagreen,seagreen1,seagreen2,seagreen3,seagreen4,seashell,seashell1,seashell2,
+    seashell3,seashell4,sienna,sienna1,sienna2,sienna3,sienna4,silver,skyblue,skyblue1,skyblue2,
+    skyblue3,skyblue4,slateblue,slateblue1,slateblue2,slateblue3,slateblue4,slategray,slategray1,
+    slategray2,slategray3,slategray4,slategrey,snow,snow1,snow2,snow3,snow4,springgreen,
+    springgreen1,springgreen2,springgreen3,springgreen4,steelblue,steelblue1,steelblue2,steelblue3,
+    steelblue4,tan,tan1,tan2,tan3,tan4,teal,thistle,thistle1,thistle2,thistle3,thistle4,tomato,
+    tomato1,tomato2,tomato3,tomato4,transparent,turquoise,turquoise1,turquoise2,turquoise3,
+    turquoise4,violet,violetred,violetred1,violetred2,violetred3,violetred4,webgray,webgreen,
+    webgrey,webmaroon,webpurple,wheat,wheat1,wheat2,wheat3,wheat4,white,whitesmoke,x11gray,
+    x11green,x11grey,x11maroon,x11purple,yellow,yellow1,yellow2,yellow3,yellow4,yellowgreen
+    <span class="comment">//endregion
+</span>);
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">pub mod </span>tests {
+    <span class="kw">use </span>dot_generator::attr;
+    <span class="kw">use </span>into_attr::IntoAttribute;
+
+    <span class="kw">use </span><span class="kw">crate</span>::attributes::<span class="kw-2">*</span>;
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test() {
+        <span class="macro">assert_eq!</span>(GraphAttributes::center(<span class="bool-val">true</span>), <span class="macro">attr!</span>(<span class="string">"center"</span>, <span class="bool-val">true</span>));
+        <span class="macro">assert_eq!</span>(
+            GraphAttributes::bgcolor(color_name::antiquewhite1),
+            <span class="macro">attr!</span>(<span class="string">"bgcolor"</span>, <span class="string">"antiquewhite1"</span>)
+        );
+        <span class="macro">assert_eq!</span>(color::default().into_attr(), <span class="macro">attr!</span>(<span class="string">"color"</span>, <span class="string">"black"</span>));
+    }
+}
+</code></pre></div></section></main></body></html>
