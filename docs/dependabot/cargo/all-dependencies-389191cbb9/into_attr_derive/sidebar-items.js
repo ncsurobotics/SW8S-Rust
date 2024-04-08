@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"derive":["IntoAttribute"],"fn":["impl_into_attr_macro"]};
