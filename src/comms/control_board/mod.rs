@@ -6,6 +6,7 @@ use std::{
 };
 
 use anyhow::{anyhow, bail, Result};
+use num_traits::ToBytes;
 use tokio::{
     io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, WriteHalf},
     net::TcpStream,
@@ -113,6 +114,48 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         this.write_out_basic(message).await?;
         sleep(Duration::from_secs(1)).await;
 
+        const CAMCFGU: [u8; 7] = *b"CAMCFGU";
+        let mut message = Vec::from(CAMCFGU);
+        let height : i32 = 480;
+        let width : i32 = 640;
+        [height, width]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+        message.push(3);
+        message.push(0b1100_1111);
+        this.write_out(message).await?;
+        sleep(Duration::from_secs(1)).await;
+
+        const SCECFGU: [u8; 7] = *b"SCECFGU";
+        let mut message = Vec::from(SCECFGU);
+        message.push(0b0000_1101);
+        this.write_out(message).await?;
+        sleep(Duration::from_secs(1)).await;
+
+        const ROBRINU: [u8; 7] = *b"ROBRINU";
+
+        for i in (0..=5000).step_by(5){
+            let mut message = Vec::from(SCECFGU);
+            message.push(0b0000_1101);
+            let i_16bit: u16 = i as u16;
+            message.extend(i_16bit.to_le_bytes());
+            this.write_out(message).await?;
+
+            let mut message = Vec::with_capacity(32 * 6);
+            message.extend(ROBRINU);
+            let mut inital_pose_bounds : [f32; 6] = [10.5, 2.0, 5.0, 30.0, 30.0, 30.0];
+            inital_pose_bounds
+                .iter()
+                .for_each(|val| message.extend(val.to_le_bytes()));
+            this.write_out(message).await?;
+            sleep(Duration::from_micros(50)).await;
+            
+            const CAPTUREU: [u8; 8] = *b"CAPTUREU";
+            let mut message = Vec::from(CAPTUREU);
+            message.push(3);
+            this.write_out(message).await;
+            sleep(Duration::from_micros(100)).await;
+        }
         this.startup().await?;
         Ok(this)
     }
