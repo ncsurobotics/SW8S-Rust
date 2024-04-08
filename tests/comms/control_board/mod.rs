@@ -113,7 +113,7 @@ async fn real_comms_read_no_error() {
 
 #[tokio::test]
 pub async fn unity_tcp_connect() {
-    const LOCALHOST: &str = "172.27.160.1";
+    const LOCALHOST: &str = "172.23.240.1";
     const SIM_PORT: &str = "1234";
     //const SIM_DUMMY_PORT: &str = "5011";
 
