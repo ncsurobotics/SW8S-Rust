@@ -1,0 +1,31 @@
+digraph G {
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	subgraph "cluster_eaf40020-86c1-447d-9182-b7b50d0836ca" {
+		style = dashed;
+		color = red;
+		style = dashed;
+		color = red;
+		"0918eb10-1764-4f6b-8059-d5ea541ee5da" -> "c096c864-c781-47af-aca7-b191a3e7e061";
+		"0918eb10-1764-4f6b-8059-d5ea541ee5da" -> "5d798bc9-965b-448b-a39e-36fd29dd87bd";
+		"0918eb10-1764-4f6b-8059-d5ea541ee5da" -> "c815c0db-2d80-46f5-a340-50c8e6ac8265";
+		"0918eb10-1764-4f6b-8059-d5ea541ee5da" -> "85523fdf-b224-42a5-8f14-3731c5b5f874";
+		"0918eb10-1764-4f6b-8059-d5ea541ee5da" -> "2b440c70-2570-4f4a-8322-e1396a475bbb";
+		"c096c864-c781-47af-aca7-b191a3e7e061" -> "0ab9b40c-7eb2-4d19-8a6e-e65b688334ec";
+		"5d798bc9-965b-448b-a39e-36fd29dd87bd" -> "0ab9b40c-7eb2-4d19-8a6e-e65b688334ec";
+		"c815c0db-2d80-46f5-a340-50c8e6ac8265" -> "0ab9b40c-7eb2-4d19-8a6e-e65b688334ec";
+		"85523fdf-b224-42a5-8f14-3731c5b5f874" -> "0ab9b40c-7eb2-4d19-8a6e-e65b688334ec";
+		"2b440c70-2570-4f4a-8322-e1396a475bbb" -> "0ab9b40c-7eb2-4d19-8a6e-e65b688334ec";
+		"0918eb10-1764-4f6b-8059-d5ea541ee5da" [label = "Race", shape = box, fontcolor = red, style = dashed];
+		"0ab9b40c-7eb2-4d19-8a6e-e65b688334ec" [label = "Resolve", shape = box, fontcolor = red, style = dashed];
+		"c096c864-c781-47af-aca7-b191a3e7e061" [label = "AlwaysTrue", margin = 0];
+		"5d798bc9-965b-448b-a39e-36fd29dd87bd" [label = "AlwaysTrue", margin = 0];
+		"c815c0db-2d80-46f5-a340-50c8e6ac8265" [label = "AlwaysTrue", margin = 0];
+		"85523fdf-b224-42a5-8f14-3731c5b5f874" [label = "AlwaysTrue", margin = 0];
+		"2b440c70-2570-4f4a-8322-e1396a475bbb" [label = "AlwaysTrue", margin = 0];
+	}
+	
+	"0ab9b40c-7eb2-4d19-8a6e-e65b688334ec" -> "c68d98cc-8c38-45ed-80e4-9b62ce1ad31b" ;
+	"c68d98cc-8c38-45ed-80e4-9b62ce1ad31b" [label = "AlwaysTrue", margin = 0];
+}
