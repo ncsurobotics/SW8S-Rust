@@ -134,11 +134,15 @@
 <a href="#132" id="132">132</a>
 <a href="#133" id="133">133</a>
 <a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
 <span class="kw">use crate</span>::{
     act_nest,
+    missions::movement::StripY,
     vision::{
         gate_poles::{GatePoles, Target},
         nn_cv2::{OnnxModel, YoloClass},
@@ -239,6 +243,7 @@
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'a </span>{
     <span class="kw">const </span>GATE_TRAVERSAL_SPEED: f32 = <span class="number">0.5</span>;
 
+    <span class="macro">println!</span>(<span class="string">"Fire adjust logic"</span>);
     ActionWhile::new(ActionChain::new(
         VisionNorm::&lt;Con, GatePoles&lt;OnnxModel&gt;, f64&gt;::new(context, GatePoles::default()),
         ActionChain::new(
@@ -257,6 +262,7 @@
                     Average::new(),
                     OffsetToPose::default(),
                     LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
+                    StripY::default(),
                     Stability2Movement::new(
                         context,
                         Stability2Pos::new(<span class="number">0.0</span>, GATE_TRAVERSAL_SPEED, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, depth)

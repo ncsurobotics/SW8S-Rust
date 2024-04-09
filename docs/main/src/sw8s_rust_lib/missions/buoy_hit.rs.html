@@ -179,14 +179,13 @@
 <a href="#177" id="177">177</a>
 <a href="#178" id="178">178</a>
 <a href="#179" id="179">179</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::vision::{buoy::Buoy, nn_cv2::OnnxModel, VisualDetector};
-
-<span class="kw">use super</span>::{
+</pre></div><pre class="rust"><code><span class="kw">use super</span>::{
     action::{Action, ActionExec, ActionSequence, ActionWhile},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::{StraightMovement, ZeroMovement},
 };
+<span class="kw">use </span><span class="kw">crate</span>::vision::{buoy::Buoy, nn_cv2::OnnxModel, VisualDetector};
 
 <span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>async_trait::async_trait;
@@ -318,7 +317,8 @@
     }
 }
 
-<span class="kw">pub fn </span>buoy_collision_sequence&lt;
+<span class="comment">// Create and return the outer ActionSequence
+</span><span class="kw">pub fn </span>buoy_collision_sequence&lt;
     <span class="lifetime">'a</span>,
     Con: Send
         + Sync

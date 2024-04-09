@@ -413,6 +413,12 @@
 <a href="#411" id="411">411</a>
 <a href="#412" id="412">412</a>
 <a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>anyhow::anyhow;
@@ -632,6 +638,7 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
+        <span class="macro">println!</span>(<span class="string">"Update true count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
@@ -645,12 +652,14 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
+        <span class="macro">println!</span>(<span class="string">"Update true count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
 <span class="attr">#[async_trait]
 </span><span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>CountTrue {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;()&gt; {
+        <span class="macro">println!</span>(<span class="string">"Check true count: {} ? {}"</span>, <span class="self">self</span>.count, <span class="self">self</span>.target);
         <span class="kw">if </span><span class="self">self</span>.count &lt; <span class="self">self</span>.target {
             <span class="prelude-val">Ok</span>(())
         } <span class="kw">else </span>{
@@ -695,6 +704,7 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
+        <span class="macro">println!</span>(<span class="string">"Update false count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
@@ -708,12 +718,14 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
+        <span class="macro">println!</span>(<span class="string">"Update false count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
 <span class="attr">#[async_trait]
 </span><span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>CountFalse {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;()&gt; {
+        <span class="macro">println!</span>(<span class="string">"Check false count: {} ? {}"</span>, <span class="self">self</span>.count, <span class="self">self</span>.target);
         <span class="kw">if </span><span class="self">self</span>.count &lt; <span class="self">self</span>.target {
             <span class="prelude-val">Ok</span>(())
         } <span class="kw">else </span>{
