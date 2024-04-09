@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Loads an image from a file."><title>imread_def in opencv::imgcodecs - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.2 (25ef9e3d8 2024-04-09)" data-channel="1.77.2" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../opencv/index.html">opencv</a><span class="version">0.89.0</span></h2></div><div class="sidebar-elems"><h2><a href="index.html">In opencv::imgcodecs</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Function <a href="../index.html">opencv</a>::<wbr><a href="index.html">imgcodecs</a>::<wbr><a class="fn" href="#">imread_def</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-4ad2ee70e8b644c3/out/opencv/imgcodecs.rs.html#498-506">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub fn imread_def(filename: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.77.2/std/primitive.str.html">str</a>) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="../opencv/hub/core/struct.Mat.html" title="struct opencv::opencv::hub::core::Mat">Mat</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Loads an image from a file.</p>
+<p>@anchor imread</p>
+<p>The function imread loads an image from the specified file and returns it. If the image cannot be
+read (because of missing file, improper permissions, unsupported or invalid format), the function
+returns an empty matrix ( Mat::data==NULL ).</p>
+<p>Currently, the following file formats are supported:</p>
+<ul>
+<li>Windows bitmaps - *.bmp, *.dib (always supported)</li>
+<li>JPEG files - *.jpeg, *.jpg, *.jpe (see the <em>Note</em> section)</li>
+<li>JPEG 2000 files - *.jp2 (see the <em>Note</em> section)</li>
+<li>Portable Network Graphics - *.png (see the <em>Note</em> section)</li>
+<li>WebP - *.webp (see the <em>Note</em> section)</li>
+<li>Portable image format - *.pbm, *.pgm, *.ppm *.pxm, *.pnm (always supported)</li>
+<li>PFM files - *.pfm (see the <em>Note</em> section)</li>
+<li>Sun rasters - *.sr, *.ras (always supported)</li>
+<li>TIFF files - *.tiff, *.tif (see the <em>Note</em> section)</li>
+<li>OpenEXR Image files - *.exr (see the <em>Note</em> section)</li>
+<li>Radiance HDR - *.hdr, *.pic (always supported)</li>
+<li>Raster and Vector geospatial data supported by GDAL (see the <em>Note</em> section)</li>
+</ul>
+<p>Note:</p>
+<ul>
+<li>The function determines the type of an image by the content, not by the file extension.</li>
+<li>In the case of color images, the decoded images will have the channels stored in <strong>B G R</strong> order.</li>
+<li>When using IMREAD_GRAYSCALE, the codec’s internal grayscale conversion will be used, if available.
+Results may differ to the output of cvtColor()</li>
+<li>On Microsoft Windows* OS and MacOSX*, the codecs shipped with an OpenCV image (libjpeg,
+libpng, libtiff, and libjasper) are used by default. So, OpenCV can always read JPEGs, PNGs,
+and TIFFs. On MacOSX, there is also an option to use native MacOSX image readers. But beware
+that currently these native image loaders give images with different pixel values because of
+the color management embedded into MacOSX.</li>
+<li>On Linux*, BSD flavors and other Unix-like open-source operating systems, OpenCV looks for
+codecs supplied with an OS image. Install the relevant packages (do not forget the development
+files, for example, “libjpeg-dev”, in Debian* and Ubuntu*) to get the codec support or turn
+on the OPENCV_BUILD_3RDPARTY_LIBS flag in CMake.</li>
+<li>In the case you set <em>WITH_GDAL</em> flag to true in CMake and <a href="../opencv/hub/imgcodecs/constant.IMREAD_LOAD_GDAL.html" title="constant opencv::opencv::hub::imgcodecs::IMREAD_LOAD_GDAL">IMREAD_LOAD_GDAL</a> to load the image,
+then the <a href="http://www.gdal.org">GDAL</a> driver will be used in order to decode the image, supporting
+the following formats: <a href="http://www.gdal.org/formats_list.html">Raster</a>,
+<a href="http://www.gdal.org/ogr_formats.html">Vector</a>.</li>
+<li>If EXIF information is embedded in the image file, the EXIF orientation will be taken into account
+and thus the image will be rotated accordingly except if the flags <a href="../opencv/hub/imgcodecs/constant.IMREAD_IGNORE_ORIENTATION.html" title="constant opencv::opencv::hub::imgcodecs::IMREAD_IGNORE_ORIENTATION">IMREAD_IGNORE_ORIENTATION</a>
+or <a href="../opencv/hub/imgcodecs/constant.IMREAD_UNCHANGED.html" title="constant opencv::opencv::hub::imgcodecs::IMREAD_UNCHANGED">IMREAD_UNCHANGED</a> are passed.</li>
+<li>Use the IMREAD_UNCHANGED flag to keep the floating point values from PFM image.</li>
+<li>By default number of pixels must be less than 2^30. Limit can be set using system
+variable OPENCV_IO_MAX_IMAGE_PIXELS</li>
+</ul>
+<h3 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h3>
+<ul>
+<li>filename: Name of file to be loaded.</li>
+<li>flags: Flag that can take values of cv::ImreadModes</li>
+</ul>
+<h3 id="note"><a class="doc-anchor" href="#note">§</a>Note</h3>
+<p>This alternative version of <a href="../opencv/hub/imgcodecs/fn.imread.html" title="fn opencv::opencv::hub::imgcodecs::imread">imread</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>flags: IMREAD_COLOR</li>
+</ul>
+</div></details></section></div></main></body></html>
