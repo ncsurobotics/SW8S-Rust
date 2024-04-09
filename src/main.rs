@@ -1,29 +1,38 @@
-use std::{env, path::Path, process::exit, time::Duration};
-
 use anyhow::{bail, Result};
 use config::Configuration;
+use std::path::Path;
+
+use std::env;
+use std::process::exit;
 use sw8s_rust_lib::{
-    comms::{control_board::ControlBoard, meb::MainElectronicsBoard},
+    comms::{
+        control_board::{ControlBoard, SensorStatuses},
+        meb::MainElectronicsBoard,
+    },
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
-        basic::{descend_and_go_forward, gate_run},
+        basic::descend_and_go_forward,
+        circle_buoy::buoy_circle_sequence,
         example::initial_descent,
+        gate::{gate_run_complex, gate_run_naive},
+        octagon::look_up_octagon,
     },
     video_source::appsink::Camera,
+    vision::buoy::Target,
 };
 use tokio::{
     io::WriteHalf,
     signal,
     sync::{
         mpsc::{self, UnboundedSender},
-        OnceCell,
+        OnceCell, RwLock,
     },
     time::{sleep, timeout},
 };
 use tokio_serial::SerialStream;
-
-mod config;
+pub mod config;
+use std::time::Duration;
 
 static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<SerialStream>>> = OnceCell::const_new();
 async fn control_board() -> &'static ControlBoard<WriteHalf<SerialStream>> {
@@ -47,6 +56,40 @@ async fn meb() -> &'static MainElectronicsBoard {
         .await
 }
 
+static FRONT_CAM_CELL: OnceCell<Camera> = OnceCell::const_new();
+async fn front_cam() -> &'static Camera {
+    FRONT_CAM_CELL
+        .get_or_init(|| async {
+            Camera::jetson_new(
+                &Configuration::default().front_cam,
+                "front",
+                Path::new("/tmp/front_feed.mp4"),
+            )
+            .unwrap()
+        })
+        .await
+}
+
+static BOTTOM_CAM_CELL: OnceCell<Camera> = OnceCell::const_new();
+async fn bottom_cam() -> &'static Camera {
+    BOTTOM_CAM_CELL
+        .get_or_init(|| async {
+            Camera::jetson_new(
+                &Configuration::default().bottom_cam,
+                "bottom",
+                Path::new("/tmp/bottom_feed.mp4"),
+            )
+            .unwrap()
+        })
+        .await
+}
+static GATE_TARGET: OnceCell<RwLock<Target>> = OnceCell::const_new();
+async fn gate_target() -> &'static RwLock<Target> {
+    GATE_TARGET
+        .get_or_init(|| async { RwLock::new(Target::Earth1) })
+        .await
+}
+
 #[tokio::main]
 async fn main() {
     let shutdown_tx = shutdown_handler().await;
@@ -67,6 +110,22 @@ async fn shutdown_handler() -> UnboundedSender<()> {
         // Wait for shutdown signal
         let exit_status =
             tokio::select! {_ = signal::ctrl_c() => { 1 }, _ = shutdown_rx.recv() => { 0 }};
+
+        let status = control_board().await.sensor_status_query().await;
+
+        match status.unwrap() {
+            SensorStatuses::ImuNr => {
+                println!("imu not ready");
+                exit(1);
+            }
+            SensorStatuses::DepthNr => {
+                println!("depth not ready");
+                exit(1);
+            }
+            _ => {
+                println!("all good");
+            }
+        }
 
         // Stop motors
         if let Some(control_board) = CONTROL_BOARD_CELL.get() {
@@ -96,7 +155,38 @@ async fn run_mission(mission: &str) -> Result<()> {
             let _ = cntrl_ready.await;
             Ok(())
         }
+        "empty" => {
+            let control_board = control_board().await;
+            control_board
+                .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0])
+                .await
+                .unwrap();
+            sleep(Duration::from_millis(1000)).await;
+            println!("1");
+            control_board
+                .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0])
+                .await
+                .unwrap();
+            sleep(Duration::from_millis(1000)).await;
+            println!("2");
+            control_board
+                .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
+                .await
+                .unwrap();
+            sleep(Duration::from_millis(1000)).await;
+            println!("3");
+            control_board
+                .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+                .await
+                .unwrap();
+            println!("4");
+            Ok(())
+        }
         "depth_test" | "depth-test" => {
+            let _control_board = control_board().await;
+            println!("Init ctrl");
+            sleep(Duration::from_millis(1000)).await;
+            println!("End sleep");
             println!("Starting depth hold...");
             loop {
                 if let Ok(ret) = timeout(
@@ -154,38 +244,108 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "descend" | "forward" => {
-            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
-            println!("Opened camera");
             let _ = descend_and_go_forward(&FullActionContext::new(
                 control_board().await,
                 meb().await,
-                &cam,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
             ))
             .execute()
             .await;
             Ok(())
         }
-        "gate_run" => {
-            let cam = Camera::jetson_new("/dev/video0", "front", Path::new("/tmp/feed.mp4"))?;
-            //let _cam_extra =
-            //Camera::jetson_new("/dev/video0", "front", Path::new("/tmp/feed_extra.mp4"))?;
+        "gate_run_naive" => {
+            let _ = gate_run_naive(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "gate_run_complex" => {
+            let _ = gate_run_complex(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "start_cam" => {
+            // This has not been tested
+            println!("Opening camera");
+            front_cam().await;
+            bottom_cam().await;
             println!("Opened camera");
+            Ok(())
+        }
+        /*
+        "path_align" => {
+            bail!("TODO");
+            let _ = path_align(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "buoy_circle" => {
+            bail!("TODO");
             let _ = gate_run(&FullActionContext::new(
                 control_board().await,
                 meb().await,
-                &cam,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
             ))
             .execute()
             .await;
             Ok(())
         }
+        */
         "example" => {
-            let cam = Camera::jetson_new("/dev/video1", "front", Path::new("/tmp/feed.mp4"))?;
-            println!("Opened camera");
             let _ = initial_descent(&FullActionContext::new(
                 control_board().await,
                 meb().await,
-                &cam,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "look_up_octagon" => {
+            let _ = look_up_octagon(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "buoy_circle" => {
+            let _ = buoy_circle_sequence(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
             ))
             .execute()
             .await;

@@ -21,6 +21,12 @@ use super::auv_control_board::{AUVControlBoard, MessageId};
 pub mod response;
 pub mod util;
 
+pub enum SensorStatuses {
+    ImuNr,
+    DepthNr,
+    AllGood,
+}
+
 #[derive(Debug)]
 pub struct ControlBoard<T>
 where
@@ -483,7 +489,25 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         self.write_out_basic(message).await
     }
 
+    pub async fn sensor_status_query(&self) -> Result<SensorStatuses> {
+        const STATUS: [u8; 5] = *b"SSTAT";
+        let message = Vec::from(STATUS);
+        let status_resp = self.write_out(message).await;
+        let status_byte = status_resp.unwrap()[0];
+        if status_byte & 0x10 != 0x10 {
+            Ok(SensorStatuses::ImuNr)
+        } else if status_byte & 0x01 != 0x01 {
+            return Ok(SensorStatuses::DepthNr);
+        } else {
+            return Ok(SensorStatuses::AllGood);
+        }
+    }
+
     pub async fn watchdog_status(&self) -> Option<bool> {
         *self.responses().watchdog_status().read().await
+    }
+
+    pub async fn get_initial_angles(&self) -> Option<Angles> {
+        *self.initial_angles.lock().await
     }
 }

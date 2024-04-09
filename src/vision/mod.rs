@@ -40,7 +40,7 @@ pub trait Draw {
 }
 
 /// Holds x and y offset of object in frame
-#[derive(Debug, Getters)]
+#[derive(Debug, Getters, Clone, Copy, Default)]
 pub struct Offset2D<T: Num> {
     x: T,
     y: T,
@@ -120,6 +120,16 @@ impl<T: Num> From<Angle2D<T>> for Offset2D<T> {
     }
 }
 
+impl<T: Num> From<Offset2D<T>> for Angle2D<T> {
+    fn from(val: Offset2D<T>) -> Self {
+        Angle2D {
+            x: val.x,
+            y: val.y,
+            angle: T::zero(),
+        }
+    }
+}
+
 pub trait RelPosAngle {
     type Number: Num;
     fn offset_angle(&self) -> Angle2D<Self::Number>;
@@ -179,6 +189,12 @@ pub trait VisualDetector<T: Num>: Debug {
 pub struct VisualDetection<T, U> {
     class: T,
     position: U,
+}
+
+impl<T, U> VisualDetection<T, U> {
+    pub fn new(class: T, position: U) -> Self {
+        Self { class, position }
+    }
 }
 
 impl<T: PartialEq, U> PartialEq<T> for VisualDetection<T, U> {

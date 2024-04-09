@@ -1,10 +1,10 @@
-use std::ops::RangeInclusive;
+use std::ops::{Deref, DerefMut, RangeInclusive};
 
 use itertools::Itertools;
 use opencv::{
     core::{in_range, Size, VecN},
     imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
-    prelude::{Mat, MatTraitConst},
+    prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
 
 use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
@@ -19,9 +19,9 @@ static FORWARD: (f64, f64) = (0.0, -1.0);
 
 #[derive(Debug, PartialEq)]
 pub struct Yuv {
-    y: u8,
-    u: u8,
-    v: u8,
+    pub y: u8,
+    pub u: u8,
+    pub v: u8,
 }
 
 impl From<&VecN<u8, 3>> for Yuv {
@@ -51,6 +51,35 @@ impl Yuv {
     }
 }
 
+/// Allows [`Mat`] to be shared across threads for async.
+/// The C pointer is perfectly safe to share between threads, Rust just
+/// defaults to not giving any pointer Send/Sync so we have to use this wrapper
+/// pattern.
+#[derive(Debug)]
+struct MatWrapper(Mat);
+
+impl Deref for MatWrapper {
+    type Target = Mat;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for MatWrapper {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<Mat> for MatWrapper {
+    fn from(value: Mat) -> Self {
+        Self(value)
+    }
+}
+
+unsafe impl Send for MatWrapper {}
+unsafe impl Sync for MatWrapper {}
+
 #[derive(Debug)]
 pub struct Path {
     color_bounds: RangeInclusive<Yuv>,
@@ -58,12 +87,12 @@ pub struct Path {
     num_regions: i32,
     size: Size,
     attempts: i32,
-    image: Mat,
+    image: MatWrapper,
 }
 
 impl Path {
-    pub fn image(&self) -> &Mat {
-        &self.image
+    pub fn image(&self) -> Mat {
+        self.image.clone()
     }
 }
 
@@ -81,7 +110,7 @@ impl Path {
             num_regions,
             size,
             attempts,
-            image: Mat::default(),
+            image: Mat::default().into(),
         }
     }
 }
@@ -117,6 +146,103 @@ impl VisualDetector<i32> for Path {
         &mut self,
         input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
+        self.image = resize(input_image, &self.size)?.into();
+        let mut yuv_image = Mat::default();
+
+        cvt_color(&self.image.0, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
+        yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
+        let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
+
+        cvt_color(&yuv_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
+
+        yuv_image
+            .iter::<VecN<u8, 3>>()
+            .unwrap()
+            .sorted_by(|(_, val), (_, n_val)| Ord::cmp(val.as_slice(), n_val.as_slice()))
+            .dedup_by(|(_, val), (_, n_val)| val == n_val)
+            .map(|(_, val)| {
+                let mut bin_image = Mat::default();
+                in_range(&yuv_image, &val, &val, &mut bin_image).unwrap();
+                let on_points = cvt_binary_to_points(&bin_image.try_into_typed().unwrap());
+                let pca_output = binary_pca(&on_points, 0).unwrap();
+
+                let (length_idx, width_idx) = if pca_output.pca_value().get(1).unwrap()
+                    > pca_output.pca_value().get(0).unwrap()
+                {
+                    (1, 0)
+                } else {
+                    (0, 1)
+                };
+                // width bounds have a temp fix -- not sure why output is so large
+                let width = pca_output.pca_value().get(width_idx).unwrap() / 100.0;
+                let length = pca_output.pca_value().get(length_idx).unwrap();
+                let length_2 = pca_output.pca_vector().get(length_idx + 1).unwrap();
+
+                println!("Testing for valid...");
+                println!("\tself.width_bounds = {:?}", self.width_bounds);
+                println!("\tself.width = {:?}", width);
+                println!(
+                    "\tcontained_width = {:?}",
+                    self.width_bounds.contains(&width)
+                );
+                println!();
+                println!("\tYUV range = {:?}", self.color_bounds);
+                println!("\tYUV val = {:?}", Yuv::from(&val));
+                println!(
+                    "\tcontained_color = {:?}",
+                    Yuv::from(&val).in_range(&self.color_bounds)
+                );
+                println!();
+
+                let valid = self.width_bounds.contains(&width)
+                    && Yuv::from(&val).in_range(&self.color_bounds);
+
+                let p_vec = PosVector::new(
+                    ((pca_output.mean().get(0).unwrap()) - image_center.0)
+                        + (self.image.size().unwrap().width as f64) / 2.0,
+                    (pca_output.mean().get(1).unwrap()) - image_center.1
+                        + (self.image.size().unwrap().height as f64) / 2.0,
+                    compute_angle(
+                        (
+                            pca_output.pca_vector().get(length_idx).unwrap(),
+                            pca_output.pca_vector().get(length_idx + 1).unwrap(),
+                        ),
+                        FORWARD,
+                    ),
+                    width,
+                    length / 300.0,
+                    length_2,
+                );
+
+                Ok(VisualDetection {
+                    class: valid,
+                    position: p_vec,
+                })
+            })
+            .collect()
+    }
+
+    fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
+        let img_size = self.image.size().unwrap();
+        Self::Position::new(
+            ((*pos.x() / (img_size.width as f64)) - 0.5) * 2.0,
+            ((*pos.y() / (img_size.height as f64)) - 0.5) * 2.0,
+            *pos.angle(),
+            *pos.width() / (img_size.width as f64),
+            *pos.length() / (img_size.height as f64),
+            *pos.length_2() / (img_size.height as f64),
+        )
+    }
+}
+
+impl VisualDetector<f64> for Path {
+    type ClassEnum = bool;
+    type Position = PosVector;
+
+    fn detect(
+        &mut self,
+        input_image: &Mat,
+    ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
         let image = resize(input_image, &self.size)?;
         let mut yuv_image = Mat::default();
 
@@ -124,7 +250,7 @@ impl VisualDetector<i32> for Path {
         yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
         let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
 
-        cvt_color(&yuv_image, &mut self.image, COLOR_YUV2RGB, 0).unwrap();
+        cvt_color(&yuv_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
 
         yuv_image
             .iter::<VecN<u8, 3>>()
@@ -223,12 +349,12 @@ mod tests {
     fn detect_single() {
         let image = imread("tests/vision/resources/path_images/1.jpeg", IMREAD_COLOR).unwrap();
         let mut path = Path::default();
-        let detections = path.detect(&image).unwrap();
+        let detections = <Path as VisualDetector<f64>>::detect(&mut path, &image).unwrap();
         let mut shrunk_image = path.image().clone();
 
-        detections
-            .iter()
-            .for_each(|result| result.draw(&mut shrunk_image).unwrap());
+        detections.iter().for_each(|result| {
+            <VisualDetection<_, _> as Draw>::draw(result, &mut shrunk_image).unwrap()
+        });
 
         println!("Detections: {:#?}", detections);
 

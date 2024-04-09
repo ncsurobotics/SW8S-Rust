@@ -45,6 +45,17 @@ impl TryFrom<i32> for Target {
     }
 }
 
+impl Target {
+    pub fn to_integer_id(&self) -> i32 {
+        match self {
+            Target::Earth1 => 0,
+            Target::Earth2 => 1,
+            Target::Abydos1 => 2,
+            Target::Abydos2 => 3,
+        }
+    }
+}
+
 impl Display for Target {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
@@ -104,6 +115,7 @@ mod tests {
     use opencv::{
         core::Vector,
         imgcodecs::{imread, imwrite, IMREAD_COLOR},
+        prelude::MatTraitConstManual,
     };
 
     use crate::vision::{Draw, VisualDetector};
