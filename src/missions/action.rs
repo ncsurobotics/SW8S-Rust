@@ -1,6 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use opencv::core::InputArray;
+
 use core::fmt::Debug;
 use std::{marker::PhantomData, sync::Arc, thread};
 use tokio::{join, runtime::Handle, sync::Mutex};

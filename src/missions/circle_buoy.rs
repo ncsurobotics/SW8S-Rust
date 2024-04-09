@@ -6,23 +6,20 @@ use crate::{
         vision::{Average, ExtractPosition, VisionNorm},
     },
     vision::{
-        buoy,
-        nn_cv2::OnnxModel,
         path::{Path, Yuv},
-        Offset2D, VisualDetection, VisualDetector,
+        Offset2D,
     },
 };
 
 use super::{
-    action::{Action, ActionExec, ActionMod, ActionSequence, ActionWhile},
+    action::{Action, ActionExec, ActionMod, ActionSequence},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
-    movement::{StraightMovement, ZeroMovement},
+    movement::ZeroMovement,
 };
 
-use anyhow::Result;
 use async_trait::async_trait;
-use core::fmt::Debug;
+
 use opencv::core::Size;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
@@ -35,7 +32,7 @@ pub struct CircleBuoy<'a, T> {
 }
 
 impl<'a, T> CircleBuoy<'a, T> {
-    pub fn new(context: &'a T, target_depth: f32, forward_power: f32, lateral_power: f32) -> Self {
+    pub fn new(context: &'a T, target_depth: f32, _forward_power: f32, lateral_power: f32) -> Self {
         CircleBuoy {
             context,
             target_depth,

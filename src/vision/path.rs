@@ -1,7 +1,4 @@
-use std::{
-    ops::{Deref, DerefMut, RangeInclusive},
-    sync::Arc,
-};
+use std::ops::{Deref, DerefMut, RangeInclusive};
 
 use itertools::Itertools;
 use opencv::{
@@ -9,7 +6,6 @@ use opencv::{
     imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
     prelude::{Mat, MatTraitConst},
 };
-use std::sync::Mutex;
 
 use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
 

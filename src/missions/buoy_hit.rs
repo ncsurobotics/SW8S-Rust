@@ -4,11 +4,7 @@ use super::{
     basic::DelayAction,
     movement::{StraightMovement, ZeroMovement},
 };
-use crate::vision::{
-    buoy::{self, Buoy},
-    nn_cv2::OnnxModel,
-    VisualDetector,
-};
+use crate::vision::{buoy::Buoy, nn_cv2::OnnxModel, VisualDetector};
 
 use anyhow::Result;
 use async_trait::async_trait;
