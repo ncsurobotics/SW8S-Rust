@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["SMALL"],"enum":["JoinAllKind"],"fn":["iter_pin_mut","join_all"],"struct":["JoinAll"]};
