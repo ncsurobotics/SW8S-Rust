@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["ALWAYS_TRUE","SCALE"],"enum":["BernoulliError"],"struct":["Bernoulli"]};

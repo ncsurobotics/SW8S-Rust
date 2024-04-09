@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["TryAcquireError"],"struct":["Acquire","AcquireError","Semaphore","Waiter","Waitlist"]};

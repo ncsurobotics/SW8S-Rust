@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["spawn","spawn_inner"]};

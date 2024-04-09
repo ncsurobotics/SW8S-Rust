@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["_assert_trait_object"],"macro":["buf_get_impl","deref_forward_buf"],"trait":["Buf"]};

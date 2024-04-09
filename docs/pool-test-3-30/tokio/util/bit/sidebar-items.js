@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["mask_for","pointer_width","unpack"],"struct":["Pack"]};
