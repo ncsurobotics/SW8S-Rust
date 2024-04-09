@@ -10,8 +10,13 @@ use sw8s_rust_lib::{
         meb::MainElectronicsBoard,
     },
     missions::{
-        action::ActionExec, action_context::FullActionContext, basic::descend_and_go_forward,
-        example::initial_descent, gate::gate_run_naive,
+        action::ActionExec,
+        action_context::FullActionContext,
+        basic::descend_and_go_forward,
+        circle_buoy::buoy_circle_sequence,
+        example::initial_descent,
+        gate::{gate_run_complex, gate_run_naive},
+        octagon::look_up_octagon,
     },
     video_source::appsink::Camera,
     vision::buoy::Target,
@@ -262,6 +267,18 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
+        "gate_run_complex" => {
+            let _ = gate_run_complex(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
         "start_cam" => {
             // This has not been tested
             println!("Opening camera");
@@ -300,6 +317,30 @@ async fn run_mission(mission: &str) -> Result<()> {
         */
         "example" => {
             let _ = initial_descent(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "look_up_octagon" => {
+            let _ = look_up_octagon(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "buoy_circle" => {
+            let _ = buoy_circle_sequence(&FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,

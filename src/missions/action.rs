@@ -1,5 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
+
 use core::fmt::Debug;
 use std::{marker::PhantomData, sync::Arc, thread};
 use tokio::{join, runtime::Handle, sync::Mutex};
@@ -727,10 +728,13 @@ impl<T: Action> ActionWhile<T> {
 }
 
 #[async_trait]
-impl<U: Send + Sync, T: ActionExec<Result<U>>> ActionExec<U> for ActionWhile<T> {
+impl<U: Send + Sync + Default, T: ActionExec<Result<U>>> ActionExec<U> for ActionWhile<T> {
     async fn execute(&mut self) -> U {
+        let mut result = U::default();
         loop {
-            if let Ok(result) = self.action.execute().await {
+            if let Ok(new_result) = self.action.execute().await {
+                result = new_result;
+            } else {
                 return result;
             }
         }

@@ -25,6 +25,9 @@ pub mod generated_actions {
     pub mod gate {
         include!(concat!(env!("OUT_DIR"), "/graph_missions/gate.rs"));
     }
+    pub mod circle_buoy {
+        include!(concat!(env!("OUT_DIR"), "/graph_missions/circle_buoy.rs"));
+    }
 
     // TODO: find some way to automate the extras
     pub mod action_context {
@@ -76,7 +79,15 @@ macro_rules! graph_actions {
 async fn main() {
     create_dir_all("graphs/").unwrap();
     // (name, action) pairs to draw
-    let actions = graph_actions!(basic, example, buoy_hit, buoy_circle, path_align, gate);
+    let actions = graph_actions!(
+        basic,
+        example,
+        buoy_hit,
+        buoy_circle,
+        path_align,
+        gate,
+        circle_buoy
+    );
 
     stream::iter(actions)
         .for_each(|(dir_name, action_set)| async move {

@@ -1,11 +1,10 @@
-use crate::vision::{buoy::Buoy, nn_cv2::OnnxModel, VisualDetector};
-
 use super::{
     action::{Action, ActionExec, ActionSequence, ActionWhile},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::{StraightMovement, ZeroMovement},
 };
+use crate::vision::{buoy::Buoy, nn_cv2::OnnxModel, VisualDetector};
 
 use anyhow::Result;
 use async_trait::async_trait;
@@ -137,6 +136,7 @@ where
     }
 }
 
+// Create and return the outer ActionSequence
 pub fn buoy_collision_sequence<
     'a,
     Con: Send

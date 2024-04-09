@@ -12,7 +12,7 @@ use tokio::{
 };
 use tokio_serial::SerialStream;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DelayAction {
     delay: f32, // delay in seconds before the next action occurs.
 }

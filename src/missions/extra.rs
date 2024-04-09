@@ -217,6 +217,7 @@ impl<T: Send + Sync> ActionMod<anyhow::Result<T>> for CountTrue {
         } else {
             self.count = 0;
         }
+        println!("Update true count: {}", self.count);
     }
 }
 
@@ -230,12 +231,14 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
         } else {
             self.count = 0;
         }
+        println!("Update true count: {}", self.count);
     }
 }
 
 #[async_trait]
 impl ActionExec<anyhow::Result<()>> for CountTrue {
     async fn execute(&mut self) -> anyhow::Result<()> {
+        println!("Check true count: {} ? {}", self.count, self.target);
         if self.count < self.target {
             Ok(())
         } else {
@@ -280,6 +283,7 @@ impl<T: Send + Sync> ActionMod<anyhow::Result<T>> for CountFalse {
         } else {
             self.count = 0;
         }
+        println!("Update false count: {}", self.count);
     }
 }
 
@@ -293,12 +297,14 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
         } else {
             self.count = 0;
         }
+        println!("Update false count: {}", self.count);
     }
 }
 
 #[async_trait]
 impl ActionExec<anyhow::Result<()>> for CountFalse {
     async fn execute(&mut self) -> anyhow::Result<()> {
+        println!("Check false count: {} ? {}", self.count, self.target);
         if self.count < self.target {
             Ok(())
         } else {
