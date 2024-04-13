@@ -8,6 +8,8 @@ use opencv::{
 use std::hash::Hash;
 use std::{fmt::Debug, sync::Mutex};
 
+use super::{Draw, VisualDetection};
+
 #[derive(Debug, Clone, Getters)]
 pub struct YoloDetection {
     class_id: i32,
