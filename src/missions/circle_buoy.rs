@@ -92,33 +92,35 @@ pub fn buoy_circle_sequence<
 
     // Create the inner ActionSequence
     ActionSequence::new(
-        delay_action.clone(),
-        ActionWhile::new(act_nest!(
-            ActionSequence::new,
-            ZeroMovement::new(context, DEPTH),
-            ActionSequence::new(delay_action, ZeroMovement::new(context, DEPTH)),
-            act_nest!(
-                ActionChain::new,
-                VisionNorm::<Con, Path, f64>::new(
-                    context,
-                    Path::new(
-                        (Yuv { y: 0, u: 0, v: 180 })..=(Yuv {
-                            y: 255,
-                            u: 50,
-                            v: 255,
-                        }),
-                        20.0..=800.0,
-                        4,
-                        Size::from((400, 300)),
-                        3,
-                    )
-                ),
-                ToVec::new(),
-                ExtractPosition::new(),
-                Average::new(),
-                CircleBuoy::new(context, DEPTH, 0.0, lateral_power),
-                AlwaysTrue::new(),
-            )
-        )),
+        ZeroMovement::new(context, DEPTH),
+        ActionSequence::new(
+            delay_action.clone(),
+            ActionWhile::new(act_nest!(
+                ActionSequence::new,
+                ActionSequence::new(delay_action, ZeroMovement::new(context, DEPTH)),
+                act_nest!(
+                    ActionChain::new,
+                    VisionNorm::<Con, Path, f64>::new(
+                        context,
+                        Path::new(
+                            (Yuv { y: 0, u: 0, v: 180 })..=(Yuv {
+                                y: 255,
+                                u: 50,
+                                v: 255,
+                            }),
+                            20.0..=800.0,
+                            4,
+                            Size::from((400, 300)),
+                            3,
+                        )
+                    ),
+                    ToVec::new(),
+                    ExtractPosition::new(),
+                    Average::new(),
+                    CircleBuoy::new(context, DEPTH, 0.0, lateral_power),
+                    AlwaysTrue::new(),
+                )
+            )),
+        ),
     )
 }
