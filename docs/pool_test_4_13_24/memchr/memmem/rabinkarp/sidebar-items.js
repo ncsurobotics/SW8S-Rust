@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["find","find_with","is_fast","is_prefix","is_suffix","rfind","rfind_with"],"struct":["Hash","NeedleHash"]};

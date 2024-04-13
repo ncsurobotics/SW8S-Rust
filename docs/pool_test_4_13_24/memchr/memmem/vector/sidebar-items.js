@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["x86avx","x86sse"],"trait":["Vector"]};
