@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
+use graphviz_rust::dot_structures::Vertex::N;
 use uuid::Uuid;
 
 use super::{
@@ -415,5 +416,48 @@ impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<
 impl<T: Send + Sync + Clone> ActionExec<Vec<T>> for ToVec<T> {
     async fn execute(&mut self) -> Vec<T> {
         self.value.clone()
+    }
+}
+
+/// Return a float
+#[derive(Debug)]
+pub struct ToFloat<> {
+    value: f32,
+}
+
+impl Action for ToFloat {}
+
+impl ToFloat {
+    pub const fn new(value: f32) -> Self {
+        Self { value }
+    }
+}
+
+#[async_trait]
+impl ActionExec<f32> for ToFloat {
+    async fn execute(&mut self) -> f32 {
+        self.value.clone()
+    }
+}
+
+/// Return None
+#[derive(Debug)]
+pub struct IsNone<T> {
+    value: Option<T>,
+}
+
+impl<T> Action for IsNone<T> {}
+
+impl<T> IsNone<T> {
+    pub const fn new() -> Self {
+        Self { value: None }
+    }
+}
+
+
+#[async_trait]
+impl<T: Send + Sync> ActionExec<Option<T>> for IsNone<T> {
+    async fn execute(&mut self) -> Option<T> {
+        None
     }
 }
