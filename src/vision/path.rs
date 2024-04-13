@@ -1,11 +1,16 @@
-use std::ops::{Deref, DerefMut, RangeInclusive};
+use std::{
+    fs::create_dir_all,
+    ops::{Deref, DerefMut, RangeInclusive},
+};
 
 use itertools::Itertools;
 use opencv::{
-    core::{in_range, Size, VecN},
+    core::{in_range, Size, VecN, Vector},
+    imgcodecs::imwrite,
     imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
     prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
+use uuid::Uuid;
 
 use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
 
@@ -154,6 +159,17 @@ impl VisualDetector<i32> for Path {
         let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
 
         cvt_color(&yuv_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
+
+        #[cfg(feature = "logging")]
+        {
+            create_dir_all("tmp/path_images").unwrap();
+            imwrite(
+                &("tmp/path_images/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
+                &yuv_image,
+                &Vector::default(),
+            )
+            .unwrap();
+        }
 
         yuv_image
             .iter::<VecN<u8, 3>>()

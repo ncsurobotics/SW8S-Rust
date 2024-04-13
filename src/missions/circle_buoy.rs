@@ -1,8 +1,8 @@
 use crate::{
     act_nest,
     missions::{
-        action::ActionChain,
-        extra::ToVec,
+        action::{ActionChain, ActionWhile},
+        extra::{AlwaysTrue, ToVec},
         vision::{Average, ExtractPosition, VisionNorm},
     },
     vision::{
@@ -91,35 +91,34 @@ pub fn buoy_circle_sequence<
     let delay_action = DelayAction::new(delay_s);
 
     // Create the inner ActionSequence
-    act_nest!(
-        ActionSequence::new,
+    ActionSequence::new(
         delay_action.clone(),
-        ZeroMovement::new(context, DEPTH),
-        ActionSequence::new(delay_action, ZeroMovement::new(context, DEPTH)),
-        act_nest!(
-            ActionChain::new,
-            VisionNorm::<Con, Path, f64>::new(
-                context,
-                Path::new(
-                    (Yuv {
-                        y: 128,
-                        u: 0,
-                        v: 127
-                    })..=(Yuv {
-                        y: 255,
-                        u: 100,
-                        v: 255,
-                    }),
-                    20.0..=800.0,
-                    4,
-                    Size::from((400, 300)),
-                    3,
-                )
-            ),
-            ToVec::new(),
-            ExtractPosition::new(),
-            Average::new(),
-            CircleBuoy::new(context, DEPTH, 0.0, lateral_power),
-        )
+        ActionWhile::new(act_nest!(
+            ActionSequence::new,
+            ZeroMovement::new(context, DEPTH),
+            ActionSequence::new(delay_action, ZeroMovement::new(context, DEPTH)),
+            act_nest!(
+                ActionChain::new,
+                VisionNorm::<Con, Path, f64>::new(
+                    context,
+                    Path::new(
+                        (Yuv { y: 0, u: 0, v: 180 })..=(Yuv {
+                            y: 255,
+                            u: 50,
+                            v: 255,
+                        }),
+                        20.0..=800.0,
+                        4,
+                        Size::from((400, 300)),
+                        3,
+                    )
+                ),
+                ToVec::new(),
+                ExtractPosition::new(),
+                Average::new(),
+                CircleBuoy::new(context, DEPTH, 0.0, lateral_power),
+                AlwaysTrue::new(),
+            )
+        )),
     )
 }
