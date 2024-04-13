@@ -377,6 +377,8 @@
 <a href="#375" id="375">375</a>
 <a href="#376" id="376">376</a>
 <a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::{Debug, Display};
 <span class="kw">use </span>std::ops::Div;
 <span class="kw">use </span>std::{iter::Sum, marker::PhantomData};
@@ -622,7 +624,7 @@ ActionMod&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>ComplexPole&lt;U, V&gt; {
-    values: Vec&lt;VisualDetection&lt;U, V&gt;&gt;,
+    values: <span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;U, V&gt;&gt;&gt;,
     d_time: Instant,
     min_time: Duration,
 }
@@ -630,7 +632,7 @@ ActionMod&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt
 <span class="kw">impl</span>&lt;U, V&gt; ComplexPole&lt;U, V&gt; {
     <span class="kw">pub const fn </span>new(d_time: Instant) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            values: <span class="macro">vec!</span>[],
+            values: <span class="prelude-val">None</span>,
             d_time,
             min_time: Duration::from_secs(<span class="number">5</span>),
         }
@@ -646,22 +648,24 @@ ActionMod&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt
 &gt; ActionExec&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;U, V&gt;&gt;&gt;&gt; <span class="kw">for </span>ComplexPole&lt;U, V&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;U, V&gt;&gt;&gt; {
-        <span class="kw">if </span><span class="self">self</span>.values.is_empty() {
-            <span class="prelude-val">None
-        </span>} <span class="kw">else </span>{
-            <span class="kw">if </span><span class="self">self</span>.values.len() &lt; <span class="number">2 </span>&amp;&amp; <span class="self">self</span>.d_time.elapsed() &gt; <span class="self">self</span>.min_time {
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(values) = <span class="self">self</span>.values.clone() {
+            <span class="kw">if </span>values.len() &lt; <span class="number">2 </span>&amp;&amp; <span class="self">self</span>.d_time.elapsed() &gt; <span class="self">self</span>.min_time {
+                <span class="self">self</span>.d_time = Instant::now();
                 <span class="prelude-val">None
             </span>} <span class="kw">else </span>{
-                <span class="prelude-val">Some</span>(<span class="self">self</span>.values.clone())
+                <span class="prelude-val">Some</span>(values.clone())
             }
-        }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 }
 
 <span class="kw">impl</span>&lt;U: Send + Sync + Clone, V: Send + Sync + Clone&gt;
-ActionMod&lt;Vec&lt;VisualDetection&lt;U, V&gt;&gt;&gt; <span class="kw">for </span>ComplexPole&lt;U, V&gt;
+ActionMod&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;U, V&gt;&gt;&gt;&gt; <span class="kw">for </span>ComplexPole&lt;U, V&gt;
 {
-    <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>Vec&lt;VisualDetection&lt;U, V&gt;&gt;) {
+    <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;U, V&gt;&gt;&gt;) {
         <span class="self">self</span>.values = input.clone();
     }
 }

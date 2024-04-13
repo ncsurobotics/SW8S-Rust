@@ -137,7 +137,24 @@
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
 <a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
+<span class="kw">use </span>tokio::time::Instant;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
 <span class="kw">use crate</span>::{
@@ -149,6 +166,8 @@
         Offset2D, VisualDetection,
     },
 };
+<span class="kw">use </span><span class="kw">crate</span>::missions::extra::{IsNone, ToFloat};
+<span class="kw">use </span><span class="kw">crate</span>::missions::vision::ComplexPole;
 
 <span class="kw">use super</span>::{
     action::{
@@ -168,10 +187,10 @@
 
 <span class="kw">pub fn </span>gate_run_naive&lt;
     Con: Send
-        + Sync
-        + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
+    + Sync
+    + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;
+    + GetMainElectronicsBoard
+    + GetFrontCamMat,
 &gt;(
     context: <span class="kw-2">&amp;</span>Con,
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
@@ -206,21 +225,22 @@
 
 <span class="kw">pub fn </span>gate_run_complex&lt;
     Con: Send
-        + Sync
-        + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
+    + Sync
+    + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;
+    + GetMainElectronicsBoard
+    + GetFrontCamMat,
 &gt;(
     context: <span class="kw-2">&amp;</span>Con,
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; + <span class="lifetime">'_ </span>{
     <span class="kw">let </span>depth: f32 = -<span class="number">1.0</span>;
+    <span class="kw">let </span>d_yaw: f32 = <span class="number">30.0</span>;
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
         <span class="macro">act_nest!</span>(
             ActionSequence::new,
-            adjust_logic(context, depth, CountTrue::new(<span class="number">3</span>)),
-            adjust_logic(context, depth, CountFalse::new(<span class="number">10</span>)),
+            adjust_logic(context, depth, d_yaw, CountTrue::new(<span class="number">3</span>)),
+            adjust_logic(context, depth, d_yaw, CountFalse::new(<span class="number">10</span>)),
             ZeroMovement::new(context, depth)
         ),
     )
@@ -229,16 +249,17 @@
 <span class="kw">pub fn </span>adjust_logic&lt;
     <span class="lifetime">'a</span>,
     Con: Send
-        + Sync
-        + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
+    + Sync
+    + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;
+    + GetMainElectronicsBoard
+    + GetFrontCamMat,
     X: <span class="lifetime">'a
-        </span>+ ActionMod&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;&gt;&gt;&gt;
-        + ActionExec&lt;anyhow::Result&lt;()&gt;&gt;,
+    </span>+ ActionMod&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;&gt;&gt;&gt;
+    + ActionExec&lt;anyhow::Result&lt;()&gt;&gt;,
 &gt;(
     context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Con,
     depth: f32,
+    d_yaw: f32,
     end_condition: X,
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'a </span>{
     <span class="kw">const </span>GATE_TRAVERSAL_SPEED: f32 = <span class="number">0.5</span>;
@@ -252,8 +273,19 @@
                 DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Earth),
                 DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Abydos),
                 DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::LargeGate),
-                DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Pole),
-            ),
+                ActionChain::new(
+                    DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Pole),
+                    ComplexPole::new(Instant::now())),
+                <span class="comment">// act_nest!(
+                //     ActionSequence::new,
+                //     ZeroMovement::new(context, depth),
+                //     ActionChain::new(
+                //         ToFloat::new(d_yaw),
+                //         AdjustMovementAngle::new(context, depth),
+                //     ),
+                //     IsNone::new()
+                // )
+            </span>),
             TupleSecond::new(ActionConcurrent::new(
                 <span class="macro">act_nest!</span>(
                     ActionChain::new,
