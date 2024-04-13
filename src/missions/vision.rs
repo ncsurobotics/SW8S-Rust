@@ -225,7 +225,10 @@ impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
 ActionMod<anyhow::Result<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
     fn modify(&mut self, input: &anyhow::Result<Vec<VisualDetection<U, V>>>) {
-        self.results = input.as_ref().map(|valid| valid.clone()).ok()
+        #[allow(clippy::all)]
+        {
+            self.results = input.as_ref().map(|valid| valid.clone()).ok()
+        }
     }
 }
 

@@ -7,7 +7,6 @@ use crate::{
     vision::{
         gate_poles::{GatePoles, Target},
         nn_cv2::{OnnxModel, YoloClass},
-        path::Path,
         Offset2D, VisualDetection,
     },
 };

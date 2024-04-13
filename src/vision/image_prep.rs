@@ -8,7 +8,7 @@ use opencv::{
         CV_32F, CV_32FC3, CV_64F, CV_8U, KMEANS_PP_CENTERS, ROTATE_90_COUNTERCLOCKWISE,
     },
     imgproc::{self},
-    prelude::{Mat, MatSizeTraitConst, MatTrait, MatTraitConst},
+    prelude::{Mat, MatSizeTraitConst, MatTrait, MatTraitConst, MatTraitConstManual},
 };
 
 use anyhow::Result;
@@ -23,7 +23,7 @@ use anyhow::Result;
 /// ```
 /// use opencv::{
 ///     core::{Mat, Size},
-///     prelude::{MatTraitConst, MatSizeTraitConst},
+///     prelude::{MatTraitConst, MatTraitConstManual, MatSizeTraitConst},
 /// };
 /// use sw8s_rust_lib::vision::image_prep::resize;
 ///
@@ -84,7 +84,7 @@ pub fn check_bounds(image: &Mat, bounds: &Size) -> bool {
 /// ```
 /// use opencv::{
 ///     core::{Mat, Size},
-///     prelude::{MatTraitConst, MatSizeTraitConst},
+///     prelude::{MatTraitConst, MatTraitConstManual, MatSizeTraitConst},
 /// };
 /// use sw8s_rust_lib::vision::image_prep::slice_number;
 ///
@@ -174,6 +174,7 @@ pub fn binary_pca(points: &[Point_<f64>], max_components: i32) -> Result<PcaData
 /// # Examples
 /// ```
 /// use opencv::core::{Mat, Mat_, Point, VecN};
+/// use opencv::prelude::MatTraitConstManual;
 /// use sw8s_rust_lib::vision::image_prep::cvt_binary_to_points;
 ///
 /// let raw_mat: [u8; 7] = [0, 0, 0, 255, 255, 0, 0];
@@ -218,6 +219,7 @@ pub fn cvt_binary_to_points(binary_image: &Mat_<u8>) -> Vec<Point_<f64>> {
 /// # Examples:
 /// ```
 /// use opencv::core::{Mat, Mat_};
+/// use opencv::prelude::MatTraitConstManual;
 /// use sw8s_rust_lib::vision::image_prep::unique_colors;
 ///
 /// let raw_mat: [u8; 7] = [0, 5, 32, 32, 5, 0, 1];
@@ -267,6 +269,7 @@ impl<T: Hash, const N: usize> VecNHash<T, N> {
 /// # Examples:
 /// ```
 /// use opencv::core::{Mat, Mat_, VecN};
+/// use opencv::prelude::MatTraitConstManual;
 /// use sw8s_rust_lib::vision::image_prep::unique_colors_vec;
 ///
 /// let raw_mat: [VecN<u8, 2>; 1] = [VecN::from_array([0, 0])];

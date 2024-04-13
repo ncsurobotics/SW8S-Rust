@@ -1,15 +1,11 @@
-use std::{
-    ops::{Deref, RangeInclusive},
-    sync::Arc,
-};
+use std::ops::{Deref, DerefMut, RangeInclusive};
 
 use itertools::Itertools;
 use opencv::{
     core::{in_range, Size, VecN},
     imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
-    prelude::{Mat, MatTraitConst},
+    prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
-use std::sync::Mutex;
 
 use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
 
@@ -55,6 +51,35 @@ impl Yuv {
     }
 }
 
+/// Allows [`Mat`] to be shared across threads for async.
+/// The C pointer is perfectly safe to share between threads, Rust just
+/// defaults to not giving any pointer Send/Sync so we have to use this wrapper
+/// pattern.
+#[derive(Debug)]
+struct MatWrapper(Mat);
+
+impl Deref for MatWrapper {
+    type Target = Mat;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for MatWrapper {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<Mat> for MatWrapper {
+    fn from(value: Mat) -> Self {
+        Self(value)
+    }
+}
+
+unsafe impl Send for MatWrapper {}
+unsafe impl Sync for MatWrapper {}
+
 #[derive(Debug)]
 pub struct Path {
     color_bounds: RangeInclusive<Yuv>,
@@ -62,12 +87,12 @@ pub struct Path {
     num_regions: i32,
     size: Size,
     attempts: i32,
-    image: Arc<Mutex<Mat>>,
+    image: MatWrapper,
 }
 
 impl Path {
     pub fn image(&self) -> Mat {
-        self.image.lock().unwrap().clone()
+        self.image.clone()
     }
 }
 
@@ -85,7 +110,7 @@ impl Path {
             num_regions,
             size,
             attempts,
-            image: Arc::new(Mutex::new(Mat::default())),
+            image: Mat::default().into(),
         }
     }
 }
@@ -106,8 +131,6 @@ impl Default for Path {
     }
 }
 
-
-
 fn compute_angle(v1: (f64, f64), v2: (f64, f64)) -> f64 {
     let dot = (v1.0 * v2.0) + (v1.1 * v2.1);
     let norm = |vec: (f64, f64)| ((vec.0 * vec.0) + (vec.1 * vec.1)).sqrt();
@@ -123,16 +146,14 @@ impl VisualDetector<i32> for Path {
         &mut self,
         input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
-        let mut self_image = self.image.lock().unwrap().clone();
-
-        let image = resize(input_image, &self.size)?;
+        self.image = resize(input_image, &self.size)?.into();
         let mut yuv_image = Mat::default();
 
-        cvt_color(&image, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
+        cvt_color(&self.image.0, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
         yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
         let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
 
-        cvt_color(&yuv_image, &mut self_image, COLOR_YUV2RGB, 0).unwrap();
+        cvt_color(&yuv_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
 
         yuv_image
             .iter::<VecN<u8, 3>>()
@@ -178,9 +199,9 @@ impl VisualDetector<i32> for Path {
 
                 let p_vec = PosVector::new(
                     ((pca_output.mean().get(0).unwrap()) - image_center.0)
-                        + (self_image.size().unwrap().width as f64) / 2.0,
+                        + (self.image.size().unwrap().width as f64) / 2.0,
                     (pca_output.mean().get(1).unwrap()) - image_center.1
-                        + (self_image.size().unwrap().height as f64) / 2.0,
+                        + (self.image.size().unwrap().height as f64) / 2.0,
                     compute_angle(
                         (
                             pca_output.pca_vector().get(length_idx).unwrap(),
@@ -202,8 +223,7 @@ impl VisualDetector<i32> for Path {
     }
 
     fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
-        let self_image = self.image.lock().unwrap();
-        let img_size = self_image.size().unwrap();
+        let img_size = self.image.size().unwrap();
         Self::Position::new(
             ((*pos.x() / (img_size.width as f64)) - 0.5) * 2.0,
             ((*pos.y() / (img_size.height as f64)) - 0.5) * 2.0,
@@ -226,13 +246,11 @@ impl VisualDetector<f64> for Path {
         let image = resize(input_image, &self.size)?;
         let mut yuv_image = Mat::default();
 
-        let mut self_image = self.image.lock().unwrap().clone();
-
         cvt_color(&image, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
         yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
         let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
 
-        cvt_color(&yuv_image, &mut self_image, COLOR_YUV2RGB, 0).unwrap();
+        cvt_color(&yuv_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
 
         yuv_image
             .iter::<VecN<u8, 3>>()
@@ -278,9 +296,9 @@ impl VisualDetector<f64> for Path {
 
                 let p_vec = PosVector::new(
                     ((pca_output.mean().get(0).unwrap()) - image_center.0)
-                        + (self_image.size().unwrap().width as f64) / 2.0,
+                        + (self.image.size().unwrap().width as f64) / 2.0,
                     (pca_output.mean().get(1).unwrap()) - image_center.1
-                        + (self_image.size().unwrap().height as f64) / 2.0,
+                        + (self.image.size().unwrap().height as f64) / 2.0,
                     compute_angle(
                         (
                             pca_output.pca_vector().get(length_idx).unwrap(),
@@ -302,8 +320,7 @@ impl VisualDetector<f64> for Path {
     }
 
     fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
-        let self_image = self.image.lock().unwrap();
-        let img_size = self_image.size().unwrap();
+        let img_size = self.image.size().unwrap();
         Self::Position::new(
             ((*pos.x() / (img_size.width as f64)) - 0.5) * 2.0,
             ((*pos.y() / (img_size.height as f64)) - 0.5) * 2.0,
@@ -332,12 +349,12 @@ mod tests {
     fn detect_single() {
         let image = imread("tests/vision/resources/path_images/1.jpeg", IMREAD_COLOR).unwrap();
         let mut path = Path::default();
-        let detections = path.detect(&image).unwrap();
+        let detections = <Path as VisualDetector<f64>>::detect(&mut path, &image).unwrap();
         let mut shrunk_image = path.image().clone();
 
-        detections
-            .iter()
-            .for_each(|result| result.draw(&mut shrunk_image).unwrap());
+        detections.iter().for_each(|result| {
+            <VisualDetection<_, _> as Draw>::draw(result, &mut shrunk_image).unwrap()
+        });
 
         println!("Detections: {:#?}", detections);
 

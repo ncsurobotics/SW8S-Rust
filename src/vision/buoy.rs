@@ -1,15 +1,15 @@
 use anyhow::Result;
 use opencv::{core::Size, prelude::Mat};
-use tokio::sync::Mutex;
 
 use crate::load_onnx;
 
 use super::{
-    nn_cv2::{OnnxModel, VisionModel, YoloDetection}, path::Yuv, yolo_model::YoloProcessor
+    nn_cv2::{OnnxModel, VisionModel, YoloDetection},
+    yolo_model::YoloProcessor,
 };
 
 use core::hash::Hash;
-use std::{error::Error, fmt::Display, ops::RangeInclusive, sync::Arc};
+use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
@@ -115,6 +115,7 @@ mod tests {
     use opencv::{
         core::Vector,
         imgcodecs::{imread, imwrite, IMREAD_COLOR},
+        prelude::MatTraitConstManual,
     };
 
     use crate::vision::{Draw, VisualDetector};
