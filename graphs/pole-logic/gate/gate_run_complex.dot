@@ -1,0 +1,124 @@
+digraph G {
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	"5b9105eb-1017-4811-8538-e0323bde465c" [shape = diamond];
+	"a9681736-a082-4e00-907d-882b74891e84" [shape = diamond];
+	subgraph "cluster_2eaaf858-1418-4f82-b341-c254bd30744d" {
+		style = dashed;
+		color = blue;
+		"79cfd3ba-8125-4d8c-8f1b-648b577a75ee" -> "24d4099f-ae14-4029-80f1-4c30fdf3f976" ;
+		"dfd4aaf4-386e-453e-8e59-d15be479379e" -> "85b510f6-e504-4623-beea-ce07f27d4e14" ;
+		"85b510f6-e504-4623-beea-ce07f27d4e14" -> "68dccba4-b328-4109-bc86-260c22bb1ce2" ;
+		"24d4099f-ae14-4029-80f1-4c30fdf3f976" -> "dfd4aaf4-386e-453e-8e59-d15be479379e" ;
+		"2bf428b0-1117-4dd1-9cb8-4d71805e5892" -> "79cfd3ba-8125-4d8c-8f1b-648b577a75ee" ;
+		"2cacac4c-2cd9-4afa-9337-6c387bfe15c7" -> "2bf428b0-1117-4dd1-9cb8-4d71805e5892";
+		"2cacac4c-2cd9-4afa-9337-6c387bfe15c7" -> "9db2e7da-ca76-4405-a3b1-c4fdfd27d9e2";
+		"68dccba4-b328-4109-bc86-260c22bb1ce2" -> "8ed5c91c-6177-452a-bf57-c9551fd88c8d";
+		"9db2e7da-ca76-4405-a3b1-c4fdfd27d9e2" -> "8ed5c91c-6177-452a-bf57-c9551fd88c8d";
+		"2cacac4c-2cd9-4afa-9337-6c387bfe15c7" [label = "Concurrent", shape = box, fontcolor = blue, style = dashed];
+		"2bf428b0-1117-4dd1-9cb8-4d71805e5892" [label = "WaitArm", margin = 0];
+		"79cfd3ba-8125-4d8c-8f1b-648b577a75ee" [label = "Descend", margin = 0];
+		"24d4099f-ae14-4029-80f1-4c30fdf3f976" [label = "DelayAction", margin = 0];
+		"dfd4aaf4-386e-453e-8e59-d15be479379e" [label = "StraightMovement", margin = 0];
+		"85b510f6-e504-4623-beea-ce07f27d4e14" [label = "DelayAction", margin = 0];
+		"68dccba4-b328-4109-bc86-260c22bb1ce2" [label = "ZeroMovement", margin = 0];
+		"9db2e7da-ca76-4405-a3b1-c4fdfd27d9e2" [label = "StartBno055", margin = 0];
+		"8ed5c91c-6177-452a-bf57-c9551fd88c8d" [label = "Converge", shape = box, fontcolor = blue, style = dashed];
+	}
+	
+	subgraph "cluster_fd6a1e9a-9cec-4e2a-89a1-171b9e4f9bd7" {
+		style = dashed;
+		color = darkgreen;
+		"cf12182c-93ca-46be-aaea-2c82a82de201" -> "1f576902-414e-4ff8-a5a2-2dd5e4f0c564";
+		"cf12182c-93ca-46be-aaea-2c82a82de201" -> "724c5d90-4395-4855-afd6-b418d5b46bfb";
+		"cf12182c-93ca-46be-aaea-2c82a82de201" -> "e8a376e6-3867-4b2b-ab9b-af77fc1362bb";
+		"cf12182c-93ca-46be-aaea-2c82a82de201" -> "76b784e7-2f11-4dcd-b002-03f3d4a441a0";
+		"1f576902-414e-4ff8-a5a2-2dd5e4f0c564" -> "cb114c4d-cefa-4c7f-aba9-3c87b5ec861f";
+		"724c5d90-4395-4855-afd6-b418d5b46bfb" -> "cb114c4d-cefa-4c7f-aba9-3c87b5ec861f";
+		"e8a376e6-3867-4b2b-ab9b-af77fc1362bb" -> "cb114c4d-cefa-4c7f-aba9-3c87b5ec861f";
+		"76b784e7-2f11-4dcd-b002-03f3d4a441a0" -> "cb114c4d-cefa-4c7f-aba9-3c87b5ec861f";
+		"cf12182c-93ca-46be-aaea-2c82a82de201" [label = "FirstValid (Concurrent)", shape = box, fontcolor = darkgreen, style = dashed];
+		"1f576902-414e-4ff8-a5a2-2dd5e4f0c564" [label = "Detect Earth", margin = 0];
+		"724c5d90-4395-4855-afd6-b418d5b46bfb" [label = "Detect Abydos", margin = 0];
+		"e8a376e6-3867-4b2b-ab9b-af77fc1362bb" [label = "Detect LargeGate", margin = 0];
+		"76b784e7-2f11-4dcd-b002-03f3d4a441a0" [label = "Detect Pole", margin = 0];
+		"cb114c4d-cefa-4c7f-aba9-3c87b5ec861f" [label = "Converge", shape = box, fontcolor = darkgreen, style = dashed];
+	}
+	
+	subgraph "cluster_4fbf3029-0817-4ca8-acc5-0bace73e65e1" {
+		style = dashed;
+		color = blue;
+		"35f66653-3d3f-4282-9144-72318c3125cc" -> "07a1fa87-d711-425b-80bb-f0c34470e56c" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"4fe99f2d-2f52-42a0-a674-502dc7379cb0" -> "35f66653-3d3f-4282-9144-72318c3125cc" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"ed432668-8103-42f7-b483-02089372d993" -> "4fe99f2d-2f52-42a0-a674-502dc7379cb0" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"b9405224-4e15-4351-b990-7cb54e1bed6f" -> "ed432668-8103-42f7-b483-02089372d993" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"84e45fee-254d-43b1-b23b-23f26571f5d2" -> "b9405224-4e15-4351-b990-7cb54e1bed6f" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"c426f44c-4afe-4b05-bef1-73143bb8516d" -> "84e45fee-254d-43b1-b23b-23f26571f5d2" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"da05f833-bef7-4cd2-801e-6cf98d9f811f" -> "c426f44c-4afe-4b05-bef1-73143bb8516d";
+		"da05f833-bef7-4cd2-801e-6cf98d9f811f" -> "5b9105eb-1017-4811-8538-e0323bde465c";
+		"da05f833-bef7-4cd2-801e-6cf98d9f811f" [label = "Concurrent", shape = box, fontcolor = blue, style = dashed];
+		"c426f44c-4afe-4b05-bef1-73143bb8516d" [label = "ToVec", margin = 0];
+		"84e45fee-254d-43b1-b23b-23f26571f5d2" [label = "ExtractPosition", margin = 0];
+		"b9405224-4e15-4351-b990-7cb54e1bed6f" [label = "Average", margin = 0];
+		"ed432668-8103-42f7-b483-02089372d993" [label = "OffsetToPose", margin = 0];
+		"4fe99f2d-2f52-42a0-a674-502dc7379cb0" [label = "LinearYawFromX", margin = 0];
+		"35f66653-3d3f-4282-9144-72318c3125cc" [label = "StripY", margin = 0];
+		"07a1fa87-d711-425b-80bb-f0c34470e56c" [label = "Stability2Movement", margin = 0];
+		"5b9105eb-1017-4811-8538-e0323bde465c" [label = "Consecutive True < 3", margin = 0];
+	}
+	
+	subgraph "cluster_b3b1381d-b513-4407-881f-3ead88ba728e" {
+		style = dashed;
+		color = darkgreen;
+		"049b2c69-b587-4b0e-b934-e2f3f199d8be" -> "7062a3f3-bd78-4c2f-8f30-fc2a013ecd80";
+		"049b2c69-b587-4b0e-b934-e2f3f199d8be" -> "f628b627-b821-4bd1-a735-41f700751a91";
+		"049b2c69-b587-4b0e-b934-e2f3f199d8be" -> "e69c7a24-8dba-4502-a329-f3ce6d8c30fe";
+		"049b2c69-b587-4b0e-b934-e2f3f199d8be" -> "28076b2c-94c4-4134-8e62-9c373fb06c78";
+		"7062a3f3-bd78-4c2f-8f30-fc2a013ecd80" -> "ec7d9bc4-24d2-4768-b0fb-5b2c96449637";
+		"f628b627-b821-4bd1-a735-41f700751a91" -> "ec7d9bc4-24d2-4768-b0fb-5b2c96449637";
+		"e69c7a24-8dba-4502-a329-f3ce6d8c30fe" -> "ec7d9bc4-24d2-4768-b0fb-5b2c96449637";
+		"28076b2c-94c4-4134-8e62-9c373fb06c78" -> "ec7d9bc4-24d2-4768-b0fb-5b2c96449637";
+		"049b2c69-b587-4b0e-b934-e2f3f199d8be" [label = "FirstValid (Concurrent)", shape = box, fontcolor = darkgreen, style = dashed];
+		"7062a3f3-bd78-4c2f-8f30-fc2a013ecd80" [label = "Detect Earth", margin = 0];
+		"f628b627-b821-4bd1-a735-41f700751a91" [label = "Detect Abydos", margin = 0];
+		"e69c7a24-8dba-4502-a329-f3ce6d8c30fe" [label = "Detect LargeGate", margin = 0];
+		"28076b2c-94c4-4134-8e62-9c373fb06c78" [label = "Detect Pole", margin = 0];
+		"ec7d9bc4-24d2-4768-b0fb-5b2c96449637" [label = "Converge", shape = box, fontcolor = darkgreen, style = dashed];
+	}
+	
+	subgraph "cluster_ba832cfa-54b1-40c7-888d-235856622220" {
+		style = dashed;
+		color = blue;
+		"9c0b1206-6efb-4f9f-a1bb-ac7fa84f3a21" -> "481e7614-8817-407f-af20-62b7de24d9ae" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"f4fff3c0-8189-423f-9e7c-9aa52dfd695f" -> "9c0b1206-6efb-4f9f-a1bb-ac7fa84f3a21" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"c06d3c9e-193a-4388-8e9f-b16cb3e54602" -> "f4fff3c0-8189-423f-9e7c-9aa52dfd695f" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"474b5d80-cbf2-45ad-8d4f-7fcb8d4ae051" -> "c06d3c9e-193a-4388-8e9f-b16cb3e54602" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"ffaca674-040a-4c3c-b9de-41b7a69606e1" -> "474b5d80-cbf2-45ad-8d4f-7fcb8d4ae051" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"5a94a3d9-0690-42d2-9fd5-f9d02cd8cf9e" -> "ffaca674-040a-4c3c-b9de-41b7a69606e1" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"fed0a369-1a6d-4fa3-9ae9-4a0ca0502e45" -> "5a94a3d9-0690-42d2-9fd5-f9d02cd8cf9e";
+		"fed0a369-1a6d-4fa3-9ae9-4a0ca0502e45" -> "a9681736-a082-4e00-907d-882b74891e84";
+		"fed0a369-1a6d-4fa3-9ae9-4a0ca0502e45" [label = "Concurrent", shape = box, fontcolor = blue, style = dashed];
+		"5a94a3d9-0690-42d2-9fd5-f9d02cd8cf9e" [label = "ToVec", margin = 0];
+		"ffaca674-040a-4c3c-b9de-41b7a69606e1" [label = "ExtractPosition", margin = 0];
+		"474b5d80-cbf2-45ad-8d4f-7fcb8d4ae051" [label = "Average", margin = 0];
+		"c06d3c9e-193a-4388-8e9f-b16cb3e54602" [label = "OffsetToPose", margin = 0];
+		"f4fff3c0-8189-423f-9e7c-9aa52dfd695f" [label = "LinearYawFromX", margin = 0];
+		"9c0b1206-6efb-4f9f-a1bb-ac7fa84f3a21" [label = "StripY", margin = 0];
+		"481e7614-8817-407f-af20-62b7de24d9ae" [label = "Stability2Movement", margin = 0];
+		"a9681736-a082-4e00-907d-882b74891e84" [label = "Consecutive False < 10", margin = 0];
+	}
+	
+	"cb114c4d-cefa-4c7f-aba9-3c87b5ec861f" -> "da05f833-bef7-4cd2-801e-6cf98d9f811f" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"e0bd1908-97a2-4d04-902b-d7af268562e0" -> "cf12182c-93ca-46be-aaea-2c82a82de201" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"5b9105eb-1017-4811-8538-e0323bde465c" -> "e0bd1908-97a2-4d04-902b-d7af268562e0" [label = "True"];
+	"ec7d9bc4-24d2-4768-b0fb-5b2c96449637" -> "fed0a369-1a6d-4fa3-9ae9-4a0ca0502e45" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"b5ef7c54-44e4-4037-85c5-da5a16a91fdf" -> "049b2c69-b587-4b0e-b934-e2f3f199d8be" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"a9681736-a082-4e00-907d-882b74891e84" -> "b5ef7c54-44e4-4037-85c5-da5a16a91fdf" [label = "True"];
+	"a9681736-a082-4e00-907d-882b74891e84" -> "44e8e8fb-d736-4c5d-b7b2-7ac61d15e4f6" [label = "False"];
+	"5b9105eb-1017-4811-8538-e0323bde465c" -> "b5ef7c54-44e4-4037-85c5-da5a16a91fdf" [label = "False"];
+	"8ed5c91c-6177-452a-bf57-c9551fd88c8d" -> "e0bd1908-97a2-4d04-902b-d7af268562e0" ;
+	"e0bd1908-97a2-4d04-902b-d7af268562e0" [label = "VisionNorm", margin = 0];
+	"b5ef7c54-44e4-4037-85c5-da5a16a91fdf" [label = "VisionNorm", margin = 0];
+	"44e8e8fb-d736-4c5d-b7b2-7ac61d15e4f6" [label = "ZeroMovement", margin = 0];
+}
