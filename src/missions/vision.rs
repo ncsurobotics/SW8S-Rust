@@ -243,7 +243,7 @@ ActionMod<Option<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 
 #[derive(Debug)]
 pub struct ComplexPole<U, V> {
-    values: Vec<VisualDetection<U, V>>,
+    values: Option<Vec<VisualDetection<U, V>>>,
     d_time: Instant,
     min_time: Duration,
 }
@@ -251,7 +251,7 @@ pub struct ComplexPole<U, V> {
 impl<U, V> ComplexPole<U, V> {
     pub const fn new(d_time: Instant) -> Self {
         Self {
-            values: vec![],
+            values: None,
             d_time,
             min_time: Duration::from_secs(5),
         }
@@ -267,23 +267,24 @@ impl<
 > ActionExec<Option<Vec<VisualDetection<U, V>>>> for ComplexPole<U, V>
 {
     async fn execute(&mut self) -> Option<Vec<VisualDetection<U, V>>> {
-        if self.values.is_empty() {
-            None
-        } else {
-            if self.values.len() < 2 && self.d_time.elapsed() > self.min_time {
+
+        if let Some(values) = self.values.clone() {
+            if values.len() < 2 && self.d_time.elapsed() > self.min_time {
                 self.d_time = Instant::now();
                 None
             } else {
-                Some(self.values.clone())
+                Some(values.clone())
             }
+        } else {
+            None
         }
     }
 }
 
 impl<U: Send + Sync + Clone, V: Send + Sync + Clone>
-ActionMod<Vec<VisualDetection<U, V>>> for ComplexPole<U, V>
+ActionMod<Option<Vec<VisualDetection<U, V>>>> for ComplexPole<U, V>
 {
-    fn modify(&mut self, input: &Vec<VisualDetection<U, V>>) {
+    fn modify(&mut self, input: &Option<Vec<VisualDetection<U, V>>>) {
         self.values = input.clone();
     }
 }
