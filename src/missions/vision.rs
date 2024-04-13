@@ -15,6 +15,9 @@ use crate::missions::action_context::GetFrontCamMat;
 use opencv::{core::Vector, imgcodecs::imwrite};
 #[cfg(feature = "logging")]
 use std::fs::create_dir_all;
+use std::time::Duration;
+use futures::StreamExt;
+use tokio::time::Instant;
 
 /// Runs a vision routine to obtain the average of object positions
 ///
@@ -40,12 +43,12 @@ impl<T, U, V> Action for VisionNormOffset<'_, T, U, V> {}
 
 #[async_trait]
 impl<
-        T: GetFrontCamMat + Send + Sync,
-        V: Num + Float + FromPrimitive + Send + Sync,
-        U: VisualDetector<V> + Send + Sync,
-    > ActionExec<Result<Offset2D<V>>> for VisionNormOffset<'_, T, U, V>
-where
-    U::Position: RelPos<Number = V> + Draw,
+    T: GetFrontCamMat + Send + Sync,
+    V: Num + Float + FromPrimitive + Send + Sync,
+    U: VisualDetector<V> + Send + Sync,
+> ActionExec<Result<Offset2D<V>>> for VisionNormOffset<'_, T, U, V>
+    where
+        U::Position: RelPos<Number=V> + Draw,
 {
     async fn execute(&mut self) -> Result<Offset2D<V>> {
         #[cfg(feature = "logging")]
@@ -54,7 +57,7 @@ where
         }
 
         #[allow(unused_mut)]
-        let mut mat = self.context.get_front_camera_mat().await.clone();
+            let mut mat = self.context.get_front_camera_mat().await.clone();
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
         println!("Detect attempt: {}", detections.is_ok());
@@ -71,7 +74,7 @@ where
                 &mat,
                 &Vector::default(),
             )
-            .unwrap();
+                .unwrap();
         }
 
         let positions: Vec<_> = detections
@@ -116,14 +119,14 @@ impl<T, U, V> Action for VisionNorm<'_, T, U, V> {}
 
 #[async_trait]
 impl<
-        T: GetFrontCamMat + Send + Sync,
-        V: Num + Float + FromPrimitive + Send + Sync,
-        U: VisualDetector<V> + Send + Sync,
-    > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>>>
-    for VisionNorm<'_, T, U, V>
-where
-    U::Position: RelPos<Number = V> + Draw + Send + Sync,
-    U::ClassEnum: Send + Sync,
+    T: GetFrontCamMat + Send + Sync,
+    V: Num + Float + FromPrimitive + Send + Sync,
+    U: VisualDetector<V> + Send + Sync,
+> ActionExec<Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>>>
+for VisionNorm<'_, T, U, V>
+    where
+        U::Position: RelPos<Number=V> + Draw + Send + Sync,
+        U::ClassEnum: Send + Sync,
 {
     async fn execute(&mut self) -> Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>> {
         #[cfg(feature = "logging")]
@@ -132,7 +135,7 @@ where
         }
 
         #[allow(unused_mut)]
-        let mut mat = self.context.get_front_camera_mat().await.clone();
+            let mut mat = self.context.get_front_camera_mat().await.clone();
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
         println!("Detect attempt: {}", detections.is_ok());
@@ -149,7 +152,7 @@ where
                 &mat,
                 &Vector::default(),
             )
-            .unwrap();
+                .unwrap();
         }
 
         Ok(detections
@@ -195,10 +198,10 @@ impl<T: Display, U, V> Action for DetectTarget<T, U, V> {
 
 #[async_trait]
 impl<
-        T: Send + Sync + PartialEq + Display,
-        U: Send + Sync + Clone + Into<T> + Debug,
-        V: Send + Sync + Debug + Clone,
-    > ActionExec<Option<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
+    T: Send + Sync + PartialEq + Display,
+    U: Send + Sync + Clone + Into<T> + Debug,
+    V: Send + Sync + Debug + Clone,
+> ActionExec<Option<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
     async fn execute(&mut self) -> Option<Vec<VisualDetection<U, V>>> {
         if let Some(vals) = &self.results {
@@ -219,7 +222,7 @@ impl<
 }
 
 impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
-    ActionMod<anyhow::Result<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
+ActionMod<anyhow::Result<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
     fn modify(&mut self, input: &anyhow::Result<Vec<VisualDetection<U, V>>>) {
         self.results = input.as_ref().map(|valid| valid.clone()).ok()
@@ -227,10 +230,57 @@ impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
 }
 
 impl<T: Display, U: Send + Sync + Clone, V: Send + Sync + Clone>
-    ActionMod<Option<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
+ActionMod<Option<Vec<VisualDetection<U, V>>>> for DetectTarget<T, U, V>
 {
     fn modify(&mut self, input: &Option<Vec<VisualDetection<U, V>>>) {
         self.results = input.as_ref().cloned();
+    }
+}
+
+
+#[derive(Debug)]
+pub struct ComplexPole<U, V> {
+    values: Vec<VisualDetection<U, V>>,
+    d_time: Instant,
+    min_time: Duration,
+}
+
+impl<U, V> ComplexPole<U, V> {
+    pub const fn new(d_time: Instant) -> Self {
+        Self {
+            values: vec![],
+            d_time,
+            min_time: Duration::from_secs(5),
+        }
+    }
+}
+
+impl<U, V> Action for ComplexPole<U, V> {}
+
+#[async_trait]
+impl<
+    U: Send + Sync + Clone + Debug,
+    V: Send + Sync + Debug + Clone,
+> ActionExec<Option<Vec<VisualDetection<U, V>>>> for ComplexPole<U, V>
+{
+    async fn execute(&mut self) -> Option<Vec<VisualDetection<U, V>>> {
+        if self.values.is_empty() {
+            None
+        } else {
+            if self.values.len() < 2 && self.d_time.elapsed() > self.min_time {
+                None
+            } else {
+                Some(self.values.clone())
+            }
+        }
+    }
+}
+
+impl<U: Send + Sync + Clone, V: Send + Sync + Clone>
+ActionMod<Vec<VisualDetection<U, V>>> for ComplexPole<U, V>
+{
+    fn modify(&mut self, input: &Vec<VisualDetection<U, V>>) {
+        self.values = input.clone();
     }
 }
 
@@ -248,7 +298,7 @@ impl<T> Average<T> {
 impl<T> Action for Average<T> {}
 
 #[async_trait]
-impl<T: Send + Sync + Clone + Sum + Div<usize, Output = T>> ActionExec<Option<T>> for Average<T> {
+impl<T: Send + Sync + Clone + Sum + Div<usize, Output=T>> ActionExec<Option<T>> for Average<T> {
     async fn execute(&mut self) -> Option<T> {
         if self.values.is_empty() {
             None
@@ -308,7 +358,7 @@ impl<T: Send + Sync, U: Send + Sync + Clone> ActionExec<Vec<U>> for ExtractPosit
 }
 
 impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetection<T, U>>>
-    for ExtractPosition<T, U>
+for ExtractPosition<T, U>
 {
     fn modify(&mut self, input: &Vec<VisualDetection<T, U>>) {
         self.values = input.clone();
@@ -316,7 +366,7 @@ impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetecti
 }
 
 impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<VisualDetection<T, U>>
-    for ExtractPosition<T, U>
+for ExtractPosition<T, U>
 {
     fn modify(&mut self, input: &VisualDetection<T, U>) {
         self.values = vec![input.clone()];
