@@ -153,18 +153,19 @@
 <a href="#151" id="151">151</a>
 <a href="#152" id="152">152</a>
 <a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>opencv::{core::Size, prelude::Mat};
-<span class="kw">use </span>tokio::sync::Mutex;
 
 <span class="kw">use </span><span class="kw">crate</span>::load_onnx;
 
 <span class="kw">use super</span>::{
-    nn_cv2::{OnnxModel, VisionModel, YoloDetection}, path::Yuv, yolo_model::YoloProcessor
+    nn_cv2::{OnnxModel, VisionModel, YoloDetection},
+    yolo_model::YoloProcessor,
 };
 
 <span class="kw">use </span>core::hash::Hash;
-<span class="kw">use </span>std::{error::Error, fmt::Display, ops::RangeInclusive, sync::Arc};
+<span class="kw">use </span>std::{error::Error, fmt::Display};
 
 <span class="attr">#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 </span><span class="kw">pub enum </span>Target {
@@ -270,6 +271,7 @@
     <span class="kw">use </span>opencv::{
         core::Vector,
         imgcodecs::{imread, imwrite, IMREAD_COLOR},
+        prelude::MatTraitConstManual,
     };
 
     <span class="kw">use </span><span class="kw">crate</span>::vision::{Draw, VisualDetector};

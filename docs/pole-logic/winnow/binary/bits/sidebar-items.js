@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["bits","bool","bytes","tag","take","take_"]};
+window.SIDEBAR_ITEMS = {"constant":["BYTE"],"fn":["bits","bool","bytes","pattern","take","take_"]};

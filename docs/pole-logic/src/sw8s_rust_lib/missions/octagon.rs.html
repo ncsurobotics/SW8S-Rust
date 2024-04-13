@@ -60,30 +60,18 @@
 <a href="#58" id="58">58</a>
 <a href="#59" id="59">59</a>
 <a href="#60" id="60">60</a>
-<a href="#61" id="61">61</a>
-<a href="#62" id="62">62</a>
-<a href="#63" id="63">63</a>
-<a href="#64" id="64">64</a>
-<a href="#65" id="65">65</a>
-<a href="#66" id="66">66</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
-<span class="kw">use </span>async_trait::async_trait;
-<span class="kw">use </span>tokio::io::WriteHalf;
+</pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
 <span class="kw">use crate</span>::{act_nest, vision::path::Path};
 
 <span class="kw">use super</span>::{
-    action::{
-        Action, ActionConcurrent, ActionConditional, ActionExec, ActionMod, ActionSequence,
-        RaceAction,
-    },
+    action::{ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     example::initial_descent,
     extra::NoOp,
-    meb::WaitArm,
-    movement::{Descend, Stability2Movement, Stability2Pos},
+    movement::{Stability2Movement, Stability2Pos},
     vision::VisionNorm,
 };
 

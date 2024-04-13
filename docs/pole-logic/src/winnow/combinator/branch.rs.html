@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winnow-0.5.3/src/combinator/branch.rs`."><title>branch.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="winnow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.2 (25ef9e3d8 2024-04-09)" data-channel="1.77.2" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/winnow-0.6.5/src/combinator/branch.rs`."><title>branch.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="winnow" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.2 (25ef9e3d8 2024-04-09)" data-channel="1.77.2" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
             <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
     <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../winnow/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
@@ -292,9 +292,50 @@
 <a href="#290" id="290">290</a>
 <a href="#291" id="291">291</a>
 <a href="#292" id="292">292</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::error::{ErrMode, ErrorKind, ParserError};
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::combinator::trace;
+<span class="kw">use </span><span class="kw">crate</span>::error::{ErrMode, ErrorKind, ParserError};
 <span class="kw">use </span><span class="kw">crate</span>::stream::Stream;
-<span class="kw">use </span><span class="kw">crate</span>::trace::trace;
 <span class="kw">use crate</span>::<span class="kw-2">*</span>;
 
 <span class="attr">#[doc(inline)]
@@ -310,7 +351,10 @@
 
 <span class="doccomment">/// Pick the first successful parser
 ///
-/// For tight control over the error, add a final case using [`fail`][crate::combinator::fail].
+/// To stop on an error, rather than trying further cases, see
+/// [`cut_err`][crate::combinator::cut_err] ([example][crate::_tutorial::chapter_6]).
+///
+/// For tight control over the error when no match is found, add a final case using [`fail`][crate::combinator::fail].
 /// Alternatively, with a [custom error type][crate::_topic::error], it is possible to track all
 /// errors or return the error of the parser that went the farthest in the input data.
 ///
@@ -339,10 +383,14 @@
 /// # }
 /// ```
 </span><span class="attr">#[doc(alias = <span class="string">"choice"</span>)]
-</span><span class="kw">pub fn </span>alt&lt;I: Stream, O, E: ParserError&lt;I&gt;, List: Alt&lt;I, O, E&gt;&gt;(
-    <span class="kw-2">mut </span>l: List,
-) -&gt; <span class="kw">impl </span>Parser&lt;I, O, E&gt; {
-    trace(<span class="string">"alt"</span>, <span class="kw">move </span>|i: <span class="kw-2">&amp;mut </span>I| l.choice(i))
+</span><span class="kw">pub fn </span>alt&lt;Input: Stream, Output, Error, Alternatives&gt;(
+    <span class="kw-2">mut </span>alternatives: Alternatives,
+) -&gt; <span class="kw">impl </span>Parser&lt;Input, Output, Error&gt;
+<span class="kw">where
+    </span>Alternatives: Alt&lt;Input, Output, Error&gt;,
+    Error: ParserError&lt;Input&gt;,
+{
+    trace(<span class="string">"alt"</span>, <span class="kw">move </span>|i: <span class="kw-2">&amp;mut </span>Input| alternatives.choice(i))
 }
 
 <span class="doccomment">/// Helper trait for the [permutation()] combinator.
@@ -358,6 +406,11 @@
 /// Permutation will succeed if all of the child parsers succeeded.
 /// It takes as argument a tuple of parsers, and returns a
 /// tuple of the parser results.
+///
+/// To stop on an error, rather than trying further permutations, see
+/// [`cut_err`][crate::combinator::cut_err] ([example][crate::_tutorial::chapter_6]).
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode,error::{InputError, ErrorKind}, error::Needed};
@@ -397,7 +450,7 @@
 ///
 /// // any parses 'a', then char('a') fails on 'b',
 /// // even though char('a') followed by any would succeed
-/// assert_eq!(parser("ab"), Err(ErrMode::Backtrack(InputError::new("b", ErrorKind::Verify))));
+/// assert_eq!(parser("ab"), Err(ErrMode::Backtrack(InputError::new("b", ErrorKind::Tag))));
 /// ```
 ///
 </span><span class="kw">pub fn </span>permutation&lt;I: Stream, O, E: ParserError&lt;I&gt;, List: Permutation&lt;I, O, E&gt;&gt;(
@@ -408,19 +461,24 @@
 
 <span class="kw">impl</span>&lt;<span class="kw">const </span>N: usize, I: Stream, O, E: ParserError&lt;I&gt;, P: Parser&lt;I, O, E&gt;&gt; Alt&lt;I, O, E&gt; <span class="kw">for </span>[P; N] {
     <span class="kw">fn </span>choice(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;mut </span>I) -&gt; PResult&lt;O, E&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>error = <span class="prelude-val">None</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>error: <span class="prelude-ty">Option</span>&lt;E&gt; = <span class="prelude-val">None</span>;
 
         <span class="kw">let </span>start = input.checkpoint();
         <span class="kw">for </span>branch <span class="kw">in </span><span class="self">self </span>{
-            input.reset(start.clone());
+            input.reset(<span class="kw-2">&amp;</span>start);
             <span class="kw">match </span>branch.parse_next(input) {
-                <span class="prelude-val">Err</span>(ErrMode::Backtrack(e)) =&gt; error = <span class="prelude-val">Some</span>(e),
+                <span class="prelude-val">Err</span>(ErrMode::Backtrack(e)) =&gt; {
+                    error = <span class="kw">match </span>error {
+                        <span class="prelude-val">Some</span>(error) =&gt; <span class="prelude-val">Some</span>(error.or(e)),
+                        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Some</span>(e),
+                    };
+                }
                 res =&gt; <span class="kw">return </span>res,
             }
         }
 
         <span class="kw">match </span>error {
-            <span class="prelude-val">Some</span>(e) =&gt; <span class="prelude-val">Err</span>(ErrMode::Backtrack(e.append(input, ErrorKind::Alt))),
+            <span class="prelude-val">Some</span>(e) =&gt; <span class="prelude-val">Err</span>(ErrMode::Backtrack(e.append(input, <span class="kw-2">&amp;</span>start, ErrorKind::Alt))),
             <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(ErrMode::assert(input, <span class="string">"`alt` needs at least one parser"</span>)),
         }
     }
@@ -459,9 +517,33 @@
   );
 );
 
+<span class="macro">macro_rules! </span>succ (
+  (<span class="number">0</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">1</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">1</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">2</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">2</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">3</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">3</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">4</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">4</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">5</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">5</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">6</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">6</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">7</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">7</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">8</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">8</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">9</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">9</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">10</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">10</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">11</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">11</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">12</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">12</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">13</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">13</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">14</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">14</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">15</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">15</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">16</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">16</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">17</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">17</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">18</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">18</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">19</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">19</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">20</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+  (<span class="number">20</span>, <span class="macro-nonterminal">$submac</span>:ident ! ($(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>)) =&gt; (<span class="macro-nonterminal">$</span><span class="macro">submac!</span>(<span class="number">21</span>, $(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>));
+);
+
 <span class="macro">macro_rules! </span>alt_trait_inner(
   (<span class="macro-nonterminal">$it</span>:tt, <span class="macro-nonterminal">$self</span>:expr, <span class="macro-nonterminal">$input</span>:expr, <span class="macro-nonterminal">$start</span>:ident, <span class="macro-nonterminal">$err</span>:expr, <span class="macro-nonterminal">$head</span>:ident $(<span class="macro-nonterminal">$id</span>:ident)+) =&gt; ({
-    <span class="macro-nonterminal">$input</span>.reset(<span class="macro-nonterminal">$start</span>.clone());
+    <span class="macro-nonterminal">$input</span>.reset(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$start</span>);
     <span class="kw">match </span><span class="macro-nonterminal">$self</span>.<span class="macro-nonterminal">$it</span>.parse_next(<span class="macro-nonterminal">$input</span>) {
       <span class="prelude-val">Err</span>(ErrMode::Backtrack(e)) =&gt; {
         <span class="kw">let </span>err = <span class="macro-nonterminal">$err</span>.or(e);
@@ -471,14 +553,14 @@
     }
   });
   (<span class="macro-nonterminal">$it</span>:tt, <span class="macro-nonterminal">$self</span>:expr, <span class="macro-nonterminal">$input</span>:expr, <span class="macro-nonterminal">$start</span>:ident, <span class="macro-nonterminal">$err</span>:expr, <span class="macro-nonterminal">$head</span>:ident) =&gt; ({
-    <span class="prelude-val">Err</span>(ErrMode::Backtrack(<span class="macro-nonterminal">$err</span>.append(<span class="macro-nonterminal">$input</span>, ErrorKind::Alt)))
+    <span class="prelude-val">Err</span>(ErrMode::Backtrack(<span class="macro-nonterminal">$err</span>.append(<span class="macro-nonterminal">$input</span>, <span class="kw-2">&amp;</span><span class="macro-nonterminal">$start</span>, ErrorKind::Alt)))
   });
 );
 
 <span class="macro">alt_trait!</span>(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10 Alt11 Alt12 Alt13 Alt14 Alt15 Alt16 Alt17 Alt18 Alt19 Alt20 Alt21 Alt22);
 
 <span class="comment">// Manually implement Alt for (A,), the 1-tuple type
-</span><span class="kw">impl</span>&lt;I, O, E: ParserError&lt;I&gt;, A: Parser&lt;I, O, E&gt;&gt; Alt&lt;I, O, E&gt; <span class="kw">for </span>(A,) {
+</span><span class="kw">impl</span>&lt;I: Stream, O, E: ParserError&lt;I&gt;, A: Parser&lt;I, O, E&gt;&gt; Alt&lt;I, O, E&gt; <span class="kw">for </span>(A,) {
     <span class="kw">fn </span>choice(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;mut </span>I) -&gt; PResult&lt;O, E&gt; {
         <span class="self">self</span>.<span class="number">0</span>.parse_next(input)
     }
@@ -523,8 +605,8 @@
           // or errored on the remaining input
           </span><span class="kw">if let </span><span class="prelude-val">Some</span>(err) = err {
             <span class="comment">// There are remaining parsers, and all errored on the remaining input
-            </span>input.reset(start.clone());
-            <span class="kw">return </span><span class="prelude-val">Err</span>(ErrMode::Backtrack(err.append(input, ErrorKind::Alt)));
+            </span>input.reset(<span class="kw-2">&amp;</span>start);
+            <span class="kw">return </span><span class="prelude-val">Err</span>(ErrMode::Backtrack(err.append(input, <span class="kw-2">&amp;</span>start, ErrorKind::Alt)));
           }
 
           <span class="comment">// All parsers were applied
@@ -541,7 +623,7 @@
 <span class="macro">macro_rules! </span>permutation_trait_inner(
   (<span class="macro-nonterminal">$it</span>:tt, <span class="macro-nonterminal">$self</span>:expr, <span class="macro-nonterminal">$input</span>:ident, <span class="macro-nonterminal">$start</span>:ident, <span class="macro-nonterminal">$res</span>:expr, <span class="macro-nonterminal">$err</span>:expr, <span class="macro-nonterminal">$head</span>:ident $(<span class="macro-nonterminal">$id</span>:ident)<span class="kw-2">*</span>) =&gt; (
     <span class="kw">if </span><span class="macro-nonterminal">$res</span>.<span class="macro-nonterminal">$it</span>.is_none() {
-      <span class="macro-nonterminal">$input</span>.reset(<span class="macro-nonterminal">$start</span>.clone());
+      <span class="macro-nonterminal">$input</span>.reset(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$start</span>);
       <span class="kw">match </span><span class="macro-nonterminal">$self</span>.<span class="macro-nonterminal">$it</span>.parse_next(<span class="macro-nonterminal">$input</span>) {
         <span class="prelude-val">Ok</span>(o) =&gt; {
           <span class="macro-nonterminal">$res</span>.<span class="macro-nonterminal">$it </span>= <span class="prelude-val">Some</span>(o);

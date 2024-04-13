@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Document"]};
+window.SIDEBAR_ITEMS = {"struct":["DocumentMut","ImDocument"]};

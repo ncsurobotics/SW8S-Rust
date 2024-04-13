@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["split"],"struct":["Guard","Inner","ReadHalf","WriteHalf"]};
+window.SIDEBAR_ITEMS = {"fn":["split"],"struct":["Inner","ReadHalf","WriteHalf"]};

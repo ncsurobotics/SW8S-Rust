@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"macro":["succ"]};
+window.SIDEBAR_ITEMS = {"mod":["dispatch","seq"]};
