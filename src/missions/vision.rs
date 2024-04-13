@@ -271,6 +271,7 @@ impl<
             None
         } else {
             if self.values.len() < 2 && self.d_time.elapsed() > self.min_time {
+                self.d_time = Instant::now();
                 None
             } else {
                 Some(self.values.clone())
