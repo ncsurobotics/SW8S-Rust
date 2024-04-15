@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Calculates the distance to the closest zero pixel for each pixel of the source image."><title>distance_transform_with_labels in opencv::opencv::hub::imgproc - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.2 (25ef9e3d8 2024-04-09)" data-channel="1.77.2" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../opencv/index.html">opencv</a><span class="version">0.90.0</span></h2></div><div class="sidebar-elems"><h2><a href="index.html">In opencv::opencv::hub::imgproc</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Function <a href="../../../index.html">opencv</a>::<wbr><a href="../../index.html">opencv</a>::<wbr><a href="../index.html">hub</a>::<wbr><a href="index.html">imgproc</a>::<wbr><a class="fn" href="#">distance_transform_with_labels</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-9208c8e6ad6d7091/out/opencv/imgproc.rs.html#5293-5302">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub fn distance_transform_with_labels(
+    src: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    dst: &amp;mut impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    labels: &amp;mut impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    distance_type: <a class="primitive" href="https://doc.rust-lang.org/1.77.2/std/primitive.i32.html">i32</a>,
+    mask_size: <a class="primitive" href="https://doc.rust-lang.org/1.77.2/std/primitive.i32.html">i32</a>,
+    label_type: <a class="primitive" href="https://doc.rust-lang.org/1.77.2/std/primitive.i32.html">i32</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.2/std/primitive.unit.html">()</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Calculates the distance to the closest zero pixel for each pixel of the source image.</p>
+<p>The function cv::distanceTransform calculates the approximate or precise distance from every binary
+image pixel to the nearest zero pixel. For zero image pixels, the distance will obviously be zero.</p>
+<p>When maskSize == <a href="constant.DIST_MASK_PRECISE.html" title="constant opencv::opencv::hub::imgproc::DIST_MASK_PRECISE">DIST_MASK_PRECISE</a> and distanceType == <a href="constant.DIST_L2.html" title="constant opencv::opencv::hub::imgproc::DIST_L2">DIST_L2</a> , the function runs the
+algorithm described in <a href="https://docs.opencv.org/4.5.4/d0/de3/citelist.html#CITEREF_Felzenszwalb04">Felzenszwalb04</a> . This algorithm is parallelized with the TBB library.</p>
+<p>In other cases, the algorithm <a href="https://docs.opencv.org/4.5.4/d0/de3/citelist.html#CITEREF_Borgefors86">Borgefors86</a> is used. This means that for a pixel the function
+finds the shortest path to the nearest zero pixel consisting of basic shifts: horizontal, vertical,
+diagonal, or knight’s move (the latest is available for a <img src="https://latex.codecogs.com/png.latex?5%5Ctimes%205" alt="inline formula" /> mask). The overall
+distance is calculated as a sum of these basic distances. Since the distance function should be
+symmetric, all of the horizontal and vertical shifts must have the same cost (denoted as a ), all
+the diagonal shifts must have the same cost (denoted as <code>b</code>), and all knight’s moves must have the
+same cost (denoted as <code>c</code>). For the <a href="constant.DIST_C.html" title="constant opencv::opencv::hub::imgproc::DIST_C">DIST_C</a> and <a href="constant.DIST_L1.html" title="constant opencv::opencv::hub::imgproc::DIST_L1">DIST_L1</a> types, the distance is calculated
+precisely, whereas for <a href="constant.DIST_L2.html" title="constant opencv::opencv::hub::imgproc::DIST_L2">DIST_L2</a> (Euclidean distance) the distance can be calculated only with a
+relative error (a <img src="https://latex.codecogs.com/png.latex?5%5Ctimes%205" alt="inline formula" /> mask gives more accurate results). For <code>a</code>,<code>b</code>, and <code>c</code>, OpenCV
+uses the values suggested in the original paper:</p>
+<ul>
+<li>DIST_L1: <code>a = 1, b = 2</code></li>
+<li>DIST_L2:
+<ul>
+<li><code>3 x 3</code>: <code>a=0.955, b=1.3693</code></li>
+<li><code>5 x 5</code>: <code>a=1, b=1.4, c=2.1969</code></li>
+</ul>
+</li>
+<li>DIST_C: <code>a = 1, b = 1</code></li>
+</ul>
+<p>Typically, for a fast, coarse distance estimation #DIST_L2, a <img src="https://latex.codecogs.com/png.latex?3%5Ctimes%203" alt="inline formula" /> mask is used. For a
+more accurate distance estimation #DIST_L2, a <img src="https://latex.codecogs.com/png.latex?5%5Ctimes%205" alt="inline formula" /> mask or the precise algorithm is used.
+Note that both the precise and the approximate algorithms are linear on the number of pixels.</p>
+<p>This variant of the function does not only compute the minimum distance for each pixel <img src="https://latex.codecogs.com/png.latex?%28x%2C%20y%29" alt="inline formula" />
+but also identifies the nearest connected component consisting of zero pixels
+(labelType==#DIST_LABEL_CCOMP) or the nearest zero pixel (labelType==#DIST_LABEL_PIXEL). Index of the
+component/pixel is stored in <code>labels(x, y)</code>. When labelType==#DIST_LABEL_CCOMP, the function
+automatically finds connected components of zero pixels in the input image and marks them with
+distinct labels. When labelType==#DIST_LABEL_PIXEL, the function scans through the input image and
+marks all the zero pixels with distinct labels.</p>
+<p>In this mode, the complexity is still linear. That is, the function provides a very fast way to
+compute the Voronoi diagram for a binary image. Currently, the second variant can use only the
+approximate distance transform algorithm, i.e. maskSize=<a href="constant.DIST_MASK_PRECISE.html" title="constant opencv::opencv::hub::imgproc::DIST_MASK_PRECISE">DIST_MASK_PRECISE</a> is not supported
+yet.</p>
+<h3 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h3>
+<ul>
+<li>src: 8-bit, single-channel (binary) source image.</li>
+<li>dst: Output image with calculated distances. It is a 8-bit or 32-bit floating-point,
+single-channel image of the same size as src.</li>
+<li>labels: Output 2D array of labels (the discrete Voronoi diagram). It has the type
+CV_32SC1 and the same size as src.</li>
+<li>distanceType: Type of distance, see [distance_types]</li>
+<li>maskSize: Size of the distance transform mask, see #DistanceTransformMasks.
+<a href="constant.DIST_MASK_PRECISE.html" title="constant opencv::opencv::hub::imgproc::DIST_MASK_PRECISE">DIST_MASK_PRECISE</a> is not supported by this variant. In case of the <a href="constant.DIST_L1.html" title="constant opencv::opencv::hub::imgproc::DIST_L1">DIST_L1</a> or <a href="constant.DIST_C.html" title="constant opencv::opencv::hub::imgproc::DIST_C">DIST_C</a> distance type,
+the parameter is forced to 3 because a <img src="https://latex.codecogs.com/png.latex?3%5Ctimes%203" alt="inline formula" /> mask gives the same result as <img src="https://latex.codecogs.com/png.latex?5%5Ctimes%0A5" alt="inline formula" /> or any larger aperture.</li>
+<li>labelType: Type of the label array to build, see #DistanceTransformLabelTypes.</li>
+</ul>
+<h3 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h3>
+<ul>
+<li>label_type: DIST_LABEL_CCOMP</li>
+</ul>
+</div></details></section></div></main></body></html>
