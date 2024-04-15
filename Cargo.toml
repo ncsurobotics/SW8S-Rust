@@ -27,14 +27,14 @@ logging = []
 graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2"]
 
 [dependencies]
-opencv = { version = "0.89.0", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
+opencv = { version = "0.90.0", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
 tokio-serial = "5.4.1" # Async serial comms
 tokio = { version = "1.37.0", features = ["full"] } # Async runtime
-anyhow = "1.0.81" # Error handling
+anyhow = "1.0.82" # Error handling
 itertools = "0.12.1" # Enhance iterators
 num-traits = "0.2.18" # Numeric generics
 derive-getters = "0.3.0" # Getter macro
-async-trait = "0.1.79" # Async fns in trait definitions
+async-trait = "0.1.80" # Async fns in trait definitions
 futures = { version = "0.3.30", default-features = false, features = ["std"] }# Futures utilities
 toml = "0.8.12" # Configuration file
 serde = { version = "1.0.197", features = ["derive"] } # Config serial handling
@@ -42,12 +42,12 @@ bytes = "1.6.0" # Byte buffering
 uuid = { version = "1.8.0", features = ["v4", "fast-rng"] } # Unique IDs
 graphviz-rust = { version = "0.9.0", optional = true } # Drawing graphs
 paste = { version = "1.0.14", optional = true } # Concat identifiers
-chrono = "0.4.37"
+chrono = "0.4.38"
 
 [build-dependencies]
-quote = { version = "1.0.33", optional = true }
+quote = { version = "1.0.36", optional = true }
 syn = { version = "2.0.58", features = ["full", "fold"], optional = true }
-proc-macro2 = { version = "1.0.79", optional = true }
+proc-macro2 = { version = "1.0.80", optional = true }
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
