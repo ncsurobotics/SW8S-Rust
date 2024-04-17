@@ -121,9 +121,9 @@ async fn real_comms_read_no_error() {
 pub async fn unity_tcp_connect() {
     const LOCALHOST: &str = "172.23.240.1";
     const SIM_PORT: &str = "1234";
-    //const SIM_DUMMY_PORT: &str = "5011";
 
-    let control_board = ControlBoard::unity_tcp(LOCALHOST, SIM_PORT)
+    let test_type : u8 = 0; // 0 for normal unity sim, 1 for data collection
+    let control_board = ControlBoard::unity_tcp(LOCALHOST, SIM_PORT, test_type)
         .await
         .unwrap();
     while timeout(
@@ -144,7 +144,7 @@ pub async fn unity_tcp_connect() {
 
     const CAPTUREU: [u8; 8] = *b"CAPTUREU";
     let mut message = Vec::from(CAPTUREU);
-    message.push(4);
+    message.push(2);
     control_board.write_out(message).await;
     sleep(Duration::from_secs(1)).await;
     //sleep(Duration::from_secs(1)).await;
