@@ -101,7 +101,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
                 .iter()
                 .for_each(|val| message.extend(val.to_le_bytes()));
             this.write_out(message).await?;
-            sleep(Duration::from_micros(50)).await;
+            sleep(Duration::from_micros(100)).await;
             
             const CAPTUREU: [u8; 8] = *b"CAPTUREU";
             let mut message = Vec::from(CAPTUREU);
