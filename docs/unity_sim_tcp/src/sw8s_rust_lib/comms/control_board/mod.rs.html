@@ -641,7 +641,7 @@
                 .iter()
                 .for_each(|val| message.extend(val.to_le_bytes()));
             this.write_out(message).<span class="kw">await</span><span class="question-mark">?</span>;
-            sleep(Duration::from_micros(<span class="number">50</span>)).<span class="kw">await</span>;
+            sleep(Duration::from_micros(<span class="number">100</span>)).<span class="kw">await</span>;
             
             <span class="kw">const </span>CAPTUREU: [u8; <span class="number">8</span>] = <span class="kw-2">*</span><span class="string">b"CAPTUREU"</span>;
             <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(CAPTUREU);
