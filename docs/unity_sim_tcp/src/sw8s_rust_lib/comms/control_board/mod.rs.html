@@ -513,6 +513,31 @@
 <a href="#511" id="511">511</a>
 <a href="#512" id="512">512</a>
 <a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
+<a href="#519" id="519">519</a>
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+<a href="#523" id="523">523</a>
+<a href="#524" id="524">524</a>
+<a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
+<a href="#527" id="527">527</a>
+<a href="#528" id="528">528</a>
+<a href="#529" id="529">529</a>
+<a href="#530" id="530">530</a>
+<a href="#531" id="531">531</a>
+<a href="#532" id="532">532</a>
+<a href="#533" id="533">533</a>
+<a href="#534" id="534">534</a>
+<a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a>
+<a href="#537" id="537">537</a>
+<a href="#538" id="538">538</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>std::{ops::Deref, sync::Arc, time::Duration};
 
@@ -572,7 +597,6 @@
         this.startup().<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(this)
     }
-
     <span class="kw">pub async fn </span>unity_new&lt;U&gt;(comm_out: T, comm_in: U, msg_id: <span class="prelude-ty">Option</span>&lt;MessageId&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt;
     <span class="kw">where
         </span>U: <span class="lifetime">'static </span>+ AsyncRead + Unpin + Send,
@@ -584,50 +608,35 @@
             initial_angles: Arc::default(),
         };
 
-        <span class="comment">// swap scene
-        </span><span class="kw">const </span>SETENVU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"SETENVU"</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(SETENVU);
-        message.push(<span class="number">1</span>);
-        this.write_out(message).<span class="kw">await</span><span class="question-mark">?</span>;
-        sleep(Duration::from_secs(<span class="number">5</span>)).<span class="kw">await</span>;
+        this.unity_startup(<span class="number">1</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+        this.startup().<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(this)
+    }
+    <span class="kw">pub async fn </span>unity_new_data_collection&lt;U&gt;(comm_out: T, comm_in: U, msg_id: <span class="prelude-ty">Option</span>&lt;MessageId&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt;
+    <span class="kw">where
+        </span>U: <span class="lifetime">'static </span>+ AsyncRead + Unpin + Send,
+    {
+        <span class="kw">let </span>msg_id = msg_id.unwrap_or_default();
+        <span class="kw">let </span>responses = ResponseMap::new(comm_in).<span class="kw">await</span>;
+        <span class="kw">let </span>this = <span class="self">Self </span>{
+            inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id).into(),
+            initial_angles: Arc::default(),
+        };
 
-        <span class="comment">// enable SimCB
-        </span><span class="kw">const </span>SIMCBTOGU: [u8; <span class="number">9</span>] = <span class="kw-2">*</span><span class="string">b"SIMCBTOGU"</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(SIMCBTOGU);
-        message.push(<span class="number">1</span>);
-        this.write_out_basic(message).<span class="kw">await</span><span class="question-mark">?</span>;
-        sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;
-
-        <span class="kw">const </span>CAMCFGU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"CAMCFGU"</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(CAMCFGU);
-        <span class="kw">let </span>height : i32 = <span class="number">480</span>;
-        <span class="kw">let </span>width : i32 = <span class="number">640</span>;
-        [height, width]
-            .iter()
-            .for_each(|val| message.extend(val.to_le_bytes()));
-        message.push(<span class="number">3</span>);
-        message.push(<span class="number">0b1100_1111</span>);
-        this.write_out(message).<span class="kw">await</span><span class="question-mark">?</span>;
-        sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;
-
-        <span class="kw">const </span>SCECFGU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"SCECFGU"</span>;
-        <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(SCECFGU);
-        message.push(<span class="number">0b0000_1101</span>);
-        this.write_out(message).<span class="kw">await</span><span class="question-mark">?</span>;
-        sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;
+        this.unity_startup(<span class="number">2</span>).<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">const </span>ROBRINU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"ROBRINU"</span>;
-
+        <span class="kw">const </span>SCECFGU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"SCECFGU"</span>;
+        <span class="kw">let </span>inital_pose_bounds : [f32; <span class="number">6</span>] = [<span class="number">10.5</span>, <span class="number">2.0</span>, <span class="number">5.0</span>, <span class="number">30.0</span>, <span class="number">30.0</span>, <span class="number">30.0</span>];
         <span class="kw">for </span>i <span class="kw">in </span>(<span class="number">0</span>..=<span class="number">5000</span>).step_by(<span class="number">5</span>){
             <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(SCECFGU);
-            message.push(<span class="number">0b0000_1101</span>);
+            message.push(<span class="number">0b0001_1101</span>);
             <span class="kw">let </span>i_16bit: u16 = i <span class="kw">as </span>u16;
             message.extend(i_16bit.to_le_bytes());
             this.write_out(message).<span class="kw">await</span><span class="question-mark">?</span>;
 
             <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::with_capacity(<span class="number">32 </span>* <span class="number">6</span>);
             message.extend(ROBRINU);
-            <span class="kw">let </span><span class="kw-2">mut </span>inital_pose_bounds : [f32; <span class="number">6</span>] = [<span class="number">10.5</span>, <span class="number">2.0</span>, <span class="number">5.0</span>, <span class="number">30.0</span>, <span class="number">30.0</span>, <span class="number">30.0</span>];
             inital_pose_bounds
                 .iter()
                 .for_each(|val| message.extend(val.to_le_bytes()));
@@ -640,9 +649,45 @@
             this.write_out(message).<span class="kw">await</span>;
             sleep(Duration::from_micros(<span class="number">100</span>)).<span class="kw">await</span>;
         }
+
         this.startup().<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(this)
     }
+    <span class="kw">pub async fn </span>unity_startup(<span class="kw-2">&amp;</span><span class="self">self</span>, unity_scene: u8) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="comment">// see https://github.com/XingjianL/RoboSubSim/blob/master/UnityCommands.md for reference
+        // swap scene
+        </span><span class="kw">const </span>SETENVU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"SETENVU"</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(SETENVU);
+        message.push(unity_scene);
+        <span class="self">self</span>.write_out_basic(message).<span class="kw">await</span><span class="question-mark">?</span>;
+        sleep(Duration::from_secs(<span class="number">5</span>)).<span class="kw">await</span>;
+
+        <span class="comment">// enable SimCB
+        </span><span class="kw">const </span>SIMCBTOGU: [u8; <span class="number">9</span>] = <span class="kw-2">*</span><span class="string">b"SIMCBTOGU"</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(SIMCBTOGU);
+        message.push(<span class="number">1</span>);
+        <span class="self">self</span>.write_out_basic(message).<span class="kw">await</span><span class="question-mark">?</span>;
+        sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;
+
+        <span class="comment">// configure camera
+        </span><span class="kw">const </span>CAMCFGU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"CAMCFGU"</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(CAMCFGU);
+        <span class="kw">let </span>height : i32 = <span class="number">480</span>;
+        <span class="kw">let </span>width : i32 = <span class="number">640</span>;
+        [height, width]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+        message.push(<span class="number">3</span>);
+        message.push(<span class="number">0b0100_1110</span>);
+        <span class="self">self</span>.write_out_basic(message).<span class="kw">await</span><span class="question-mark">?</span>;
+        sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;
+
+        <span class="comment">// configure unity scene
+        </span><span class="kw">const </span>SCECFGU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"SCECFGU"</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(SCECFGU);
+        message.push(<span class="number">0b0001_0010</span>);
+        <span class="self">self</span>.write_out_basic(message).<span class="kw">await
+    </span>}
 
     <span class="kw">pub async fn </span>startup(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">const </span>THRUSTER_INVS: [bool; <span class="number">8</span>] = [<span class="bool-val">true</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>];
@@ -760,13 +805,18 @@
         <span class="kw">let </span>(comm_in, comm_out) = io::split(stream);
         <span class="self">Self</span>::new(comm_out, comm_in, <span class="prelude-val">None</span>).<span class="kw">await
     </span>}
-    <span class="kw">pub async fn </span>unity_tcp(host: <span class="kw-2">&amp;</span>str, port: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">pub async fn </span>unity_tcp(host: <span class="kw-2">&amp;</span>str, port: <span class="kw-2">&amp;</span>str, test_type: u8) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>host = host.to_string();
 
         <span class="kw">let </span>stream = TcpStream::connect(host.to_string() + <span class="string">":" </span>+ port).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>(comm_in, comm_out) = io::split(stream);
-        <span class="self">Self</span>::unity_new(comm_out, comm_in, <span class="prelude-val">None</span>).<span class="kw">await
-    </span>}
+
+        <span class="kw">match </span>test_type {
+            <span class="number">0 </span>=&gt; <span class="self">Self</span>::unity_new(comm_out, comm_in, <span class="prelude-val">None</span>).<span class="kw">await</span>,
+            <span class="number">1 </span>=&gt; <span class="self">Self</span>::unity_new_data_collection(comm_out, comm_in, <span class="prelude-val">None</span>).<span class="kw">await</span>,
+            <span class="kw">_ </span>=&gt; <span class="self">Self</span>::unity_new(comm_out, comm_in, <span class="prelude-val">None</span>).<span class="kw">await</span>,
+        }
+    }
 }
 
 <span class="kw">impl</span>&lt;T: AsyncWrite + Unpin&gt; ControlBoard&lt;T&gt; {
