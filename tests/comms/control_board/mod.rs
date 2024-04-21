@@ -120,27 +120,20 @@ pub async fn unity_tcp_connect() {
     let control_board = ControlBoard::unity_tcp(LOCALHOST, SIM_PORT, test_type)
         .await
         .unwrap();
-    while timeout(
-        Duration::from_secs(1),
-        //control_board.raw_speed_set([1., 1.0, 1.0, 1., 1., 1., 1., 1.]),
-        control_board.stability_2_speed_set(1., 0., 0.0, 0.0, 0.0, -4.0),
-    )
-    .await
-    .is_err()
-    {
-        println!("RAW timeout");
-    }
+    sleep(Duration::from_secs(1)).await;
+    let _ = control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 0.0, -3.0).await;
     sleep(Duration::from_secs(5)).await;
-    control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 90.0, -4.0).await;
-    sleep(Duration::from_secs(5)).await;
-    control_board.stability_2_speed_set(0., 1., 0.0, 0.0, 90.0, -4.0).await;
+    let _ = control_board.stability_2_speed_set(0., 1., 0.0, 0.0, 0.0, -3.0).await;
     sleep(Duration::from_secs(5)).await;
 
-    const CAPTUREU: [u8; 8] = *b"CAPTUREU";
-    let mut message = Vec::from(CAPTUREU);
-    message.push(2);
-    control_board.write_out(message).await;
-    sleep(Duration::from_secs(1)).await;
+    let _ = control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 90.0, -4.0).await;
+    sleep(Duration::from_secs(5)).await;
+    let _ = control_board.stability_2_speed_set(1., 0., 0.0, 0.0, 0.0, -4.0).await;
+    sleep(Duration::from_secs(5)).await;
+    let _ = control_board.stability_2_speed_set(0., -0.5, 90.0, 0.0, 0.0, -4.0).await;
+    sleep(Duration::from_secs(5)).await;
+    let _ = control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 0.0, 0.0).await;
+    sleep(Duration::from_secs(5)).await;
     //sleep(Duration::from_secs(1)).await;
     //control_board.raw_speed_set([1., 0.0, 0.0, 0., 0., 0., 0., 0.]).await;
     //sleep(Duration::from_secs(1)).await;
@@ -158,7 +151,11 @@ pub async fn unity_tcp_connect() {
     //sleep(Duration::from_secs(1)).await;
     //control_board.raw_speed_set([0., 0.0, 0.0, 0., 0., 0., 0., 1.]).await;
     //sleep(Duration::from_secs(1)).await;
-    control_board.raw_speed_set([0.0, 0., 0., 0., 0., 0., 0., 0.0]).await;
+
+    //const CAPTUREU: [u8; 8] = *b"CAPTUREU";
+    //let mut message = Vec::from(CAPTUREU);
+    //message.push(2);
+    //control_board.write_out(message).await;
     assert_eq!(control_board.watchdog_status().await, Some(true));
 }
 #[ignore = "requires a UI, is long"]

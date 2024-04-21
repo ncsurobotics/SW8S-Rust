@@ -85,12 +85,24 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
 
         this.unity_startup(2).await?;
 
+        const CAMCFGU: [u8; 7] = *b"CAMCFGU";
+        let mut message = Vec::from(CAMCFGU);
+        let height : i32 = 480;
+        let width : i32 = 640;
+        [height, width]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+        message.push(4);
+        message.push(0b1100_0010);
+        this.write_out_basic(message).await?;
+        sleep(Duration::from_secs(1)).await;
+
         const ROBRINU: [u8; 7] = *b"ROBRINU";
         const SCECFGU: [u8; 7] = *b"SCECFGU";
         let inital_pose_bounds : [f32; 6] = [10.5, 2.0, 5.0, 30.0, 30.0, 30.0];
-        for i in (0..=5000).step_by(5){
+        for i in (0..=500).step_by(5){
             let mut message = Vec::from(SCECFGU);
-            message.push(0b0001_1101);
+            message.push(0b0000_1101);
             let i_16bit: u16 = i as u16;
             message.extend(i_16bit.to_le_bytes());
             this.write_out(message).await?;
@@ -105,8 +117,8 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
             
             const CAPTUREU: [u8; 8] = *b"CAPTUREU";
             let mut message = Vec::from(CAPTUREU);
-            message.push(3);
-            this.write_out(message).await;
+            message.push(4);
+            this.write_out(message).await?;
             sleep(Duration::from_micros(100)).await;
         }
 
@@ -128,7 +140,20 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         message.push(1);
         self.write_out_basic(message).await?;
         sleep(Duration::from_secs(1)).await;
-
+        // configure robot
+        const ROBCFGU: [u8; 7] = *b"ROBCFGU";
+        let mut message = Vec::from(ROBCFGU);
+        const MASS : f32 = 32.0;
+        const VOLUME : f32 = 36.0;
+        const LDRAG : f32 = 3.0;
+        const ADRAG : f32 = 10.0;
+        const F_KGF : f32 = 2.36;
+        const R_KGF : f32 = 1.85;
+        [MASS, VOLUME, LDRAG, ADRAG, F_KGF, R_KGF]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+        self.write_out_basic(message).await?;
+        sleep(Duration::from_secs(1)).await;
         // configure camera
         const CAMCFGU: [u8; 7] = *b"CAMCFGU";
         let mut message = Vec::from(CAMCFGU);
@@ -137,11 +162,11 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         [height, width]
             .iter()
             .for_each(|val| message.extend(val.to_le_bytes()));
-        message.push(3);
+        message.push(4);
         message.push(0b0100_1110);
         self.write_out_basic(message).await?;
         sleep(Duration::from_secs(1)).await;
-
+        
         // configure unity scene
         const SCECFGU: [u8; 7] = *b"SCECFGU";
         let mut message = Vec::from(SCECFGU);
