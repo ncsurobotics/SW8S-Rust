@@ -538,6 +538,31 @@
 <a href="#536" id="536">536</a>
 <a href="#537" id="537">537</a>
 <a href="#538" id="538">538</a>
+<a href="#539" id="539">539</a>
+<a href="#540" id="540">540</a>
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a>
+<a href="#543" id="543">543</a>
+<a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
+<a href="#556" id="556">556</a>
+<a href="#557" id="557">557</a>
+<a href="#558" id="558">558</a>
+<a href="#559" id="559">559</a>
+<a href="#560" id="560">560</a>
+<a href="#561" id="561">561</a>
+<a href="#562" id="562">562</a>
+<a href="#563" id="563">563</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>std::{ops::Deref, sync::Arc, time::Duration};
 
@@ -625,12 +650,24 @@
 
         this.unity_startup(<span class="number">2</span>).<span class="kw">await</span><span class="question-mark">?</span>;
 
+        <span class="kw">const </span>CAMCFGU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"CAMCFGU"</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(CAMCFGU);
+        <span class="kw">let </span>height : i32 = <span class="number">480</span>;
+        <span class="kw">let </span>width : i32 = <span class="number">640</span>;
+        [height, width]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+        message.push(<span class="number">4</span>);
+        message.push(<span class="number">0b1100_0010</span>);
+        this.write_out_basic(message).<span class="kw">await</span><span class="question-mark">?</span>;
+        sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;
+
         <span class="kw">const </span>ROBRINU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"ROBRINU"</span>;
         <span class="kw">const </span>SCECFGU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"SCECFGU"</span>;
         <span class="kw">let </span>inital_pose_bounds : [f32; <span class="number">6</span>] = [<span class="number">10.5</span>, <span class="number">2.0</span>, <span class="number">5.0</span>, <span class="number">30.0</span>, <span class="number">30.0</span>, <span class="number">30.0</span>];
-        <span class="kw">for </span>i <span class="kw">in </span>(<span class="number">0</span>..=<span class="number">5000</span>).step_by(<span class="number">5</span>){
+        <span class="kw">for </span>i <span class="kw">in </span>(<span class="number">0</span>..=<span class="number">500</span>).step_by(<span class="number">5</span>){
             <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(SCECFGU);
-            message.push(<span class="number">0b0001_1101</span>);
+            message.push(<span class="number">0b0000_1101</span>);
             <span class="kw">let </span>i_16bit: u16 = i <span class="kw">as </span>u16;
             message.extend(i_16bit.to_le_bytes());
             this.write_out(message).<span class="kw">await</span><span class="question-mark">?</span>;
@@ -645,8 +682,8 @@
             
             <span class="kw">const </span>CAPTUREU: [u8; <span class="number">8</span>] = <span class="kw-2">*</span><span class="string">b"CAPTUREU"</span>;
             <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(CAPTUREU);
-            message.push(<span class="number">3</span>);
-            this.write_out(message).<span class="kw">await</span>;
+            message.push(<span class="number">4</span>);
+            this.write_out(message).<span class="kw">await</span><span class="question-mark">?</span>;
             sleep(Duration::from_micros(<span class="number">100</span>)).<span class="kw">await</span>;
         }
 
@@ -668,7 +705,20 @@
         message.push(<span class="number">1</span>);
         <span class="self">self</span>.write_out_basic(message).<span class="kw">await</span><span class="question-mark">?</span>;
         sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;
-
+        <span class="comment">// configure robot
+        </span><span class="kw">const </span>ROBCFGU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"ROBCFGU"</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(ROBCFGU);
+        <span class="kw">const </span>MASS : f32 = <span class="number">32.0</span>;
+        <span class="kw">const </span>VOLUME : f32 = <span class="number">36.0</span>;
+        <span class="kw">const </span>LDRAG : f32 = <span class="number">3.0</span>;
+        <span class="kw">const </span>ADRAG : f32 = <span class="number">10.0</span>;
+        <span class="kw">const </span>F_KGF : f32 = <span class="number">2.36</span>;
+        <span class="kw">const </span>R_KGF : f32 = <span class="number">1.85</span>;
+        [MASS, VOLUME, LDRAG, ADRAG, F_KGF, R_KGF]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+        <span class="self">self</span>.write_out_basic(message).<span class="kw">await</span><span class="question-mark">?</span>;
+        sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;
         <span class="comment">// configure camera
         </span><span class="kw">const </span>CAMCFGU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"CAMCFGU"</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(CAMCFGU);
@@ -677,11 +727,11 @@
         [height, width]
             .iter()
             .for_each(|val| message.extend(val.to_le_bytes()));
-        message.push(<span class="number">3</span>);
+        message.push(<span class="number">4</span>);
         message.push(<span class="number">0b0100_1110</span>);
         <span class="self">self</span>.write_out_basic(message).<span class="kw">await</span><span class="question-mark">?</span>;
         sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;
-
+        
         <span class="comment">// configure unity scene
         </span><span class="kw">const </span>SCECFGU: [u8; <span class="number">7</span>] = <span class="kw-2">*</span><span class="string">b"SCECFGU"</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>message = Vec::from(SCECFGU);
