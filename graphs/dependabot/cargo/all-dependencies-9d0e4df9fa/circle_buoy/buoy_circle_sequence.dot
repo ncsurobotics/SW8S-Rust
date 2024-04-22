@@ -1,0 +1,22 @@
+digraph G {
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	"d9387be2-b31b-4915-bf9b-5001f964c98a" -> "9aba316e-0afb-409a-b12a-993138afb2ff" ;
+	"1d8a90d6-8901-4d5a-ac3c-f6121030c27c" -> "c3f87c36-a5a1-43ab-b5b1-779f17afa9a7" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"0ea43186-18e1-441d-9ae4-ec0123489f91" -> "1d8a90d6-8901-4d5a-ac3c-f6121030c27c" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"de4392ec-6e24-434d-9c25-77deabb8b1c6" -> "0ea43186-18e1-441d-9ae4-ec0123489f91" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"0d9d0b90-c57c-47a2-bfeb-6e95ece04173" -> "de4392ec-6e24-434d-9c25-77deabb8b1c6" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"9aba316e-0afb-409a-b12a-993138afb2ff" -> "0d9d0b90-c57c-47a2-bfeb-6e95ece04173" ;
+	"eb20e7c4-756c-4370-8878-20b9bd80f4da" -> "d9387be2-b31b-4915-bf9b-5001f964c98a" ;
+	"0a35a4f0-cedb-48b1-9789-e082f88f7380" -> "eb20e7c4-756c-4370-8878-20b9bd80f4da" ;
+	"0a35a4f0-cedb-48b1-9789-e082f88f7380" [label = "DelayAction", margin = 0];
+	"eb20e7c4-756c-4370-8878-20b9bd80f4da" [label = "ZeroMovement", margin = 0];
+	"d9387be2-b31b-4915-bf9b-5001f964c98a" [label = "DelayAction", margin = 0];
+	"9aba316e-0afb-409a-b12a-993138afb2ff" [label = "ZeroMovement", margin = 0];
+	"0d9d0b90-c57c-47a2-bfeb-6e95ece04173" [label = "VisionNorm", margin = 0];
+	"de4392ec-6e24-434d-9c25-77deabb8b1c6" [label = "ToVec", margin = 0];
+	"0ea43186-18e1-441d-9ae4-ec0123489f91" [label = "ExtractPosition", margin = 0];
+	"1d8a90d6-8901-4d5a-ac3c-f6121030c27c" [label = "Average", margin = 0];
+	"c3f87c36-a5a1-43ab-b5b1-779f17afa9a7" [label = "CircleBuoy", margin = 0];
+}
