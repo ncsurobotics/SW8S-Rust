@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["attr","edge","graph","id","node","node_id","port","stmt","subgraph"]};

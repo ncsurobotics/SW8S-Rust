@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["HAVE_ALTERNATES"],"struct":["StrftimeItems"]};

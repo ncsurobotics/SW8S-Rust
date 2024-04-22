@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["unit_only"],"struct":["KeyDeserializer","UnitOnly"]};

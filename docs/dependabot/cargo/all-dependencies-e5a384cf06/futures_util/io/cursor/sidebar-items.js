@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["delegate_async_write_to_stdio"],"struct":["Cursor"]};
