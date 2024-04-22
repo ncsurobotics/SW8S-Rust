@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["FILE"],"type":["clock_t","ptrdiff_t","size_t"]};

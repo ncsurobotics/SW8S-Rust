@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["ptr_extern","ptr_f32"],"struct":["Ptr"]};
