@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Computes the “minimal work” distance between two weighted point configurations."><title>emd_def in opencv::opencv::hub::imgproc - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.2 (25ef9e3d8 2024-04-09)" data-channel="1.77.2" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../opencv/index.html">opencv</a><span class="version">0.91.1</span></h2></div><div class="sidebar-elems"><h2><a href="index.html">In opencv::opencv::hub::imgproc</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Function <a href="../../../index.html">opencv</a>::<wbr><a href="../../index.html">opencv</a>::<wbr><a href="../index.html">hub</a>::<wbr><a href="index.html">imgproc</a>::<wbr><a class="fn" href="#">emd_def</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-bc82faaf3abc5e8d/out/opencv/imgproc.rs.html#2789-2797">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub fn emd_def(
+    signature1: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    signature2: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    dist_type: <a class="primitive" href="https://doc.rust-lang.org/1.77.2/std/primitive.i32.html">i32</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.77.2/std/primitive.f32.html">f32</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Computes the “minimal work” distance between two weighted point configurations.</p>
+<p>The function computes the earth mover distance and/or a lower boundary of the distance between the
+two weighted point configurations. One of the applications described in <a href="https://docs.opencv.org/4.5.4/d0/de3/citelist.html#CITEREF_RubnerSept98">RubnerSept98</a>,
+<a href="https://docs.opencv.org/4.5.4/d0/de3/citelist.html#CITEREF_Rubner2000">Rubner2000</a> is multi-dimensional histogram comparison for image retrieval. EMD is a transportation
+problem that is solved using some modification of a simplex algorithm, thus the complexity is
+exponential in the worst case, though, on average it is much faster. In the case of a real metric
+the lower boundary can be calculated even faster (using linear-time algorithm) and it can be used
+to determine roughly whether the two signatures are far enough so that they cannot relate to the
+same object.</p>
+<h3 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h3>
+<ul>
+<li>signature1: First signature, a <img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7Bsize1%7D%5Ctimes%20%5Ctexttt%7Bdims%7D%2B1" alt="inline formula" /> floating-point matrix.
+Each row stores the point weight followed by the point coordinates. The matrix is allowed to have
+a single column (weights only) if the user-defined cost matrix is used. The weights must be
+non-negative and have at least one non-zero value.</li>
+<li>signature2: Second signature of the same format as signature1 , though the number of rows
+may be different. The total weights may be different. In this case an extra “dummy” point is added
+to either signature1 or signature2. The weights must be non-negative and have at least one non-zero
+value.</li>
+<li>distType: Used metric. See #DistanceTypes.</li>
+<li>cost: User-defined <img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7Bsize1%7D%5Ctimes%20%5Ctexttt%7Bsize2%7D" alt="inline formula" /> cost matrix. Also, if a cost matrix
+is used, lower boundary lowerBound cannot be calculated because it needs a metric function.</li>
+<li>lowerBound: Optional input/output parameter: lower boundary of a distance between the two
+signatures that is a distance between mass centers. The lower boundary may not be calculated if
+the user-defined cost matrix is used, the total weights of point configurations are not equal, or
+if the signatures consist of weights only (the signature matrices have a single column). You
+<strong>must</strong> initialize *lowerBound . If the calculated distance between mass centers is greater or
+equal to *lowerBound (it means that the signatures are far enough), the function does not
+calculate EMD. In any case *lowerBound is set to the calculated distance between mass centers on
+return. Thus, if you want to calculate both distance between mass centers and EMD, *lowerBound
+should be set to 0.</li>
+<li>flow: Resultant <img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7Bsize1%7D%20%5Ctimes%20%5Ctexttt%7Bsize2%7D" alt="inline formula" /> flow matrix: <img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7Bflow%7D%5F%7Bi%2Cj%7D" alt="inline formula" /> is
+a flow from <img src="https://latex.codecogs.com/png.latex?i" alt="inline formula" /> -th point of signature1 to <img src="https://latex.codecogs.com/png.latex?j" alt="inline formula" /> -th point of signature2 .</li>
+</ul>
+<h3 id="note"><a class="doc-anchor" href="#note">§</a>Note</h3>
+<p>This alternative version of <a href="fn.emd.html" title="fn opencv::opencv::hub::imgproc::emd">emd</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>cost: noArray()</li>
+<li>lower_bound: 0</li>
+<li>flow: noArray()</li>
+</ul>
+</div></details></section></div></main></body></html>
