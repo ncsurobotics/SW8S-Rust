@@ -1,0 +1,16 @@
+digraph G {
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	"0c823cdb-ad11-493e-955e-780864d961ca" -> "c27f654a-1a20-479f-8df5-fced4163fdbb" ;
+	"aa058a6f-ca6d-4a6b-9370-0faa01830477" -> "97ca4c05-267f-4324-8928-369390f3dec0" ;
+	"97ca4c05-267f-4324-8928-369390f3dec0" -> "ff88a458-8c4b-47af-9858-070e15990edb" ;
+	"c27f654a-1a20-479f-8df5-fced4163fdbb" -> "aa058a6f-ca6d-4a6b-9370-0faa01830477" ;
+	"23b475b1-e526-49cc-ab73-27b54f4d4c18" -> "0c823cdb-ad11-493e-955e-780864d961ca" ;
+	"23b475b1-e526-49cc-ab73-27b54f4d4c18" [label = "WaitArm", margin = 0];
+	"0c823cdb-ad11-493e-955e-780864d961ca" [label = "Descend", margin = 0];
+	"c27f654a-1a20-479f-8df5-fced4163fdbb" [label = "DelayAction", margin = 0];
+	"aa058a6f-ca6d-4a6b-9370-0faa01830477" [label = "StraightMovement", margin = 0];
+	"97ca4c05-267f-4324-8928-369390f3dec0" [label = "DelayAction", margin = 0];
+	"ff88a458-8c4b-47af-9858-070e15990edb" [label = "ZeroMovement", margin = 0];
+}
