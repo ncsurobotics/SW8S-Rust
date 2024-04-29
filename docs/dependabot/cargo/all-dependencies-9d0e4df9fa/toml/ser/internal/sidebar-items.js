@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["write_document","write_value"],"type":["InnerSerializeDocumentSeq","InnerSerializeDocumentTable","InnerSerializeValueSeq","InnerSerializeValueTable"]};
