@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["iter_next","iter_next_back"],"struct":["Memchr","Memchr2","Memchr3"]};

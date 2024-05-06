@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["combinations_with_replacement","remaining_for"],"struct":["CombinationsWithReplacement"]};

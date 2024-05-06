@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Errno"],"fn":["clear","desc","errno","errno_location","from_i32","last"],"mod":["consts"],"trait":["ErrnoSentinel"]};
