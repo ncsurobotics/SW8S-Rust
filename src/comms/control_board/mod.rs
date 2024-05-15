@@ -85,27 +85,28 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
 
         this.unity_startup(2).await?;
 
-        const CAMCFGU: [u8; 7] = *b"CAMCFGU";
-        let mut message = Vec::from(CAMCFGU);
-        let height : i32 = 480;
-        let width : i32 = 640;
-        [height, width]
-            .iter()
-            .for_each(|val| message.extend(val.to_le_bytes()));
-        message.push(4);
-        message.push(0b1100_0010);
-        this.write_out_basic(message).await?;
+        // const CAMCFGU: [u8; 7] = *b"CAMCFGU";
+        // let mut message = Vec::from(CAMCFGU);
+        // let height : i32 = 480;
+        // let width : i32 = 640;
+        // let exposure: f32 = 0.033;
+        // let blur : f32 = 2.0;
+        // [height, width]
+        //     .iter()
+        //     .for_each(|val| message.extend(val.to_le_bytes()));
+        // [exposure, blur]
+        //     .iter()
+        //     .for_each(|val| message.extend(val.to_le_bytes()));
+        // message.push(4);
+        // message.push(0b1100_0010);
+        // this.write_out_basic(message).await?;
+        this.unity_camera_configure(480, 640, 0.01, 0.0, 4, 0b1100_0010).await?;
         sleep(Duration::from_secs(1)).await;
 
         const ROBRINU: [u8; 7] = *b"ROBRINU";
-        const SCECFGU: [u8; 7] = *b"SCECFGU";
         let inital_pose_bounds : [f32; 6] = [10.5, 2.0, 5.0, 30.0, 30.0, 30.0];
         for i in (0..=500).step_by(5){
-            let mut message = Vec::from(SCECFGU);
-            message.push(0b0000_1101);
-            let i_16bit: u16 = i as u16;
-            message.extend(i_16bit.to_le_bytes());
-            this.write_out(message).await?;
+            this.unity_scene_configure(0b0000_1101, 7.0, i).await?;
 
             let mut message = Vec::with_capacity(32 * 6);
             message.extend(ROBRINU);
@@ -155,22 +156,51 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         self.write_out_basic(message).await?;
         sleep(Duration::from_secs(1)).await;
         // configure camera
+        // const CAMCFGU: [u8; 7] = *b"CAMCFGU";
+        // let mut message = Vec::from(CAMCFGU);
+        // let height : i32 = 480;
+        // let width : i32 = 640;
+        // [height, width]
+        //     .iter()
+        //     .for_each(|val| message.extend(val.to_le_bytes()));
+        // message.push(4);
+        // message.push(0b0100_1110);
+        // self.write_out_basic(message).await?;
+        self.unity_camera_configure(480, 640, 0.01, 2.0, 4, 0b0100_1110).await?;
+        sleep(Duration::from_secs(1)).await;
+        
+        self.unity_scene_configure(0b0001_0010, 5.0, 0).await
+    }
+    pub async fn unity_camera_configure(&self, 
+        height: i32, 
+        width: i32, 
+        exposure: f32, 
+        blur: f32, 
+        mode: u8, 
+        byte_cfg: u8
+    ) -> Result<()> {
         const CAMCFGU: [u8; 7] = *b"CAMCFGU";
         let mut message = Vec::from(CAMCFGU);
-        let height : i32 = 480;
-        let width : i32 = 640;
         [height, width]
             .iter()
             .for_each(|val| message.extend(val.to_le_bytes()));
-        message.push(4);
-        message.push(0b0100_1110);
-        self.write_out_basic(message).await?;
-        sleep(Duration::from_secs(1)).await;
-        
-        // configure unity scene
+        [exposure, blur]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+        message.push(mode);
+        message.push(byte_cfg);
+        self.write_out_basic(message).await
+    }
+    pub async fn unity_scene_configure(&self, 
+        byte_cfg: u8,
+        underwater_visibility: f32,
+        color_bias: i16,
+    ) -> Result<()> {
         const SCECFGU: [u8; 7] = *b"SCECFGU";
         let mut message = Vec::from(SCECFGU);
-        message.push(0b0001_0010);
+        message.push(byte_cfg);
+        message.extend(color_bias.to_le_bytes());
+        message.extend(underwater_visibility.to_le_bytes());
         self.write_out_basic(message).await
     }
 

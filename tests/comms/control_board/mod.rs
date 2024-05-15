@@ -116,7 +116,7 @@ pub async fn unity_tcp_connect() {
     const LOCALHOST: &str = "172.23.240.1";
     const SIM_PORT: &str = "1234";
 
-    let test_type : u8 = 0; // 0 for normal unity sim, 1 for data collection
+    let test_type : u8 = 1; // 0 for normal unity sim, 1 for data collection
     let control_board = ControlBoard::unity_tcp(LOCALHOST, SIM_PORT, test_type)
         .await
         .unwrap();
