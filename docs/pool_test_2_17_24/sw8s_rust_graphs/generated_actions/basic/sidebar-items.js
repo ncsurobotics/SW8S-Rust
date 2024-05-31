@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["descend_and_go_forward","gate_run","graph_actions"],"struct":["DelayAction"]};

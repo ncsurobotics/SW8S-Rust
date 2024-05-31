@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["new_format","new_format_default"],"macro":["impl_format"],"struct":["Format","FormatWith"]};

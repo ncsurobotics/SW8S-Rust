@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["document","keyval","parse_comment","parse_keyval","parse_newline","parse_ws"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAX_DATE","MAX_YEAR","MIN_DATE","MIN_YEAR"],"fn":["div_mod_floor"],"struct":["Days","NaiveDate","NaiveDateDaysIterator","NaiveDateWeeksIterator","NaiveWeek"]};
