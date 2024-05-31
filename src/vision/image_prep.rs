@@ -28,7 +28,7 @@ use anyhow::Result;
 /// use sw8s_rust_lib::vision::image_prep::resize;
 ///
 /// let raw_mat: [u8; 7] = [0, 5, 32, 32, 5, 0, 1];
-/// let mat = Mat::from_slice(&raw_mat).unwrap();
+/// let mat = Mat::from_slice(&raw_mat).unwrap().clone_pointee();
 ///
 /// assert_eq!(resize(&mat, &Size::new(2, 2)).unwrap().mat_size().apply().unwrap(), Size::new(2, 2));
 /// ```
@@ -57,7 +57,7 @@ pub fn resize(frame: &Mat, target_size: &Size) -> Result<Mat> {
 /// use sw8s_rust_lib::vision::image_prep::check_bounds;
 ///
 /// let raw_mat: [u8; 7] = [0, 0, 0, 255, 255, 0, 0];
-/// let mat = Mat::from_slice(&raw_mat).unwrap();
+/// let mat = Mat::from_slice(&raw_mat).unwrap().clone_pointee();
 ///
 /// assert!(check_bounds(&mat, &Size::new(7, 1)));
 /// assert!(check_bounds(&mat, &Size::new(11, 2)));
@@ -89,7 +89,7 @@ pub fn check_bounds(image: &Mat, bounds: &Size) -> bool {
 /// use sw8s_rust_lib::vision::image_prep::slice_number;
 ///
 /// let raw_mat: [u8; 8] = [0, 5, 32, 32, 5, 0, 1, 3];
-/// let mat = Mat::from_slice(&raw_mat).unwrap();
+/// let mat = Mat::from_slice(&raw_mat).unwrap().clone_pointee();
 ///
 /// assert_eq!(slice_number(&mat, 2, 1).unwrap(), Size::new(4, 1));
 /// ```
@@ -178,7 +178,7 @@ pub fn binary_pca(points: &[Point_<f64>], max_components: i32) -> Result<PcaData
 /// use sw8s_rust_lib::vision::image_prep::cvt_binary_to_points;
 ///
 /// let raw_mat: [u8; 7] = [0, 0, 0, 255, 255, 0, 0];
-/// let mat: Mat_<u8> = Mat::from_slice(&raw_mat).unwrap().try_into_typed().unwrap();
+/// let mat: Mat_<u8> = Mat::from_slice(&raw_mat).unwrap().clone_pointee().try_into_typed().unwrap();
 ///
 /// let points: [Point; 2] = [
 ///     Point::from_vec2(VecN::from_array([0, 3])),
@@ -201,7 +201,7 @@ pub fn cvt_binary_to_points(binary_image: &Mat_<u8>) -> Vec<Point_<f64>> {
     (0..binary_image.rows())
         .flat_map(|row_idx| {
             (0..binary_image.cols()).filter_map(move |col_idx| {
-                if *binary_image.at_2d::<u8>(row_idx, col_idx).unwrap() == 255 {
+                if *binary_image.at_2d(row_idx, col_idx).unwrap() == 255 {
                     Some(Point_::new(row_idx as f64, col_idx as f64))
                 } else {
                     None
@@ -223,7 +223,7 @@ pub fn cvt_binary_to_points(binary_image: &Mat_<u8>) -> Vec<Point_<f64>> {
 /// use sw8s_rust_lib::vision::image_prep::unique_colors;
 ///
 /// let raw_mat: [u8; 7] = [0, 5, 32, 32, 5, 0, 1];
-/// let mat: Mat_<u8> = Mat::from_slice(&raw_mat).unwrap().try_into_typed().unwrap();
+/// let mat: Mat_<u8> = Mat::from_slice(&raw_mat).unwrap().clone_pointee().try_into_typed().unwrap();
 /// let unique = vec![0, 5, 32, 1];
 ///
 /// assert_eq!(unique_colors(mat).unwrap(), unique);
@@ -273,7 +273,7 @@ impl<T: Hash, const N: usize> VecNHash<T, N> {
 /// use sw8s_rust_lib::vision::image_prep::unique_colors_vec;
 ///
 /// let raw_mat: [VecN<u8, 2>; 1] = [VecN::from_array([0, 0])];
-/// let mat: Mat_<VecN<u8, 2>> = Mat::from_slice(&raw_mat).unwrap().try_into_typed().unwrap();
+/// let mat: Mat_<VecN<u8, 2>> = Mat::from_slice(&raw_mat).unwrap().clone_pointee().try_into_typed().unwrap();
 /// let unique = vec![VecN::from_array([0, 0])];
 ///
 /// assert_eq!(unique_colors_vec(mat).unwrap(), unique);
