@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["VectorElement"]};
+window.SIDEBAR_ITEMS = {};
