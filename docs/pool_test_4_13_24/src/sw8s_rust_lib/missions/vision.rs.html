@@ -338,6 +338,18 @@
 <a href="#336" id="336">336</a>
 <a href="#337" id="337">337</a>
 <a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::{Debug, Display};
 <span class="kw">use </span>std::ops::{Div, Mul};
 <span class="kw">use </span>std::{iter::Sum, marker::PhantomData};
@@ -593,6 +605,12 @@
     values: Vec&lt;T&gt;,
 }
 
+<span class="kw">impl</span>&lt;T&gt; Default <span class="kw">for </span>Average&lt;T&gt; {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
+
 <span class="kw">impl</span>&lt;T&gt; Average&lt;T&gt; {
     <span class="kw">pub const fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ values: <span class="macro">vec!</span>[] }
@@ -614,14 +632,14 @@
 
 <span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionMod&lt;Vec&lt;T&gt;&gt; <span class="kw">for </span>Average&lt;T&gt; {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>Vec&lt;T&gt;) {
-        <span class="self">self</span>.values = input.clone();
+        <span class="self">self</span>.values.clone_from(input);
     }
 }
 
 <span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionMod&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;T&gt;&gt;&gt; <span class="kw">for </span>Average&lt;T&gt; {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Vec&lt;T&gt;&gt;) {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(input) = input {
-            <span class="self">self</span>.values = input.clone();
+            <span class="self">self</span>.values.clone_from(input);
         } <span class="kw">else </span>{
             <span class="self">self</span>.values = <span class="macro">vec!</span>[];
         }
@@ -631,7 +649,7 @@
 <span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionMod&lt;anyhow::Result&lt;Vec&lt;T&gt;&gt;&gt; <span class="kw">for </span>Average&lt;T&gt; {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>anyhow::Result&lt;Vec&lt;T&gt;&gt;) {
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(input) = input {
-            <span class="self">self</span>.values = input.clone();
+            <span class="self">self</span>.values.clone_from(input);
         } <span class="kw">else </span>{
             <span class="self">self</span>.values = <span class="macro">vec!</span>[];
         }
@@ -641,6 +659,12 @@
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>ExtractPosition&lt;T, U&gt; {
     values: Vec&lt;VisualDetection&lt;T, U&gt;&gt;,
+}
+
+<span class="kw">impl</span>&lt;T, U&gt; Default <span class="kw">for </span>ExtractPosition&lt;T, U&gt; {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
 }
 
 <span class="kw">impl</span>&lt;T, U&gt; ExtractPosition&lt;T, U&gt; {
@@ -665,7 +689,7 @@
     <span class="kw">for </span>ExtractPosition&lt;T, U&gt;
 {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>Vec&lt;VisualDetection&lt;T, U&gt;&gt;) {
-        <span class="self">self</span>.values = input.clone();
+        <span class="self">self</span>.values.clone_from(input);
     }
 }
 

@@ -151,6 +151,10 @@
 <a href="#149" id="149">149</a>
 <a href="#150" id="150">150</a>
 <a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>std::any::type_name;
 <span class="kw">use </span>uuid::Uuid;
@@ -167,9 +171,13 @@
 
 <span class="kw">pub fn </span>stripped_fn&lt;T: <span class="question-mark">?</span>Sized&gt;() -&gt; String {
     <span class="kw">let </span>raw = type_name::&lt;T&gt;();
-    <span class="kw">let </span>(fn_sig, output) = raw.split(<span class="string">"-&gt;"</span>).collect_tuple().unwrap();
-    <span class="kw">let </span>(fn_first, fn_mid, fn_end) = fn_sig.split([<span class="string">'('</span>, <span class="string">')'</span>]).collect_tuple().unwrap();
-    fn_first.to_string() + <span class="string">"(" </span>+ strip_sig(fn_mid) + <span class="string">")" </span>+ fn_end + <span class="string">"-&gt;" </span>+ strip_sig(output)
+    <span class="kw">if </span>raw.ends_with(<span class="string">"{{closure}}"</span>) {
+        <span class="string">"Anon Closure"</span>.to_string()
+    } <span class="kw">else </span>{
+        <span class="kw">let </span>(fn_sig, output) = raw.split(<span class="string">"-&gt;"</span>).collect_tuple().unwrap_or((raw, <span class="string">"?"</span>));
+        <span class="kw">let </span>(fn_first, fn_mid, fn_end) = fn_sig.split([<span class="string">'('</span>, <span class="string">')'</span>]).collect_tuple().unwrap();
+        fn_first.to_string() + <span class="string">"(" </span>+ strip_sig(fn_mid) + <span class="string">")" </span>+ fn_end + <span class="string">"-&gt;" </span>+ strip_sig(output)
+    }
 }
 
 <span class="kw">fn </span>strip_sig(<span class="kw-2">mut </span>raw: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw-2">&amp;</span>str {

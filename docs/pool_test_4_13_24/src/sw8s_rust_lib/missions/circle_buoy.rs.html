@@ -88,18 +88,14 @@
 <a href="#86" id="86">86</a>
 <a href="#87" id="87">87</a>
 <a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
-<a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     act_nest,
     missions::{
         action::{ActionChain, ActionWhile},
         extra::{AlwaysTrue, OutputType, ToVec, Transform},
         movement::{
-            aggressive_yaw_from_x, FlatX, LinearYawFromX, OffsetToPose, Stability1Adjust,
-            Stability1Movement, Stability1Pos, Stability2Adjust, Stability2Movement, Stability2Pos,
-            StripX, StripY,
+            aggressive_yaw_from_x, FlatX, OffsetToPose, Stability2Adjust, Stability2Movement,
+            Stability2Pos, StripY,
         },
         vision::{Average, DetectTarget, ExtractPosition, VisionNorm},
     },
@@ -110,13 +106,11 @@
 };
 
 <span class="kw">use super</span>::{
-    action::{Action, ActionExec, ActionMod, ActionSequence},
+    action::{ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::ZeroMovement,
 };
-
-<span class="kw">use </span>async_trait::async_trait;
 
 <span class="kw">use </span>opencv::core::Size;
 <span class="kw">use </span>tokio::io::WriteHalf;
