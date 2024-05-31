@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["affine3","data_type","gpumat","input_output_array","mat","mat_ops","matx","point","point3","ptr","rect","scalar","size","sized","tuple","vec","vector"]};

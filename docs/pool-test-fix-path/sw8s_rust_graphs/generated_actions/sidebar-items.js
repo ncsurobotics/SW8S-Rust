@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["action","action_context","basic","buoy_circle","buoy_hit","comms","example","extra","gate","graph","meb","movement","path_align","vision"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["merge_spans"],"struct":["Lines","LinesSpan","Span"]};
