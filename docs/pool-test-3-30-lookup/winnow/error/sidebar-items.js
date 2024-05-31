@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ErrMode","ErrorKind","Needed","StrContext","StrContextValue"],"fn":["translate_position"],"struct":["ContextError","InputError","ParseError"],"trait":["AddContext","ErrorConvert","FromExternalError","ParserError"],"type":["IResult","PResult"]};
