@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["new","new_chunks"],"struct":["Chunk","ChunkIndex","Chunks","Group","GroupBy","GroupInner","Groups","IntoChunks"],"trait":["KeyFunction"]};

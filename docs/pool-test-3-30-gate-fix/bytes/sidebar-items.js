@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["abort"],"mod":["buf","bytes","bytes_mut","fmt","loom"],"struct":["Bytes","BytesMut"]};

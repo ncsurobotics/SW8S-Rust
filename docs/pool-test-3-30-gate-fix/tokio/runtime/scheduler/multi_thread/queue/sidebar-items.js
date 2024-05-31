@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["LOCAL_QUEUE_CAPACITY","MASK"],"fn":["local","make_fixed_size","pack","unpack"],"struct":["Inner","Local","Steal"],"type":["AtomicUnsignedLong","AtomicUnsignedShort","UnsignedLong","UnsignedShort"]};

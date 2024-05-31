@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Shift","SuffixKind","SuffixOrdering"],"struct":["ApproximateByteSet","Forward","Reverse","Suffix","TwoWay"]};
