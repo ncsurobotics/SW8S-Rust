@@ -4,9 +4,8 @@ use crate::{
         action::{ActionChain, ActionWhile},
         extra::{AlwaysTrue, OutputType, ToVec, Transform},
         movement::{
-            aggressive_yaw_from_x, FlatX, LinearYawFromX, OffsetToPose, Stability1Adjust,
-            Stability1Movement, Stability1Pos, Stability2Adjust, Stability2Movement, Stability2Pos,
-            StripX, StripY,
+            aggressive_yaw_from_x, FlatX, OffsetToPose, Stability2Adjust, Stability2Movement,
+            Stability2Pos, StripY,
         },
         vision::{Average, DetectTarget, ExtractPosition, VisionNorm},
     },
@@ -17,13 +16,11 @@ use crate::{
 };
 
 use super::{
-    action::{Action, ActionExec, ActionMod, ActionSequence},
+    action::{ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::ZeroMovement,
 };
-
-use async_trait::async_trait;
 
 use opencv::core::Size;
 use tokio::io::WriteHalf;

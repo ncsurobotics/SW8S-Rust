@@ -253,6 +253,12 @@ pub struct Average<T> {
     values: Vec<T>,
 }
 
+impl<T> Default for Average<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> Average<T> {
     pub const fn new() -> Self {
         Self { values: vec![] }
@@ -274,14 +280,14 @@ impl<T: Send + Sync + Clone + Sum + Div<usize, Output = T>> ActionExec<Option<T>
 
 impl<T: Send + Sync + Clone> ActionMod<Vec<T>> for Average<T> {
     fn modify(&mut self, input: &Vec<T>) {
-        self.values = input.clone();
+        self.values.clone_from(input);
     }
 }
 
 impl<T: Send + Sync + Clone> ActionMod<Option<Vec<T>>> for Average<T> {
     fn modify(&mut self, input: &Option<Vec<T>>) {
         if let Some(input) = input {
-            self.values = input.clone();
+            self.values.clone_from(input);
         } else {
             self.values = vec![];
         }
@@ -291,7 +297,7 @@ impl<T: Send + Sync + Clone> ActionMod<Option<Vec<T>>> for Average<T> {
 impl<T: Send + Sync + Clone> ActionMod<anyhow::Result<Vec<T>>> for Average<T> {
     fn modify(&mut self, input: &anyhow::Result<Vec<T>>) {
         if let Ok(input) = input {
-            self.values = input.clone();
+            self.values.clone_from(input);
         } else {
             self.values = vec![];
         }
@@ -301,6 +307,12 @@ impl<T: Send + Sync + Clone> ActionMod<anyhow::Result<Vec<T>>> for Average<T> {
 #[derive(Debug)]
 pub struct ExtractPosition<T, U> {
     values: Vec<VisualDetection<T, U>>,
+}
+
+impl<T, U> Default for ExtractPosition<T, U> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T, U> ExtractPosition<T, U> {
@@ -325,7 +337,7 @@ impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetecti
     for ExtractPosition<T, U>
 {
     fn modify(&mut self, input: &Vec<VisualDetection<T, U>>) {
-        self.values = input.clone();
+        self.values.clone_from(input);
     }
 }
 
