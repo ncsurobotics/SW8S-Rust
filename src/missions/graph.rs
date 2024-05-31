@@ -14,7 +14,6 @@ pub fn stripped_type<T: ?Sized>() -> &'static str {
 
 pub fn stripped_fn<T: ?Sized>() -> String {
     let raw = type_name::<T>();
-    println!("Raw FN: {}", raw);
     if raw.ends_with("{{closure}}") {
         "Anon Closure".to_string()
     } else {
