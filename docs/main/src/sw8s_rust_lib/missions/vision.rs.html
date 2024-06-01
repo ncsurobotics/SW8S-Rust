@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/missions/vision.rs`."><title>vision.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="sw8s_rust_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/missions/vision.rs`."><title>vision.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="sw8s_rust_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0 (9b00956e5 2024-04-29)" data-channel="1.78.0" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
             <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
     <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../sw8s_rust_lib/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
@@ -327,8 +327,31 @@
 <a href="#325" id="325">325</a>
 <a href="#326" id="326">326</a>
 <a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::{Debug, Display};
-<span class="kw">use </span>std::ops::Div;
+<span class="kw">use </span>std::ops::{Div, Mul};
 <span class="kw">use </span>std::{iter::Sum, marker::PhantomData};
 
 <span class="kw">use </span><span class="kw">super</span>::action::{Action, ActionExec, ActionMod};
@@ -337,6 +360,7 @@
 <span class="kw">use </span>anyhow::{anyhow, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>num_traits::{Float, FromPrimitive, Num};
+<span class="kw">use </span>opencv::core::Mat;
 <span class="kw">use </span>uuid::Uuid;
 
 <span class="kw">use </span><span class="kw">crate</span>::missions::action_context::GetFrontCamMat;
@@ -374,7 +398,8 @@
         U: VisualDetector&lt;V&gt; + Send + Sync,
     &gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;Offset2D&lt;V&gt;&gt;&gt; <span class="kw">for </span>VisionNormOffset&lt;<span class="lifetime">'_</span>, T, U, V&gt;
 <span class="kw">where
-    </span>U::Position: RelPos&lt;Number = V&gt; + Draw,
+    </span>U::Position: RelPos&lt;Number = V&gt; + <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; Mul&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Mat, Output = U::Position&gt;,
+    VisualDetection&lt;U::ClassEnum, U::Position&gt;: Draw,
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Offset2D&lt;V&gt;&gt; {
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
@@ -390,9 +415,13 @@
         <span class="kw">let </span>detections = detections<span class="question-mark">?</span>;
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
-            detections
-                .iter()
-                .for_each(|x| x.position().draw(<span class="kw-2">&amp;mut </span>mat).unwrap());
+            detections.iter().for_each(|x| {
+                <span class="kw">let </span>x = VisualDetection::new(
+                    x.class().clone(),
+                    <span class="self">self</span>.model.normalize(x.position()) * <span class="kw-2">&amp;</span>mat,
+                );
+                x.draw(<span class="kw-2">&amp;mut </span>mat).unwrap()
+            });
             <span class="macro">println!</span>(<span class="string">"Number of detects: {}"</span>, detections.len());
             <span class="kw">let _ </span>= create_dir_all(<span class="string">"/tmp/detect"</span>);
             imwrite(
@@ -451,8 +480,9 @@
     &gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;VisualDetection&lt;U::ClassEnum, Offset2D&lt;V&gt;&gt;&gt;&gt;&gt;
     <span class="kw">for </span>VisionNorm&lt;<span class="lifetime">'_</span>, T, U, V&gt;
 <span class="kw">where
-    </span>U::Position: RelPos&lt;Number = V&gt; + Draw + Send + Sync,
-    U::ClassEnum: Send + Sync,
+    </span>U::Position: RelPos&lt;Number = V&gt; + Debug + <span class="kw">for</span>&lt;<span class="lifetime">'a</span>&gt; Mul&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>Mat, Output = U::Position&gt;,
+    VisualDetection&lt;U::ClassEnum, U::Position&gt;: Draw,
+    U::ClassEnum: Send + Sync + Debug,
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VisualDetection&lt;U::ClassEnum, Offset2D&lt;V&gt;&gt;&gt;&gt; {
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
@@ -464,14 +494,18 @@
         </span><span class="kw">let </span><span class="kw-2">mut </span>mat = <span class="self">self</span>.context.get_front_camera_mat().<span class="kw">await</span>.clone();
         <span class="kw">let </span>detections = <span class="self">self</span>.model.detect(<span class="kw-2">&amp;</span>mat);
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
-        </span><span class="macro">println!</span>(<span class="string">"Detect attempt: {}"</span>, detections.is_ok());
-        <span class="kw">let </span>detections = detections<span class="question-mark">?</span>;
+        </span><span class="macro">println!</span>(<span class="string">"Detect attempt"</span>);
+        <span class="comment">//println!("Detect attempt: {:#?}", detections);
+        </span><span class="kw">let </span>detections = detections<span class="question-mark">?</span>;
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
-            detections
-                .iter()
-                .for_each(|x| x.position().draw(<span class="kw-2">&amp;mut </span>mat).unwrap());
-            <span class="macro">println!</span>(<span class="string">"Number of detects: {}"</span>, detections.len());
+            detections.iter().for_each(|x| {
+                <span class="kw">let </span>x = VisualDetection::new(
+                    x.class().clone(),
+                    <span class="self">self</span>.model.normalize(x.position()) * <span class="kw-2">&amp;</span>mat,
+                );
+                x.draw(<span class="kw-2">&amp;mut </span>mat).unwrap()
+            });
             create_dir_all(<span class="string">"/tmp/detect"</span>).unwrap();
             imwrite(
                 <span class="kw-2">&amp;</span>(<span class="string">"/tmp/detect/"</span>.to_string() + <span class="kw-2">&amp;</span>Uuid::new_v4().to_string() + <span class="string">".jpeg"</span>),
@@ -571,6 +605,12 @@
     values: Vec&lt;T&gt;,
 }
 
+<span class="kw">impl</span>&lt;T&gt; Default <span class="kw">for </span>Average&lt;T&gt; {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
+
 <span class="kw">impl</span>&lt;T&gt; Average&lt;T&gt; {
     <span class="kw">pub const fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ values: <span class="macro">vec!</span>[] }
@@ -592,14 +632,14 @@
 
 <span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionMod&lt;Vec&lt;T&gt;&gt; <span class="kw">for </span>Average&lt;T&gt; {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>Vec&lt;T&gt;) {
-        <span class="self">self</span>.values = input.clone();
+        <span class="self">self</span>.values.clone_from(input);
     }
 }
 
 <span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionMod&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;T&gt;&gt;&gt; <span class="kw">for </span>Average&lt;T&gt; {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Vec&lt;T&gt;&gt;) {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(input) = input {
-            <span class="self">self</span>.values = input.clone();
+            <span class="self">self</span>.values.clone_from(input);
         } <span class="kw">else </span>{
             <span class="self">self</span>.values = <span class="macro">vec!</span>[];
         }
@@ -609,7 +649,7 @@
 <span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionMod&lt;anyhow::Result&lt;Vec&lt;T&gt;&gt;&gt; <span class="kw">for </span>Average&lt;T&gt; {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>anyhow::Result&lt;Vec&lt;T&gt;&gt;) {
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(input) = input {
-            <span class="self">self</span>.values = input.clone();
+            <span class="self">self</span>.values.clone_from(input);
         } <span class="kw">else </span>{
             <span class="self">self</span>.values = <span class="macro">vec!</span>[];
         }
@@ -619,6 +659,12 @@
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>ExtractPosition&lt;T, U&gt; {
     values: Vec&lt;VisualDetection&lt;T, U&gt;&gt;,
+}
+
+<span class="kw">impl</span>&lt;T, U&gt; Default <span class="kw">for </span>ExtractPosition&lt;T, U&gt; {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
 }
 
 <span class="kw">impl</span>&lt;T, U&gt; ExtractPosition&lt;T, U&gt; {
@@ -643,7 +689,7 @@
     <span class="kw">for </span>ExtractPosition&lt;T, U&gt;
 {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>Vec&lt;VisualDetection&lt;T, U&gt;&gt;) {
-        <span class="self">self</span>.values = input.clone();
+        <span class="self">self</span>.values.clone_from(input);
     }
 }
 

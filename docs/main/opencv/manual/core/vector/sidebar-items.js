@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["vector_index_check"],"mod":["iter","vector_extern"],"struct":["Vector"]};
+window.SIDEBAR_ITEMS = {"fn":["vector_index_check"],"mod":["iter","vector_extern"],"struct":["Vector"],"trait":["VectorToVec"]};

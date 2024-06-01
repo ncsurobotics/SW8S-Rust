@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["buoy_circle_sequence","graph_actions"],"struct":["CircleBuoy"]};
+window.SIDEBAR_ITEMS = {"fn":["buoy_circle_sequence","graph_actions"]};

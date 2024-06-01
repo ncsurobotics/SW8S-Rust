@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/opencv-0.89.0/src/templ.rs`."><title>templ.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.1 (7cf61ebde 2024-03-27)" data-channel="1.77.1" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/opencv-0.92.0/src/templ.rs`."><title>templ.rs - source</title><script> if (window.location.protocol !== "file:") document.write(`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2">`)</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e935ef01ae1c1829.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0 (9b00956e5 2024-04-29)" data-channel="1.78.0" data-search-js="search-42d8da7a6b9792c2.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-12cf3b4f4f9dc36d.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
             <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
     <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
@@ -133,12 +133,17 @@
 <a href="#131" id="131">131</a>
 <a href="#132" id="132">132</a>
 <a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ffi::{c_char, CStr};
 <span class="kw">use </span>std::slice;
 
 <span class="kw">use </span><span class="kw">crate</span>::platform_types::size_t;
 
-<span class="macro">macro_rules! </span>extern_container_arg {
+<span class="macro">macro_rules!</span> extern_container_arg {
 	(nofail <span class="kw-2">mut </span><span class="macro-nonterminal">$name</span>: ident) =&gt; {
 		<span class="kw">let </span><span class="kw-2">mut </span><span class="macro-nonterminal">$name </span>= <span class="macro-nonterminal">$name</span>.opencv_into_extern_container_nofail();
 	};
@@ -153,19 +158,19 @@
 	};
 }
 
-<span class="macro">macro_rules! </span>string_arg_output_send {
+<span class="macro">macro_rules!</span> string_arg_output_send {
 	(via <span class="macro-nonterminal">$name_via</span>: ident) =&gt; {
 		<span class="kw">let </span><span class="kw-2">mut </span><span class="macro-nonterminal">$name_via </span>= ::std::ptr::null_mut();
 	};
 }
 
-<span class="macro">macro_rules! </span>string_arg_output_receive {
+<span class="macro">macro_rules!</span> string_arg_output_receive {
 	(<span class="macro-nonterminal">$name_via</span>: ident =&gt; <span class="macro-nonterminal">$name</span>: ident) =&gt; {
 		<span class="kw-2">*</span><span class="macro-nonterminal">$name </span>= <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$crate::templ::receive_string</span>(<span class="macro-nonterminal">$name_via</span>.cast()) };
 	};
 }
 
-<span class="macro">macro_rules! </span>callback_arg {
+<span class="macro">macro_rules!</span> callback_arg {
 	(<span class="macro-nonterminal">$tr_name</span>: ident($(<span class="macro-nonterminal">$tr_arg_name</span>: ident: <span class="macro-nonterminal">$tr_arg_type</span>: ty),<span class="kw-2">*</span>) -&gt; <span class="macro-nonterminal">$tr_ret</span>: ty =&gt; <span class="macro-nonterminal">$tr_userdata_name</span>: ident <span class="kw">in </span><span class="macro-nonterminal">$callbacks_name</span>: ident =&gt; <span class="macro-nonterminal">$callback_name</span>: ident($(<span class="macro-nonterminal">$fw_arg_name</span>: ident: <span class="macro-nonterminal">$fw_arg_type</span>: ty),<span class="kw-2">*</span>) -&gt; <span class="macro-nonterminal">$fw_ret</span>: ty) =&gt; {
 		<span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>trampoline($(<span class="macro-nonterminal">$tr_arg_name</span>: <span class="macro-nonterminal">$tr_arg_type</span>),<span class="kw-2">*</span>) -&gt; <span class="macro-nonterminal">$tr_ret </span>{
 			<span class="kw">let </span><span class="kw-2">mut </span>callback: Box&lt;Box&lt;<span class="kw">dyn </span>FnMut($(<span class="macro-nonterminal">$fw_arg_type</span>),<span class="kw-2">*</span>) -&gt; <span class="macro-nonterminal">$fw_ret </span>+ Send + Sync&gt;&gt; = Box::from_raw(<span class="macro-nonterminal">$tr_userdata_name</span>.cast());
@@ -182,7 +187,7 @@
 	}
 }
 
-<span class="macro">macro_rules! </span>userdata_arg {
+<span class="macro">macro_rules!</span> userdata_arg {
 	(<span class="macro-nonterminal">$userdata_name</span>: ident <span class="kw">in </span><span class="macro-nonterminal">$callbacks_name</span>: ident =&gt; <span class="macro-nonterminal">$callback_name</span>: ident) =&gt; {
 		<span class="kw">let </span><span class="macro-nonterminal">$userdata_name </span>= <span class="kw">if let </span><span class="prelude-val">Some</span>(callback) = <span class="macro-nonterminal">$callback_name </span>{
 			Box::into_raw(Box::new(callback)).cast::&lt;::std::ffi::c_void&gt;()
@@ -192,25 +197,25 @@
 	};
 }
 
-<span class="macro">macro_rules! </span>input_array_arg {
+<span class="macro">macro_rules!</span> input_array_arg {
 	(<span class="macro-nonterminal">$name</span>: ident) =&gt; {
 		<span class="kw">let </span><span class="macro-nonterminal">$name </span>= <span class="macro-nonterminal">$name</span>.input_array()<span class="question-mark">?</span>;
 	};
 }
 
-<span class="macro">macro_rules! </span>output_array_arg {
+<span class="macro">macro_rules!</span> output_array_arg {
 	(<span class="macro-nonterminal">$name</span>: ident) =&gt; {
 		<span class="kw">let </span><span class="macro-nonterminal">$name </span>= <span class="macro-nonterminal">$name</span>.output_array()<span class="question-mark">?</span>;
 	};
 }
 
-<span class="macro">macro_rules! </span>input_output_array_arg {
+<span class="macro">macro_rules!</span> input_output_array_arg {
 	(<span class="macro-nonterminal">$name</span>: ident) =&gt; {
 		<span class="kw">let </span><span class="macro-nonterminal">$name </span>= <span class="macro-nonterminal">$name</span>.input_output_array()<span class="question-mark">?</span>;
 	};
 }
 
-<span class="macro">macro_rules! </span>string_array_arg {
+<span class="macro">macro_rules!</span> string_array_arg {
 	(<span class="macro-nonterminal">$name</span>: ident) =&gt; {
 		<span class="kw">let </span><span class="macro-nonterminal">$name </span>= <span class="macro-nonterminal">$name
 			</span>.iter()
@@ -220,7 +225,7 @@
 }
 
 <span class="attr">#[allow(unused_macros)]
-</span><span class="macro">macro_rules! </span>string_array_arg_mut {
+</span><span class="macro">macro_rules!</span> string_array_arg_mut {
 	(<span class="macro-nonterminal">$name</span>: ident) =&gt; {
 		<span class="kw">let </span><span class="kw-2">mut </span><span class="macro-nonterminal">$name </span>= <span class="macro-nonterminal">$name
 			</span>.iter()
@@ -229,13 +234,13 @@
 	};
 }
 
-<span class="macro">macro_rules! </span>return_send {
+<span class="macro">macro_rules!</span> return_send {
 	(via <span class="macro-nonterminal">$name</span>: ident) =&gt; {
 		<span class="kw">let </span><span class="kw-2">mut </span><span class="macro-nonterminal">$name </span>= ::std::mem::MaybeUninit::uninit();
 	};
 }
 
-<span class="macro">macro_rules! </span>return_receive {
+<span class="macro">macro_rules!</span> return_receive {
 	(<span class="kw">unsafe </span><span class="macro-nonterminal">$name_via</span>: ident =&gt; <span class="macro-nonterminal">$name</span>: ident) =&gt; {
 		<span class="kw">let </span><span class="macro-nonterminal">$name </span>= <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$name_via</span>.assume_init() };
 	};
@@ -254,7 +259,12 @@
 <span class="doccomment">/// The return type of this function goes into `receive_byte_string`
 </span><span class="attr">#[no_mangle]
 </span><span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>ocvrs_create_byte_string(v: <span class="kw-2">*const </span>u8, len: size_t) -&gt; <span class="kw-2">*mut </span>Vec&lt;u8&gt; {
-	<span class="kw">let </span>v = slice::from_raw_parts(v, len).to_vec();
+	<span class="kw">let </span>byte_slice = <span class="kw">if </span>v.is_null() {
+		<span class="kw-2">&amp;</span>[]
+	} <span class="kw">else </span>{
+		slice::from_raw_parts(v, len)
+	};
+	<span class="kw">let </span>v = byte_slice.to_vec();
 	Box::into_raw(Box::new(v))
 }
 

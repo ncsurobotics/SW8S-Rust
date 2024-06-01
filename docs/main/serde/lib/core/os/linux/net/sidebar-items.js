@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["SocketAddrExt","TcpStreamExt"]};
+window.SIDEBAR_ITEMS = {"trait":["SocketAddrExt","TcpStreamExt","UnixSocketExt"]};

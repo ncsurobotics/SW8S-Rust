@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["cstring_new_nofail"]};
+window.SIDEBAR_ITEMS = {"mod":["string"]};
