@@ -83,7 +83,7 @@ impl GatePoles<OnnxModel> {
 
 impl Default for GatePoles<OnnxModel> {
     fn default() -> Self {
-        Self::load_640(0.7)
+        Self::load_640(0.3)
     }
 }
 
