@@ -1,11 +1,16 @@
-use std::ops::{Deref, DerefMut, RangeInclusive};
+use std::{
+    fs::create_dir_all,
+    ops::{Deref, DerefMut, RangeInclusive},
+};
 
 use itertools::Itertools;
 use opencv::{
-    core::{in_range, Size, VecN},
+    core::{in_range, Size, VecN, Vector},
+    imgcodecs::imwrite,
     imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
     prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
+use uuid::Uuid;
 
 use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
 
@@ -252,6 +257,17 @@ impl VisualDetector<f64> for Path {
 
         cvt_color(&yuv_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
 
+        #[cfg(feature = "logging")]
+        {
+            create_dir_all("/tmp/path_images").unwrap();
+            imwrite(
+                &("/tmp/path_images/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
+                &self.image.0,
+                &Vector::default(),
+            )
+            .unwrap();
+        }
+
         yuv_image
             .iter::<VecN<u8, 3>>()
             .unwrap()
@@ -276,23 +292,25 @@ impl VisualDetector<f64> for Path {
                 let length_2 = pca_output.pca_vector().get(length_idx + 1).unwrap();
 
                 println!("Testing for valid...");
-                println!("\tself.width_bounds = {:?}", self.width_bounds);
-                println!("\tself.width = {:?}", width);
-                println!(
-                    "\tcontained_width = {:?}",
-                    self.width_bounds.contains(&width)
-                );
-                println!();
-                println!("\tYUV range = {:?}", self.color_bounds);
-                println!("\tYUV val = {:?}", Yuv::from(&val));
-                println!(
-                    "\tcontained_color = {:?}",
-                    Yuv::from(&val).in_range(&self.color_bounds)
-                );
-                println!();
 
                 let valid = self.width_bounds.contains(&width)
                     && Yuv::from(&val).in_range(&self.color_bounds);
+
+                if valid {
+                    println!("\tself.width_bounds = {:?}", self.width_bounds);
+                    println!("\tself.width = {:?}", width);
+                    println!(
+                        "\tcontained_width = {:?}",
+                        self.width_bounds.contains(&width)
+                    );
+                    println!();
+                    println!("\tYUV range = {:?}", self.color_bounds);
+                    println!("\tYUV val = {:?}", Yuv::from(&val));
+                    println!(
+                        "\tcontained_color = {:?}",
+                        Yuv::from(&val).in_range(&self.color_bounds)
+                    );
+                };
 
                 let p_vec = PosVector::new(
                     ((pca_output.mean().get(0).unwrap()) - image_center.0)

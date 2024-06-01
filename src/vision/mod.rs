@@ -3,7 +3,7 @@ use derive_getters::Getters;
 use itertools::Itertools;
 use num_traits::{zero, FromPrimitive, Num};
 use opencv::{
-    core::{Rect2d, Scalar},
+    core::{MatTraitConst, Rect2d, Scalar},
     imgproc::{self, LINE_8},
     prelude::Mat,
 };
@@ -11,7 +11,7 @@ use std::{
     fmt::Debug,
     hash::Hash,
     iter::Sum,
-    ops::{Add, Deref, Div},
+    ops::{Add, Deref, Div, Mul},
 };
 
 pub mod buoy;
@@ -265,5 +265,21 @@ impl Draw for DrawRect2d {
             0,
         )?;
         Ok(())
+    }
+}
+
+impl Mul<&Mat> for DrawRect2d {
+    type Output = Self;
+
+    fn mul(self, rhs: &Mat) -> Self::Output {
+        let size = rhs.size().unwrap();
+        Self {
+            inner: Rect2d {
+                width: (self.width + 0.5) * (size.width as f64),
+                height: (self.height + 0.5) * (size.height as f64),
+                x: (self.x + 1.0) * (size.width as f64),
+                y: (self.y + 1.0) * (size.height as f64),
+            },
+        }
     }
 }

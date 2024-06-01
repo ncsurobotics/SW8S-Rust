@@ -16,9 +16,6 @@ pub mod generated_actions {
     pub mod buoy_hit {
         include!(concat!(env!("OUT_DIR"), "/graph_missions/buoy_hit.rs"));
     }
-    pub mod buoy_circle {
-        include!(concat!(env!("OUT_DIR"), "/graph_missions/buoy_circle.rs"));
-    }
     pub mod path_align {
         include!(concat!(env!("OUT_DIR"), "/graph_missions/path_align.rs"));
     }
@@ -79,15 +76,7 @@ macro_rules! graph_actions {
 async fn main() {
     create_dir_all("graphs/").unwrap();
     // (name, action) pairs to draw
-    let actions = graph_actions!(
-        basic,
-        example,
-        buoy_hit,
-        buoy_circle,
-        path_align,
-        gate,
-        circle_buoy
-    );
+    let actions = graph_actions!(basic, example, buoy_hit, path_align, gate, circle_buoy);
 
     stream::iter(actions)
         .for_each(|(dir_name, action_set)| async move {

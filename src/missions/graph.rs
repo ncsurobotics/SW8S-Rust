@@ -14,9 +14,13 @@ pub fn stripped_type<T: ?Sized>() -> &'static str {
 
 pub fn stripped_fn<T: ?Sized>() -> String {
     let raw = type_name::<T>();
-    let (fn_sig, output) = raw.split("->").collect_tuple().unwrap();
-    let (fn_first, fn_mid, fn_end) = fn_sig.split(['(', ')']).collect_tuple().unwrap();
-    fn_first.to_string() + "(" + strip_sig(fn_mid) + ")" + fn_end + "->" + strip_sig(output)
+    if raw.ends_with("{{closure}}") {
+        "Anon Closure".to_string()
+    } else {
+        let (fn_sig, output) = raw.split("->").collect_tuple().unwrap_or((raw, "?"));
+        let (fn_first, fn_mid, fn_end) = fn_sig.split(['(', ')']).collect_tuple().unwrap();
+        fn_first.to_string() + "(" + strip_sig(fn_mid) + ")" + fn_end + "->" + strip_sig(output)
+    }
 }
 
 fn strip_sig(mut raw: &str) -> &str {

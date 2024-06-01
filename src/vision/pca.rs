@@ -1,6 +1,8 @@
+use std::ops::Mul;
+
 use derive_getters::Getters;
 use opencv::{
-    core::{Point, Scalar},
+    core::{MatTraitConst, Point, Scalar},
     imgproc::{self, LINE_8},
     prelude::Mat,
 };
@@ -42,9 +44,26 @@ impl RelPosAngle for PosVector {
     }
 }
 
+impl Mul<&Mat> for PosVector {
+    type Output = Self;
+
+    fn mul(self, rhs: &Mat) -> Self::Output {
+        let size = rhs.size().unwrap();
+        Self {
+            x: (self.x + 0.5) * (size.width as f64),
+            y: (self.y + 0.5) * (size.height as f64),
+            width: self.width * (size.width as f64),
+            length: self.length * (size.width as f64),
+            length_2: self.length_2 * (size.width as f64),
+            angle: self.angle,
+        }
+    }
+}
+
 impl Draw for VisualDetection<bool, PosVector> {
     fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
         let color = if self.class {
+            println!("Drawing true: {:#?}", self.position());
             Scalar::from((0.0, 255.0, 0.0))
         } else {
             Scalar::from((0.0, 0.0, 255.0))
@@ -67,37 +86,6 @@ impl Draw for VisualDetection<bool, PosVector> {
                 (self.position.x() + 0.02 * self.position.length() * self.position.length()) as i32,
                 (self.position.y() + 0.4 * self.position.length_2() * self.position.length())
                     as i32,
-            ),
-            color,
-            2,
-            LINE_8,
-            0,
-            0.1,
-        )?;
-        Ok(())
-    }
-}
-
-impl Draw for PosVector {
-    fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
-        let color = Scalar::from((0.0, 255.0, 0.0));
-
-        imgproc::circle(
-            canvas,
-            Point::new(*self.x() as i32, *self.y() as i32),
-            10,
-            color,
-            2,
-            LINE_8,
-            0,
-        )?;
-
-        imgproc::arrowed_line(
-            canvas,
-            Point::new(*self.x() as i32, *self.y() as i32),
-            Point::new(
-                (self.x() + 0.02 * self.length() * self.length()) as i32,
-                (self.y() + 0.4 * self.length_2() * self.length()) as i32,
             ),
             color,
             2,

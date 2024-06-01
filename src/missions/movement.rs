@@ -8,7 +8,9 @@ use async_trait::async_trait;
 use core::fmt::Debug;
 use derive_getters::Getters;
 use num_traits::clamp;
+use num_traits::Float;
 use num_traits::Pow;
+use num_traits::Zero;
 use std::ops::Rem;
 use std::time::Duration;
 use tokio::time::sleep;
@@ -96,7 +98,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
     for StraightMovement<'_, T>
 {
     async fn execute(&mut self) -> Result<()> {
-        let mut speed: f32 = 0.5;
+        let mut speed: f32 = 0.3;
         if !self.forward {
             // Eric Liu is a very talented programmer and utilizes the most effective linear programming techniques from the FIRST™ Robotics Competition.
             // let speeed: f32 = speed;
@@ -670,6 +672,15 @@ pub fn linear_yaw_from_x(mut input: Stability2Adjust, angle_diff: f32) -> Stabil
     input
 }
 
+pub fn aggressive_yaw_from_x(mut input: Stability2Adjust, angle_diff: f32) -> Stability2Adjust {
+    if let Some(AdjustType::Replace(x)) = input.x() {
+        if !x.is_zero() {
+            input.set_target_yaw(AdjustType::Adjust(x.signum() * angle_diff));
+        };
+    };
+    input
+}
+
 /// [`linear_yaw_from_x`] with a default value
 pub const fn default_linear_yaw_from_x() -> fn(Stability2Adjust) -> Stability2Adjust {
     const ANGLE_DIFF: f32 = 7.0;
@@ -766,18 +777,123 @@ impl<T: Sync + Send + Clone> ActionMod<T> for StripY<T> {
 }
 
 #[async_trait]
-impl ActionExec<Stability2Adjust> for StripY<&Stability2Adjust> {
+impl ActionExec<Stability2Adjust> for StripY<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        self.pose.y = None;
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct StripX<T> {
+    pose: T,
+}
+
+impl<T> Action for StripX<T> {}
+
+impl StripX<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new() -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+impl<T: Default> StripX<T> {
+    pub fn new() -> Self {
+        Self { pose: T::default() }
+    }
+}
+
+impl<T: Default> Default for StripX<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for StripX<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability2Adjust> for StripX<&Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         let mut pose = self.pose.clone();
-        pose.y = None;
+        pose.x = None;
         pose
     }
 }
 
 #[async_trait]
-impl ActionExec<Stability2Adjust> for StripY<Stability2Adjust> {
+impl ActionExec<Stability2Adjust> for StripX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
-        self.pose.y = None;
+        self.pose.x = None;
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct FlatX<T> {
+    pose: T,
+}
+
+impl<T> Action for FlatX<T> {}
+
+impl FlatX<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new() -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+impl<T: Default> FlatX<T> {
+    pub fn new() -> Self {
+        Self { pose: T::default() }
+    }
+}
+
+impl<T: Default> Default for FlatX<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for FlatX<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability2Adjust> for FlatX<&Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut pose = self.pose.clone();
+        if let Some(AdjustType::Replace(val)) = self.pose.x {
+            pose.x = if val.is_zero() {
+                Some(AdjustType::Replace(0.0))
+            } else {
+                Some(AdjustType::Replace(-0.3))
+            };
+        };
+        pose
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability2Adjust> for FlatX<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        if let Some(AdjustType::Replace(val)) = self.pose.x {
+            self.pose.x = if val.is_zero() {
+                Some(AdjustType::Replace(0.0))
+            } else {
+                Some(AdjustType::Replace(-0.3))
+            };
+        };
         self.pose.clone()
     }
 }
@@ -833,6 +949,345 @@ impl<T: Send + Sync + Clone + Default> ActionMod<anyhow::Result<T>> for OffsetTo
 impl ActionExec<Stability2Adjust> for OffsetToPose<Offset2D<f64>> {
     async fn execute(&mut self) -> Stability2Adjust {
         let mut adjust = Stability2Adjust::default();
+        adjust.set_x(AdjustType::Replace(*self.offset.x() as f32));
+        adjust.set_y(AdjustType::Replace(*self.offset.y() as f32));
+        adjust
+    }
+}
+
+/// Modification for a stability assist 1 command
+///
+/// When values are None, they do not cause adjustments
+#[derive(Debug, Clone, Default, Getters)]
+pub struct Stability1Adjust {
+    x: Option<AdjustType<f32>>,
+    y: Option<AdjustType<f32>>,
+    target_pitch: Option<AdjustType<f32>>,
+    target_roll: Option<AdjustType<f32>>,
+    yaw_speed: Option<AdjustType<f32>>,
+    target_depth: Option<AdjustType<f32>>,
+}
+
+impl Stability1Adjust {
+    pub const fn const_default() -> Self {
+        Self {
+            x: None,
+            y: None,
+            target_pitch: None,
+            target_roll: None,
+            yaw_speed: None,
+            target_depth: None,
+        }
+    }
+
+    /// Convert all the invalid IEEE states into None
+    fn address_ieee(val: AdjustType<f32>) -> Option<AdjustType<f32>> {
+        match val {
+            AdjustType::Replace(val) | AdjustType::Adjust(val)
+                if val.is_nan() | val.is_infinite() | val.is_subnormal() =>
+            {
+                None
+            }
+            val => Some(val),
+        }
+    }
+
+    /// Bounds speeds to [-1, 1]
+    fn bound_speed(val: Option<AdjustType<f32>>) -> Option<AdjustType<f32>> {
+        const MIN_SPEED: f32 = -1.0;
+        const MAX_SPEED: f32 = 1.0;
+
+        val.map(|val| match val {
+            AdjustType::Replace(val) => AdjustType::Replace(clamp(val, MIN_SPEED, MAX_SPEED)),
+            AdjustType::Adjust(val) => AdjustType::Adjust(val),
+        })
+    }
+
+    /// Bounds rotations to 360 degrees
+    fn bound_rot(val: Option<AdjustType<f32>>) -> Option<AdjustType<f32>> {
+        const MAX_DEGREES: f32 = 360.0;
+
+        val.map(|val| match val {
+            AdjustType::Replace(val) => AdjustType::Replace(val.rem(MAX_DEGREES)),
+            AdjustType::Adjust(val) => AdjustType::Adjust(val),
+        })
+    }
+
+    pub fn set_x(&mut self, x: AdjustType<f32>) -> &Self {
+        self.x = Self::bound_speed(Self::address_ieee(x));
+        self
+    }
+
+    pub fn set_y(&mut self, y: AdjustType<f32>) -> &Self {
+        self.y = Self::bound_speed(Self::address_ieee(y));
+        self
+    }
+
+    pub fn set_target_pitch(&mut self, target_pitch: AdjustType<f32>) -> &Self {
+        self.target_pitch = Self::bound_rot(Self::address_ieee(target_pitch));
+        self
+    }
+
+    pub fn set_target_roll(&mut self, target_roll: AdjustType<f32>) -> &Self {
+        self.target_roll = Self::bound_rot(Self::address_ieee(target_roll));
+        self
+    }
+
+    pub fn set_yaw_speed(&mut self, yaw_speed: AdjustType<f32>) -> &Self {
+        self.yaw_speed = Self::bound_speed(Self::address_ieee(yaw_speed));
+        self
+    }
+
+    pub fn set_target_depth(&mut self, target_depth: AdjustType<f32>) -> &Self {
+        self.target_depth = Self::bound_rot(Self::address_ieee(target_depth));
+        self
+    }
+}
+
+/// Stores the command to send to stability assist 2
+///
+/// If yaw_speed is None, it is set to the current yaw on first execution
+#[derive(Debug, Clone)]
+pub struct Stability1Pos {
+    x: f32,
+    y: f32,
+    target_pitch: f32,
+    target_roll: f32,
+    yaw_speed: f32,
+    target_depth: f32,
+}
+
+impl Stability1Pos {
+    pub const fn new(
+        x: f32,
+        y: f32,
+        target_pitch: f32,
+        target_roll: f32,
+        yaw_speed: f32,
+        target_depth: f32,
+    ) -> Self {
+        Self {
+            x,
+            y,
+            target_pitch,
+            target_roll,
+            yaw_speed,
+            target_depth,
+        }
+    }
+
+    /// Executes the position in stability assist
+    pub async fn exec(&mut self, board: &ControlBoard<WriteHalf<SerialStream>>) -> Result<()> {
+        const SLEEP_LEN: Duration = Duration::from_millis(100);
+
+        println!("Stability 1 speed set: {:#?}", self);
+
+        board
+            .stability_1_speed_set(
+                self.x,
+                self.y,
+                self.target_pitch,
+                self.target_roll,
+                self.yaw_speed,
+                self.target_depth,
+            )
+            .await
+    }
+
+    /// Sets speed, bounded to [-1, 1]
+    fn set_speed(base: f32, adjuster: Option<AdjustType<f32>>) -> f32 {
+        const MIN_SPEED: f32 = -1.0;
+        const MAX_SPEED: f32 = 1.0;
+
+        adjuster
+            .map(|val| match val {
+                AdjustType::Replace(val) => val,
+                AdjustType::Adjust(val) => clamp(base + val, MIN_SPEED, MAX_SPEED),
+            })
+            .unwrap_or(base)
+    }
+
+    /// Set rotation, bounded to 360 degrees
+    fn set_rot(base: f32, adjuster: Option<AdjustType<f32>>) -> f32 {
+        const MAX_DEGREES: f32 = 360.0;
+
+        adjuster
+            .map(|val| match val {
+                AdjustType::Replace(val) => val,
+                AdjustType::Adjust(val) => (val + base).rem(MAX_DEGREES),
+            })
+            .unwrap_or(base)
+    }
+
+    /// Adjusts the position according to `adjuster`.
+    ///
+    /// The x and y fields are bounded to [-1, 1].
+    /// The pitch, roll, yaw, depth fields wrap around 360 degrees.
+    pub fn adjust(&mut self, adjuster: &Stability1Adjust) -> &Self {
+        println!("Stability 2 pre-adjust: {:#?}", self);
+        println!("Adjuster: {:#?}", adjuster);
+
+        self.x = Self::set_speed(self.x, adjuster.x().clone());
+        self.y = Self::set_speed(self.y, adjuster.y().clone());
+
+        self.target_pitch = Self::set_rot(self.target_pitch, adjuster.target_pitch().clone());
+        self.target_roll = Self::set_rot(self.target_roll, adjuster.target_roll().clone());
+        self.target_depth = Self::set_rot(self.target_depth, adjuster.target_depth().clone());
+
+        // Accounting for uninitialized yaw
+        self.yaw_speed = Self::set_speed(self.yaw_speed, adjuster.yaw_speed().clone());
+
+        println!("Stability 1 post-adjust: {:#?}", self);
+        self
+    }
+
+    pub const fn const_default() -> Self {
+        Self::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    }
+}
+
+impl Default for Stability1Pos {
+    fn default() -> Self {
+        Self::const_default()
+    }
+}
+
+#[derive(Debug)]
+pub struct Stability1Movement<'a, T> {
+    context: &'a T,
+    pose: Stability1Pos,
+}
+
+impl<T> Action for Stability1Movement<'_, T> {}
+
+impl<'a, T> Stability1Movement<'a, T> {
+    pub const fn new(context: &'a T, pose: Stability1Pos) -> Self {
+        Self { context, pose }
+    }
+
+    pub fn uninitialized(context: &'a T) -> Self {
+        Self {
+            context,
+            pose: Stability1Pos::default(),
+        }
+    }
+}
+
+impl<T> ActionMod<Stability1Pos> for Stability1Movement<'_, T> {
+    fn modify(&mut self, input: &Stability1Pos) {
+        self.pose = input.clone();
+    }
+}
+
+impl<T> ActionMod<Stability1Adjust> for Stability1Movement<'_, T> {
+    fn modify(&mut self, input: &Stability1Adjust) {
+        self.pose.adjust(input);
+    }
+}
+
+#[async_trait]
+impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
+    for Stability1Movement<'a, T>
+{
+    async fn execute(&mut self) -> Result<()> {
+        self.pose.exec(self.context.get_control_board()).await
+    }
+}
+
+#[async_trait]
+impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<()> for Stability1Movement<'a, T> {
+    async fn execute(&mut self) -> () {
+        let _ = self.pose.exec(self.context.get_control_board()).await;
+    }
+}
+
+impl StripY<&Stability1Adjust> {
+    const DEFAULT_POSE: Stability1Adjust = Stability1Adjust::const_default();
+    pub const fn new() -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability1Adjust> for StripY<Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        self.pose.y = None;
+        self.pose.clone()
+    }
+}
+
+impl StripX<&Stability1Adjust> {
+    const DEFAULT_POSE: Stability1Adjust = Stability1Adjust::const_default();
+    pub const fn new() -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability1Adjust> for StripX<&Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        let mut pose = self.pose.clone();
+        pose.x = None;
+        pose
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability1Adjust> for StripX<Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        self.pose.x = None;
+        self.pose.clone()
+    }
+}
+
+impl FlatX<&Stability1Adjust> {
+    const DEFAULT_POSE: Stability1Adjust = Stability1Adjust::const_default();
+    pub const fn new() -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability1Adjust> for FlatX<&Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        let mut pose = self.pose.clone();
+        println!("Before transform: {:#?}", pose);
+        if let Some(AdjustType::Replace(val)) = self.pose.x {
+            pose.x = if val.is_zero() {
+                Some(AdjustType::Replace(0.0))
+            } else {
+                Some(AdjustType::Replace(-0.3))
+            };
+        };
+        pose
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability1Adjust> for FlatX<Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        println!("Before transform: {:#?}", self.pose);
+        if let Some(AdjustType::Replace(val)) = self.pose.x {
+            self.pose.x = if val.is_zero() {
+                Some(AdjustType::Replace(0.0))
+            } else {
+                Some(AdjustType::Replace(-0.3))
+            };
+        };
+        self.pose.clone()
+    }
+}
+
+#[async_trait]
+impl ActionExec<Stability1Adjust> for OffsetToPose<Offset2D<f64>> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        let mut adjust = Stability1Adjust::default();
         adjust.set_x(AdjustType::Replace(*self.offset.x() as f32));
         adjust.set_y(AdjustType::Replace(*self.offset.y() as f32));
         adjust

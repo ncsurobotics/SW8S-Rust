@@ -1,5 +1,5 @@
 use std::fmt::{Debug, Display};
-use std::ops::Div;
+use std::ops::{Div, Mul};
 use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};
@@ -8,6 +8,7 @@ use crate::vision::{Draw, Offset2D, RelPos, VisualDetection, VisualDetector};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use num_traits::{Float, FromPrimitive, Num};
+use opencv::core::Mat;
 use uuid::Uuid;
 
 use crate::missions::action_context::GetFrontCamMat;
@@ -45,7 +46,8 @@ impl<
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Offset2D<V>>> for VisionNormOffset<'_, T, U, V>
 where
-    U::Position: RelPos<Number = V> + Draw,
+    U::Position: RelPos<Number = V> + for<'a> Mul<&'a Mat, Output = U::Position>,
+    VisualDetection<U::ClassEnum, U::Position>: Draw,
 {
     async fn execute(&mut self) -> Result<Offset2D<V>> {
         #[cfg(feature = "logging")]
@@ -61,9 +63,13 @@ where
         let detections = detections?;
         #[cfg(feature = "logging")]
         {
-            detections
-                .iter()
-                .for_each(|x| x.position().draw(&mut mat).unwrap());
+            detections.iter().for_each(|x| {
+                let x = VisualDetection::new(
+                    x.class().clone(),
+                    self.model.normalize(x.position()) * &mat,
+                );
+                x.draw(&mut mat).unwrap()
+            });
             println!("Number of detects: {}", detections.len());
             let _ = create_dir_all("/tmp/detect");
             imwrite(
@@ -122,8 +128,9 @@ impl<
     > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>>>
     for VisionNorm<'_, T, U, V>
 where
-    U::Position: RelPos<Number = V> + Draw + Send + Sync,
-    U::ClassEnum: Send + Sync,
+    U::Position: RelPos<Number = V> + Debug + for<'a> Mul<&'a Mat, Output = U::Position>,
+    VisualDetection<U::ClassEnum, U::Position>: Draw,
+    U::ClassEnum: Send + Sync + Debug,
 {
     async fn execute(&mut self) -> Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>> {
         #[cfg(feature = "logging")]
@@ -135,14 +142,18 @@ where
         let mut mat = self.context.get_front_camera_mat().await.clone();
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
-        println!("Detect attempt: {}", detections.is_ok());
+        println!("Detect attempt");
+        //println!("Detect attempt: {:#?}", detections);
         let detections = detections?;
         #[cfg(feature = "logging")]
         {
-            detections
-                .iter()
-                .for_each(|x| x.position().draw(&mut mat).unwrap());
-            println!("Number of detects: {}", detections.len());
+            detections.iter().for_each(|x| {
+                let x = VisualDetection::new(
+                    x.class().clone(),
+                    self.model.normalize(x.position()) * &mat,
+                );
+                x.draw(&mut mat).unwrap()
+            });
             create_dir_all("/tmp/detect").unwrap();
             imwrite(
                 &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
@@ -242,6 +253,12 @@ pub struct Average<T> {
     values: Vec<T>,
 }
 
+impl<T> Default for Average<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> Average<T> {
     pub const fn new() -> Self {
         Self { values: vec![] }
@@ -263,14 +280,14 @@ impl<T: Send + Sync + Clone + Sum + Div<usize, Output = T>> ActionExec<Option<T>
 
 impl<T: Send + Sync + Clone> ActionMod<Vec<T>> for Average<T> {
     fn modify(&mut self, input: &Vec<T>) {
-        self.values = input.clone();
+        self.values.clone_from(input);
     }
 }
 
 impl<T: Send + Sync + Clone> ActionMod<Option<Vec<T>>> for Average<T> {
     fn modify(&mut self, input: &Option<Vec<T>>) {
         if let Some(input) = input {
-            self.values = input.clone();
+            self.values.clone_from(input);
         } else {
             self.values = vec![];
         }
@@ -280,7 +297,7 @@ impl<T: Send + Sync + Clone> ActionMod<Option<Vec<T>>> for Average<T> {
 impl<T: Send + Sync + Clone> ActionMod<anyhow::Result<Vec<T>>> for Average<T> {
     fn modify(&mut self, input: &anyhow::Result<Vec<T>>) {
         if let Ok(input) = input {
-            self.values = input.clone();
+            self.values.clone_from(input);
         } else {
             self.values = vec![];
         }
@@ -290,6 +307,12 @@ impl<T: Send + Sync + Clone> ActionMod<anyhow::Result<Vec<T>>> for Average<T> {
 #[derive(Debug)]
 pub struct ExtractPosition<T, U> {
     values: Vec<VisualDetection<T, U>>,
+}
+
+impl<T, U> Default for ExtractPosition<T, U> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T, U> ExtractPosition<T, U> {
@@ -314,7 +337,7 @@ impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetecti
     for ExtractPosition<T, U>
 {
     fn modify(&mut self, input: &Vec<VisualDetection<T, U>>) {
-        self.values = input.clone();
+        self.values.clone_from(input);
     }
 }
 

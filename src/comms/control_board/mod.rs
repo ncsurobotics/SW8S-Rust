@@ -347,10 +347,10 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         target_roll: f32,
         target_depth: f32,
     ) -> Result<()> {
-        const SASSIST_2: [u8; 8] = *b"SASSIST1";
+        const SASSIST_1: [u8; 8] = *b"SASSIST1";
         // Oversized to avoid reallocations
         let mut message = Vec::with_capacity(32 * 8);
-        message.extend(SASSIST_2);
+        message.extend(SASSIST_1);
 
         [x, y, yaw_speed, target_pitch, target_roll, target_depth]
             .iter()
