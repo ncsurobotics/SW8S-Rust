@@ -98,6 +98,8 @@
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
 <a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>opencv::{core::Size, prelude::Mat};
 
@@ -113,10 +115,11 @@
 
 <span class="attr">#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 </span><span class="kw">pub enum </span>Target {
-    LargeGate,
-    Earth,
-    Abydos,
+    Red,
     Pole,
+    Blue,
+    Gate,
+    Middle,
 }
 
 <span class="kw">impl </span>From&lt;YoloClass&lt;Target&gt;&gt; <span class="kw">for </span>Target {
@@ -142,10 +145,11 @@
     <span class="kw">type </span>Error = TargetError;
     <span class="kw">fn </span>try_from(value: i32) -&gt; std::result::Result&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
         <span class="kw">match </span>value {
-            <span class="number">0 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::LargeGate),
-            <span class="number">1 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Earth),
-            <span class="number">2 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Abydos),
-            <span class="number">3 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Pole),
+            <span class="number">0 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Red),
+            <span class="number">1 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Pole),
+            <span class="number">2 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Blue),
+            <span class="number">3 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Gate),
+            <span class="number">4 </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Middle),
             x =&gt; <span class="prelude-val">Err</span>(TargetError { x }),
         }
     }
@@ -166,14 +170,14 @@
 <span class="kw">impl </span>GatePoles&lt;OnnxModel&gt; {
     <span class="kw">pub fn </span>new(model_name: <span class="kw-2">&amp;</span>str, model_size: i32, threshold: f64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            model: OnnxModel::from_file(model_name, model_size, <span class="number">4</span>)<span class="question-mark">?</span>,
+            model: OnnxModel::from_file(model_name, model_size, <span class="number">5</span>)<span class="question-mark">?</span>,
             threshold,
         })
     }
 
     <span class="kw">pub fn </span>load_640(threshold: f64) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            model: <span class="macro">load_onnx!</span>(<span class="string">"models/gate_640_poles.onnx"</span>, <span class="number">640</span>, <span class="number">4</span>),
+            model: <span class="macro">load_onnx!</span>(<span class="string">"models/gate_new_640.onnx"</span>, <span class="number">640</span>, <span class="number">5</span>),
             threshold,
         }
     }

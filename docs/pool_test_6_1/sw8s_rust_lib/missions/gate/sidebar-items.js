@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["adjust_logic","gate_run_complex","gate_run_naive"]};
+window.SIDEBAR_ITEMS = {"fn":["adjust_left","adjust_logic","adjust_right","gate_run_complex","gate_run_naive"]};
