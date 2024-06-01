@@ -1,0 +1,31 @@
+digraph G {
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	"16e4531b-0ee3-4961-a23a-0be484fc4b6a" [shape = diamond];
+	"0d17638c-c53a-4d1f-bb55-c71eadd81fc8" -> "92f775f3-6b61-49ae-b667-424e0a2685e6" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"ecd43ce5-ff0d-42d2-bbe8-b3635b6643d0" -> "0d17638c-c53a-4d1f-bb55-c71eadd81fc8" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"a7197c1e-de98-443c-a2cb-e1ffeb39d487" -> "ecd43ce5-ff0d-42d2-bbe8-b3635b6643d0" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"89737b94-e823-4ca0-af1c-9f09d07222c5" -> "a7197c1e-de98-443c-a2cb-e1ffeb39d487" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"1f3c2cbc-0fd3-4fca-b5ca-5dc8451fb1c0" -> "89737b94-e823-4ca0-af1c-9f09d07222c5" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"deb95c9f-cf70-4c54-9a35-c58f7fd15b5a" -> "1f3c2cbc-0fd3-4fca-b5ca-5dc8451fb1c0" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"54ddb6bb-dd19-43cf-afc4-8158a6a019e5" -> "deb95c9f-cf70-4c54-9a35-c58f7fd15b5a" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"d77a58f1-01f3-410c-aa19-c9a3f149eb72" -> "54ddb6bb-dd19-43cf-afc4-8158a6a019e5" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"5f5c83c9-a3f0-4f13-a4af-6664d112bbeb" -> "d77a58f1-01f3-410c-aa19-c9a3f149eb72" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"16e4531b-0ee3-4961-a23a-0be484fc4b6a" -> "5f5c83c9-a3f0-4f13-a4af-6664d112bbeb" [label = "True"];
+	"dc676cf9-a065-4588-a2fd-9584f45ee33e" -> "5f5c83c9-a3f0-4f13-a4af-6664d112bbeb" ;
+	"3ad64e2a-d79b-4de5-a230-59b4b92060da" -> "dc676cf9-a065-4588-a2fd-9584f45ee33e" ;
+	"3ad64e2a-d79b-4de5-a230-59b4b92060da" [label = "ZeroMovement", margin = 0];
+	"dc676cf9-a065-4588-a2fd-9584f45ee33e" [label = "DelayAction", margin = 0];
+	"5f5c83c9-a3f0-4f13-a4af-6664d112bbeb" [label = "VisionNorm", margin = 0];
+	"d77a58f1-01f3-410c-aa19-c9a3f149eb72" [label = "Detect true", margin = 0];
+	"54ddb6bb-dd19-43cf-afc4-8158a6a019e5" [label = "ToVec", margin = 0];
+	"deb95c9f-cf70-4c54-9a35-c58f7fd15b5a" [label = "ExtractPosition", margin = 0];
+	"1f3c2cbc-0fd3-4fca-b5ca-5dc8451fb1c0" [label = "Average", margin = 0];
+	"89737b94-e823-4ca0-af1c-9f09d07222c5" [label = "OffsetToPose", margin = 0];
+	"a7197c1e-de98-443c-a2cb-e1ffeb39d487" [label = "Anon Closure", margin = 0];
+	"ecd43ce5-ff0d-42d2-bbe8-b3635b6643d0" [label = "StripY", margin = 0];
+	"0d17638c-c53a-4d1f-bb55-c71eadd81fc8" [label = "FlatX", margin = 0];
+	"92f775f3-6b61-49ae-b667-424e0a2685e6" [label = "Stability2Movement", margin = 0];
+	"16e4531b-0ee3-4961-a23a-0be484fc4b6a" [label = "AlwaysTrue", margin = 0];
+}
