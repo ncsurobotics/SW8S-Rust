@@ -14,10 +14,10 @@ use std::{error::Error, fmt::Display};
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
     Red,
-    Pole, 
+    Pole,
     Blue,
     Gate,
-    Middle
+    Middle,
 }
 
 impl From<YoloClass<Target>> for Target {
@@ -47,7 +47,7 @@ impl TryFrom<i32> for Target {
             1 => Ok(Self::Pole),
             2 => Ok(Self::Blue),
             3 => Ok(Self::Gate),
-            4 => Ok(Self::Middle)
+            4 => Ok(Self::Middle),
             x => Err(TargetError { x }),
         }
     }
