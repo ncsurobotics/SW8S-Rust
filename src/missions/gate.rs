@@ -109,10 +109,105 @@ pub fn adjust_logic<
         ActionChain::new(
             act_nest!(
                 wrap_action(ActionConcurrent::new, FirstValid::new),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Earth),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Abydos),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::LargeGate),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
+            ),
+            TupleSecond::new(ActionConcurrent::new(
+                act_nest!(
+                    ActionChain::new,
+                    ToVec::new(),
+                    ExtractPosition::new(),
+                    Average::new(),
+                    OffsetToPose::default(),
+                    LinearYawFromX::<Stability2Adjust>::default(),
+                    StripY::default(),
+                    Stability2Movement::new(
+                        context,
+                        Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth)
+                    ),
+                    OutputType::<()>::new()
+                ),
+                end_condition,
+            )),
+        ),
+    ))
+}
+
+pub fn adjust_left<
+    'a,
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat,
+    X: 'a
+        + ActionMod<Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
+        + ActionExec<anyhow::Result<()>>,
+>(
+    context: &'a Con,
+    depth: f32,
+    end_condition: X,
+) -> impl ActionExec<()> + 'a {
+    const GATE_TRAVERSAL_SPEED: f32 = 0.5;
+
+    ActionWhile::new(ActionChain::new(
+        VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
+        ActionChain::new(
+            act_nest!(
+                wrap_action(ActionConcurrent::new, FirstValid::new),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
+            ),
+            TupleSecond::new(ActionConcurrent::new(
+                act_nest!(
+                    ActionChain::new,
+                    ToVec::new(),
+                    ExtractPosition::new(),
+                    Average::new(),
+                    OffsetToPose::default(),
+                    LinearYawFromX::<Stability2Adjust>::default(),
+                    StripY::default(),
+                    Stability2Movement::new(
+                        context,
+                        Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth)
+                    ),
+                    OutputType::<()>::new()
+                ),
+                end_condition,
+            )),
+        ),
+    ))
+}
+
+pub fn adjust_right<
+    'a,
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat,
+    X: 'a
+        + ActionMod<Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
+        + ActionExec<anyhow::Result<()>>,
+>(
+    context: &'a Con,
+    depth: f32,
+    end_condition: X,
+) -> impl ActionExec<()> + 'a {
+    const GATE_TRAVERSAL_SPEED: f32 = 0.5;
+
+    ActionWhile::new(ActionChain::new(
+        VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
+        ActionChain::new(
+            act_nest!(
+                wrap_action(ActionConcurrent::new, FirstValid::new),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
             ),
             TupleSecond::new(ActionConcurrent::new(
                 act_nest!(

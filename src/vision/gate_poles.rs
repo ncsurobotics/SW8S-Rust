@@ -13,10 +13,11 @@ use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
-    LargeGate,
-    Earth,
-    Abydos,
-    Pole,
+    Red,
+    Pole, 
+    Blue,
+    Gate,
+    Middle
 }
 
 impl From<YoloClass<Target>> for Target {
@@ -42,10 +43,11 @@ impl TryFrom<i32> for Target {
     type Error = TargetError;
     fn try_from(value: i32) -> std::result::Result<Self, Self::Error> {
         match value {
-            0 => Ok(Self::LargeGate),
-            1 => Ok(Self::Earth),
-            2 => Ok(Self::Abydos),
-            3 => Ok(Self::Pole),
+            0 => Ok(Self::Red),
+            1 => Ok(Self::Pole),
+            2 => Ok(Self::Blue),
+            3 => Ok(Self::Gate),
+            4 => Ok(Self::Middle)
             x => Err(TargetError { x }),
         }
     }
@@ -66,14 +68,14 @@ pub struct GatePoles<T: VisionModel> {
 impl GatePoles<OnnxModel> {
     pub fn new(model_name: &str, model_size: i32, threshold: f64) -> Result<Self> {
         Ok(Self {
-            model: OnnxModel::from_file(model_name, model_size, 4)?,
+            model: OnnxModel::from_file(model_name, model_size, 5)?,
             threshold,
         })
     }
 
     pub fn load_640(threshold: f64) -> Self {
         Self {
-            model: load_onnx!("models/gate_640_poles.onnx", 640, 4),
+            model: load_onnx!("models/gate_new_640.onnx", 640, 5),
             threshold,
         }
     }
