@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["END_BYTE","ESCAPE_BYTE","START_BYTE"],"enum":["AcknowledgeErr"],"fn":["crc_itt16_false","crc_itt16_false_bitmath"]};
