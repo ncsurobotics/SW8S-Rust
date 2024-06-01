@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":["sized_array_impl"],"struct":["SizedArray12","SizedArray13","SizedArray14","SizedArray16","SizedArray21","SizedArray22","SizedArray23","SizedArray31","SizedArray32","SizedArray33","SizedArray34","SizedArray41","SizedArray43","SizedArray44","SizedArray61","SizedArray66"],"trait":["SizedArray"]};
