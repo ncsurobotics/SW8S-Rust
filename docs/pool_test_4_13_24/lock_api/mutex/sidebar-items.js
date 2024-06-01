@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["MappedMutexGuard","Mutex","MutexGuard"],"trait":["RawMutex","RawMutexFair","RawMutexTimed"]};

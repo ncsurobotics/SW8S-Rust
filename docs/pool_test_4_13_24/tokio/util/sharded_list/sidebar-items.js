@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["ShardGuard","ShardedList"],"trait":["ShardedListItem"]};
