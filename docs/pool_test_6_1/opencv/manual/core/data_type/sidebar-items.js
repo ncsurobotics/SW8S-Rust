@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["CV_MAKETYPE","CV_MAT_DEPTH"],"macro":["data_type"],"trait":["DataType"]};

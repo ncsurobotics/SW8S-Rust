@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_FALLBACK_RANK"],"enum":["Prefilter"],"fn":["forward","minimum_len","simple_memchr_fallback"],"mod":["fallback","genericsimd","x86"],"struct":["Pre","PrefilterFn","PrefilterState"],"type":["PrefilterFnTy"]};
