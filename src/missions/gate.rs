@@ -65,7 +65,7 @@ pub fn gate_run_naive<
     )
 }
 
-pub fn gate_run_full<
+pub fn gate_run_complex<
     Con: Send
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
@@ -82,50 +82,6 @@ pub fn gate_run_full<
             ActionSequence::new,
             adjust_logic(context, depth, CountTrue::new(3)),
             adjust_logic(context, depth, CountFalse::new(10)),
-            ZeroMovement::new(context, depth)
-        ),
-    )
-}
-
-pub fn gate_run_red<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
->(
-    context: &Con,
-) -> impl ActionExec<anyhow::Result<()>> + '_ {
-    let depth: f32 = -1.0;
-
-    ActionSequence::new(
-        ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        act_nest!(
-            ActionSequence::new,
-            adjust_red(context, depth, CountTrue::new(3)),
-            adjust_red(context, depth, CountFalse::new(10)),
-            ZeroMovement::new(context, depth)
-        ),
-    )
-}
-
-pub fn gate_run_blue<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
->(
-    context: &Con,
-) -> impl ActionExec<anyhow::Result<()>> + '_ {
-    let depth: f32 = -1.0;
-
-    ActionSequence::new(
-        ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        act_nest!(
-            ActionSequence::new,
-            adjust_blue(context, depth, CountTrue::new(3)),
-            adjust_blue(context, depth, CountFalse::new(10)),
             ZeroMovement::new(context, depth)
         ),
     )
@@ -180,7 +136,7 @@ pub fn adjust_logic<
     ))
 }
 
-pub fn adjust_red<
+pub fn adjust_left<
     'a,
     Con: Send
         + Sync
@@ -203,6 +159,8 @@ pub fn adjust_red<
             act_nest!(
                 wrap_action(ActionConcurrent::new, FirstValid::new),
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
             ),
             TupleSecond::new(ActionConcurrent::new(
                 act_nest!(
@@ -225,7 +183,7 @@ pub fn adjust_red<
     ))
 }
 
-pub fn adjust_blue<
+pub fn adjust_right<
     'a,
     Con: Send
         + Sync
@@ -248,6 +206,8 @@ pub fn adjust_blue<
             act_nest!(
                 wrap_action(ActionConcurrent::new, FirstValid::new),
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
             ),
             TupleSecond::new(ActionConcurrent::new(
                 act_nest!(
