@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["DrainFilter","GuardedLinkedList","LinkedList","Pointers","PointersInner"],"trait":["Link"]};

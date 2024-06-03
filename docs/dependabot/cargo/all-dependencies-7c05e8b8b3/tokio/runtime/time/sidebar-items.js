@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["next_wake_time"],"mod":["entry","handle","source","wheel"],"struct":["AtomicOptionNonZeroU64","Driver","Inner"]};
