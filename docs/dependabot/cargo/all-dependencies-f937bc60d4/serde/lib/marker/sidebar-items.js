@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"derive":["ConstParamTy","Copy"],"struct":["PhantomData","PhantomPinned"],"trait":["ConstParamTy","Copy","Destruct","DiscriminantKind","FnPtr","Freeze","PointerLike","Send","Sized","StructuralPartialEq","Sync","Tuple","Unpin","Unsize"]};
