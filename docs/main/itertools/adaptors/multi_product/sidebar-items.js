@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["MultiProductIterState"],"fn":["multi_cartesian_product"],"struct":["MultiProduct","MultiProductIter"]};
+window.SIDEBAR_ITEMS = {"fn":["multi_cartesian_product"],"struct":["MultiProduct","MultiProductInner","MultiProductIter"]};
