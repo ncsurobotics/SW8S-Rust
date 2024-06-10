@@ -53,6 +53,11 @@ proc-macro2 = { version = "1.0.79", optional = true }
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
 reqwest = "0.12.3" # Downloading godot sim
+criterion = "0.5.1" # Benchmarking
+
+[[bench]]
+name = "model_processing"
+harness = false
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]
 flate2 = "1.0.28" # Decompressing gz
