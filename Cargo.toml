@@ -55,6 +55,9 @@ assert_approx_eq = "1.1.0" # Floating point eq
 reqwest = "0.12.3" # Downloading godot sim
 criterion = "0.5.1" # Benchmarking
 
+[profile.bench]
+debug = true
+
 [[bench]]
 name = "model_processing"
 harness = false
