@@ -21,9 +21,10 @@ path = "src/graph_main.rs"
 required-features = ["graphing"]
 
 [features]
-jetson = []
+default = []
 logging = []
 #unblocked_logging = ["logging"]
+cuda = []
 graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2"]
 
 [dependencies]

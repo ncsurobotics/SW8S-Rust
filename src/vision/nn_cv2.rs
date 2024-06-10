@@ -2,7 +2,10 @@ use anyhow::Result;
 use derive_getters::Getters;
 use opencv::{
     core::{min_max_loc, no_array, Point, Rect2d, Scalar, Size, VecN, Vector, CV_32F},
-    dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
+    dnn::{
+        blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net, DNN_BACKEND_CUDA,
+        DNN_TARGET_CUDA,
+    },
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
 use std::hash::Hash;
@@ -102,8 +105,15 @@ impl OnnxModel {
         model_size: i32,
         num_objects: usize,
     ) -> Result<Self> {
+        let mut net = read_net_from_onnx_buffer(model_bytes)?;
+        #[cfg(feature = "cuda")]
+        {
+            net.set_preferable_backend(DNN_BACKEND_CUDA)?;
+            net.set_preferable_target(DNN_TARGET_CUDA)?;
+        }
+
         Ok(Self {
-            net: Mutex::new(read_net_from_onnx_buffer(model_bytes)?),
+            net: Mutex::new(net),
             num_objects,
             model_size: Size::new(model_size, model_size),
             factor: Self::size_to_factor(model_size),
@@ -125,8 +135,15 @@ impl OnnxModel {
     /// OnnxModel::from_file("src/vision/models/buoy_320.onnx", 320, 4).unwrap();
     /// ```
     pub fn from_file(model_name: &str, model_size: i32, num_objects: usize) -> Result<Self> {
+        let mut net = read_net_from_onnx(model_name)?;
+        #[cfg(feature = "cuda")]
+        {
+            net.set_preferable_backend(DNN_BACKEND_CUDA)?;
+            net.set_preferable_target(DNN_TARGET_CUDA)?;
+        }
+
         Ok(Self {
-            net: Mutex::new(read_net_from_onnx(model_name)?),
+            net: Mutex::new(net),
             num_objects,
             model_size: Size::new(model_size, model_size),
             factor: Self::size_to_factor(model_size),
