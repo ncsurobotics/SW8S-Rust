@@ -36,7 +36,7 @@ num-traits = "0.2.19" # Numeric generics
 derive-getters = "0.4.0" # Getter macro
 async-trait = "0.1.80" # Async fns in trait definitions
 futures = { version = "0.3.30", default-features = false, features = ["std"] }# Futures utilities
-toml = "0.8.13" # Configuration file
+toml = "0.8.14" # Configuration file
 serde = { version = "1.0.203", features = ["derive"] } # Config serial handling
 bytes = "1.6.0" # Byte buffering
 uuid = { version = "1.8.0", features = ["v4", "fast-rng"] } # Unique IDs
@@ -46,7 +46,7 @@ chrono = "0.4.38"
 
 [build-dependencies]
 quote = { version = "1.0.36", optional = true }
-syn = { version = "2.0.58", features = ["full", "fold"], optional = true }
+syn = { version = "2.0.66", features = ["full", "fold"], optional = true }
 proc-macro2 = { version = "1.0.85", optional = true }
 
 [dev-dependencies]
