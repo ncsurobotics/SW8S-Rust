@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["abs","abs_sub","signum"],"macro":["empty_trait_impl","signed_float_impl","signed_impl"],"trait":["Signed","Unsigned"]};

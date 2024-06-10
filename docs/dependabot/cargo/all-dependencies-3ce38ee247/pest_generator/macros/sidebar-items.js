@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["generate_rule","insert_builtin"]};

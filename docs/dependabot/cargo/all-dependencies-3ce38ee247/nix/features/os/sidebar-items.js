@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["digit","kernel_version","parse_kernel_version","socket_atomic_cloexec"],"static":["VERS_2_6_18","VERS_2_6_27","VERS_2_6_28","VERS_3","VERS_UNKNOWN"]};

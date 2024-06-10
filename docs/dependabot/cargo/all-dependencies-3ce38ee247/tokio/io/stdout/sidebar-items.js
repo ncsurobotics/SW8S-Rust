@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["stdout"],"mod":["sys"],"struct":["Stdout"]};
