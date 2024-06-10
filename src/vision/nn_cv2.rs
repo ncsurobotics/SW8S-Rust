@@ -226,7 +226,7 @@ impl VisionModel for OnnxModel {
             .unwrap()
             .forward(&mut result, &result_names)?;
 
-        self.process_net(result, threshold)
+        Ok(self.process_net(result, threshold))
     }
 
     fn size(&self) -> Size {
@@ -240,43 +240,51 @@ impl OnnxModel {
     /// # Arguments
     /// * `result` - iterator of net output
     /// * `threshold` - minimum confidence
-    fn process_net<I>(&self, result: I, threshold: f64) -> Result<Vec<YoloDetection>>
+    fn process_net<I>(&self, result: I, threshold: f64) -> Vec<YoloDetection>
     where
         I: IntoIterator<Item = Mat>,
     {
-        Ok(result
+        result
             .into_iter()
-            .map(|level| -> Result<Vec<YoloDetection>> {
-                let level = level.reshape(1, (level.total() / (5 + self.num_objects)) as i32)?;
-                Ok((0..level.rows())
+            .flat_map(|level| -> Vec<YoloDetection> {
+                // This reshape is always valid as per the model design
+                let level = level
+                    .reshape(1, (level.total() / (5 + self.num_objects)) as i32)
+                    .unwrap();
+
+                (0..level.rows())
                     .map(|idx| level.row(idx).unwrap())
-                    .map(|row| -> Result<Option<YoloDetection>> {
-                        let scores = row.col_range(&opencv::core::Range::new(5, level.cols())?)?;
+                    .filter_map(|row| -> Option<YoloDetection> {
+                        // Cols is always > 5. The column range can always be constructed, since
+                        // row always has level.cols number of columns.
+                        let scores = row
+                            .col_range(&opencv::core::Range::new(5, level.cols()).unwrap())
+                            .unwrap();
 
                         let mut max_loc = Point::default();
-                        min_max_loc(&scores, None, None, None, Some(&mut max_loc), &no_array())?;
-                        let confidence: f64 = row.at::<VecN<f32, 1>>(4)?[0].into();
+                        // There is always a global minimum and maximum
+                        min_max_loc(&scores, None, None, None, Some(&mut max_loc), &no_array())
+                            .unwrap();
+
+                        // Always a valid index access
+                        let confidence: f64 = row.at::<VecN<f32, 1>>(4).unwrap()[0].into();
 
                         if confidence > threshold {
-                            let x_adjust = |idx: i32| -> Result<f64> {
-                                Ok((f64::from(row.at::<VecN<f32, 1>>(idx)?[0]) * self.factor)
-                                    / 640.0
-                                    * 800.0)
+                            // The given constant values are always valid indicies
+                            let adjust_base = |idx: i32| -> f64 {
+                                f64::from(row.at::<VecN<f32, 1>>(idx).unwrap()[0]) * self.factor
                             };
 
-                            let y_adjust = |idx: i32| -> Result<f64> {
-                                Ok((f64::from(row.at::<VecN<f32, 1>>(idx)?[0]) * self.factor)
-                                    / 640.0
-                                    * 600.0)
-                            };
+                            let x_adjust = |idx: i32| -> f64 { adjust_base(idx) / 640.0 * 800.0 };
+                            let y_adjust = |idx: i32| -> f64 { adjust_base(idx) / 640.0 * 600.0 };
 
                             let (center_x, center_y, width, height) =
-                                (x_adjust(0)?, y_adjust(1)?, x_adjust(2)?, y_adjust(3)?);
+                                (x_adjust(0), y_adjust(1), x_adjust(2), y_adjust(3));
 
                             let left = center_x - width / 2.0;
                             let top = center_y - height / 2.0;
 
-                            Ok(Some(YoloDetection {
+                            Some(YoloDetection {
                                 class_id: max_loc.x,
                                 confidence,
                                 bounding_box: Rect2d {
@@ -285,19 +293,13 @@ impl OnnxModel {
                                     width,
                                     height,
                                 },
-                            }))
+                            })
                         } else {
-                            Ok(None)
+                            None
                         }
                     })
-                    .collect::<Result<Vec<_>>>()?
-                    .into_iter()
-                    .flatten()
-                    .collect())
+                    .collect()
             })
-            .collect::<Result<Vec<_>>>()?
-            .into_iter()
-            .flatten()
-            .collect())
+            .collect()
     }
 }
