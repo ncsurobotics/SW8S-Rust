@@ -303,6 +303,14 @@
 <a href="#301" id="301">301</a>
 <a href="#302" id="302">302</a>
 <a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>opencv::{
@@ -364,7 +372,7 @@
 }
 
 <span class="kw">pub trait </span>VisionModel: Debug + Sync + Send {
-    <span class="kw">fn </span>detect_yolo_v5(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat, threshold: f64) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;YoloDetection&gt;&gt;;
+    <span class="kw">fn </span>detect_yolo_v5(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat, threshold: f64) -&gt; Vec&lt;YoloDetection&gt;;
     <span class="kw">fn </span>size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Size;
 }
 
@@ -460,21 +468,24 @@
         <span class="number">640.0 </span>/ model_size <span class="kw">as </span>f64
     }
 
-    <span class="kw">fn </span>get_output_names(net: <span class="kw-2">&amp;</span>Net) -&gt; <span class="prelude-ty">Result</span>&lt;Vector&lt;String&gt;, opencv::Error&gt; {
-        <span class="kw">let </span>out_layers = net.get_unconnected_out_layers()<span class="question-mark">?</span>;
-        <span class="kw">let </span>layer_names = net.get_layer_names()<span class="question-mark">?</span>;
+    <span class="kw">fn </span>get_output_names(net: <span class="kw-2">&amp;</span>Net) -&gt; Vector&lt;String&gt; {
+        <span class="kw">let </span>out_layers = net
+            .get_unconnected_out_layers()
+            .expect(<span class="string">"Error getting unconnected out layers from model."</span>);
+        <span class="kw">let </span>layer_names = net
+            .get_layer_names()
+            .expect(<span class="string">"Error getting layer names from model."</span>);
 
-        <span class="prelude-val">Ok</span>(Vector::from_iter(
+        Vector::from_iter(
             out_layers
                 .iter()
-                .map(|layer_num| layer_names.get((layer_num - <span class="number">1</span>) <span class="kw">as </span>usize))
+                .map(|layer_num| layer_names.get((layer_num - <span class="number">1</span>) <span class="kw">as </span>usize).unwrap())
                 .to_owned()
-                .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;String&gt;, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?
-                </span>.iter()
+                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
+                .iter()
                 .map(|s| s.as_str()),
-        ))
-        <span class="comment">// 		outLayers.forEach((item) -&gt; names.add(layersNames.get(item - 1))); // unfold and create R-CNN layers from the
-    </span>}
+        )
+    }
 }
 
 <span class="doccomment">/// Loads model from file, mostly at compile time
@@ -509,9 +520,9 @@
 }
 
 <span class="kw">impl </span>VisionModel <span class="kw">for </span>OnnxModel {
-    <span class="kw">fn </span>detect_yolo_v5(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat, threshold: f64) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;YoloDetection&gt;&gt; {
+    <span class="kw">fn </span>detect_yolo_v5(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat, threshold: f64) -&gt; Vec&lt;YoloDetection&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>result: Vector&lt;Mat&gt; = Vector::new();
-        <span class="kw">let </span>result_names = <span class="self">Self</span>::get_output_names(<span class="kw-2">&amp;</span><span class="self">self</span>.net.lock().unwrap())<span class="question-mark">?</span>;
+        <span class="kw">let </span>result_names = <span class="self">Self</span>::get_output_names(<span class="kw-2">&amp;</span><span class="self">self</span>.net.lock().unwrap());
         <span class="kw">let </span>blob = blob_from_image(
             image,
             <span class="number">1.0 </span>/ <span class="number">255.0</span>,
@@ -520,16 +531,19 @@
             <span class="bool-val">true</span>,
             <span class="bool-val">false</span>,
             CV_32F,
-        )<span class="question-mark">?</span>;
+        )
+        .unwrap();
 
         <span class="self">self</span>.net
             .lock()
             .unwrap()
-            .set_input(<span class="kw-2">&amp;</span>blob, <span class="string">""</span>, <span class="number">1.0</span>, Scalar::from(<span class="number">0.0</span>))<span class="question-mark">?</span>;
+            .set_input(<span class="kw-2">&amp;</span>blob, <span class="string">""</span>, <span class="number">1.0</span>, Scalar::from(<span class="number">0.0</span>))
+            .unwrap();
         <span class="self">self</span>.net
             .lock()
             .unwrap()
-            .forward(<span class="kw-2">&amp;mut </span>result, <span class="kw-2">&amp;</span>result_names)<span class="question-mark">?</span>;
+            .forward(<span class="kw-2">&amp;mut </span>result, <span class="kw-2">&amp;</span>result_names)
+            .unwrap();
 
         <span class="self">self</span>.process_net(result, threshold)
     }
@@ -545,43 +559,51 @@
     /// # Arguments
     /// * `result` - iterator of net output
     /// * `threshold` - minimum confidence
-    </span><span class="kw">fn </span>process_net&lt;I&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, result: I, threshold: f64) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;YoloDetection&gt;&gt;
+    </span><span class="kw">fn </span>process_net&lt;I&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, result: I, threshold: f64) -&gt; Vec&lt;YoloDetection&gt;
     <span class="kw">where
         </span>I: IntoIterator&lt;Item = Mat&gt;,
     {
-        <span class="prelude-val">Ok</span>(result
+        result
             .into_iter()
-            .map(|level| -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;YoloDetection&gt;&gt; {
-                <span class="kw">let </span>level = level.reshape(<span class="number">1</span>, (level.total() / (<span class="number">5 </span>+ <span class="self">self</span>.num_objects)) <span class="kw">as </span>i32)<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>((<span class="number">0</span>..level.rows())
+            .flat_map(|level| -&gt; Vec&lt;YoloDetection&gt; {
+                <span class="comment">// This reshape is always valid as per the model design
+                </span><span class="kw">let </span>level = level
+                    .reshape(<span class="number">1</span>, (level.total() / (<span class="number">5 </span>+ <span class="self">self</span>.num_objects)) <span class="kw">as </span>i32)
+                    .unwrap();
+
+                (<span class="number">0</span>..level.rows())
                     .map(|idx| level.row(idx).unwrap())
-                    .map(|row| -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;YoloDetection&gt;&gt; {
-                        <span class="kw">let </span>scores = row.col_range(<span class="kw-2">&amp;</span>opencv::core::Range::new(<span class="number">5</span>, level.cols())<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+                    .filter_map(|row| -&gt; <span class="prelude-ty">Option</span>&lt;YoloDetection&gt; {
+                        <span class="comment">// Cols is always &gt; 5. The column range can always be constructed, since
+                        // row always has level.cols number of columns.
+                        </span><span class="kw">let </span>scores = row
+                            .col_range(<span class="kw-2">&amp;</span>opencv::core::Range::new(<span class="number">5</span>, level.cols()).unwrap())
+                            .unwrap();
 
                         <span class="kw">let </span><span class="kw-2">mut </span>max_loc = Point::default();
-                        min_max_loc(<span class="kw-2">&amp;</span>scores, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;mut </span>max_loc), <span class="kw-2">&amp;</span>no_array())<span class="question-mark">?</span>;
-                        <span class="kw">let </span>confidence: f64 = row.at::&lt;VecN&lt;f32, <span class="number">1</span>&gt;&gt;(<span class="number">4</span>)<span class="question-mark">?</span>[<span class="number">0</span>].into();
+                        <span class="comment">// There is always a global minimum and maximum
+                        </span>min_max_loc(<span class="kw-2">&amp;</span>scores, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;mut </span>max_loc), <span class="kw-2">&amp;</span>no_array())
+                            .unwrap();
+
+                        <span class="comment">// Always a valid index access
+                        </span><span class="kw">let </span>confidence: f64 = row.at::&lt;VecN&lt;f32, <span class="number">1</span>&gt;&gt;(<span class="number">4</span>).unwrap()[<span class="number">0</span>].into();
 
                         <span class="kw">if </span>confidence &gt; threshold {
-                            <span class="kw">let </span>x_adjust = |idx: i32| -&gt; <span class="prelude-ty">Result</span>&lt;f64&gt; {
-                                <span class="prelude-val">Ok</span>((f64::from(row.at::&lt;VecN&lt;f32, <span class="number">1</span>&gt;&gt;(idx)<span class="question-mark">?</span>[<span class="number">0</span>]) * <span class="self">self</span>.factor)
-                                    / <span class="number">640.0
-                                    </span>* <span class="number">800.0</span>)
+                            <span class="comment">// The given constant values are always valid indicies
+                            </span><span class="kw">let </span>adjust_base = |idx: i32| -&gt; f64 {
+                                f64::from(row.at::&lt;VecN&lt;f32, <span class="number">1</span>&gt;&gt;(idx).unwrap()[<span class="number">0</span>]) * <span class="self">self</span>.factor
                             };
 
-                            <span class="kw">let </span>y_adjust = |idx: i32| -&gt; <span class="prelude-ty">Result</span>&lt;f64&gt; {
-                                <span class="prelude-val">Ok</span>((f64::from(row.at::&lt;VecN&lt;f32, <span class="number">1</span>&gt;&gt;(idx)<span class="question-mark">?</span>[<span class="number">0</span>]) * <span class="self">self</span>.factor)
-                                    / <span class="number">640.0
-                                    </span>* <span class="number">600.0</span>)
-                            };
+                            <span class="kw">let </span>x_adjust = |idx: i32| -&gt; f64 { adjust_base(idx) / <span class="number">640.0 </span>* <span class="number">800.0 </span>};
+                            <span class="kw">let </span>y_adjust = |idx: i32| -&gt; f64 { adjust_base(idx) / <span class="number">640.0 </span>* <span class="number">600.0 </span>};
 
                             <span class="kw">let </span>(center_x, center_y, width, height) =
-                                (x_adjust(<span class="number">0</span>)<span class="question-mark">?</span>, y_adjust(<span class="number">1</span>)<span class="question-mark">?</span>, x_adjust(<span class="number">2</span>)<span class="question-mark">?</span>, y_adjust(<span class="number">3</span>)<span class="question-mark">?</span>);
+                                (x_adjust(<span class="number">0</span>), y_adjust(<span class="number">1</span>), x_adjust(<span class="number">2</span>), y_adjust(<span class="number">3</span>));
 
                             <span class="kw">let </span>left = center_x - width / <span class="number">2.0</span>;
                             <span class="kw">let </span>top = center_y - height / <span class="number">2.0</span>;
 
-                            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(YoloDetection {
+                            <span class="prelude-val">Some</span>(YoloDetection {
                                 class_id: max_loc.x,
                                 confidence,
                                 bounding_box: Rect2d {
@@ -590,20 +612,14 @@
                                     width,
                                     height,
                                 },
-                            }))
+                            })
                         } <span class="kw">else </span>{
-                            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
-                        }
+                            <span class="prelude-val">None
+                        </span>}
                     })
-                    .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?
-                    </span>.into_iter()
-                    .flatten()
-                    .collect())
+                    .collect()
             })
-            .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;()<span class="question-mark">?
-            </span>.into_iter()
-            .flatten()
-            .collect())
+            .collect()
     }
 }
 </code></pre></div></section></main></body></html>
