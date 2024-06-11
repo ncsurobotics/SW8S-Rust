@@ -59,7 +59,7 @@ where
 }
 
 pub trait VisionModel: Debug + Sync + Send {
-    fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Result<Vec<YoloDetection>>;
+    fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection>;
     fn size(&self) -> Size;
 }
 
@@ -155,20 +155,23 @@ impl OnnxModel {
         640.0 / model_size as f64
     }
 
-    fn get_output_names(net: &Net) -> Result<Vector<String>, opencv::Error> {
-        let out_layers = net.get_unconnected_out_layers()?;
-        let layer_names = net.get_layer_names()?;
+    fn get_output_names(net: &Net) -> Vector<String> {
+        let out_layers = net
+            .get_unconnected_out_layers()
+            .expect("Error getting unconnected out layers from model.");
+        let layer_names = net
+            .get_layer_names()
+            .expect("Error getting layer names from model.");
 
-        Ok(Vector::from_iter(
+        Vector::from_iter(
             out_layers
                 .iter()
-                .map(|layer_num| layer_names.get((layer_num - 1) as usize))
+                .map(|layer_num| layer_names.get((layer_num - 1) as usize).unwrap())
                 .to_owned()
-                .collect::<Result<Vec<String>, _>>()?
+                .collect::<Vec<_>>()
                 .iter()
                 .map(|s| s.as_str()),
-        ))
-        // 		outLayers.forEach((item) -> names.add(layersNames.get(item - 1))); // unfold and create R-CNN layers from the
+        )
     }
 }
 
@@ -204,9 +207,9 @@ macro_rules! load_onnx {
 }
 
 impl VisionModel for OnnxModel {
-    fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Result<Vec<YoloDetection>> {
+    fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection> {
         let mut result: Vector<Mat> = Vector::new();
-        let result_names = Self::get_output_names(&self.net.lock().unwrap())?;
+        let result_names = Self::get_output_names(&self.net.lock().unwrap());
         let blob = blob_from_image(
             image,
             1.0 / 255.0,
@@ -215,18 +218,21 @@ impl VisionModel for OnnxModel {
             true,
             false,
             CV_32F,
-        )?;
+        )
+        .unwrap();
 
         self.net
             .lock()
             .unwrap()
-            .set_input(&blob, "", 1.0, Scalar::from(0.0))?;
+            .set_input(&blob, "", 1.0, Scalar::from(0.0))
+            .unwrap();
         self.net
             .lock()
             .unwrap()
-            .forward(&mut result, &result_names)?;
+            .forward(&mut result, &result_names)
+            .unwrap();
 
-        Ok(self.process_net(result, threshold))
+        self.process_net(result, threshold)
     }
 
     fn size(&self) -> Size {

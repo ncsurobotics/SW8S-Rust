@@ -100,7 +100,7 @@ impl Default for Buoy<OnnxModel> {
 impl YoloProcessor for Buoy<OnnxModel> {
     type Target = Target;
 
-    fn detect_yolo_v5(&mut self, image: &Mat) -> Result<Vec<YoloDetection>> {
+    fn detect_yolo_v5(&mut self, image: &Mat) -> Vec<YoloDetection> {
         self.model.detect_yolo_v5(image, self.threshold)
     }
 
