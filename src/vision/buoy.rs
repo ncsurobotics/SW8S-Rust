@@ -146,9 +146,9 @@ mod tests {
             .find(|&result| *result.class() == Target::Abydos1)
             .unwrap()
             .position();
-        assert_approx_eq!(abydos_1_pos.x, 134.9113845825195, 1e-4);
-        assert_approx_eq!(abydos_1_pos.y, 163.99715423583984, 1e-4);
-        assert_approx_eq!(abydos_1_pos.width, 149.86732482910156, 1e-4);
-        assert_approx_eq!(abydos_1_pos.height, 141.14679336547852, 1e-4);
+        assert_approx_eq!(abydos_1_pos.x, 134.9113845825195, 1.0);
+        assert_approx_eq!(abydos_1_pos.y, 163.99715423583984, 1.0);
+        assert_approx_eq!(abydos_1_pos.width, 149.86732482910156, 1.0);
+        assert_approx_eq!(abydos_1_pos.height, 141.14679336547852, 1.0);
     }
 }

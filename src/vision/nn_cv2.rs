@@ -1,15 +1,18 @@
 use anyhow::Result;
 use derive_getters::Getters;
 use opencv::{
-    core::{min_max_loc, no_array, Point, Rect2d, Scalar, Size, VecN, Vector, CV_32F},
-    dnn::{
-        blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net, DNN_BACKEND_CUDA,
-        DNN_TARGET_CUDA,
-    },
+    core::{min_max_loc, no_array, Point, Rect2d, Scalar, Size, VecN, Vector, CV_32F, CV_8S},
+    dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
-use std::hash::Hash;
 use std::{fmt::Debug, sync::Mutex};
+use std::{hash::Hash, ptr::null_mut};
+
+#[cfg(feature = "cuda")]
+use opencv::dnn::{DNN_BACKEND_CUDA, DNN_TARGET_CUDA, DNN_TARGET_CUDA_FP16};
+
+#[cfg(feature = "cuda_min_max_loc")]
+use opencv::cudaarithm::min_max_loc as cuda_min_max_loc;
 
 #[derive(Debug, Clone, Getters)]
 pub struct YoloDetection {
@@ -109,7 +112,11 @@ impl OnnxModel {
         #[cfg(feature = "cuda")]
         {
             net.set_preferable_backend(DNN_BACKEND_CUDA)?;
-            net.set_preferable_target(DNN_TARGET_CUDA)?;
+            if cfg!(feature = "cuda_f16") {
+                net.set_preferable_target(DNN_TARGET_CUDA_FP16)?;
+            } else {
+                net.set_preferable_target(DNN_TARGET_CUDA)?;
+            }
         }
 
         Ok(Self {
@@ -139,7 +146,11 @@ impl OnnxModel {
         #[cfg(feature = "cuda")]
         {
             net.set_preferable_backend(DNN_BACKEND_CUDA)?;
-            net.set_preferable_target(DNN_TARGET_CUDA)?;
+            if cfg!(feature = "cuda_f16") {
+                net.set_preferable_target(DNN_TARGET_CUDA_FP16)?;
+            } else {
+                net.set_preferable_target(DNN_TARGET_CUDA)?;
+            }
         }
 
         Ok(Self {
@@ -172,6 +183,14 @@ impl OnnxModel {
                 .iter()
                 .map(|s| s.as_str()),
         )
+    }
+
+    pub fn get_net(&mut self) -> &mut Net {
+        self.net.get_mut().unwrap()
+    }
+
+    pub fn get_model_size(&self) -> Size {
+        self.model_size
     }
 }
 
@@ -268,9 +287,27 @@ impl OnnxModel {
                             .unwrap();
 
                         let mut max_loc = Point::default();
+
                         // There is always a global minimum and maximum
-                        min_max_loc(&scores, None, None, None, Some(&mut max_loc), &no_array())
-                            .unwrap();
+                        if cfg!(feature = "cuda_min_max_loc") {
+                            // C++ interface wants null pointers for not returning a value...
+                            #[allow(deref_nullptr)]
+                            #[cfg(feature = "cuda_min_max_loc")]
+                            unsafe {
+                                cuda_min_max_loc(
+                                    &scores,
+                                    &mut *null_mut(),
+                                    &mut *null_mut(),
+                                    &mut *null_mut(),
+                                    &mut max_loc,
+                                    &no_array(),
+                                )
+                                .unwrap();
+                            }
+                        } else {
+                            min_max_loc(&scores, None, None, None, Some(&mut max_loc), &no_array())
+                                .unwrap();
+                        }
 
                         // Always a valid index access
                         let confidence: f64 = row.at::<VecN<f32, 1>>(4).unwrap()[0].into();

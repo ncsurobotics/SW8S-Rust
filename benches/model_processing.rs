@@ -7,7 +7,11 @@ use sw8s_rust_lib::vision::{gate_poles::GatePoles, Draw, VisualDetector};
 
 fn gate_pole_model(c: &mut Criterion) {
     const CUDA_ENABLED: &str = if cfg!(feature = "cuda") {
-        "CUDA"
+        if cfg!(feature = "cuda_f16") {
+            "CUDA F16"
+        } else {
+            "CUDA"
+        }
     } else {
         "CPU"
     };
