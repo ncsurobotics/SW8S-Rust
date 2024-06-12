@@ -1,7 +1,9 @@
 use anyhow::Result;
 use derive_getters::Getters;
 use opencv::{
-    core::{min_max_loc, no_array, Point, Rect2d, Scalar, Size, VecN, Vector, CV_32F, CV_8S},
+    core::{
+        min_max_loc, no_array, GpuMat, Point, Rect2d, Scalar, Size, VecN, Vector, CV_32F, CV_8S,
+    },
     dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
@@ -251,6 +253,7 @@ impl VisionModel for OnnxModel {
             .forward(&mut result, &result_names)
             .unwrap();
 
+        self.process_net_cuda(&result, threshold);
         self.process_net(result, threshold)
     }
 
@@ -344,5 +347,32 @@ impl OnnxModel {
                     .collect()
             })
             .collect()
+    }
+
+    #[cfg(feature = "cuda")]
+    fn process_net_cuda(&self, result: &Vector<Mat>, threshold: f64) -> Vec<YoloDetection> {
+        let _ = result
+            .iter()
+            .flat_map(|level| -> Vec<YoloDetection> {
+                // This reshape is always valid as per the model design
+                let level = level
+                    .reshape(1, (level.total() / (5 + self.num_objects)) as i32)
+                    .unwrap();
+                println!("Num rows: {}", level.rows());
+                println!("Num columns: {}", level.cols());
+                vec![]
+            })
+            .collect::<Vec<_>>();
+
+        #[link(name = "sw8s_cuda", kind = "static")]
+        extern "C" {
+            fn process_net_kernel();
+        }
+        unsafe {
+            process_net_kernel();
+        }
+
+        //panic!();
+        vec![]
     }
 }

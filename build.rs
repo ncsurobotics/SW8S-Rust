@@ -147,4 +147,23 @@ mod graphing {
 fn main() {
     #[cfg(feature = "graphing")]
     graphing::graphing_variants();
+
+    #[cfg(feature = "cuda")]
+    {
+        // Rebuild on any kernel change
+        println!("cargo:rerun-if-changed=src/cuda_kernels");
+
+        // Rebuild for specific files that use kernels changing
+        println!("cargo:rerun-if-changed=src/vision/nn_cv2.rs");
+
+        cc::Build::new()
+            .cuda(true)
+            .flag("-cudart=shared")
+            // Specify all cuda kernels that need to be built
+            .file("src/cuda_kernels/process_net.cu")
+            .compile("libsw8s_cuda.a");
+
+        println!("cargo:rustc-link-search=native=/usr/local/cuda/lib64");
+        println!("cargo:rustc-link-lib=cudart");
+    }
 }

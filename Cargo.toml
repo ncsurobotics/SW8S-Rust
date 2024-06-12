@@ -24,7 +24,7 @@ required-features = ["graphing"]
 default = []
 logging = []
 #unblocked_logging = ["logging"]
-cuda = []
+cuda = ["dep:cc"]
 cuda_f16 = ["cuda"]
 cuda_min_max_loc = ["cuda", "opencv/cudaarithm"]
 quantize_i8 = []
@@ -46,12 +46,13 @@ bytes = "1.6.0" # Byte buffering
 uuid = { version = "1.8.0", features = ["v4", "fast-rng"] } # Unique IDs
 graphviz-rust = { version = "0.9.0", optional = true } # Drawing graphs
 paste = { version = "1.0.14", optional = true } # Concat identifiers
-chrono = "0.4.37"
+chrono = "0.4.37" # Time/date handling
 
 [build-dependencies]
 quote = { version = "1.0.33", optional = true }
 syn = { version = "2.0.58", features = ["full", "fold"], optional = true }
 proc-macro2 = { version = "1.0.79", optional = true }
+cc = { version = "1.0.99", optional = true } # Build and link CUDA kernels
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
