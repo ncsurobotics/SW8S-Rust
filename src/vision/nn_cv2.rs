@@ -294,28 +294,15 @@ impl OnnxModel {
                             .col_range(&opencv::core::Range::new(5, level.cols()).unwrap())
                             .unwrap();
 
-                        let mut max_loc = Point::default();
-
-                        // There is always a global minimum and maximum
-                        if cfg!(feature = "cuda_min_max_loc") {
-                            // C++ interface wants null pointers for not returning a value...
-                            #[allow(deref_nullptr)]
-                            #[cfg(feature = "cuda_min_max_loc")]
-                            unsafe {
-                                cuda_min_max_loc(
-                                    &scores,
-                                    &mut *null_mut(),
-                                    &mut *null_mut(),
-                                    &mut *null_mut(),
-                                    &mut max_loc,
-                                    &no_array(),
-                                )
-                                .unwrap();
+                        let mut max_loc = 5;
+                        for idx in 6..level.cols() {
+                            if row.at::<VecN<f32, 1>>(max_loc).unwrap()[0]
+                                < row.at::<VecN<f32, 1>>(idx).unwrap()[0]
+                            {
+                                max_loc = idx;
                             }
-                        } else {
-                            min_max_loc(&scores, None, None, None, Some(&mut max_loc), &no_array())
-                                .unwrap();
                         }
+                        max_loc -= 5;
 
                         // Always a valid index access
                         let confidence: f64 = row.at::<VecN<f32, 1>>(4).unwrap()[0].into();
@@ -336,7 +323,7 @@ impl OnnxModel {
                             let top = center_y - height / 2.0;
 
                             Some(YoloDetection {
-                                class_id: max_loc.x,
+                                class_id: max_loc,
                                 confidence,
                                 bounding_box: Rect2d {
                                     x: left,
@@ -354,6 +341,7 @@ impl OnnxModel {
             .collect()
     }
 
+    /// Alternative to [`process_net`] that uses a CUDA kernel
     #[cfg(feature = "cuda")]
     fn process_net_cuda(&self, result: &Vector<Mat>, threshold: f32) -> Vec<YoloDetection> {
         #[derive(Debug)]
