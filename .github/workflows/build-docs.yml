@@ -42,7 +42,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Build docs
-        run: cargo doc --all-features
+        run: cargo doc --features logging,graphing
 
       - name: Add redirect
         run: echo '<meta http-equiv="refresh" content="0;url=sw8s_rust_lib/index.html">' > target/doc/index.html
