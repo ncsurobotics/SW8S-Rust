@@ -51,6 +51,8 @@ jobs:
       - name: Configure GraphViz Plugins
         run: sudo dot -c
 
+      - uses: Jimver/cuda-toolkit@v0.2.15
+
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
 
