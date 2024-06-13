@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/derive-getters-0.3.0/src/getters.rs`."><title>getters.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-081576b923113409.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="derive_getters" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0 (129f3b996 2024-06-10)" data-channel="1.79.0" data-search-js="search-bf21c90c8c1d92b1.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-e32f0c247825364d.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../derive_getters/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Type ‘S’ or ‘/’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings">Settings</a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/derive-getters-0.4.0/src/getters.rs`."><title>getters.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-081576b923113409.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="derive_getters" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0 (129f3b996 2024-06-10)" data-channel="1.79.0" data-search-js="search-bf21c90c8c1d92b1.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-e32f0c247825364d.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../derive_getters/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Type ‘S’ or ‘/’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings">Settings</a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -247,13 +247,30 @@
 <a href="#247" id="247">247</a>
 <a href="#248" id="248">248</a>
 <a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Getters internals
 </span><span class="kw">use </span>std::convert::TryFrom;
 
 <span class="kw">use </span>proc_macro2::{TokenStream, Span};
 <span class="kw">use </span>quote::{quote, ToTokens};
 <span class="kw">use </span>syn::{
+    DataStruct,
     DeriveInput,
+    Fields,
     FieldsNamed,
     Type,
     Ident,
@@ -265,7 +282,7 @@
 };
 
 <span class="kw">use crate</span>::{
-    extract::{named_fields, named_struct},
+    extract::named_struct,
     faultmsg::Problem,
 };
 
@@ -322,11 +339,11 @@
         <span class="kw">let </span><span class="kw-2">mut </span>docs: Vec&lt;Doc&gt; = Vec::new();
 
         <span class="kw">for </span>attr <span class="kw">in </span>attributes {
-            <span class="kw">if </span>attr.path.is_ident(<span class="string">"getter"</span>) {
+            <span class="kw">if </span>attr.path().is_ident(<span class="string">"getter"</span>) {
                 special = <span class="prelude-val">Some</span>(attr.parse_args::&lt;Action&gt;()<span class="question-mark">?</span>);
             }
 
-            <span class="kw">if </span>attr.path.is_ident(<span class="string">"doc"</span>) {
+            <span class="kw">if </span>attr.path().is_ident(<span class="string">"doc"</span>) {
                 docs.push(Doc(attr.to_token_stream()));
             }
         }
@@ -381,6 +398,20 @@
 
                 <span class="prelude-val">Ok</span>(fields)
             })
+    }
+
+    <span class="kw">fn </span>from_struct(structure: <span class="kw-2">&amp;</span>DataStruct) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="self">Self</span>&gt;&gt; {
+        <span class="kw">let </span>fields_named = <span class="kw">match </span>structure.fields {
+            Fields::Named(<span class="kw-2">ref </span>fields) =&gt; <span class="prelude-val">Ok</span>(fields),
+            Fields::Unnamed(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(
+                Error::new(Span::call_site(), Problem::UnnamedField)
+            ),
+            Fields::Unit =&gt; <span class="prelude-val">Err</span>(
+                Error::new(Span::call_site(), Problem::UnitStruct)
+            ),
+        }<span class="question-mark">?</span>;
+
+        <span class="self">Self</span>::from_fields_named(fields_named)
     }
 
     <span class="kw">fn </span>emit(<span class="kw-2">&amp;</span><span class="self">self</span>, struct_name: <span class="kw-2">&amp;</span>Ident) -&gt; TokenStream {
@@ -460,8 +491,7 @@
     
     <span class="kw">fn </span>try_from(node: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>DeriveInput) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>struct_data = named_struct(node)<span class="question-mark">?</span>;
-        <span class="kw">let </span>named_fields = named_fields(struct_data)<span class="question-mark">?</span>;
-        <span class="kw">let </span>fields = Field::from_fields_named(named_fields)<span class="question-mark">?</span>;
+        <span class="kw">let </span>fields = Field::from_struct(struct_data)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(NamedStruct {
             original: node,

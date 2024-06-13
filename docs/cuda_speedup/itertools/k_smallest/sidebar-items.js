@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["k_smallest"]};
+window.SIDEBAR_ITEMS = {"fn":["k_smallest_general","key_to_cmp"]};

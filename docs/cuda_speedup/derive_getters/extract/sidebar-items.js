@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["named_fields","named_struct"]};
+window.SIDEBAR_ITEMS = {"fn":["named_struct"]};
