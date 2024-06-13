@@ -1,4 +1,5 @@
 use anyhow::Result;
+use assert_approx_eq::assert_approx_eq;
 use derive_getters::Getters;
 use opencv::{
     core::{
@@ -16,7 +17,7 @@ use opencv::dnn::{DNN_BACKEND_CUDA, DNN_TARGET_CUDA, DNN_TARGET_CUDA_FP16};
 #[cfg(feature = "cuda_min_max_loc")]
 use opencv::cudaarithm::min_max_loc as cuda_min_max_loc;
 
-#[derive(Debug, Clone, Getters)]
+#[derive(Debug, Clone, Getters, PartialEq)]
 pub struct YoloDetection {
     class_id: i32,
     confidence: f64,
@@ -253,8 +254,30 @@ impl VisionModel for OnnxModel {
             .forward(&mut result, &result_names)
             .unwrap();
 
-        self.process_net_cuda(&result, threshold);
-        self.process_net(result, threshold)
+        let cuda_result = self.process_net_cuda(&result, threshold as f32);
+        let actual_result = self.process_net(result, threshold);
+        //println!("Actual Result: {:#?}", actual_result);
+        /*
+        println!(
+            "CUDA Len: {}, Actual Len: {}",
+            cuda_result.len(),
+            actual_result.len()
+        );
+        */
+        for i in 0..actual_result.len() {
+            //println!("Testing {i}");
+            let cuda = &cuda_result[i];
+            let actual = &actual_result[i];
+            assert_eq!(cuda.class_id, actual.class_id);
+            assert_approx_eq!(cuda.confidence, actual.confidence, 1e-2);
+            assert_approx_eq!(cuda.bounding_box.x, actual.bounding_box.x, 1e-2);
+            assert_approx_eq!(cuda.bounding_box.y, actual.bounding_box.y, 1e-2);
+            assert_approx_eq!(cuda.bounding_box.width, actual.bounding_box.width, 1e-2);
+            assert_approx_eq!(cuda.bounding_box.height, actual.bounding_box.height, 1e-2);
+            assert_eq!(cuda.class_id, actual.class_id);
+            //assert_eq!(cuda_result[i], actual_result[i]);
+        }
+        actual_result
     }
 
     fn size(&self) -> Size {
@@ -350,7 +373,7 @@ impl OnnxModel {
     }
 
     #[cfg(feature = "cuda")]
-    fn process_net_cuda(&self, result: &Vector<Mat>, threshold: f64) -> Vec<YoloDetection> {
+    fn process_net_cuda(&self, result: &Vector<Mat>, threshold: f32) -> Vec<YoloDetection> {
         #[derive(Debug)]
         #[repr(C)]
         struct CudaFormatMat {
@@ -402,10 +425,11 @@ impl OnnxModel {
             fn process_net_kernel(
                 result: *const CudaFormatMat,
                 num_levels: usize,
-                threshold: f64,
+                threshold: f32,
+                factor: f32,
+                total_rows: usize,
                 processed_detects: *mut YoloDetectionCuda,
                 processed_valid: *mut bool,
-                total_rows: usize,
             );
         }
         unsafe {
@@ -413,9 +437,10 @@ impl OnnxModel {
                 result.as_ptr(),
                 result.len(),
                 threshold,
+                self.factor as f32,
+                total_rows,
                 processed_detects.as_mut_ptr(),
                 processed_valid.as_mut_ptr(),
-                total_rows,
             );
         }
 
@@ -435,9 +460,8 @@ impl OnnxModel {
             })
             .collect();
 
-        println!("Fully processed: {:#?}", full_processed);
+        //println!("Fully processed: {:#?}", full_processed);
 
-        //panic!();
         full_processed
     }
 }

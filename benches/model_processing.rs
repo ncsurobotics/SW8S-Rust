@@ -17,7 +17,7 @@ fn gate_pole_model(c: &mut Criterion) {
     };
 
     let image = imread(
-        "tests/vision/resources/gate_images/vlcsnap-2023-08-04-17h21m51s095.png",
+        "tests/vision/resources/gate_images/straight_on_0.png",
         IMREAD_COLOR,
     )
     .unwrap();

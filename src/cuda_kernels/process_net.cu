@@ -19,23 +19,69 @@ struct YoloDetectionCuda {
   int32_t class_id;
 };
 
-__global__ void process_net(uintptr_t block_count,
+__forceinline__ __device__ float adjust_base(uintptr_t idx, float const factor,
+                                             float const *row_bytes) {
+  return row_bytes[idx] * factor;
+}
+
+__forceinline__ __device__ float x_adjust(uintptr_t idx, float const factor,
+                                          float const *row_bytes) {
+  return (adjust_base(idx, factor, row_bytes) / 640.0) * 800.0;
+}
+
+__forceinline__ __device__ float y_adjust(uintptr_t idx, float const factor,
+                                          float const *row_bytes) {
+  return (adjust_base(idx, factor, row_bytes) / 640.0) * 600.0;
+}
+
+__global__ void process_net(uintptr_t num_rows, uintptr_t num_cols,
+                            float const threshold, float const factor,
+                            float const *mat_bytes,
                             YoloDetectionCuda *processed_detects,
                             bool *processed_valid) {
   auto id = blockIdx.x * blockDim.x + threadIdx.x;
 
   // Get rid of leftover threads
-  if (id >= block_count)
+  if (id >= num_rows)
     return;
 
-  processed_valid[id] = false;
+  float const *row = mat_bytes + (id * num_cols);
+
+  float confidence = row[4];
+  bool valid = confidence > threshold;
+  processed_valid[id] = valid;
+
+  // Skip remaining processing for invalid
+  if (!valid)
+    return;
+
+  // Start at offset in data, then shift to starting at 0.
+  uintptr_t class_id = 5;
+  for (uintptr_t i = 6; i < num_cols; ++i) {
+    if (row[class_id] < row[i]) {
+      class_id = i;
+    }
+  }
+  class_id -= 5;
+
+  float center_x = x_adjust(0, factor, row);
+  float center_y = y_adjust(1, factor, row);
+  float width = x_adjust(2, factor, row);
+  float height = y_adjust(3, factor, row);
+
+  float left = center_x - (width / 2.0);
+  float top = center_y - (height / 2.0);
+
+  processed_detects[id] = YoloDetectionCuda{
+      confidence, left, top, width, height, static_cast<int32_t>(class_id)};
 }
 
 extern "C" {
 int process_net_kernel(CudaFormatMat *const result, uintptr_t const num_levels,
-                       double const threshold,
+                       float const threshold, float const factor,
+                       uintptr_t const total_rows,
                        YoloDetectionCuda *processed_detects,
-                       bool *processed_valid, uintptr_t const total_rows) {
+                       bool *processed_valid) {
 
   cudaStream_t kernel_stream;
   cudaStreamCreate(&kernel_stream);
@@ -51,11 +97,12 @@ int process_net_kernel(CudaFormatMat *const result, uintptr_t const num_levels,
   for (uintptr_t i = 0; i < num_levels; ++i) {
     CudaFormatMat *mat = result + i;
     auto num_rows = mat->rows;
-    auto mat_size = sizeof(num_rows * mat->cols);
+    uintptr_t num_cols = static_cast<uintptr_t>(mat->cols);
+    auto mat_size = num_rows * num_cols * sizeof(float);
     float *mat_bytes;
 
     cudaMallocAsync(&mat_bytes, mat_size, kernel_stream);
-    cudaMemcpyAsync(&mat_bytes, &mat, mat_size, cudaMemcpyHostToDevice,
+    cudaMemcpyAsync(mat_bytes, mat->bytes, mat_size, cudaMemcpyHostToDevice,
                     kernel_stream);
 
     int32_t blocksize = MAX_THREADS;
@@ -69,8 +116,8 @@ int process_net_kernel(CudaFormatMat *const result, uintptr_t const num_levels,
     }
 
     process_net<<<block_count, blocksize, 0, kernel_stream>>>(
-        block_count, processed_detects_cuda + row_offset,
-        processed_valid_cuda + row_offset);
+        num_rows, num_cols, threshold, factor, mat_bytes,
+        processed_detects_cuda + row_offset, processed_valid_cuda + row_offset);
 
     cudaFreeAsync(mat_bytes, kernel_stream);
 
