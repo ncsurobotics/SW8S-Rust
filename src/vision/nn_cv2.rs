@@ -1,5 +1,4 @@
 use anyhow::Result;
-use assert_approx_eq::assert_approx_eq;
 use derive_getters::Getters;
 use opencv::{
     core::{
@@ -254,30 +253,13 @@ impl VisionModel for OnnxModel {
             .forward(&mut result, &result_names)
             .unwrap();
 
-        let cuda_result = self.process_net_cuda(&result, threshold as f32);
-        let actual_result = self.process_net(result, threshold);
-        //println!("Actual Result: {:#?}", actual_result);
-        /*
-        println!(
-            "CUDA Len: {}, Actual Len: {}",
-            cuda_result.len(),
-            actual_result.len()
-        );
-        */
-        for i in 0..actual_result.len() {
-            //println!("Testing {i}");
-            let cuda = &cuda_result[i];
-            let actual = &actual_result[i];
-            assert_eq!(cuda.class_id, actual.class_id);
-            assert_approx_eq!(cuda.confidence, actual.confidence, 1e-2);
-            assert_approx_eq!(cuda.bounding_box.x, actual.bounding_box.x, 1e-2);
-            assert_approx_eq!(cuda.bounding_box.y, actual.bounding_box.y, 1e-2);
-            assert_approx_eq!(cuda.bounding_box.width, actual.bounding_box.width, 1e-2);
-            assert_approx_eq!(cuda.bounding_box.height, actual.bounding_box.height, 1e-2);
-            assert_eq!(cuda.class_id, actual.class_id);
-            //assert_eq!(cuda_result[i], actual_result[i]);
-        }
-        actual_result
+        #[cfg(feature = "cuda")]
+        let post_processing = self.process_net_cuda(&result, threshold as f32);
+
+        #[cfg(not(feature = "cuda"))]
+        let post_processing = self.process_net(result, threshold);
+
+        post_processing
     }
 
     fn size(&self) -> Size {
@@ -444,7 +426,7 @@ impl OnnxModel {
             );
         }
 
-        let full_processed = processed_valid
+        processed_valid
             .iter()
             .zip(processed_detects)
             .filter(|(status, _)| **status)
@@ -458,10 +440,6 @@ impl OnnxModel {
                     height: cuda_format.height,
                 },
             })
-            .collect();
-
-        //println!("Fully processed: {:#?}", full_processed);
-
-        full_processed
+            .collect()
     }
 }
