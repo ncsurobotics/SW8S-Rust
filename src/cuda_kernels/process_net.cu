@@ -90,10 +90,8 @@ int process_net_kernel(CudaFormatMat *const result, uintptr_t const num_levels,
 
   YoloDetectionCuda *processed_detects_cuda;
   bool *processed_valid_cuda;
-  cudaMallocAsync(&processed_detects_cuda,
-                  sizeof(YoloDetectionCuda) * total_rows, kernel_stream);
-  cudaMallocAsync(&processed_valid_cuda, sizeof(bool) * total_rows,
-                  kernel_stream);
+  cudaMalloc(&processed_detects_cuda, sizeof(YoloDetectionCuda) * total_rows);
+  cudaMalloc(&processed_valid_cuda, sizeof(bool) * total_rows);
 
   uintptr_t row_offset = 0;
   for (uintptr_t i = 0; i < num_levels; ++i) {
@@ -103,9 +101,8 @@ int process_net_kernel(CudaFormatMat *const result, uintptr_t const num_levels,
     auto mat_size = num_rows * num_cols * sizeof(float);
     float *mat_bytes;
 
-    cudaMallocAsync(&mat_bytes, mat_size, kernel_stream);
-    cudaMemcpyAsync(mat_bytes, mat->bytes, mat_size, cudaMemcpyHostToDevice,
-                    kernel_stream);
+    cudaMalloc(&mat_bytes, mat_size);
+    cudaMemcpy(mat_bytes, mat->bytes, mat_size, cudaMemcpyHostToDevice);
 
     int32_t blocksize = MAX_THREADS;
     int32_t block_count;
@@ -121,19 +118,16 @@ int process_net_kernel(CudaFormatMat *const result, uintptr_t const num_levels,
         num_rows, num_cols, threshold, factor, mat_bytes,
         processed_detects_cuda + row_offset, processed_valid_cuda + row_offset);
 
-    cudaFreeAsync(mat_bytes, kernel_stream);
+    cudaFree(mat_bytes);
 
     row_offset += num_rows;
   }
 
-  cudaMemcpyAsync(processed_detects, processed_detects_cuda,
-                  sizeof(YoloDetectionCuda) * total_rows,
-                  cudaMemcpyDeviceToHost, kernel_stream);
-  cudaMemcpyAsync(processed_valid, processed_valid_cuda,
-                  sizeof(bool) * total_rows, cudaMemcpyDeviceToHost,
-                  kernel_stream);
-
   cudaStreamSynchronize(kernel_stream);
+  cudaMemcpy(processed_detects, processed_detects_cuda,
+             sizeof(YoloDetectionCuda) * total_rows, cudaMemcpyDeviceToHost);
+  cudaMemcpy(processed_valid, processed_valid_cuda, sizeof(bool) * total_rows,
+             cudaMemcpyDeviceToHost);
 
   return 0;
 }
