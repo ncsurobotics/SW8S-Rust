@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define MAX_THREADS (512)
+#define MAX_THREADS (128)
 #define WARP_SIZE (32)
 
 struct CudaFormatMat {
