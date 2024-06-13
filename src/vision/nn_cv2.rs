@@ -351,28 +351,93 @@ impl OnnxModel {
 
     #[cfg(feature = "cuda")]
     fn process_net_cuda(&self, result: &Vector<Mat>, threshold: f64) -> Vec<YoloDetection> {
-        let _ = result
+        #[derive(Debug)]
+        #[repr(C)]
+        struct CudaFormatMat {
+            rows: i32,
+            cols: i32,
+            bytes: *const u8,
+        }
+
+        #[derive(Debug)]
+        #[repr(C)]
+        pub struct YoloDetectionCuda {
+            confidence: f64,
+            x: f64,
+            y: f64,
+            width: f64,
+            height: f64,
+            class_id: i32,
+        }
+
+        let mut total_rows = 0;
+
+        let result = result
             .iter()
-            .flat_map(|level| -> Vec<YoloDetection> {
+            .map(|level| -> CudaFormatMat {
                 // This reshape is always valid as per the model design
                 let level = level
                     .reshape(1, (level.total() / (5 + self.num_objects)) as i32)
                     .unwrap();
-                println!("Num rows: {}", level.rows());
-                println!("Num columns: {}", level.cols());
-                vec![]
+
+                total_rows += level.rows() as usize;
+
+                CudaFormatMat {
+                    bytes: level.data(),
+                    rows: level.rows(),
+                    cols: level.cols(),
+                }
             })
             .collect::<Vec<_>>();
 
-        #[link(name = "sw8s_cuda", kind = "static")]
-        extern "C" {
-            fn process_net_kernel();
-        }
+        let mut processed_detects = Vec::with_capacity(total_rows);
+        let mut processed_valid = Vec::with_capacity(total_rows);
         unsafe {
-            process_net_kernel();
+            processed_detects.set_len(total_rows);
+            processed_valid.set_len(total_rows);
         }
 
+        #[link(name = "sw8s_cuda", kind = "static")]
+        extern "C" {
+            fn process_net_kernel(
+                result: *const CudaFormatMat,
+                num_levels: usize,
+                threshold: f64,
+                processed_detects: *mut YoloDetectionCuda,
+                processed_valid: *mut bool,
+                total_rows: usize,
+            );
+        }
+        unsafe {
+            process_net_kernel(
+                result.as_ptr(),
+                result.len(),
+                threshold,
+                processed_detects.as_mut_ptr(),
+                processed_valid.as_mut_ptr(),
+                total_rows,
+            );
+        }
+
+        let full_processed = processed_valid
+            .iter()
+            .zip(processed_detects)
+            .filter(|(status, _)| **status)
+            .map(|(_, cuda_format)| YoloDetection {
+                class_id: cuda_format.class_id,
+                confidence: cuda_format.confidence,
+                bounding_box: Rect2d {
+                    x: cuda_format.x,
+                    y: cuda_format.y,
+                    width: cuda_format.width,
+                    height: cuda_format.height,
+                },
+            })
+            .collect();
+
+        println!("Fully processed: {:#?}", full_processed);
+
         //panic!();
-        vec![]
+        full_processed
     }
 }
