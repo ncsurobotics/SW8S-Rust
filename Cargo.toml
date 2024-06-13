@@ -28,6 +28,7 @@ cuda = ["dep:cc"]
 cuda_f16 = ["cuda"]
 quantize_i8 = []
 graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2", "dep:paste"]
+networked_testing = []
 
 [dependencies]
 opencv = { version = "0.92.0", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
@@ -46,6 +47,7 @@ uuid = { version = "1.8.0", features = ["v4", "fast-rng"] } # Unique IDs
 graphviz-rust = { version = "0.9.0", optional = true } # Drawing graphs
 paste = { version = "1.0.15", optional = true } # Concat identifiers
 chrono = "0.4.38"
+reqwest = { version = "0.12.3", optional = true } # Downloading godot sim
 
 [build-dependencies]
 quote = { version = "1.0.36", optional = true }
@@ -55,7 +57,6 @@ cc = { version = "1.0.99", optional = true }
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
-reqwest = "0.12.3" # Downloading godot sim
 criterion = "0.5.1" # Benchmarking
 
 [profile.bench]

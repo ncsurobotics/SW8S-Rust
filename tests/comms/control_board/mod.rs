@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 
 use std::str::from_utf8;
 use std::time::Duration;
@@ -48,7 +48,11 @@ async fn download_sim() -> Result<()> {
 
 async fn open_sim(godot: String) -> Result<()> {
     if !Path::new(&godot).is_file() {
-        download_sim().await?
+        if cfg!(feature = "networked_testing") {
+            download_sim().await?
+        } else {
+            bail!("Enable feature \"networked_testing\" to download the godot simulator");
+        }
     }
 
     tokio::spawn(async move {
