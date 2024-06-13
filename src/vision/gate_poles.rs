@@ -2,7 +2,7 @@ use anyhow::Result;
 use opencv::{
     core::{Scalar, Size, CV_32F, CV_8S},
     dnn::{blob_from_image, NetTrait},
-    imgcodecs::{imread, imread_def, IMREAD_COLOR},
+    imgcodecs::{imread, IMREAD_COLOR},
     prelude::Mat,
 };
 

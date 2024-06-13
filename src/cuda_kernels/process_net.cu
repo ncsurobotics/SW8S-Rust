@@ -57,9 +57,11 @@ __global__ void process_net(uintptr_t num_rows, uintptr_t num_cols,
 
   // Start at offset in data, then shift to starting at 0.
   uintptr_t class_id = 5;
+  float class_value = row[class_id];
   for (uintptr_t i = 6; i < num_cols; ++i) {
-    if (row[class_id] < row[i]) {
+    if (class_value < row[i]) {
       class_id = i;
+      class_value = row[i];
     }
   }
   class_id -= 5;

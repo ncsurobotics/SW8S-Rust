@@ -1,14 +1,12 @@
 use anyhow::Result;
 use derive_getters::Getters;
 use opencv::{
-    core::{
-        min_max_loc, no_array, GpuMat, Point, Rect2d, Scalar, Size, VecN, Vector, CV_32F, CV_8S,
-    },
+    core::{Rect2d, Scalar, Size, VecN, Vector, CV_32F},
     dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
+use std::hash::Hash;
 use std::{fmt::Debug, sync::Mutex};
-use std::{hash::Hash, ptr::null_mut};
 
 #[cfg(feature = "cuda")]
 use opencv::dnn::{DNN_BACKEND_CUDA, DNN_TARGET_CUDA, DNN_TARGET_CUDA_FP16};
@@ -268,6 +266,7 @@ impl VisionModel for OnnxModel {
 }
 
 impl OnnxModel {
+    #[allow(unused)]
     /// Returns all detections from a net's output
     ///
     /// # Arguments

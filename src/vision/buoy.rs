@@ -115,7 +115,6 @@ mod tests {
     use opencv::{
         core::Vector,
         imgcodecs::{imread, imwrite, IMREAD_COLOR},
-        prelude::MatTraitConstManual,
     };
 
     use crate::vision::{Draw, VisualDetector};
