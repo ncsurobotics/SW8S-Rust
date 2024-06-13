@@ -36,8 +36,6 @@ jobs:
             libclang-dev \
             libopencv-dev
 
-      - uses: Jimver/cuda-toolkit@v0.2.15
-
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
