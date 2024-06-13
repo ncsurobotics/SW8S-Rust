@@ -27,7 +27,7 @@ logging = []
 cuda = ["dep:cc"]
 cuda_f16 = ["cuda"]
 quantize_i8 = []
-graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2"]
+graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2", "dep:paste"]
 
 [dependencies]
 opencv = { version = "0.92.0", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
