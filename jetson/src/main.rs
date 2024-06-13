@@ -20,14 +20,19 @@ async fn main() {
     println!("This tool is run to build SW8S-Rust for the Jetson Nano.");
     println!("It downloads the \"sysroot-jetson\" subdirectory for libraries.");
     println!("It builds a binary in the \"jetson-target\" subdirectory.");
-    println!("The default cargo command is \"build\", but arguments will override this command.");
+    println!("The default cargo command is a release \"build\" with cuda and logging, but arguments will override this command.");
     println!();
 
     tools_check().unwrap();
 
     let mut system_args = args().skip(1).collect::<Vec<_>>();
     if system_args.is_empty() {
-        system_args = vec!["build".to_string()];
+        system_args = vec![
+            "build".to_string(),
+            "--release".to_string(),
+            "--features".to_string(),
+            "cuda,logging".to_string(),
+        ];
     }
 
     let cur_dir = current_dir().unwrap();
