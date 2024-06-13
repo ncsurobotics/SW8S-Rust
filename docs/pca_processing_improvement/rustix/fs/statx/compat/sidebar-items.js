@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["statx","statx_error_nosys","statx_error_perm","statx_init"],"static":["STATX_STATE"]};

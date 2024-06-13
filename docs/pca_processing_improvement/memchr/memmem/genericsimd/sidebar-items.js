@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAX_NEEDLE_LEN","MIN_NEEDLE_LEN"],"fn":["diff","fwd_find","fwd_find_in_chunk","matched"],"struct":["Forward"]};

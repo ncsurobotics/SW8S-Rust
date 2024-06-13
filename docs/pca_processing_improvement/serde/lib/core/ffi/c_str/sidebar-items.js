@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["CStr","CString","FromBytesUntilNulError","FromBytesWithNulError","FromVecWithNulError","IntoStringError","NulError"]};
