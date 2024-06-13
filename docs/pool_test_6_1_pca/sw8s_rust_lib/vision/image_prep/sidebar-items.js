@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["binary_pca","check_bounds","cvt_binary_to_points","kmeans","kmeans_gpu","resize","slice_number","unique_colors","unique_colors_vec"],"struct":["PcaData","VecNHash"]};

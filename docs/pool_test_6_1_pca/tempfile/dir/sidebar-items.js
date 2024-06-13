@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["create","tempdir","tempdir_in"],"struct":["TempDir"]};

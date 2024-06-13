@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["clean_pattern","clean_pattern_macro","declare_output_enum"]};

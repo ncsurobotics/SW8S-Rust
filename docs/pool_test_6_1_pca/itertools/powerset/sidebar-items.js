@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["powerset","remaining_for"],"struct":["Powerset"]};

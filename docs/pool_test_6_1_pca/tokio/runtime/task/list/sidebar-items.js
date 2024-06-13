@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_next_id"],"static":["NEXT_OWNED_TASKS_ID"],"struct":["LocalOwnedTasks","OwnedTasks","OwnedTasksInner"],"type":["List"]};
