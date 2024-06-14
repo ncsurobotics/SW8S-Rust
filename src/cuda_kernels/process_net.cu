@@ -34,21 +34,21 @@ __forceinline__ __device__ float y_adjust(uintptr_t idx, float const factor,
   return (adjust_base(idx, factor, row_bytes) / 640.0) * 600.0;
 }
 
-__global__ void process_net(uintptr_t num_rows, uintptr_t num_cols,
-                            float const threshold, float const factor,
-                            float const *mat_bytes,
-                            YoloDetectionCuda *processed_detects,
-                            bool *processed_valid) {
-  auto id = blockIdx.x * blockDim.x + threadIdx.x;
+__global__ void process_net(const uintptr_t num_rows, const uintptr_t num_cols,
+                            const float threshold, const float factor,
+                            const float *__restrict__ mat_bytes,
+                            YoloDetectionCuda *__restrict__ processed_detects,
+                            bool *__restrict__ processed_valid) {
+  const auto id = blockIdx.x * blockDim.x + threadIdx.x;
 
   // Get rid of leftover threads
   if (id >= num_rows)
     return;
 
-  float const *row = mat_bytes + (id * num_cols);
+  float const *__restrict__ row = mat_bytes + (id * num_cols);
 
-  float confidence = row[4];
-  bool valid = confidence > threshold;
+  const float confidence = row[4];
+  const bool valid = confidence > threshold;
   processed_valid[id] = valid;
 
   // Skip remaining processing for invalid
@@ -66,13 +66,13 @@ __global__ void process_net(uintptr_t num_rows, uintptr_t num_cols,
   }
   class_id -= 5;
 
-  float center_x = x_adjust(0, factor, row);
-  float center_y = y_adjust(1, factor, row);
-  float width = x_adjust(2, factor, row);
-  float height = y_adjust(3, factor, row);
+  const float center_x = x_adjust(0, factor, row);
+  const float center_y = y_adjust(1, factor, row);
+  const float width = x_adjust(2, factor, row);
+  const float height = y_adjust(3, factor, row);
 
-  float left = center_x - (width / 2.0);
-  float top = center_y - (height / 2.0);
+  const float left = center_x - (width / 2.0);
+  const float top = center_y - (height / 2.0);
 
   processed_detects[id] = YoloDetectionCuda{
       confidence, left, top, width, height, static_cast<int32_t>(class_id)};
