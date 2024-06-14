@@ -128,6 +128,9 @@ int process_net_kernel(CudaFormatMat *const result, uintptr_t const num_levels,
              sizeof(YoloDetectionCuda) * total_rows, cudaMemcpyDeviceToHost);
   cudaMemcpy(processed_valid, processed_valid_cuda, sizeof(bool) * total_rows,
              cudaMemcpyDeviceToHost);
+  cudaFree(processed_detects_cuda);
+  cudaFree(processed_valid_cuda);
+  cudaStreamDestroy(kernel_stream);
 
   return 0;
 }
