@@ -23,6 +23,7 @@ const GODOT: &str = "tests/godot_sim/GodotAUVSim.exe";
 
 const GODOT_DIR: &str = "tests/godot_sim/";
 
+#[cfg(feature = "networked_testing")]
 async fn download_sim() -> Result<()> {
     const VERSION: &str = "v1.2.1";
 
@@ -49,6 +50,7 @@ async fn download_sim() -> Result<()> {
 async fn open_sim(godot: String) -> Result<()> {
     if !Path::new(&godot).is_file() {
         if cfg!(feature = "networked_testing") {
+            #[cfg(feature = "networked_testing")]
             download_sim().await?
         } else {
             bail!("Enable feature \"networked_testing\" to download the godot simulator");
