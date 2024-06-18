@@ -430,6 +430,10 @@
 <a href="#430" id="430">430</a>
 <a href="#431" id="431">431</a>
 <a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>opencv::{
@@ -541,17 +545,19 @@
         num_objects: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>net = read_net_from_onnx_buffer(model_bytes)<span class="question-mark">?</span>;
-        <span class="attr">#[cfg(feature = <span class="string">"cuda"</span>)]
-        </span>{
-            net.set_preferable_backend(DNN_BACKEND_CUDA)<span class="question-mark">?</span>;
-            <span class="kw">if </span><span class="macro">cfg!</span>(feature = <span class="string">"cuda_f16"</span>) {
-                net.set_preferable_target(DNN_TARGET_CUDA_FP16)<span class="question-mark">?</span>;
-            } <span class="kw">else </span>{
-                net.set_preferable_target(DNN_TARGET_CUDA)<span class="question-mark">?</span>;
+        <span class="comment">/*
+        #[cfg(feature = "cuda")]
+        {
+            net.set_preferable_backend(DNN_BACKEND_CUDA)?;
+            if cfg!(feature = "cuda_f16") {
+                net.set_preferable_target(DNN_TARGET_CUDA_FP16)?;
+            } else {
+                net.set_preferable_target(DNN_TARGET_CUDA)?;
             }
         }
+        */
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+        </span><span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             net: Mutex::new(net),
             num_objects,
             model_size: Size::new(model_size, model_size),
@@ -575,17 +581,19 @@
     /// ```
     </span><span class="kw">pub fn </span>from_file(model_name: <span class="kw-2">&amp;</span>str, model_size: i32, num_objects: usize) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>net = read_net_from_onnx(model_name)<span class="question-mark">?</span>;
-        <span class="attr">#[cfg(feature = <span class="string">"cuda"</span>)]
-        </span>{
-            net.set_preferable_backend(DNN_BACKEND_CUDA)<span class="question-mark">?</span>;
-            <span class="kw">if </span><span class="macro">cfg!</span>(feature = <span class="string">"cuda_f16"</span>) {
-                net.set_preferable_target(DNN_TARGET_CUDA_FP16)<span class="question-mark">?</span>;
-            } <span class="kw">else </span>{
-                net.set_preferable_target(DNN_TARGET_CUDA)<span class="question-mark">?</span>;
+        <span class="comment">/*
+        #[cfg(feature = "cuda")]
+        {
+            net.set_preferable_backend(DNN_BACKEND_CUDA)?;
+            if cfg!(feature = "cuda_f16") {
+                net.set_preferable_target(DNN_TARGET_CUDA_FP16)?;
+            } else {
+                net.set_preferable_target(DNN_TARGET_CUDA)?;
             }
         }
+        */
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+        </span><span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             net: Mutex::new(net),
             num_objects,
             model_size: Size::new(model_size, model_size),
