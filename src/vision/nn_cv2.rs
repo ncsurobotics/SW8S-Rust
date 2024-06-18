@@ -109,6 +109,7 @@ impl OnnxModel {
         num_objects: usize,
     ) -> Result<Self> {
         let mut net = read_net_from_onnx_buffer(model_bytes)?;
+        /*
         #[cfg(feature = "cuda")]
         {
             net.set_preferable_backend(DNN_BACKEND_CUDA)?;
@@ -118,6 +119,7 @@ impl OnnxModel {
                 net.set_preferable_target(DNN_TARGET_CUDA)?;
             }
         }
+        */
 
         Ok(Self {
             net: Mutex::new(net),
@@ -143,6 +145,7 @@ impl OnnxModel {
     /// ```
     pub fn from_file(model_name: &str, model_size: i32, num_objects: usize) -> Result<Self> {
         let mut net = read_net_from_onnx(model_name)?;
+        /*
         #[cfg(feature = "cuda")]
         {
             net.set_preferable_backend(DNN_BACKEND_CUDA)?;
@@ -152,6 +155,7 @@ impl OnnxModel {
                 net.set_preferable_target(DNN_TARGET_CUDA)?;
             }
         }
+        */
 
         Ok(Self {
             net: Mutex::new(net),

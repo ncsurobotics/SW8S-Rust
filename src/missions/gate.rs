@@ -229,3 +229,16 @@ pub fn adjust_right<
         ),
     ))
 }
+
+pub fn gate_run_testing<
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat,
+>(
+    context: &Con,
+) -> impl ActionExec<()> + '_ {
+    let depth: f32 = -1.0;
+    adjust_logic(context, depth, CountTrue::new(3))
+}

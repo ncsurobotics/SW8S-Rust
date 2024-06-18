@@ -159,6 +159,8 @@ fn main() {
         cc::Build::new()
             .cuda(true)
             .flag("-cudart=shared")
+            .flag("-gencode")
+            .flag("arch=compute_53,code=sm_53")
             // Specify all cuda kernels that need to be built
             .file("src/cuda_kernels/process_net.cu")
             .compile("libsw8s_cuda.a");
