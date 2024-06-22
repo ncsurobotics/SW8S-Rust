@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["IndexOrName"],"fn":["dissolve_rename_from"],"struct":["Field","NamedStruct","Rename"]};
