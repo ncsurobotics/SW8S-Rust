@@ -165,7 +165,6 @@ fn main() {
             .file("src/cuda_kernels/process_net.cu")
             .compile("libsw8s_cuda.a");
 
-        println!("cargo:rustc-link-search=native=/usr/local/cuda/lib64");
         println!("cargo:rustc-link-lib=cudart");
     }
 }
