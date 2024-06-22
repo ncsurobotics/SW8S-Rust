@@ -161,6 +161,8 @@ fn main() {
             .flag("-cudart=shared")
             .flag("-gencode")
             .flag("arch=compute_53,code=sm_53")
+            .flag("-gencode")
+            .flag("arch=compute_75,code=sm_75")
             // Specify all cuda kernels that need to be built
             .file("src/cuda_kernels/process_net.cu")
             .compile("libsw8s_cuda.a");
