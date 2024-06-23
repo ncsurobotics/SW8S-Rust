@@ -242,12 +242,20 @@
 <a href="#242" id="242">242</a>
 <a href="#243" id="243">243</a>
 <a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
-<span class="kw">use </span>tokio_serial::SerialStream;
+<span class="kw">use </span>tokio_serial::{new, SerialStream};
 
 <span class="kw">use crate</span>::{
     act_nest,
-    missions::movement::StripY,
+    missions::{
+        movement::{ConfidenceY, FlipX, StripY},
+        vision::{MidPoint, OffsetClass},
+    },
     vision::{
         gate_poles::{GatePoles, Target},
         nn_cv2::{OnnxModel, YoloClass},
@@ -324,8 +332,8 @@
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
         <span class="macro">act_nest!</span>(
             ActionSequence::new,
-            adjust_logic(context, depth, CountTrue::new(<span class="number">3</span>)),
-            adjust_logic(context, depth, CountFalse::new(<span class="number">10</span>)),
+            adjust_logic(context, depth, CountTrue::new(<span class="number">4</span>)),
+            adjust_logic(context, depth, CountFalse::new(<span class="number">4</span>)),
             ZeroMovement::new(context, depth)
         ),
     )
@@ -346,28 +354,30 @@
     depth: f32,
     end_condition: X,
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'a </span>{
-    <span class="kw">const </span>GATE_TRAVERSAL_SPEED: f32 = <span class="number">0.5</span>;
+    <span class="kw">const </span>GATE_TRAVERSAL_SPEED: f32 = <span class="number">0.2</span>;
 
     ActionWhile::new(ActionChain::new(
         VisionNorm::&lt;Con, GatePoles&lt;OnnxModel&gt;, f64&gt;::new(context, GatePoles::default()),
         ActionChain::new(
             <span class="macro">act_nest!</span>(
                 wrap_action(ActionConcurrent::new, FirstValid::new),
+                DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Gate),
+                DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Blue),
+                DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Middle),
                 DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Red),
                 DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Pole),
-                DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Blue),
-                DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Gate),
-                DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Middle),
             ),
             TupleSecond::new(ActionConcurrent::new(
                 <span class="macro">act_nest!</span>(
                     ActionChain::new,
                     ToVec::new(),
+                    OffsetClass::new(Target::Middle, Offset2D::&lt;f64&gt;::new(-<span class="number">0.1</span>, <span class="number">0.0</span>)),
                     ExtractPosition::new(),
-                    Average::new(),
+                    MidPoint::new(),
                     OffsetToPose::default(),
                     LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
-                    StripY::default(),
+                    ConfidenceY::default(),
+                    FlipX::default(),
                     Stability2Movement::new(
                         context,
                         Stability2Pos::new(<span class="number">0.0</span>, GATE_TRAVERSAL_SPEED, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, depth)
