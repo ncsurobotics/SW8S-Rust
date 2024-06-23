@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["NextIf","NextIfEq","NextIfEqFn","Peek","PeekMut","Peekable"]};

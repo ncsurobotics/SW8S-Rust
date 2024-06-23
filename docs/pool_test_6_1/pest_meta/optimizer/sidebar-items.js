@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["OptimizedExpr"],"fn":["optimize","rule_to_optimized_rule","to_hash_map"],"mod":["concatenator","factorizer","lister","restorer","rotater","skipper","unroller"],"struct":["OptimizedExprTopDownIterator","OptimizedRule"]};

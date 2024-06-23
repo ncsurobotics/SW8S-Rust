@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Average","DetectTarget","ExtractPosition","VisionNorm","VisionNormOffset"]};

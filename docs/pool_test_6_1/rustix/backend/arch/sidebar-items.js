@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["syscall","syscall_always_asm","syscall_readonly"],"mod":["asm"]};
