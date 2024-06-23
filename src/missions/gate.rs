@@ -1,9 +1,12 @@
 use tokio::io::WriteHalf;
-use tokio_serial::SerialStream;
+use tokio_serial::{new, SerialStream};
 
 use crate::{
     act_nest,
-    missions::movement::StripY,
+    missions::{
+        movement::{ConfidenceY, FlipX, StripY},
+        vision::{MidPoint, OffsetClass},
+    },
     vision::{
         gate_poles::{GatePoles, Target},
         nn_cv2::{OnnxModel, YoloClass},
@@ -80,8 +83,8 @@ pub fn gate_run_complex<
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
         act_nest!(
             ActionSequence::new,
-            adjust_logic(context, depth, CountTrue::new(3)),
-            adjust_logic(context, depth, CountFalse::new(10)),
+            adjust_logic(context, depth, CountTrue::new(4)),
+            adjust_logic(context, depth, CountFalse::new(4)),
             ZeroMovement::new(context, depth)
         ),
     )
@@ -102,28 +105,30 @@ pub fn adjust_logic<
     depth: f32,
     end_condition: X,
 ) -> impl ActionExec<()> + 'a {
-    const GATE_TRAVERSAL_SPEED: f32 = 0.5;
+    const GATE_TRAVERSAL_SPEED: f32 = 0.2;
 
     ActionWhile::new(ActionChain::new(
         VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
         ActionChain::new(
             act_nest!(
                 wrap_action(ActionConcurrent::new, FirstValid::new),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
                 DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
             ),
             TupleSecond::new(ActionConcurrent::new(
                 act_nest!(
                     ActionChain::new,
                     ToVec::new(),
+                    OffsetClass::new(Target::Middle, Offset2D::<f64>::new(-0.1, 0.0)),
                     ExtractPosition::new(),
-                    Average::new(),
+                    MidPoint::new(),
                     OffsetToPose::default(),
                     LinearYawFromX::<Stability2Adjust>::default(),
-                    StripY::default(),
+                    ConfidenceY::default(),
+                    FlipX::default(),
                     Stability2Movement::new(
                         context,
                         Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth)

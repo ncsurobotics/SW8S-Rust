@@ -1,5 +1,5 @@
 use std::fmt::{Debug, Display};
-use std::ops::{Div, Mul};
+use std::ops::{Add, AddAssign, Div, Mul};
 use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};
@@ -305,6 +305,93 @@ impl<T: Send + Sync + Clone> ActionMod<anyhow::Result<Vec<T>>> for Average<T> {
 }
 
 #[derive(Debug)]
+pub struct MidPoint<T> {
+    values: Vec<T>,
+}
+
+impl<T> Default for MidPoint<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T> MidPoint<T> {
+    pub const fn new() -> Self {
+        Self { values: vec![] }
+    }
+}
+
+impl<T> Action for MidPoint<T> {}
+
+#[async_trait]
+impl ActionExec<Option<Offset2D<f64>>> for MidPoint<Offset2D<f64>> {
+    async fn execute(&mut self) -> Option<Offset2D<f64>> {
+        if self.values.is_empty() {
+            None
+        } else {
+            let min_x = self
+                .values
+                .iter()
+                .map(|val| val.x())
+                .cloned()
+                .reduce(f64::min)
+                .unwrap();
+            let max_x = self
+                .values
+                .iter()
+                .map(|val| val.x())
+                .cloned()
+                .reduce(f64::max)
+                .unwrap();
+            let min_y = self
+                .values
+                .iter()
+                .map(|val| val.y())
+                .cloned()
+                .reduce(f64::min)
+                .unwrap();
+            let max_y = self
+                .values
+                .iter()
+                .map(|val| val.y())
+                .cloned()
+                .reduce(f64::max)
+                .unwrap();
+
+            let val = Some(Offset2D::new((max_x + min_x) / 2.0, (max_y + min_y) / 2.0));
+            println!("Processed this: {:#?}", val);
+            val
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<Vec<T>> for MidPoint<T> {
+    fn modify(&mut self, input: &Vec<T>) {
+        self.values.clone_from(input);
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<Option<Vec<T>>> for MidPoint<T> {
+    fn modify(&mut self, input: &Option<Vec<T>>) {
+        if let Some(input) = input {
+            self.values.clone_from(input);
+        } else {
+            self.values = vec![];
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<anyhow::Result<Vec<T>>> for MidPoint<T> {
+    fn modify(&mut self, input: &anyhow::Result<Vec<T>>) {
+        if let Ok(input) = input {
+            self.values.clone_from(input);
+        } else {
+            self.values = vec![];
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct ExtractPosition<T, U> {
     values: Vec<VisualDetection<T, U>>,
 }
@@ -343,6 +430,65 @@ impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetecti
 
 impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<VisualDetection<T, U>>
     for ExtractPosition<T, U>
+{
+    fn modify(&mut self, input: &VisualDetection<T, U>) {
+        self.values = vec![input.clone()];
+    }
+}
+
+#[derive(Debug)]
+pub struct OffsetClass<T, U, V> {
+    values: Vec<VisualDetection<T, U>>,
+    class: V,
+    offset: U,
+}
+
+impl<T, U, V> OffsetClass<T, U, V> {
+    pub const fn new(class: V, offset: U) -> Self {
+        Self {
+            values: vec![],
+            class,
+            offset,
+        }
+    }
+}
+
+impl<T, U, V> Action for OffsetClass<T, U, V> {}
+
+#[async_trait]
+impl<
+        T: Send + Sync + Clone + Into<V>,
+        U: Send + Sync + Clone + Add<Output = U>,
+        V: Send + Sync + PartialEq,
+    > ActionExec<Vec<VisualDetection<T, U>>> for OffsetClass<T, U, V>
+where
+    T: PartialEq<T>,
+{
+    async fn execute(&mut self) -> Vec<VisualDetection<T, U>> {
+        self.values
+            .iter()
+            .map(|x| {
+                let offset = if x.class().clone().into() == self.class {
+                    x.position().clone() + self.offset.clone()
+                } else {
+                    x.position().clone()
+                };
+                VisualDetection::new(x.class().clone(), offset)
+            })
+            .collect()
+    }
+}
+
+impl<T: Send + Sync + Clone, U: Send + Sync + Clone, V> ActionMod<Vec<VisualDetection<T, U>>>
+    for OffsetClass<T, U, V>
+{
+    fn modify(&mut self, input: &Vec<VisualDetection<T, U>>) {
+        self.values.clone_from(input);
+    }
+}
+
+impl<T: Send + Sync + Clone, U: Send + Sync + Clone, V> ActionMod<VisualDetection<T, U>>
+    for OffsetClass<T, U, V>
 {
     fn modify(&mut self, input: &VisualDetection<T, U>) {
         self.values = vec![input.clone()];

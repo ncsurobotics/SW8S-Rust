@@ -52,8 +52,8 @@ where
     let depth: f32 = -1.0;
 
     // time in seconds that each action will wait until before continuing onto the next action.
-    let dive_duration = 5.0;
-    let forward_duration = 5.0;
+    let dive_duration = 2.0;
+    let forward_duration = 2.0;
     ActionSequence::new(
         WaitArm::new(context),
         ActionSequence::new(

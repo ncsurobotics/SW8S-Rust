@@ -1,22 +1,28 @@
 use crate::{
     act_nest,
     missions::{
-        action::{ActionChain, ActionWhile},
-        extra::{AlwaysTrue, OutputType, ToVec, Transform},
-        movement::{
-            aggressive_yaw_from_x, FlatX, OffsetToPose, Stability2Adjust, Stability2Movement,
-            Stability2Pos, StripY,
+        action::{
+            wrap_action, ActionChain, ActionConcurrent, ActionWhile, FirstValid, TupleSecond,
         },
-        vision::{Average, DetectTarget, ExtractPosition, VisionNorm},
+        basic::descend_and_go_forward,
+        extra::{AlwaysFalse, AlwaysTrue, OutputType, ToVec, Transform},
+        movement::{
+            aggressive_yaw_from_x, FlatX, FlipYaw, LinearYawFromX, OffsetToPose, Stability2Adjust,
+            Stability2Movement, Stability2Pos, StripX, StripY,
+        },
+        vision::{Average, DetectTarget, ExtractPosition, MidPoint, VisionNorm},
     },
     vision::{
+        buoy_model::{BuoyModel, Target},
+        gate_poles::GatePoles,
+        nn_cv2::{OnnxModel, YoloClass},
         path::{Path, Yuv},
-        Offset2D,
+        Offset2D, VisualDetection,
     },
 };
 
 use super::{
-    action::{ActionExec, ActionSequence},
+    action::{ActionExec, ActionMod, ActionSequence},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::ZeroMovement,
@@ -83,5 +89,49 @@ pub fn buoy_circle_sequence<
                 AlwaysTrue::new(),
             )),
         ),
+    )
+}
+
+pub fn buoy_circle_sequence_model<
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat
+        + Unpin,
+>(
+    context: &Con,
+) -> impl ActionExec<()> + '_ {
+    const BUOY_X_SPEED: f32 = -0.2;
+    const BUOY_Y_SPEED: f32 = 0.2;
+    const DEPTH: f32 = -1.0;
+
+    ActionSequence::new(
+        descend_and_go_forward(context),
+        ActionWhile::new(ActionChain::new(
+            VisionNorm::<Con, BuoyModel<OnnxModel>, f64>::new(context, BuoyModel::default()),
+            ActionChain::new(
+                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Buoy),
+                TupleSecond::new(ActionConcurrent::new(
+                    act_nest!(
+                        ActionChain::new,
+                        ToVec::new(),
+                        ExtractPosition::new(),
+                        Average::new(),
+                        OffsetToPose::default(),
+                        LinearYawFromX::<Stability2Adjust>::new(60.0),
+                        FlipYaw::default(),
+                        StripY::default(),
+                        StripX::default(),
+                        Stability2Movement::new(
+                            context,
+                            Stability2Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, 0.0, 0.0, None, DEPTH)
+                        ),
+                        OutputType::<()>::new()
+                    ),
+                    AlwaysTrue::default(),
+                )),
+            ),
+        )),
     )
 }
