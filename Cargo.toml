@@ -39,19 +39,19 @@ futures = { version = "0.3.30", default-features = false, features = ["std"] }# 
 toml = "0.8.14" # Configuration file
 serde = { version = "1.0.203", features = ["derive"] } # Config serial handling
 bytes = "1.6.0" # Byte buffering
-uuid = { version = "1.8.0", features = ["v4", "fast-rng"] } # Unique IDs
+uuid = { version = "1.9.0", features = ["v4", "fast-rng"] } # Unique IDs
 graphviz-rust = { version = "0.9.0", optional = true } # Drawing graphs
 paste = { version = "1.0.15", optional = true } # Concat identifiers
 chrono = "0.4.38"
 
 [build-dependencies]
 quote = { version = "1.0.36", optional = true }
-syn = { version = "2.0.66", features = ["full", "fold"], optional = true }
-proc-macro2 = { version = "1.0.85", optional = true }
+syn = { version = "2.0.68", features = ["full", "fold"], optional = true }
+proc-macro2 = { version = "1.0.86", optional = true }
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
-reqwest = "0.12.4" # Downloading godot sim
+reqwest = "0.12.5" # Downloading godot sim
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]
 flate2 = "1.0.30" # Decompressing gz
