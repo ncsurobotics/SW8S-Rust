@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["LOOP_SIZE","USIZE_BYTES"],"fn":["contains_zero_byte","forward_search","memchr","memchr2","memchr3","memrchr","memrchr2","memrchr3","repeat_byte","reverse_search","sub"]};
