@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Lookbehind"],"fn":["expand","is_paste_operation","is_single_interpolation_group","parse_bracket_as_segments","pasted_to_tokens"],"macro":["paste"],"mod":["attr","error","segment"]};

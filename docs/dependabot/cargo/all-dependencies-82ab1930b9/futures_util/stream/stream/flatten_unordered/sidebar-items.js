@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["NEED_TO_POLL_ALL","NEED_TO_POLL_INNER_STREAMS","NEED_TO_POLL_STREAM","NONE","POLLING","WAKING","WOKEN"],"enum":["FlowStep"],"struct":["FlattenUnorderedWithFlowController","PollStateBomb","PollStreamFut","SharedPollState","WrappedWaker"],"trait":["FlowController"],"type":["FlattenUnordered"]};

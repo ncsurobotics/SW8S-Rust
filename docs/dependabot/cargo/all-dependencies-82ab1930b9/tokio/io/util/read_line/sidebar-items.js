@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["finish_string_read","put_back_original_data","read_line","read_line_internal"],"struct":["ReadLine"]};

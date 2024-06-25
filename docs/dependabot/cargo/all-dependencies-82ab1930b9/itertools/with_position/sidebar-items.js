@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Position"],"fn":["with_position"],"struct":["WithPosition"]};
