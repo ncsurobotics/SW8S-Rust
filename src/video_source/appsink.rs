@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Result};
-use async_trait::async_trait;
 use opencv::prelude::Mat;
 use opencv::videoio::VideoCapture;
 use opencv::videoio::VideoCaptureAPIs;
@@ -70,7 +69,6 @@ impl Camera {
     }
 }
 
-#[async_trait]
 impl MatSource for Camera {
     async fn get_mat(&self) -> Mat {
         loop {

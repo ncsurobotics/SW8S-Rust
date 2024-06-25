@@ -7,7 +7,6 @@ use super::{
 use crate::vision::{buoy::Buoy, nn_cv2::OnnxModel, VisualDetector};
 
 use anyhow::Result;
-use async_trait::async_trait;
 use core::fmt::Debug;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
@@ -53,7 +52,6 @@ impl<T> Action for DriveToBuoyVision<'_, T> {}
 
 impl<T> Action for FindBuoy<'_, T> {}
 
-#[async_trait]
 impl<T> ActionExec<Result<()>> for FindBuoy<'_, T>
 where
     T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
@@ -75,7 +73,6 @@ where
         return Ok(detected);
     }
 }
-#[async_trait]
 impl<T> ActionExec<Result<()>> for DriveToBuoyVision<'_, T>
 where
     T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,

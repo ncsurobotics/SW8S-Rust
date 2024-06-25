@@ -5,7 +5,6 @@ use super::{
     movement::{Descend, StraightMovement, ZeroMovement},
 };
 
-use async_trait::async_trait;
 use tokio::{
     io::WriteHalf,
     time::{sleep, Duration},
@@ -19,7 +18,6 @@ pub struct DelayAction {
 
 impl Action for DelayAction {}
 
-#[async_trait]
 impl ActionExec<()> for DelayAction {
     async fn execute(&mut self) -> () {
         println!("BEGIN sleep for {} seconds", self.delay);

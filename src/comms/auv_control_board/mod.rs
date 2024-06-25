@@ -2,7 +2,6 @@ use core::fmt::Debug;
 use std::sync::Arc;
 
 use anyhow::Result;
-use async_trait::async_trait;
 use tokio::{io::AsyncWriteExt, sync::Mutex};
 
 use self::util::{crc_itt16_false, AcknowledgeErr};
@@ -12,7 +11,7 @@ use super::auv_control_board::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 pub mod response;
 pub mod util;
 
-#[async_trait]
+#[allow(async_fn_in_trait)]
 pub trait GetAck {
     async fn get_ack(&self, id: u16) -> Result<Vec<u8>, AcknowledgeErr>;
 }

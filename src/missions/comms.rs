@@ -1,5 +1,4 @@
 use anyhow::Result;
-use async_trait::async_trait;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
@@ -21,7 +20,6 @@ impl<'a, T> StartBno055<'a, T> {
 
 impl<T> Action for StartBno055<'_, T> {}
 
-#[async_trait]
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for StartBno055<'_, T> {
     async fn execute(&mut self) -> Result<()> {
         self.context

@@ -1,11 +1,10 @@
-use async_trait::async_trait;
 use opencv::prelude::Mat;
 use std::sync::Arc;
 use std::sync::Mutex;
 
 pub mod appsink;
 
-#[async_trait]
+#[allow(async_fn_in_trait)]
 pub trait MatSource: Send + Sync {
     async fn get_mat(&self) -> Mat;
 }
@@ -23,7 +22,6 @@ impl SingleFrameSource {
     }
 }
 
-#[async_trait]
 impl MatSource for SingleFrameSource {
     async fn get_mat(&self) -> Mat {
         self.inner.lock().unwrap().clone()

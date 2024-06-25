@@ -2,7 +2,6 @@ use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use anyhow::{anyhow, bail};
-use async_trait::async_trait;
 use uuid::Uuid;
 
 use super::{
@@ -34,7 +33,6 @@ impl<T: Send + Sync> ActionMod<T> for NoOp {
     fn modify(&mut self, _input: &T) {}
 }
 
-#[async_trait]
 impl ActionExec<()> for NoOp {
     async fn execute(&mut self) -> () {}
 }
@@ -69,7 +67,6 @@ impl<T: Send + Sync> ActionMod<T> for Terminal {
     fn modify(&mut self, _input: &T) {}
 }
 
-#[async_trait]
 impl ActionExec<()> for Terminal {
     async fn execute(&mut self) -> () {}
 }
@@ -108,7 +105,6 @@ impl<T: Send + Sync> ActionMod<T> for OutputType<T> {
     fn modify(&mut self, _input: &T) {}
 }
 
-#[async_trait]
 impl<T: Send + Sync> ActionExec<()> for OutputType<T> {
     async fn execute(&mut self) -> () {}
 }
@@ -134,21 +130,18 @@ impl<T: Send + Sync> ActionMod<T> for AlwaysTrue {
     fn modify(&mut self, _input: &T) {}
 }
 
-#[async_trait]
 impl ActionExec<anyhow::Result<()>> for AlwaysTrue {
     async fn execute(&mut self) -> anyhow::Result<()> {
         Ok(())
     }
 }
 
-#[async_trait]
 impl ActionExec<Option<()>> for AlwaysTrue {
     async fn execute(&mut self) -> Option<()> {
         Some(())
     }
 }
 
-#[async_trait]
 impl ActionExec<bool> for AlwaysTrue {
     async fn execute(&mut self) -> bool {
         true
@@ -176,21 +169,18 @@ impl<T: Send + Sync> ActionMod<T> for AlwaysFalse {
     fn modify(&mut self, _input: &T) {}
 }
 
-#[async_trait]
 impl ActionExec<anyhow::Result<()>> for AlwaysFalse {
     async fn execute(&mut self) -> anyhow::Result<()> {
         bail!("")
     }
 }
 
-#[async_trait]
 impl ActionExec<Option<()>> for AlwaysFalse {
     async fn execute(&mut self) -> Option<()> {
         None
     }
 }
 
-#[async_trait]
 impl ActionExec<bool> for AlwaysFalse {
     async fn execute(&mut self) -> bool {
         false
@@ -217,7 +207,6 @@ impl<T: ActionMod<U>, U: Send + Sync> ActionMod<U> for UnwrapAction<T> {
     }
 }
 
-#[async_trait]
 impl<T: ActionExec<anyhow::Result<U>>, U: Send + Sync> ActionExec<U> for UnwrapAction<T> {
     async fn execute(&mut self) -> U {
         self.action.execute().await.unwrap()
@@ -278,7 +267,6 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
     }
 }
 
-#[async_trait]
 impl ActionExec<anyhow::Result<()>> for CountTrue {
     async fn execute(&mut self) -> anyhow::Result<()> {
         println!("Check true count: {} ? {}", self.count, self.target);
@@ -344,7 +332,6 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
     }
 }
 
-#[async_trait]
 impl ActionExec<anyhow::Result<()>> for CountFalse {
     async fn execute(&mut self) -> anyhow::Result<()> {
         println!("Check false count: {} ? {}", self.count, self.target);
@@ -401,7 +388,6 @@ impl<T: Send + Sync + Clone, U, V: Fn(T) -> U> ActionMod<T> for Transform<T, U, 
     }
 }
 
-#[async_trait]
 impl<T: Send + Sync + Clone, U: Send + Sync, V: Fn(T) -> U + Send + Sync> ActionExec<U>
     for Transform<T, U, V>
 {
@@ -455,7 +441,6 @@ impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<
     }
 }
 
-#[async_trait]
 impl<T: Send + Sync + Clone> ActionExec<Vec<T>> for ToVec<T> {
     async fn execute(&mut self) -> Vec<T> {
         self.value.clone()
