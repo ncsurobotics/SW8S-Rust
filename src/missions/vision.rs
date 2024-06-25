@@ -1,5 +1,5 @@
 use std::fmt::{Debug, Display};
-use std::ops::{Add, AddAssign, Div, Mul};
+use std::ops::{Add, Div, Mul};
 use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};

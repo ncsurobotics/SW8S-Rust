@@ -1,10 +1,5 @@
 use anyhow::Result;
-use opencv::{
-    core::{Scalar, Size, CV_32F, CV_8S},
-    dnn::{blob_from_image, NetTrait},
-    imgcodecs::{imread, IMREAD_COLOR},
-    prelude::Mat,
-};
+use opencv::{core::Size, prelude::Mat};
 
 use crate::load_onnx;
 

@@ -22,7 +22,7 @@ impl<T> Action for WaitArm<'_, T> {}
 
 impl<T: GetMainElectronicsBoard> ActionExec<()> for WaitArm<'_, T> {
     /// Wait for system to be armed
-    async fn execute(&mut self) -> () {
+    async fn execute(&mut self) {
         println!("Waiting for ARM");
         while !self
             .context

@@ -1,8 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use opencv::imgcodecs::{imread, IMREAD_COLOR};
-use sw8s_rust_lib::vision::{
-    buoy::Buoy, buoy_model::BuoyModel, gate_poles::GatePoles, VisualDetector,
-};
+use sw8s_rust_lib::vision::{buoy_model::BuoyModel, gate_poles::GatePoles, VisualDetector};
 
 const CUDA_ENABLED: &str = if cfg!(feature = "cuda") {
     if cfg!(feature = "cuda_f16") {

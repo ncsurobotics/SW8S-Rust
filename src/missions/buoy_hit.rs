@@ -61,7 +61,7 @@ where
         let class_of_interest = self.context.get_desired_buoy_gate().await;
 
         let model_acquisition = self.buoy_model.detect(&camera_aquisition.await);
-        let detected = match model_acquisition {
+        match model_acquisition {
             Ok(acquisition_vec) if !acquisition_vec.is_empty() => {
                 acquisition_vec
                     .iter()
@@ -70,7 +70,7 @@ where
             Ok(_) => todo!(),
             Err(_) => todo!(),
         };
-        return Ok(detected);
+        Ok(())
     }
 }
 impl<T> ActionExec<Result<()>> for DriveToBuoyVision<'_, T>

@@ -647,7 +647,7 @@ impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
 }
 
 impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<()> for Stability2Movement<'a, T> {
-    async fn execute(&mut self) -> () {
+    async fn execute(&mut self) {
         let _ = self.pose.exec(self.context.get_control_board()).await;
     }
 }
@@ -1339,7 +1339,7 @@ impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
 }
 
 impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<()> for Stability1Movement<'a, T> {
-    async fn execute(&mut self) -> () {
+    async fn execute(&mut self) {
         let _ = self.pose.exec(self.context.get_control_board()).await;
     }
 }

@@ -34,7 +34,7 @@ impl<T: Send + Sync> ActionMod<T> for NoOp {
 }
 
 impl ActionExec<()> for NoOp {
-    async fn execute(&mut self) -> () {}
+    async fn execute(&mut self) {}
 }
 
 /// [`NoOp`], but does not display on graph
@@ -68,7 +68,7 @@ impl<T: Send + Sync> ActionMod<T> for Terminal {
 }
 
 impl ActionExec<()> for Terminal {
-    async fn execute(&mut self) -> () {}
+    async fn execute(&mut self) {}
 }
 
 /// Nondisplaying action that resolves an ActionExec Type
@@ -106,7 +106,7 @@ impl<T: Send + Sync> ActionMod<T> for OutputType<T> {
 }
 
 impl<T: Send + Sync> ActionExec<()> for OutputType<T> {
-    async fn execute(&mut self) -> () {}
+    async fn execute(&mut self) {}
 }
 
 /// Always returns a true value
