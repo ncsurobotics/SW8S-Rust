@@ -150,20 +150,28 @@ fn main() {
 
     #[cfg(feature = "cuda")]
     {
+        // https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+        const COMPUTE_CODES: &[&str] = &[
+            "52", "53", "60", "61", "62", "70", "72", "75", "80", "86", "87", "89", "90", "90a",
+        ];
+
         // Rebuild on any kernel change
         println!("cargo:rerun-if-changed=src/cuda_kernels");
 
         // Rebuild for specific files that use kernels changing
         println!("cargo:rerun-if-changed=src/vision/nn_cv2.rs");
 
-        cc::Build::new()
-            .cuda(true)
-            .flag("-cudart=shared")
-            .flag("-gencode")
-            .flag("arch=compute_53,code=sm_53")
-            .flag("-gencode")
-            .flag("arch=compute_75,code=sm_75")
-            // Specify all cuda kernels that need to be built
+        let mut build = cc::Build::new();
+        build.cuda(true).flag("-cudart=shared");
+
+        for code in COMPUTE_CODES {
+            build
+                .flag("-gencode")
+                .flag(&format!("arch=compute_{},code=sm_{}", code, code));
+        }
+
+        // Specify all cuda kernels that need to be built
+        build
             .file("src/cuda_kernels/process_net.cu")
             .compile("libsw8s_cuda.a");
 
