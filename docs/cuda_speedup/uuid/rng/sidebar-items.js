@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["bytes"]};
+window.SIDEBAR_ITEMS = {"fn":["u128"]};
