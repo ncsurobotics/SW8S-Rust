@@ -129,6 +129,25 @@
 <a href="#129" id="129">129</a>
 <a href="#130" id="130">130</a>
 <a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>opencv::{
     core::{Scalar, Size, CV_32F, CV_8S},
@@ -140,12 +159,12 @@
 <span class="kw">use </span><span class="kw">crate</span>::load_onnx;
 
 <span class="kw">use super</span>::{
-    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
+    nn_cv2::{ModelPipelined, OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
 <span class="kw">use </span>core::hash::Hash;
-<span class="kw">use </span>std::{error::Error, fmt::Display};
+<span class="kw">use </span>std::{error::Error, fmt::Display, num::NonZeroUsize};
 
 <span class="attr">#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 </span><span class="kw">pub enum </span>Target {
@@ -195,7 +214,7 @@
     }
 }
 
-<span class="attr">#[derive(Debug)]
+<span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>GatePoles&lt;T: VisionModel&gt; {
     model: T,
     threshold: f64,
@@ -259,5 +278,24 @@
     <span class="kw">fn </span>model_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Size {
         <span class="self">self</span>.model.size()
     }
+}
+
+<span class="kw">impl </span>GatePoles&lt;OnnxModel&gt; {
+    <span class="doccomment">/// Convert into [`ModelPipelined`].
+    ///
+    /// See [`ModelPipelined::new`] for arguments.
+    </span><span class="kw">pub async fn </span>into_pipelined(
+        <span class="self">self</span>,
+        model_threads: NonZeroUsize,
+        post_processing_threads: NonZeroUsize,
+    ) -&gt; ModelPipelined {
+        ModelPipelined::new(
+            <span class="self">self</span>.model,
+            model_threads,
+            post_processing_threads,
+            <span class="self">self</span>.threshold,
+        )
+        .<span class="kw">await
+    </span>}
 }
 </code></pre></div></section></main></body></html>
