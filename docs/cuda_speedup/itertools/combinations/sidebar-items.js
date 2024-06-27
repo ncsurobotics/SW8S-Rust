@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["combinations","remaining_for"],"struct":["Combinations"]};

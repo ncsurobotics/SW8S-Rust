@@ -1,1 +1,0 @@
-searchState.loadedDescShard("sw8s_rust", 0, "Graceful shutdown, see …\nReturns the argument unchanged.\nReturns the argument unchanged.\nCalls <code>U::from(self)</code>.\nCalls <code>U::from(self)</code>.")

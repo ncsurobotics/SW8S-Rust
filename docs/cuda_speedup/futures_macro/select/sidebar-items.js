@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CaseKind"],"fn":["declare_result_enum","select","select_biased","select_inner"],"mod":["kw"],"struct":["Select"]};

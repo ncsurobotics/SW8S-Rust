@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["graph_actions"],"struct":["AlwaysTrue","CountFalse","CountTrue","NoOp","OutputType","Terminal","ToVec","Transform","UnwrapAction"]};
