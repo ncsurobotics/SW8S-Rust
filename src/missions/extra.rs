@@ -1,6 +1,7 @@
+use std::fmt::Debug;
 use std::marker::PhantomData;
 
-use anyhow::anyhow;
+use anyhow::{anyhow, bail};
 use async_trait::async_trait;
 use uuid::Uuid;
 
@@ -151,6 +152,48 @@ impl ActionExec<Option<()>> for AlwaysTrue {
 impl ActionExec<bool> for AlwaysTrue {
     async fn execute(&mut self) -> bool {
         true
+    }
+}
+
+/// Always returns a falsej value
+#[derive(Debug)]
+pub struct AlwaysFalse {}
+
+impl AlwaysFalse {
+    pub fn new() -> Self {
+        AlwaysFalse {}
+    }
+}
+impl Default for AlwaysFalse {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Action for AlwaysFalse {}
+
+impl<T: Send + Sync> ActionMod<T> for AlwaysFalse {
+    fn modify(&mut self, _input: &T) {}
+}
+
+#[async_trait]
+impl ActionExec<anyhow::Result<()>> for AlwaysFalse {
+    async fn execute(&mut self) -> anyhow::Result<()> {
+        bail!("")
+    }
+}
+
+#[async_trait]
+impl ActionExec<Option<()>> for AlwaysFalse {
+    async fn execute(&mut self) -> Option<()> {
+        None
+    }
+}
+
+#[async_trait]
+impl ActionExec<bool> for AlwaysFalse {
+    async fn execute(&mut self) -> bool {
+        false
     }
 }
 
@@ -387,12 +430,13 @@ impl<T> Default for ToVec<T> {
     }
 }
 
-impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<Option<U>>
+impl<T: Send + Sync + Debug, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<Option<U>>
     for ToVec<T>
 {
     fn modify(&mut self, input: &Option<U>) {
         if let Some(input) = input {
             self.value = input.clone().into_iter().collect();
+            println!("VECTOR: {:#?}", self.value);
         } else {
             self.value = vec![];
         }

@@ -47,6 +47,12 @@ pub struct Offset2D<T: Num> {
     y: T,
 }
 
+impl<T: Num> Offset2D<T> {
+    pub fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+
 pub trait RelPos {
     type Number: Num;
     fn offset(&self) -> Offset2D<Self::Number>;
