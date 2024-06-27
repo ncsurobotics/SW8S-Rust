@@ -8,8 +8,6 @@ use core::fmt::Debug;
 use derive_getters::Getters;
 use num_traits::abs;
 use num_traits::clamp;
-use num_traits::float::FloatCore;
-use num_traits::Float;
 use num_traits::Pow;
 use num_traits::Zero;
 use std::ops::Rem;
