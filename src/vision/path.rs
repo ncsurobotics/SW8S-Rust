@@ -1,7 +1,4 @@
-use std::{
-    fs::create_dir_all,
-    ops::{Deref, DerefMut, RangeInclusive},
-};
+use std::{fs::create_dir_all, ops::RangeInclusive};
 
 use itertools::Itertools;
 use opencv::{

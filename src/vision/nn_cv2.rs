@@ -1,17 +1,25 @@
 use anyhow::Result;
 use derive_getters::Getters;
-use futures::StreamExt;
 use opencv::{
     core::{Rect2d, Scalar, Size, VecN, Vector, CV_32F},
     dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
-use std::{fmt::Debug, sync::Mutex};
+use std::{
+    fmt::Debug,
+    iter,
+    ops::{Deref, DerefMut},
+    sync::{Arc, Condvar, Mutex},
+};
 use std::{hash::Hash, num::NonZeroUsize};
-use tokio::{spawn, sync::mpsc};
+use tokio::task::spawn_blocking;
 
 #[cfg(feature = "cuda_min_max_loc")]
 use opencv::cudaarithm::min_max_loc as cuda_min_max_loc;
+
+use crate::vision::VecMatWrapper;
+
+use super::MatWrapper;
 
 #[derive(Debug, Clone, Getters, PartialEq)]
 pub struct YoloDetection {
@@ -61,17 +69,23 @@ where
 }
 
 pub trait VisionModel: Debug + Sync + Send {
+    type PostProcessArgs;
     type ModelOutput;
 
     /// Forward pass the matrix through the model, skipping post-processing
     fn model_process(&mut self, image: &Mat) -> Self::ModelOutput;
     /// Convert output from a model into detections
-    fn post_process(&self) -> impl Fn(Self::ModelOutput, f64) -> Vec<YoloDetection>;
+    fn post_process_args(&self) -> Self::PostProcessArgs;
+    fn post_process(
+        args: Self::PostProcessArgs,
+        output: Self::ModelOutput,
+        threshold: f64,
+    ) -> Vec<YoloDetection>;
 
     /// Full input -> output processing
     fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection> {
         let model_output = self.model_process(image);
-        self.post_process()(model_output, threshold)
+        Self::post_process(self.post_process_args(), model_output, threshold)
     }
     fn size(&self) -> Size;
 }
@@ -80,10 +94,33 @@ pub trait VisionModel: Debug + Sync + Send {
 /* --------------- ONNX implementation -------------- */
 /* -------------------------------------------------- */
 
+/// Wrapper to let Rust know Net is Send and Sync.
+///
+/// We know it doesn't rely on thread-local state, but Rust assumes all
+/// pointers are not Send or Sync by default.
+#[derive(Debug, Clone)]
+struct NetWrapper(pub Net);
+
+impl Deref for NetWrapper {
+    type Target = Net;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for NetWrapper {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+unsafe impl Send for NetWrapper {}
+unsafe impl Sync for NetWrapper {}
+
 /// ONNX vision model running via OpenCV
 #[derive(Debug)]
 pub struct OnnxModel {
-    net: Mutex<Net>,
+    net: Mutex<NetWrapper>,
     //out_blob_names: Vec<String>,
     num_objects: usize,
     //output: Vec<usize>,
@@ -132,7 +169,7 @@ impl OnnxModel {
         */
 
         Ok(Self {
-            net: Mutex::new(net),
+            net: Mutex::new(NetWrapper(net)),
             num_objects,
             model_size: Size::new(model_size, model_size),
             factor: Self::size_to_factor(model_size),
@@ -168,7 +205,7 @@ impl OnnxModel {
         */
 
         Ok(Self {
-            net: Mutex::new(net),
+            net: Mutex::new(NetWrapper(net)),
             num_objects,
             model_size: Size::new(model_size, model_size),
             factor: Self::size_to_factor(model_size),
@@ -263,7 +300,12 @@ impl VisionModel for OnnxModel {
         );
 
         #[cfg(not(feature = "cuda"))]
-        let post_processing = Self::process_net(self.num_objects, self.factor, result, threshold);
+        let post_processing = Self::process_net(
+            self.num_objects,
+            self.factor,
+            result.clone().into_iter(),
+            threshold,
+        );
 
         post_processing
     }
@@ -293,27 +335,40 @@ impl VisionModel for OnnxModel {
             .forward(&mut result, &result_names)
             .unwrap();
 
-        result
+        VecMatWrapper(result)
     }
 
-    type ModelOutput = Vector<Mat>;
+    type ModelOutput = VecMatWrapper;
 
-    fn post_process(&self) -> impl Fn(Self::ModelOutput, f64) -> Vec<YoloDetection> {
-        move |result, threshold| {
-            #[cfg(feature = "cuda")]
-            let post_processing = Self::process_net_cuda(
-                self.num_objects,
-                self.factor as f32,
-                &result,
-                threshold as f32,
-            );
+    #[cfg(feature = "cuda")]
+    type PostProcessArgs = (usize, f32);
+    #[cfg(not(feature = "cuda"))]
+    type PostProcessArgs = (usize, f64);
 
-            #[cfg(not(feature = "cuda"))]
-            let post_processing =
-                Self::process_net(self.num_objects, self.factor, result, threshold);
-
-            post_processing
+    fn post_process_args(&self) -> Self::PostProcessArgs {
+        #[cfg(feature = "cuda")]
+        {
+            (self.num_objects, self.factor as f32)
         }
+        #[cfg(not(feature = "cuda"))]
+        {
+            (self.num_objects, self.factor)
+        }
+    }
+
+    fn post_process(
+        args: Self::PostProcessArgs,
+        output: Self::ModelOutput,
+        threshold: f64,
+    ) -> Vec<YoloDetection> {
+        #[cfg(feature = "cuda")]
+        let post_processing = Self::process_net_cuda(args.0, args.1, &output, threshold as f32);
+
+        #[cfg(not(feature = "cuda"))]
+        let post_processing =
+            Self::process_net(args.0, args.1, output.clone().into_iter(), threshold);
+
+        post_processing
     }
 
     fn size(&self) -> Size {
@@ -497,33 +552,165 @@ impl OnnxModel {
     }
 }
 
-/// [`OnnxModel`] that pipelines processing in blocking threads.
+/// Utility struct for [`ModelPipelined`].
+///
+/// * `mat`: latest available matrix. Set to default on read.
+/// * `dropped`: tracks if ModelPipelined is dropped, for thread cleanup.
 #[derive(Debug)]
-struct OnnxModelPipelined<T: VisionModel + Clone> {
-    input_ch: async_channel::Sender<Mat>,
-    output_ch: mpsc::Receiver<T::ModelOutput>,
+struct ModelPipelinedInput {
+    pub mat: MatWrapper,
+    pub dropped: bool,
 }
 
-impl<T: VisionModel + Clone> OnnxModelPipelined<T> {
-    fn new(
+/// [`OnnxModel`] that pipelines processing in blocking threads.
+///
+/// The input is processed on blocking threads, and only the newest available
+/// input should be processed, so `input_mut` is used for threads to claim
+/// whenever an unclaimed new input is available. It also tracks for when to
+/// drop the threads.
+///
+/// The output is asynchronous, written to with blocking synchronous calls from
+/// the post processing stage.
+#[derive(Debug)]
+pub struct ModelPipelined {
+    input_mut: Arc<(Condvar, Mutex<ModelPipelinedInput>)>,
+    output_ch: async_channel::Receiver<Vec<YoloDetection>>,
+}
+
+impl ModelPipelined {
+    /// Pipelines model processing in blocking threads.
+    ///
+    /// # Parameters
+    /// * `model`: A model to be cloned into threads.
+    /// * `model_threads`: Number of threads with processing models.
+    /// * `post_processing_threads`: Number of threads converting model output.
+    /// * `threshold`: [0, 1] minimum score for a detection.
+    pub async fn new<T>(
         model: T,
         model_threads: NonZeroUsize,
         post_processing_threads: NonZeroUsize,
-    ) -> Self {
-        let (input_ch, input_rx) = async_channel::unbounded();
-        let (output_tx, output_ch) = mpsc::unbounded_channel();
-        for 0..model_threads.into() {
-            let model = model.clone();
-            let input_rx = input_rx.clone();
-        spawn(async {
-            while let Some(input) = input_rx.next().await {
-                model.model_process(input);
-            }
-        });
+        threshold: f64,
+    ) -> Self
+    where
+        T: VisionModel + Clone + Send + Sync + 'static,
+        T::ModelOutput: Send,
+        T::PostProcessArgs: Send + Clone,
+    {
+        let input_mut = Arc::new((
+            Condvar::new(),
+            Mutex::new(ModelPipelinedInput {
+                mat: MatWrapper(Mat::default()),
+                dropped: false,
+            }),
+        ));
+        let (output_tx, output_ch) = async_channel::unbounded();
+
+        // Both processing threads are blocking, so using a sync structure.
+        let (inner_tx, inner_rx) = crossbeam::channel::unbounded();
+
+        for _ in 0..model_threads.into() {
+            let mut model = model.clone();
+            let input_mut = input_mut.clone();
+            let inner_tx = inner_tx.clone();
+
+            spawn_blocking(move || loop {
+                let input = {
+                    // When we get a notification on this thread, new data can
+                    // always be directly claimed.
+                    let mut guard = input_mut.1.lock().unwrap();
+                    guard = input_mut.0.wait(guard).unwrap();
+
+                    // Exit this thread if the struct was dropped
+                    if guard.dropped {
+                        break;
+                    };
+
+                    // Move the matrix to local memory to avoid holding up the
+                    // lock. The default value should never be read by another
+                    // thread.
+                    std::mem::take(&mut guard.mat)
+                };
+
+                // Hand off to post processing
+                inner_tx.send(model.model_process(&input)).unwrap();
+            });
+        }
+
+        for _ in 0..post_processing_threads.into() {
+            let inner_rx = inner_rx.clone();
+            let output_tx = output_tx.clone();
+            let post_process_args = model.post_process_args();
+
+            spawn_blocking(move || {
+                // Thread exits when model output threads exit (struct drop).
+                while let Ok(input) = inner_rx.recv() {
+                    let post_process_args = post_process_args.clone();
+                    let processed_output =
+                        T::post_process(post_process_args.clone(), input, threshold);
+                    // Blocking call on this end, async on the other.
+                    // Never stalls for capacity, since output is unbounded.
+                    output_tx.send_blocking(processed_output).unwrap();
+                }
+            });
         }
 
         Self {
-            input_ch, output_ch
+            input_mut,
+            output_ch,
         }
+    }
+
+    /// Update the model with a newer [`Mat`] to process.
+    pub fn update_mat(&self, mat: MatWrapper) -> &Self {
+        let mut input = self.input_mut.1.lock().unwrap();
+        input.mat = mat;
+        self.input_mut.0.notify_one();
+        self
+    }
+
+    /// Get the oldest available output.
+    ///
+    /// Stalls until an output is available.
+    pub async fn get_single(&self) -> Vec<YoloDetection> {
+        self.output_ch.recv().await.unwrap()
+    }
+
+    /// Get the oldest N available outputs.
+    ///
+    /// Stalls until N outputs are available.
+    /// Returns in order oldest -> newest.
+    pub async fn get_multiple(&self, count: usize) -> Vec<Vec<YoloDetection>> {
+        let mut output = Vec::with_capacity(count);
+        for _ in 0..count {
+            output.push(self.output_ch.recv().await.unwrap())
+        }
+        output
+    }
+
+    /// Get the newest N available outputs.
+    ///
+    /// Stalls until N outputs are available.
+    /// Returns in order oldest -> newest.
+    pub async fn get_multiple_newest(&self, count: usize) -> Vec<Vec<YoloDetection>> {
+        let mut output = Vec::with_capacity(count);
+        for _ in 0..count {
+            output.push(self.output_ch.recv().await.unwrap())
+        }
+        output.extend(iter::from_fn(|| self.output_ch.try_recv().ok()));
+
+        output.into_iter().rev().take(count).rev().collect()
+    }
+
+    /// Get all available output immediately.
+    pub async fn get_all(&self) -> Vec<Vec<YoloDetection>> {
+        iter::from_fn(|| self.output_ch.try_recv().ok()).collect()
+    }
+}
+
+impl Drop for ModelPipelined {
+    /// Trigger thread cleanup.
+    fn drop(&mut self) {
+        self.input_mut.1.lock().unwrap().dropped = true;
+        self.input_mut.0.notify_all();
     }
 }
