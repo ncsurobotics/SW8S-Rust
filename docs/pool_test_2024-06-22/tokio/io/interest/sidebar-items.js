@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["ERROR","PRIORITY","READABLE","WRITABLE"],"struct":["Interest"]};

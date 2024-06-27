@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["split"],"struct":["Inner","ReadHalf","WriteHalf"]};

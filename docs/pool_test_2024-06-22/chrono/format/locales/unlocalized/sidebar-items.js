@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["am_pm","decimal_point","default_locale","long_months","long_weekdays","short_months","short_weekdays"],"struct":["Locale"]};

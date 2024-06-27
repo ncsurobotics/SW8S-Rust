@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["core","dnn","hub_prelude","imgcodecs","imgproc","types","videoio"]};
