@@ -1428,50 +1428,16 @@
 <a href="#1428" id="1428">1428</a>
 <a href="#1429" id="1429">1429</a>
 <a href="#1430" id="1430">1430</a>
-<a href="#1431" id="1431">1431</a>
-<a href="#1432" id="1432">1432</a>
-<a href="#1433" id="1433">1433</a>
-<a href="#1434" id="1434">1434</a>
-<a href="#1435" id="1435">1435</a>
-<a href="#1436" id="1436">1436</a>
-<a href="#1437" id="1437">1437</a>
-<a href="#1438" id="1438">1438</a>
-<a href="#1439" id="1439">1439</a>
-<a href="#1440" id="1440">1440</a>
-<a href="#1441" id="1441">1441</a>
-<a href="#1442" id="1442">1442</a>
-<a href="#1443" id="1443">1443</a>
-<a href="#1444" id="1444">1444</a>
-<a href="#1445" id="1445">1445</a>
-<a href="#1446" id="1446">1446</a>
-<a href="#1447" id="1447">1447</a>
-<a href="#1448" id="1448">1448</a>
-<a href="#1449" id="1449">1449</a>
-<a href="#1450" id="1450">1450</a>
-<a href="#1451" id="1451">1451</a>
-<a href="#1452" id="1452">1452</a>
-<a href="#1453" id="1453">1453</a>
-<a href="#1454" id="1454">1454</a>
-<a href="#1455" id="1455">1455</a>
-<a href="#1456" id="1456">1456</a>
-<a href="#1457" id="1457">1457</a>
-<a href="#1458" id="1458">1458</a>
-<a href="#1459" id="1459">1459</a>
-<a href="#1460" id="1460">1460</a>
-<a href="#1461" id="1461">1461</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::vision::Offset2D;
 <span class="kw">use </span><span class="kw">crate</span>::vision::RelPos;
 <span class="kw">use </span><span class="kw">crate</span>::vision::RelPosAngle;
 
 <span class="kw">use </span>anyhow::Result;
-<span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>num_traits::abs;
 <span class="kw">use </span>num_traits::clamp;
-<span class="kw">use </span>num_traits::float::FloatCore;
-<span class="kw">use </span>num_traits::Float;
 <span class="kw">use </span>num_traits::Pow;
 <span class="kw">use </span>num_traits::Zero;
 <span class="kw">use </span>std::ops::Rem;
@@ -1517,8 +1483,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>Descend&lt;<span class="lifetime">'_</span>, T&gt; {
+<span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>Descend&lt;<span class="lifetime">'_</span>, T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="macro">println!</span>(<span class="string">"DESCEND"</span>);
         <span class="self">self</span>.context
@@ -1556,8 +1521,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt;
+<span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt;
     <span class="kw">for </span>StraightMovement&lt;<span class="lifetime">'_</span>, T&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -1592,8 +1556,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>ZeroMovement&lt;<span class="lifetime">'_</span>, T&gt; {
+<span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>ZeroMovement&lt;<span class="lifetime">'_</span>, T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="self">self</span>.context
             .get_control_board()
@@ -1644,8 +1607,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>AdjustMovement&lt;<span class="lifetime">'_</span>, T&gt; {
+<span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>AdjustMovement&lt;<span class="lifetime">'_</span>, T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="self">self</span>.context
             .get_control_board()
@@ -1730,8 +1692,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt;
+<span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt;
     <span class="kw">for </span>AdjustMovementAngle&lt;<span class="lifetime">'_</span>, T&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -1825,8 +1786,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>CenterMovement&lt;<span class="lifetime">'_</span>, T&gt; {
+<span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>CenterMovement&lt;<span class="lifetime">'_</span>, T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">const </span>FACTOR: f32 = <span class="number">1.5</span>;
         <span class="kw">const </span>MIN_SPEED: f32 = <span class="number">0.3</span>;
@@ -2106,8 +2066,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt;
     <span class="kw">for </span>Stability2Movement&lt;<span class="lifetime">'a</span>, T&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -2115,9 +2074,8 @@ where
     </span>}
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;()&gt; <span class="kw">for </span>Stability2Movement&lt;<span class="lifetime">'a</span>, T&gt; {
-    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; () {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;()&gt; <span class="kw">for </span>Stability2Movement&lt;<span class="lifetime">'a</span>, T&gt; {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="kw">let _ </span>= <span class="self">self</span>.pose.exec(<span class="self">self</span>.context.get_control_board()).<span class="kw">await</span>;
     }
 }
@@ -2191,15 +2149,13 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>LinearYawFromX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>LinearYawFromX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         linear_yaw_from_x(<span class="self">self</span>.pose.clone(), <span class="self">self</span>.angle_diff)
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>LinearYawFromX&lt;Stability2Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>LinearYawFromX&lt;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         linear_yaw_from_x(<span class="self">self</span>.pose.clone(), <span class="self">self</span>.angle_diff)
     }
@@ -2248,8 +2204,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>FlipYaw&lt;Stability2Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>FlipYaw&lt;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>yaw) = <span class="self">self</span>.pose.target_yaw {
             <span class="kw">match </span>yaw {
@@ -2261,8 +2216,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>FlipYaw&lt;Stability1Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>FlipYaw&lt;Stability1Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability1Adjust {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>yaw) = <span class="self">self</span>.pose.yaw_speed {
             <span class="kw">match </span>yaw {
@@ -2308,8 +2262,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>StripY&lt;Stability2Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>StripY&lt;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="self">self</span>.pose.y = <span class="prelude-val">None</span>;
         <span class="self">self</span>.pose.clone()
@@ -2350,8 +2303,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>ConfidenceY&lt;Stability2Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>ConfidenceY&lt;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="self">self</span>.pose.y = <span class="prelude-val">Some</span>(<span class="kw">if let </span><span class="prelude-val">Some</span>(AdjustType::Replace(x)) = <span class="self">self</span>.pose.x {
             <span class="kw">if </span>x.is_zero() {
@@ -2400,8 +2352,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>FlipX&lt;Stability2Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>FlipX&lt;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = <span class="self">self</span>.pose.x {
             <span class="kw-2">*</span>x = <span class="kw">match </span><span class="kw-2">*</span>x {
@@ -2447,8 +2398,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>StripX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>StripX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="kw">let </span><span class="kw-2">mut </span>pose = <span class="self">self</span>.pose.clone();
         pose.x = <span class="prelude-val">None</span>;
@@ -2456,8 +2406,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>StripX&lt;Stability2Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>StripX&lt;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="self">self</span>.pose.x = <span class="prelude-val">None</span>;
         <span class="self">self</span>.pose.clone()
@@ -2498,8 +2447,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>FlatX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>FlatX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="kw">let </span><span class="kw-2">mut </span>pose = <span class="self">self</span>.pose.clone();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(AdjustType::Replace(val)) = <span class="self">self</span>.pose.x {
@@ -2513,8 +2461,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>FlatX&lt;Stability2Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>FlatX&lt;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(AdjustType::Replace(val)) = <span class="self">self</span>.pose.x {
             <span class="self">self</span>.pose.x = <span class="kw">if </span>val.is_zero() {
@@ -2574,8 +2521,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>OffsetToPose&lt;Offset2D&lt;f64&gt;&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>OffsetToPose&lt;Offset2D&lt;f64&gt;&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="kw">let </span><span class="kw-2">mut </span>adjust = Stability2Adjust::default();
         adjust.set_x(AdjustType::Replace(<span class="kw-2">*</span><span class="self">self</span>.offset.x() <span class="kw">as </span>f32));
@@ -2812,8 +2758,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt;
     <span class="kw">for </span>Stability1Movement&lt;<span class="lifetime">'a</span>, T&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
@@ -2821,9 +2766,8 @@ where
     </span>}
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;()&gt; <span class="kw">for </span>Stability1Movement&lt;<span class="lifetime">'a</span>, T&gt; {
-    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; () {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;()&gt; <span class="kw">for </span>Stability1Movement&lt;<span class="lifetime">'a</span>, T&gt; {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="kw">let _ </span>= <span class="self">self</span>.pose.exec(<span class="self">self</span>.context.get_control_board()).<span class="kw">await</span>;
     }
 }
@@ -2837,8 +2781,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>StripY&lt;Stability1Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>StripY&lt;Stability1Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability1Adjust {
         <span class="self">self</span>.pose.y = <span class="prelude-val">None</span>;
         <span class="self">self</span>.pose.clone()
@@ -2854,8 +2797,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>StripX&lt;<span class="kw-2">&amp;</span>Stability1Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>StripX&lt;<span class="kw-2">&amp;</span>Stability1Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability1Adjust {
         <span class="kw">let </span><span class="kw-2">mut </span>pose = <span class="self">self</span>.pose.clone();
         pose.x = <span class="prelude-val">None</span>;
@@ -2863,8 +2805,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>StripX&lt;Stability1Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>StripX&lt;Stability1Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability1Adjust {
         <span class="self">self</span>.pose.x = <span class="prelude-val">None</span>;
         <span class="self">self</span>.pose.clone()
@@ -2880,8 +2821,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>FlatX&lt;<span class="kw-2">&amp;</span>Stability1Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>FlatX&lt;<span class="kw-2">&amp;</span>Stability1Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability1Adjust {
         <span class="kw">let </span><span class="kw-2">mut </span>pose = <span class="self">self</span>.pose.clone();
         <span class="macro">println!</span>(<span class="string">"Before transform: {:#?}"</span>, pose);
@@ -2896,8 +2836,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>FlatX&lt;Stability1Adjust&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>FlatX&lt;Stability1Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability1Adjust {
         <span class="macro">println!</span>(<span class="string">"Before transform: {:#?}"</span>, <span class="self">self</span>.pose);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(AdjustType::Replace(val)) = <span class="self">self</span>.pose.x {
@@ -2911,8 +2850,7 @@ where
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>OffsetToPose&lt;Offset2D&lt;f64&gt;&gt; {
+<span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>OffsetToPose&lt;Offset2D&lt;f64&gt;&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability1Adjust {
         <span class="kw">let </span><span class="kw-2">mut </span>adjust = Stability1Adjust::default();
         adjust.set_x(AdjustType::Replace(<span class="kw-2">*</span><span class="self">self</span>.offset.x() <span class="kw">as </span>f32));

@@ -132,34 +132,28 @@
 <a href="#132" id="132">132</a>
 <a href="#133" id="133">133</a>
 <a href="#134" id="134">134</a>
-<a href="#135" id="135">135</a>
-<a href="#136" id="136">136</a>
-<a href="#137" id="137">137</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     act_nest,
     missions::{
-        action::{
-            wrap_action, ActionChain, ActionConcurrent, ActionWhile, FirstValid, TupleSecond,
-        },
+        action::{ActionChain, ActionConcurrent, ActionWhile, TupleSecond},
         basic::descend_and_go_forward,
-        extra::{AlwaysFalse, AlwaysTrue, OutputType, ToVec, Transform},
+        extra::{AlwaysTrue, OutputType, ToVec, Transform},
         movement::{
             aggressive_yaw_from_x, FlatX, FlipYaw, LinearYawFromX, OffsetToPose, Stability2Adjust,
             Stability2Movement, Stability2Pos, StripX, StripY,
         },
-        vision::{Average, DetectTarget, ExtractPosition, MidPoint, VisionNorm},
+        vision::{Average, DetectTarget, ExtractPosition, VisionNorm},
     },
     vision::{
         buoy_model::{BuoyModel, Target},
-        gate_poles::GatePoles,
         nn_cv2::{OnnxModel, YoloClass},
         path::{Path, Yuv},
-        Offset2D, VisualDetection,
+        Offset2D,
     },
 };
 
 <span class="kw">use super</span>::{
-    action::{ActionExec, ActionMod, ActionSequence},
+    action::{ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::ZeroMovement,

@@ -142,14 +142,7 @@
 <a href="#142" id="142">142</a>
 <a href="#143" id="143">143</a>
 <a href="#144" id="144">144</a>
-<a href="#145" id="145">145</a>
-<a href="#146" id="146">146</a>
-<a href="#147" id="147">147</a>
-<a href="#148" id="148">148</a>
-<a href="#149" id="149">149</a>
-<a href="#150" id="150">150</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>async_trait::async_trait;
-<span class="kw">use </span>core::fmt::Debug;
+</pre></div><pre class="rust"><code><span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>opencv::core::Mat;
 <span class="kw">use </span>tokio::io::{AsyncWriteExt, WriteHalf};
 <span class="kw">use </span>tokio::sync::RwLock;
@@ -178,7 +171,7 @@
 <span class="doccomment">/**
  * Inherit this trait if you have a front camera
  */
-</span><span class="attr">#[async_trait]
+</span><span class="attr">#[allow(async_fn_in_trait)]
 </span><span class="kw">pub trait </span>GetFrontCamMat {
     <span class="kw">async fn </span>get_front_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat;
     <span class="kw">async fn </span>get_desired_buoy_gate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Target;
@@ -188,13 +181,12 @@
 <span class="doccomment">/**
  * Inherit this trait if you have a bottom camera
  */
-</span><span class="attr">#[async_trait]
+</span><span class="attr">#[allow(async_fn_in_trait)]
 </span><span class="kw">pub trait </span>GetBottomCamMat {
     <span class="kw">async fn </span>get_bottom_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat;
 }
 
 <span class="comment">/*
-#[async_trait]
 pub trait GetConfig {
     async fn get_config(&amp;self) -&gt; Configuration;
 }
@@ -245,8 +237,7 @@ pub trait GetConfig {
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: AsyncWriteExt + Unpin + Send&gt; GetFrontCamMat <span class="kw">for </span>FullActionContext&lt;<span class="lifetime">'_</span>, T&gt; {
+<span class="kw">impl</span>&lt;T: AsyncWriteExt + Unpin + Send&gt; GetFrontCamMat <span class="kw">for </span>FullActionContext&lt;<span class="lifetime">'_</span>, T&gt; {
     <span class="kw">async fn </span>get_front_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
         <span class="self">self</span>.front_cam.get_mat().<span class="kw">await
     </span>}
@@ -260,8 +251,7 @@ pub trait GetConfig {
     </span>}
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: AsyncWriteExt + Unpin + Send&gt; GetBottomCamMat <span class="kw">for </span>FullActionContext&lt;<span class="lifetime">'_</span>, T&gt; {
+<span class="kw">impl</span>&lt;T: AsyncWriteExt + Unpin + Send&gt; GetBottomCamMat <span class="kw">for </span>FullActionContext&lt;<span class="lifetime">'_</span>, T&gt; {
     <span class="kw">async fn </span>get_bottom_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
         <span class="self">self</span>.bottom_cam.get_mat().<span class="kw">await
     </span>}
@@ -279,8 +269,7 @@ pub trait GetConfig {
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>GetFrontCamMat <span class="kw">for </span>EmptyActionContext {
+<span class="kw">impl </span>GetFrontCamMat <span class="kw">for </span>EmptyActionContext {
     <span class="kw">async fn </span>get_front_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
         <span class="macro">todo!</span>()
     }
@@ -292,8 +281,7 @@ pub trait GetConfig {
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>GetBottomCamMat <span class="kw">for </span>EmptyActionContext {
+<span class="kw">impl </span>GetBottomCamMat <span class="kw">for </span>EmptyActionContext {
     <span class="kw">async fn </span>get_bottom_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
         <span class="macro">todo!</span>()
     }

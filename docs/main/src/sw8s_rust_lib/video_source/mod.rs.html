@@ -27,16 +27,13 @@
 <a href="#27" id="27">27</a>
 <a href="#28" id="28">28</a>
 <a href="#29" id="29">29</a>
-<a href="#30" id="30">30</a>
-<a href="#31" id="31">31</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>async_trait::async_trait;
-<span class="kw">use </span>opencv::prelude::Mat;
+</pre></div><pre class="rust"><code><span class="kw">use </span>opencv::prelude::Mat;
 <span class="kw">use </span>std::sync::Arc;
 <span class="kw">use </span>std::sync::Mutex;
 
 <span class="kw">pub mod </span>appsink;
 
-<span class="attr">#[async_trait]
+<span class="attr">#[allow(async_fn_in_trait)]
 </span><span class="kw">pub trait </span>MatSource: Send + Sync {
     <span class="kw">async fn </span>get_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat;
 }
@@ -54,8 +51,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>MatSource <span class="kw">for </span>SingleFrameSource {
+<span class="kw">impl </span>MatSource <span class="kw">for </span>SingleFrameSource {
     <span class="kw">async fn </span>get_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
         <span class="self">self</span>.inner.lock().unwrap().clone()
     }

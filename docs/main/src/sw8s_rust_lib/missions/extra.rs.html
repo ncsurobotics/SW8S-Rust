@@ -446,26 +446,10 @@
 <a href="#446" id="446">446</a>
 <a href="#447" id="447">447</a>
 <a href="#448" id="448">448</a>
-<a href="#449" id="449">449</a>
-<a href="#450" id="450">450</a>
-<a href="#451" id="451">451</a>
-<a href="#452" id="452">452</a>
-<a href="#453" id="453">453</a>
-<a href="#454" id="454">454</a>
-<a href="#455" id="455">455</a>
-<a href="#456" id="456">456</a>
-<a href="#457" id="457">457</a>
-<a href="#458" id="458">458</a>
-<a href="#459" id="459">459</a>
-<a href="#460" id="460">460</a>
-<a href="#461" id="461">461</a>
-<a href="#462" id="462">462</a>
-<a href="#463" id="463">463</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>anyhow::{anyhow, bail};
-<span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>uuid::Uuid;
 
 <span class="kw">use super</span>::{
@@ -497,9 +481,8 @@
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _input: <span class="kw-2">&amp;</span>T) {}
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;()&gt; <span class="kw">for </span>NoOp {
-    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; () {}
+<span class="kw">impl </span>ActionExec&lt;()&gt; <span class="kw">for </span>NoOp {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {}
 }
 
 <span class="doccomment">/// [`NoOp`], but does not display on graph
@@ -532,9 +515,8 @@
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _input: <span class="kw-2">&amp;</span>T) {}
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;()&gt; <span class="kw">for </span>Terminal {
-    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; () {}
+<span class="kw">impl </span>ActionExec&lt;()&gt; <span class="kw">for </span>Terminal {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {}
 }
 
 <span class="doccomment">/// Nondisplaying action that resolves an ActionExec Type
@@ -571,9 +553,8 @@
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _input: <span class="kw-2">&amp;</span>T) {}
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: Send + Sync&gt; ActionExec&lt;()&gt; <span class="kw">for </span>OutputType&lt;T&gt; {
-    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; () {}
+<span class="kw">impl</span>&lt;T: Send + Sync&gt; ActionExec&lt;()&gt; <span class="kw">for </span>OutputType&lt;T&gt; {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {}
 }
 
 <span class="doccomment">/// Always returns a true value
@@ -597,22 +578,19 @@
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _input: <span class="kw-2">&amp;</span>T) {}
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>AlwaysTrue {
+<span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>AlwaysTrue {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;()&gt; {
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;<span class="prelude-ty">Option</span>&lt;()&gt;&gt; <span class="kw">for </span>AlwaysTrue {
+<span class="kw">impl </span>ActionExec&lt;<span class="prelude-ty">Option</span>&lt;()&gt;&gt; <span class="kw">for </span>AlwaysTrue {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;()&gt; {
         <span class="prelude-val">Some</span>(())
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;bool&gt; <span class="kw">for </span>AlwaysTrue {
+<span class="kw">impl </span>ActionExec&lt;bool&gt; <span class="kw">for </span>AlwaysTrue {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; bool {
         <span class="bool-val">true
     </span>}
@@ -639,22 +617,19 @@
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _input: <span class="kw-2">&amp;</span>T) {}
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>AlwaysFalse {
+<span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>AlwaysFalse {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;()&gt; {
         <span class="macro">bail!</span>(<span class="string">""</span>)
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;<span class="prelude-ty">Option</span>&lt;()&gt;&gt; <span class="kw">for </span>AlwaysFalse {
+<span class="kw">impl </span>ActionExec&lt;<span class="prelude-ty">Option</span>&lt;()&gt;&gt; <span class="kw">for </span>AlwaysFalse {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;()&gt; {
         <span class="prelude-val">None
     </span>}
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;bool&gt; <span class="kw">for </span>AlwaysFalse {
+<span class="kw">impl </span>ActionExec&lt;bool&gt; <span class="kw">for </span>AlwaysFalse {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; bool {
         <span class="bool-val">false
     </span>}
@@ -680,8 +655,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: ActionExec&lt;anyhow::Result&lt;U&gt;&gt;, U: Send + Sync&gt; ActionExec&lt;U&gt; <span class="kw">for </span>UnwrapAction&lt;T&gt; {
+<span class="kw">impl</span>&lt;T: ActionExec&lt;anyhow::Result&lt;U&gt;&gt;, U: Send + Sync&gt; ActionExec&lt;U&gt; <span class="kw">for </span>UnwrapAction&lt;T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; U {
         <span class="self">self</span>.action.execute().<span class="kw">await</span>.unwrap()
     }
@@ -741,8 +715,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>CountTrue {
+<span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>CountTrue {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;()&gt; {
         <span class="macro">println!</span>(<span class="string">"Check true count: {} ? {}"</span>, <span class="self">self</span>.count, <span class="self">self</span>.target);
         <span class="kw">if </span><span class="self">self</span>.count &lt; <span class="self">self</span>.target {
@@ -807,8 +780,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>CountFalse {
+<span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>CountFalse {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;()&gt; {
         <span class="macro">println!</span>(<span class="string">"Check false count: {} ? {}"</span>, <span class="self">self</span>.count, <span class="self">self</span>.target);
         <span class="kw">if </span><span class="self">self</span>.count &lt; <span class="self">self</span>.target {
@@ -864,8 +836,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: Send + Sync + Clone, U: Send + Sync, V: Fn(T) -&gt; U + Send + Sync&gt; ActionExec&lt;U&gt;
+<span class="kw">impl</span>&lt;T: Send + Sync + Clone, U: Send + Sync, V: Fn(T) -&gt; U + Send + Sync&gt; ActionExec&lt;U&gt;
     <span class="kw">for </span>Transform&lt;T, U, V&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; U {
@@ -918,8 +889,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionExec&lt;Vec&lt;T&gt;&gt; <span class="kw">for </span>ToVec&lt;T&gt; {
+<span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionExec&lt;Vec&lt;T&gt;&gt; <span class="kw">for </span>ToVec&lt;T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Vec&lt;T&gt; {
         <span class="self">self</span>.value.clone()
     }

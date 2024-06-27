@@ -830,21 +830,7 @@
 <a href="#830" id="830">830</a>
 <a href="#831" id="831">831</a>
 <a href="#832" id="832">832</a>
-<a href="#833" id="833">833</a>
-<a href="#834" id="834">834</a>
-<a href="#835" id="835">835</a>
-<a href="#836" id="836">836</a>
-<a href="#837" id="837">837</a>
-<a href="#838" id="838">838</a>
-<a href="#839" id="839">839</a>
-<a href="#840" id="840">840</a>
-<a href="#841" id="841">841</a>
-<a href="#842" id="842">842</a>
-<a href="#843" id="843">843</a>
-<a href="#844" id="844">844</a>
-<a href="#845" id="845">845</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
-<span class="kw">use </span>async_trait::async_trait;
 
 <span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>std::{marker::PhantomData, sync::Arc, thread};
@@ -883,7 +869,7 @@
 <span class="doccomment">/**
  * A trait for an action that can be executed.
  */
-</span><span class="attr">#[async_trait]
+</span><span class="attr">#[allow(async_fn_in_trait)]
 </span><span class="kw">pub trait </span>ActionExec&lt;T: Send + Sync&gt;: Action + Send + Sync {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; T;
 }
@@ -989,7 +975,6 @@
 <span class="doccomment">/**
  * Implement the conditional logic for the ActionConditional action.
  */
-</span><span class="attr">#[async_trait]
 </span><span class="kw">impl</span>&lt;U: Send + Sync, V: ActionExec&lt;bool&gt;, W: ActionExec&lt;U&gt;, X: ActionExec&lt;U&gt;&gt; ActionExec&lt;U&gt;
     <span class="kw">for </span>ActionConditional&lt;V, W, X&gt;
 {
@@ -1071,7 +1056,6 @@
 <span class="doccomment">/**
  * Implement race logic where both actions are scheduled until one finishes.
  */
-</span><span class="attr">#[async_trait]
 </span><span class="kw">impl</span>&lt;V: Sync + Send, T: ActionExec&lt;V&gt;, U: ActionExec&lt;V&gt;&gt; ActionExec&lt;V&gt; <span class="kw">for </span>RaceAction&lt;T, U&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; V {
         <span class="macro">tokio::select!</span> {
@@ -1148,7 +1132,6 @@
 <span class="doccomment">/**
  * Implement multiple logic where both actions are scheduled until both finish.
  */
-</span><span class="attr">#[async_trait]
 </span><span class="kw">impl</span>&lt;V: Send + Sync, T: ActionExec&lt;V&gt;, U: ActionExec&lt;V&gt;&gt; ActionExec&lt;(V, V)&gt; <span class="kw">for </span>DualAction&lt;T, U&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; (V, V) {
         <span class="macro">tokio::join!</span>(<span class="self">self</span>.first.execute(), <span class="self">self</span>.second.execute())
@@ -1204,8 +1187,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: Send + Sync, U: Send + Sync, V: ActionExec&lt;T&gt;, W: ActionMod&lt;T&gt; + ActionExec&lt;U&gt;&gt;
+<span class="kw">impl</span>&lt;T: Send + Sync, U: Send + Sync, V: ActionExec&lt;T&gt;, W: ActionMod&lt;T&gt; + ActionExec&lt;U&gt;&gt;
     ActionExec&lt;U&gt; <span class="kw">for </span>ActionChain&lt;T, V, W&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; U {
@@ -1265,8 +1247,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;T: Send + Sync, X: Send + Sync, V: ActionExec&lt;T&gt;, W: ActionExec&lt;X&gt;&gt; ActionExec&lt;X&gt;
+<span class="kw">impl</span>&lt;T: Send + Sync, X: Send + Sync, V: ActionExec&lt;T&gt;, W: ActionExec&lt;X&gt;&gt; ActionExec&lt;X&gt;
     <span class="kw">for </span>ActionSequence&lt;T, V, W&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; X {
@@ -1352,8 +1333,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;
+<span class="kw">impl</span>&lt;
         Y: <span class="lifetime">'static </span>+ Send + Sync,
         X: <span class="lifetime">'static </span>+ Send + Sync,
         V: <span class="lifetime">'static </span>+ ActionExec&lt;Y&gt;,
@@ -1463,8 +1443,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;X: Send + Sync, Y: Send + Sync, V: ActionExec&lt;Y&gt;, W: ActionExec&lt;X&gt;&gt; ActionExec&lt;(Y, X)&gt;
+<span class="kw">impl</span>&lt;X: Send + Sync, Y: Send + Sync, V: ActionExec&lt;Y&gt;, W: ActionExec&lt;X&gt;&gt; ActionExec&lt;(Y, X)&gt;
     <span class="kw">for </span>ActionConcurrent&lt;V, W&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; (Y, X) {
@@ -1519,8 +1498,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;U: Send + Sync, T: ActionExec&lt;<span class="prelude-ty">Result</span>&lt;U&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;U&gt;&gt; <span class="kw">for </span>ActionUntil&lt;T&gt; {
+<span class="kw">impl</span>&lt;U: Send + Sync, T: ActionExec&lt;<span class="prelude-ty">Result</span>&lt;U&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;U&gt;&gt; <span class="kw">for </span>ActionUntil&lt;T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;U&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>count = <span class="number">1</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>result = <span class="self">self</span>.action.execute().<span class="kw">await</span>;
@@ -1572,8 +1550,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;U: Send + Sync + Default, T: ActionExec&lt;<span class="prelude-ty">Result</span>&lt;U&gt;&gt;&gt; ActionExec&lt;U&gt; <span class="kw">for </span>ActionWhile&lt;T&gt; {
+<span class="kw">impl</span>&lt;U: Send + Sync + Default, T: ActionExec&lt;<span class="prelude-ty">Result</span>&lt;U&gt;&gt;&gt; ActionExec&lt;U&gt; <span class="kw">for </span>ActionWhile&lt;T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; U {
         <span class="kw">let </span><span class="kw-2">mut </span>result = U::default();
         <span class="kw">loop </span>{
@@ -1613,8 +1590,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;U: Send + Sync, V: Send + Sync, T: ActionExec&lt;(U, V)&gt;&gt; ActionExec&lt;V&gt; <span class="kw">for </span>TupleSecond&lt;T, U&gt; {
+<span class="kw">impl</span>&lt;U: Send + Sync, V: Send + Sync, T: ActionExec&lt;(U, V)&gt;&gt; ActionExec&lt;V&gt; <span class="kw">for </span>TupleSecond&lt;T, U&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; V {
         <span class="self">self</span>.action.execute().<span class="kw">await</span>.<span class="number">1
     </span>}
@@ -1661,8 +1637,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;U: Send + Sync, T: ActionExec&lt;(<span class="prelude-ty">Result</span>&lt;U&gt;, <span class="prelude-ty">Result</span>&lt;U&gt;)&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;U&gt;&gt;
+<span class="kw">impl</span>&lt;U: Send + Sync, T: ActionExec&lt;(<span class="prelude-ty">Result</span>&lt;U&gt;, <span class="prelude-ty">Result</span>&lt;U&gt;)&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;U&gt;&gt;
     <span class="kw">for </span>FirstValid&lt;T&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;U&gt; {
@@ -1675,8 +1650,7 @@
     }
 }
 
-<span class="attr">#[async_trait]
-</span><span class="kw">impl</span>&lt;U: Send + Sync, T: ActionExec&lt;(<span class="prelude-ty">Option</span>&lt;U&gt;, <span class="prelude-ty">Option</span>&lt;U&gt;)&gt;&gt; ActionExec&lt;<span class="prelude-ty">Option</span>&lt;U&gt;&gt;
+<span class="kw">impl</span>&lt;U: Send + Sync, T: ActionExec&lt;(<span class="prelude-ty">Option</span>&lt;U&gt;, <span class="prelude-ty">Option</span>&lt;U&gt;)&gt;&gt; ActionExec&lt;<span class="prelude-ty">Option</span>&lt;U&gt;&gt;
     <span class="kw">for </span>FirstValid&lt;T&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;U&gt; {

@@ -431,9 +431,6 @@
 <a href="#431" id="431">431</a>
 <a href="#432" id="432">432</a>
 <a href="#433" id="433">433</a>
-<a href="#434" id="434">434</a>
-<a href="#435" id="435">435</a>
-<a href="#436" id="436">436</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>opencv::{
@@ -443,9 +440,6 @@
 };
 <span class="kw">use </span>std::hash::Hash;
 <span class="kw">use </span>std::{fmt::Debug, sync::Mutex};
-
-<span class="attr">#[cfg(feature = <span class="string">"cuda"</span>)]
-</span><span class="kw">use </span>opencv::dnn::{DNN_BACKEND_CUDA, DNN_TARGET_CUDA, DNN_TARGET_CUDA_FP16};
 
 <span class="attr">#[cfg(feature = <span class="string">"cuda_min_max_loc"</span>)]
 </span><span class="kw">use </span>opencv::cudaarithm::min_max_loc <span class="kw">as </span>cuda_min_max_loc;
@@ -544,7 +538,7 @@
         model_size: i32,
         num_objects: usize,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>net = read_net_from_onnx_buffer(model_bytes)<span class="question-mark">?</span>;
+        <span class="kw">let </span>net = read_net_from_onnx_buffer(model_bytes)<span class="question-mark">?</span>;
         <span class="comment">/*
         #[cfg(feature = "cuda")]
         {
@@ -580,7 +574,7 @@
     /// OnnxModel::from_file("src/vision/models/buoy_320.onnx", 320, 4).unwrap();
     /// ```
     </span><span class="kw">pub fn </span>from_file(model_name: <span class="kw-2">&amp;</span>str, model_size: i32, num_objects: usize) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>net = read_net_from_onnx(model_name)<span class="question-mark">?</span>;
+        <span class="kw">let </span>net = read_net_from_onnx(model_name)<span class="question-mark">?</span>;
         <span class="comment">/*
         #[cfg(feature = "cuda")]
         {
