@@ -59,7 +59,18 @@ where
 }
 
 pub trait VisionModel: Debug + Sync + Send {
-    fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection>;
+    type ModelOutput;
+
+    /// Forward pass the matrix through the model, skipping post-processing
+    fn model_process(&mut self, image: &Mat) -> Self::ModelOutput;
+    /// Convert output from a model into detections
+    fn post_process(&self) -> impl Fn(Self::ModelOutput, f64) -> Vec<YoloDetection>;
+
+    /// Full input -> output processing
+    fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection> {
+        let model_output = self.model_process(image);
+        self.post_process()(model_output, threshold)
+    }
     fn size(&self) -> Size;
 }
 
@@ -195,6 +206,17 @@ impl OnnxModel {
     }
 }
 
+impl Clone for OnnxModel {
+    fn clone(&self) -> Self {
+        Self {
+            net: Mutex::new(self.net.lock().unwrap().clone()),
+            num_objects: self.num_objects,
+            model_size: self.model_size,
+            factor: self.factor,
+        }
+    }
+}
+
 /// Loads model from file, mostly at compile time
 ///
 /// # Arguments:
@@ -228,6 +250,23 @@ macro_rules! load_onnx {
 
 impl VisionModel for OnnxModel {
     fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection> {
+        let result = self.model_process(image);
+
+        #[cfg(feature = "cuda")]
+        let post_processing = Self::process_net_cuda(
+            self.num_objects,
+            self.factor as f32,
+            &result,
+            threshold as f32,
+        );
+
+        #[cfg(not(feature = "cuda"))]
+        let post_processing = Self::process_net(self.num_objects, self.factor, result, threshold);
+
+        post_processing
+    }
+
+    fn model_process(&mut self, image: &Mat) -> Self::ModelOutput {
         let mut result: Vector<Mat> = Vector::new();
         let result_names = Self::get_output_names(&self.net.lock().unwrap());
         let blob = blob_from_image(
@@ -252,13 +291,27 @@ impl VisionModel for OnnxModel {
             .forward(&mut result, &result_names)
             .unwrap();
 
-        #[cfg(feature = "cuda")]
-        let post_processing = self.process_net_cuda(&result, threshold as f32);
+        result
+    }
 
-        #[cfg(not(feature = "cuda"))]
-        let post_processing = self.process_net(result, threshold);
+    type ModelOutput = Vector<Mat>;
 
-        post_processing
+    fn post_process(&self) -> impl Fn(Self::ModelOutput, f64) -> Vec<YoloDetection> {
+        move |result, threshold| {
+            #[cfg(feature = "cuda")]
+            let post_processing = Self::process_net_cuda(
+                self.num_objects,
+                self.factor as f32,
+                &result,
+                threshold as f32,
+            );
+
+            #[cfg(not(feature = "cuda"))]
+            let post_processing =
+                Self::process_net(self.num_objects, self.factor, result, threshold);
+
+            post_processing
+        }
     }
 
     fn size(&self) -> Size {
@@ -273,7 +326,12 @@ impl OnnxModel {
     /// # Arguments
     /// * `result` - iterator of net output
     /// * `threshold` - minimum confidence
-    fn process_net<I>(&self, result: I, threshold: f64) -> Vec<YoloDetection>
+    fn process_net<I>(
+        num_objects: usize,
+        factor: f64,
+        result: I,
+        threshold: f64,
+    ) -> Vec<YoloDetection>
     where
         I: IntoIterator<Item = Mat>,
     {
@@ -282,7 +340,7 @@ impl OnnxModel {
             .flat_map(|level| -> Vec<YoloDetection> {
                 // This reshape is always valid as per the model design
                 let level = level
-                    .reshape(1, (level.total() / (5 + self.num_objects)) as i32)
+                    .reshape(1, (level.total() / (5 + num_objects)) as i32)
                     .unwrap();
 
                 (0..level.rows())
@@ -310,7 +368,7 @@ impl OnnxModel {
                         if confidence > threshold {
                             // The given constant values are always valid indicies
                             let adjust_base = |idx: i32| -> f64 {
-                                f64::from(row.at::<VecN<f32, 1>>(idx).unwrap()[0]) * self.factor
+                                f64::from(row.at::<VecN<f32, 1>>(idx).unwrap()[0]) * factor
                             };
 
                             let x_adjust = |idx: i32| -> f64 { adjust_base(idx) / 640.0 * 800.0 };
@@ -343,7 +401,12 @@ impl OnnxModel {
 
     /// Alternative to [`process_net`] that uses a CUDA kernel
     #[cfg(feature = "cuda")]
-    fn process_net_cuda(&self, result: &Vector<Mat>, threshold: f32) -> Vec<YoloDetection> {
+    fn process_net_cuda(
+        num_objects: usize,
+        factor: f32,
+        result: &Vector<Mat>,
+        threshold: f32,
+    ) -> Vec<YoloDetection> {
         #[derive(Debug)]
         #[repr(C)]
         struct CudaFormatMat {
@@ -370,7 +433,7 @@ impl OnnxModel {
             .map(|level| -> CudaFormatMat {
                 // This reshape is always valid as per the model design
                 let level = level
-                    .reshape(1, (level.total() / (5 + self.num_objects)) as i32)
+                    .reshape(1, (level.total() / (5 + num_objects)) as i32)
                     .unwrap();
 
                 total_rows += level.rows() as usize;
@@ -407,7 +470,7 @@ impl OnnxModel {
                 result.as_ptr(),
                 result.len(),
                 threshold,
-                self.factor as f32,
+                factor,
                 total_rows,
                 processed_detects.as_mut_ptr(),
                 processed_valid.as_mut_ptr(),
