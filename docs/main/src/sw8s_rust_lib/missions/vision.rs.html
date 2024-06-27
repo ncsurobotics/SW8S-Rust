@@ -492,9 +492,8 @@
         </span><span class="kw">let </span><span class="kw-2">mut </span>mat = <span class="self">self</span>.context.get_front_camera_mat().<span class="kw">await</span>.clone();
         <span class="kw">let </span>detections = <span class="self">self</span>.model.detect(<span class="kw-2">&amp;</span>mat);
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
-        </span><span class="macro">println!</span>(<span class="string">"Detect attempt"</span>);
-        <span class="comment">//println!("Detect attempt: {:#?}", detections);
-        </span><span class="kw">let </span>detections = detections<span class="question-mark">?</span>;
+        </span><span class="macro">println!</span>(<span class="string">"Detect attempt: {:#?}"</span>, detections);
+        <span class="kw">let </span>detections = detections<span class="question-mark">?</span>;
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
             detections.iter().for_each(|x| {
@@ -569,6 +568,7 @@
                 .cloned()
                 .collect();
             <span class="kw">if </span>!passing_vals.is_empty() {
+                <span class="macro">println!</span>(<span class="string">"Passing this: {:#?}"</span>, passing_vals);
                 <span class="prelude-val">Some</span>(passing_vals)
             } <span class="kw">else </span>{
                 <span class="prelude-val">None

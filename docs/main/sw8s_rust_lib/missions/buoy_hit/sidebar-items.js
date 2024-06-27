@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["buoy_collision_sequence"],"struct":["DriveToBuoy","DriveToBuoyVision","FindBuoy"]};
+window.SIDEBAR_ITEMS = {"fn":["buoy_collision_sequence"],"struct":["DriveToBuoyVision","FindBuoy"]};

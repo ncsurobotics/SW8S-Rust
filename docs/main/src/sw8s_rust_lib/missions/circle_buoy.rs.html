@@ -85,7 +85,6 @@
 <a href="#85" id="85">85</a>
 <a href="#86" id="86">86</a>
 <a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     act_nest,
     missions::{
@@ -126,7 +125,6 @@
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
     <span class="kw">const </span>DEPTH: f32 = -<span class="number">0.5</span>;
 
-    <span class="kw">let </span>lateral_power = <span class="number">0.3</span>;
     <span class="kw">let </span>delay_s = <span class="number">1.0</span>;
     <span class="comment">// Create a DelayAction with hardcoded delay
     </span><span class="kw">let </span>delay_action = DelayAction::new(delay_s);

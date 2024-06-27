@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["mean"],"mod":["buoy","gate","gate_poles","image_prep","nn_cv2","path","pca","yolo_model"],"struct":["Angle2D","DrawRect2d","Offset2D","VisualDetection"],"trait":["Draw","RelPos","RelPosAngle","VisualDetector"]};
+window.SIDEBAR_ITEMS = {"fn":["mean"],"mod":["buoy","buoy_model","gate","gate_poles","image_prep","nn_cv2","path","pca","yolo_model"],"struct":["Angle2D","DrawRect2d","Offset2D","VisualDetection"],"trait":["Draw","RelPos","RelPosAngle","VisualDetector"]};
