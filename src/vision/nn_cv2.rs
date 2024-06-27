@@ -1,12 +1,14 @@
 use anyhow::Result;
 use derive_getters::Getters;
+use futures::StreamExt;
 use opencv::{
     core::{Rect2d, Scalar, Size, VecN, Vector, CV_32F},
     dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
-use std::hash::Hash;
 use std::{fmt::Debug, sync::Mutex};
+use std::{hash::Hash, num::NonZeroUsize};
+use tokio::{spawn, sync::mpsc};
 
 #[cfg(feature = "cuda_min_max_loc")]
 use opencv::cudaarithm::min_max_loc as cuda_min_max_loc;
@@ -492,5 +494,36 @@ impl OnnxModel {
                 },
             })
             .collect()
+    }
+}
+
+/// [`OnnxModel`] that pipelines processing in blocking threads.
+#[derive(Debug)]
+struct OnnxModelPipelined<T: VisionModel + Clone> {
+    input_ch: async_channel::Sender<Mat>,
+    output_ch: mpsc::Receiver<T::ModelOutput>,
+}
+
+impl<T: VisionModel + Clone> OnnxModelPipelined<T> {
+    fn new(
+        model: T,
+        model_threads: NonZeroUsize,
+        post_processing_threads: NonZeroUsize,
+    ) -> Self {
+        let (input_ch, input_rx) = async_channel::unbounded();
+        let (output_tx, output_ch) = mpsc::unbounded_channel();
+        for 0..model_threads.into() {
+            let model = model.clone();
+            let input_rx = input_rx.clone();
+        spawn(async {
+            while let Some(input) = input_rx.next().await {
+                model.model_process(input);
+            }
+        });
+        }
+
+        Self {
+            input_ch, output_ch
+        }
     }
 }
