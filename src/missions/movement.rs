@@ -4,13 +4,10 @@ use crate::vision::RelPos;
 use crate::vision::RelPosAngle;
 
 use anyhow::Result;
-use async_trait::async_trait;
 use core::fmt::Debug;
 use derive_getters::Getters;
 use num_traits::abs;
 use num_traits::clamp;
-use num_traits::float::FloatCore;
-use num_traits::Float;
 use num_traits::Pow;
 use num_traits::Zero;
 use std::ops::Rem;
@@ -56,7 +53,6 @@ impl<T> ActionMod<f32> for Descend<'_, T> {
     }
 }
 
-#[async_trait]
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Descend<'_, T> {
     async fn execute(&mut self) -> Result<()> {
         println!("DESCEND");
@@ -95,7 +91,6 @@ impl<'a, T> StraightMovement<'a, T> {
     }
 }
 
-#[async_trait]
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
     for StraightMovement<'_, T>
 {
@@ -131,7 +126,6 @@ impl<'a, T> ZeroMovement<'a, T> {
     }
 }
 
-#[async_trait]
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for ZeroMovement<'_, T> {
     async fn execute(&mut self) -> Result<()> {
         self.context
@@ -183,7 +177,6 @@ where
     }
 }
 
-#[async_trait]
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for AdjustMovement<'_, T> {
     async fn execute(&mut self) -> Result<()> {
         self.context
@@ -269,7 +262,6 @@ where
     }
 }
 
-#[async_trait]
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
     for AdjustMovementAngle<'_, T>
 {
@@ -364,7 +356,6 @@ where
     }
 }
 
-#[async_trait]
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for CenterMovement<'_, T> {
     async fn execute(&mut self) -> Result<()> {
         const FACTOR: f32 = 1.5;
@@ -645,7 +636,6 @@ impl<T> ActionMod<Stability2Adjust> for Stability2Movement<'_, T> {
     }
 }
 
-#[async_trait]
 impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
     for Stability2Movement<'a, T>
 {
@@ -654,9 +644,8 @@ impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
     }
 }
 
-#[async_trait]
 impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<()> for Stability2Movement<'a, T> {
-    async fn execute(&mut self) -> () {
+    async fn execute(&mut self) {
         let _ = self.pose.exec(self.context.get_control_board()).await;
     }
 }
@@ -730,14 +719,12 @@ impl<T: Sync + Send + Clone> ActionMod<T> for LinearYawFromX<T> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for LinearYawFromX<&Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         linear_yaw_from_x(self.pose.clone(), self.angle_diff)
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for LinearYawFromX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         linear_yaw_from_x(self.pose.clone(), self.angle_diff)
@@ -787,7 +774,6 @@ impl<T: Sync + Send + Clone> ActionMod<T> for FlipYaw<T> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for FlipYaw<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         if let Some(ref mut yaw) = self.pose.target_yaw {
@@ -800,7 +786,6 @@ impl ActionExec<Stability2Adjust> for FlipYaw<Stability2Adjust> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability1Adjust> for FlipYaw<Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
         if let Some(ref mut yaw) = self.pose.yaw_speed {
@@ -847,7 +832,6 @@ impl<T: Sync + Send + Clone> ActionMod<T> for StripY<T> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for StripY<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         self.pose.y = None;
@@ -889,7 +873,6 @@ impl<T: Sync + Send + Clone> ActionMod<T> for ConfidenceY<T> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for ConfidenceY<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         self.pose.y = Some(if let Some(AdjustType::Replace(x)) = self.pose.x {
@@ -939,7 +922,6 @@ impl<T: Sync + Send + Clone> ActionMod<T> for FlipX<T> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for FlipX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         if let Some(ref mut x) = self.pose.x {
@@ -986,7 +968,6 @@ impl<T: Sync + Send + Clone> ActionMod<T> for StripX<T> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for StripX<&Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         let mut pose = self.pose.clone();
@@ -995,7 +976,6 @@ impl ActionExec<Stability2Adjust> for StripX<&Stability2Adjust> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for StripX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         self.pose.x = None;
@@ -1037,7 +1017,6 @@ impl<T: Sync + Send + Clone> ActionMod<T> for FlatX<T> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for FlatX<&Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         let mut pose = self.pose.clone();
@@ -1052,7 +1031,6 @@ impl ActionExec<Stability2Adjust> for FlatX<&Stability2Adjust> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for FlatX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         if let Some(AdjustType::Replace(val)) = self.pose.x {
@@ -1113,7 +1091,6 @@ impl<T: Send + Sync + Clone + Default> ActionMod<anyhow::Result<T>> for OffsetTo
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability2Adjust> for OffsetToPose<Offset2D<f64>> {
     async fn execute(&mut self) -> Stability2Adjust {
         let mut adjust = Stability2Adjust::default();
@@ -1351,7 +1328,6 @@ impl<T> ActionMod<Stability1Adjust> for Stability1Movement<'_, T> {
     }
 }
 
-#[async_trait]
 impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
     for Stability1Movement<'a, T>
 {
@@ -1360,9 +1336,8 @@ impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
     }
 }
 
-#[async_trait]
 impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<()> for Stability1Movement<'a, T> {
-    async fn execute(&mut self) -> () {
+    async fn execute(&mut self) {
         let _ = self.pose.exec(self.context.get_control_board()).await;
     }
 }
@@ -1376,7 +1351,6 @@ impl StripY<&Stability1Adjust> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability1Adjust> for StripY<Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
         self.pose.y = None;
@@ -1393,7 +1367,6 @@ impl StripX<&Stability1Adjust> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability1Adjust> for StripX<&Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
         let mut pose = self.pose.clone();
@@ -1402,7 +1375,6 @@ impl ActionExec<Stability1Adjust> for StripX<&Stability1Adjust> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability1Adjust> for StripX<Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
         self.pose.x = None;
@@ -1419,7 +1391,6 @@ impl FlatX<&Stability1Adjust> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability1Adjust> for FlatX<&Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
         let mut pose = self.pose.clone();
@@ -1435,7 +1406,6 @@ impl ActionExec<Stability1Adjust> for FlatX<&Stability1Adjust> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability1Adjust> for FlatX<Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
         println!("Before transform: {:#?}", self.pose);
@@ -1450,7 +1420,6 @@ impl ActionExec<Stability1Adjust> for FlatX<Stability1Adjust> {
     }
 }
 
-#[async_trait]
 impl ActionExec<Stability1Adjust> for OffsetToPose<Offset2D<f64>> {
     async fn execute(&mut self) -> Stability1Adjust {
         let mut adjust = Stability1Adjust::default();

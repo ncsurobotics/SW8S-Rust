@@ -1,12 +1,11 @@
 use std::fmt::{Debug, Display};
-use std::ops::{Add, AddAssign, Div, Mul};
+use std::ops::{Add, Div, Mul};
 use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};
 use super::graph::DotString;
 use crate::vision::{Draw, Offset2D, RelPos, VisualDetection, VisualDetector};
 use anyhow::{anyhow, Result};
-use async_trait::async_trait;
 use num_traits::{Float, FromPrimitive, Num};
 use opencv::core::Mat;
 use uuid::Uuid;
@@ -39,7 +38,6 @@ impl<'a, T, U, V> VisionNormOffset<'a, T, U, V> {
 
 impl<T, U, V> Action for VisionNormOffset<'_, T, U, V> {}
 
-#[async_trait]
 impl<
         T: GetFrontCamMat + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
@@ -120,7 +118,6 @@ impl<'a, T, U, V> VisionNorm<'a, T, U, V> {
 
 impl<T, U, V> Action for VisionNorm<'_, T, U, V> {}
 
-#[async_trait]
 impl<
         T: GetFrontCamMat + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
@@ -203,7 +200,6 @@ impl<T: Display, U, V> Action for DetectTarget<T, U, V> {
     }
 }
 
-#[async_trait]
 impl<
         T: Send + Sync + PartialEq + Display,
         U: Send + Sync + Clone + Into<T> + Debug,
@@ -267,7 +263,6 @@ impl<T> Average<T> {
 
 impl<T> Action for Average<T> {}
 
-#[async_trait]
 impl<T: Send + Sync + Clone + Sum + Div<usize, Output = T>> ActionExec<Option<T>> for Average<T> {
     async fn execute(&mut self) -> Option<T> {
         if self.values.is_empty() {
@@ -323,7 +318,6 @@ impl<T> MidPoint<T> {
 
 impl<T> Action for MidPoint<T> {}
 
-#[async_trait]
 impl ActionExec<Option<Offset2D<f64>>> for MidPoint<Offset2D<f64>> {
     async fn execute(&mut self) -> Option<Offset2D<f64>> {
         if self.values.is_empty() {
@@ -410,7 +404,6 @@ impl<T, U> ExtractPosition<T, U> {
 
 impl<T, U> Action for ExtractPosition<T, U> {}
 
-#[async_trait]
 impl<T: Send + Sync, U: Send + Sync + Clone> ActionExec<Vec<U>> for ExtractPosition<T, U> {
     async fn execute(&mut self) -> Vec<U> {
         self.values
@@ -455,7 +448,6 @@ impl<T, U, V> OffsetClass<T, U, V> {
 
 impl<T, U, V> Action for OffsetClass<T, U, V> {}
 
-#[async_trait]
 impl<
         T: Send + Sync + Clone + Into<V>,
         U: Send + Sync + Clone + Add<Output = U>,

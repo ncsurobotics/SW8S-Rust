@@ -7,7 +7,6 @@ use std::{
     time::Duration,
 };
 
-use async_trait::async_trait;
 use derive_getters::Getters;
 use futures::stream;
 use futures::StreamExt;
@@ -153,7 +152,6 @@ impl ResponseMap {
     }
 }
 
-#[async_trait]
 impl GetAck for ResponseMap {
     async fn get_ack(&self, id: u16) -> Result<Vec<u8>, AcknowledgeErr> {
         loop {

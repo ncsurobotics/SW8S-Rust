@@ -1,5 +1,4 @@
 use anyhow::Result;
-use async_trait::async_trait;
 
 use core::fmt::Debug;
 use std::{marker::PhantomData, sync::Arc, thread};
@@ -38,7 +37,7 @@ impl<T, U: Action> ActionIgnoredGeneric<T> for U {}
 /**
  * A trait for an action that can be executed.
  */
-#[async_trait]
+#[allow(async_fn_in_trait)]
 pub trait ActionExec<T: Send + Sync>: Action + Send + Sync {
     async fn execute(&mut self) -> T;
 }
@@ -144,7 +143,6 @@ impl<V: Action, W: Action, X: Action> ActionConditional<V, W, X> {
 /**
  * Implement the conditional logic for the ActionConditional action.
  */
-#[async_trait]
 impl<U: Send + Sync, V: ActionExec<bool>, W: ActionExec<U>, X: ActionExec<U>> ActionExec<U>
     for ActionConditional<V, W, X>
 {
@@ -226,7 +224,6 @@ impl<T: Action, U: Action> RaceAction<T, U> {
 /**
  * Implement race logic where both actions are scheduled until one finishes.
  */
-#[async_trait]
 impl<V: Sync + Send, T: ActionExec<V>, U: ActionExec<V>> ActionExec<V> for RaceAction<T, U> {
     async fn execute(&mut self) -> V {
         tokio::select! {
@@ -303,7 +300,6 @@ impl<T: Action, U: Action> DualAction<T, U> {
 /**
  * Implement multiple logic where both actions are scheduled until both finish.
  */
-#[async_trait]
 impl<V: Send + Sync, T: ActionExec<V>, U: ActionExec<V>> ActionExec<(V, V)> for DualAction<T, U> {
     async fn execute(&mut self) -> (V, V) {
         tokio::join!(self.first.execute(), self.second.execute())
@@ -359,7 +355,6 @@ impl<T, V: Action, W: Action> ActionChain<T, V, W> {
     }
 }
 
-#[async_trait]
 impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionMod<T> + ActionExec<U>>
     ActionExec<U> for ActionChain<T, V, W>
 {
@@ -420,7 +415,6 @@ impl<T, V, W> ActionSequence<T, V, W> {
     }
 }
 
-#[async_trait]
 impl<T: Send + Sync, X: Send + Sync, V: ActionExec<T>, W: ActionExec<X>> ActionExec<X>
     for ActionSequence<T, V, W>
 {
@@ -507,7 +501,6 @@ impl<V: Action, W: Action> ActionParallel<V, W> {
     }
 }
 
-#[async_trait]
 impl<
         Y: 'static + Send + Sync,
         X: 'static + Send + Sync,
@@ -618,7 +611,6 @@ impl<V: Action, W: Action> ActionConcurrent<V, W> {
     }
 }
 
-#[async_trait]
 impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Y>, W: ActionExec<X>> ActionExec<(Y, X)>
     for ActionConcurrent<V, W>
 {
@@ -674,7 +666,6 @@ impl<T: Action> ActionUntil<T> {
     }
 }
 
-#[async_trait]
 impl<U: Send + Sync, T: ActionExec<Result<U>>> ActionExec<Result<U>> for ActionUntil<T> {
     async fn execute(&mut self) -> Result<U> {
         let mut count = 1;
@@ -727,7 +718,6 @@ impl<T: Action> ActionWhile<T> {
     }
 }
 
-#[async_trait]
 impl<U: Send + Sync + Default, T: ActionExec<Result<U>>> ActionExec<U> for ActionWhile<T> {
     async fn execute(&mut self) -> U {
         let mut result = U::default();
@@ -768,7 +758,6 @@ impl<T: Action, U> TupleSecond<T, U> {
     }
 }
 
-#[async_trait]
 impl<U: Send + Sync, V: Send + Sync, T: ActionExec<(U, V)>> ActionExec<V> for TupleSecond<T, U> {
     async fn execute(&mut self) -> V {
         self.action.execute().await.1
@@ -816,7 +805,6 @@ impl<Input: Send + Sync, T: ActionMod<Input> + Sync + Send> ActionMod<Input> for
     }
 }
 
-#[async_trait]
 impl<U: Send + Sync, T: ActionExec<(Result<U>, Result<U>)>> ActionExec<Result<U>>
     for FirstValid<T>
 {
@@ -830,7 +818,6 @@ impl<U: Send + Sync, T: ActionExec<(Result<U>, Result<U>)>> ActionExec<Result<U>
     }
 }
 
-#[async_trait]
 impl<U: Send + Sync, T: ActionExec<(Option<U>, Option<U>)>> ActionExec<Option<U>>
     for FirstValid<T>
 {

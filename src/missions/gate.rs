@@ -1,5 +1,5 @@
 use tokio::io::WriteHalf;
-use tokio_serial::{new, SerialStream};
+use tokio_serial::SerialStream;
 
 use crate::{
     act_nest,

@@ -8,9 +8,6 @@ use opencv::{
 use std::hash::Hash;
 use std::{fmt::Debug, sync::Mutex};
 
-#[cfg(feature = "cuda")]
-use opencv::dnn::{DNN_BACKEND_CUDA, DNN_TARGET_CUDA, DNN_TARGET_CUDA_FP16};
-
 #[cfg(feature = "cuda_min_max_loc")]
 use opencv::cudaarithm::min_max_loc as cuda_min_max_loc;
 
@@ -108,7 +105,7 @@ impl OnnxModel {
         model_size: i32,
         num_objects: usize,
     ) -> Result<Self> {
-        let mut net = read_net_from_onnx_buffer(model_bytes)?;
+        let net = read_net_from_onnx_buffer(model_bytes)?;
         /*
         #[cfg(feature = "cuda")]
         {
@@ -144,7 +141,7 @@ impl OnnxModel {
     /// OnnxModel::from_file("src/vision/models/buoy_320.onnx", 320, 4).unwrap();
     /// ```
     pub fn from_file(model_name: &str, model_size: i32, num_objects: usize) -> Result<Self> {
-        let mut net = read_net_from_onnx(model_name)?;
+        let net = read_net_from_onnx(model_name)?;
         /*
         #[cfg(feature = "cuda")]
         {
