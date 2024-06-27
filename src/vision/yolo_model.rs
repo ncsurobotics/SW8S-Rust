@@ -19,7 +19,7 @@ pub trait YoloTarget: PartialEq + Eq + Hash + Clone + Debug + TryFrom<i32> {}
 pub trait YoloProcessor: Debug {
     type Target: PartialEq + Eq + Hash + Clone + Debug + TryFrom<i32>;
 
-    fn detect_yolo_v5(&mut self, image: &Mat) -> Result<Vec<YoloDetection>>;
+    fn detect_yolo_v5(&mut self, image: &Mat) -> Vec<YoloDetection>;
     fn model_size(&self) -> Size;
 }
 
@@ -35,20 +35,19 @@ where
         &mut self,
         image: &Mat,
     ) -> Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
-        self.detect_yolo_v5(image)?
+        Ok(self
+            .detect_yolo_v5(image)
             .into_iter()
-            .map(|detection| {
-                Ok(VisualDetection {
-                    class: YoloClass {
-                        identifier: detection.class_id().to_owned().try_into()?,
-                        confidence: *detection.confidence(),
-                    },
-                    position: DrawRect2d {
-                        inner: *detection.bounding_box(),
-                    },
-                })
+            .map(|detection| VisualDetection {
+                class: YoloClass {
+                    identifier: detection.class_id().to_owned().try_into().unwrap(),
+                    confidence: *detection.confidence(),
+                },
+                position: DrawRect2d {
+                    inner: *detection.bounding_box(),
+                },
             })
-            .collect::<Result<Vec<_>>>()
+            .collect::<Vec<_>>())
     }
 
     fn normalize(&mut self, pos: &Self::Position) -> Self::Position {

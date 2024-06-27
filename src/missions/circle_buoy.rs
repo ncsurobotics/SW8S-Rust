@@ -38,7 +38,6 @@ pub fn buoy_circle_sequence<
 ) -> impl ActionExec<()> + '_ {
     const DEPTH: f32 = -0.5;
 
-    let lateral_power = 0.3;
     let delay_s = 1.0;
     // Create a DelayAction with hardcoded delay
     let delay_action = DelayAction::new(delay_s);

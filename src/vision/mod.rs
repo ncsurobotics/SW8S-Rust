@@ -15,6 +15,7 @@ use std::{
 };
 
 pub mod buoy;
+pub mod buoy_model;
 pub mod gate;
 pub mod gate_poles;
 pub mod image_prep;

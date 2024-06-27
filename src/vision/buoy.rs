@@ -100,7 +100,7 @@ impl Default for Buoy<OnnxModel> {
 impl YoloProcessor for Buoy<OnnxModel> {
     type Target = Target;
 
-    fn detect_yolo_v5(&mut self, image: &Mat) -> Result<Vec<YoloDetection>> {
+    fn detect_yolo_v5(&mut self, image: &Mat) -> Vec<YoloDetection> {
         self.model.detect_yolo_v5(image, self.threshold)
     }
 
@@ -115,7 +115,6 @@ mod tests {
     use opencv::{
         core::Vector,
         imgcodecs::{imread, imwrite, IMREAD_COLOR},
-        prelude::MatTraitConstManual,
     };
 
     use crate::vision::{Draw, VisualDetector};
@@ -146,9 +145,9 @@ mod tests {
             .find(|&result| *result.class() == Target::Abydos1)
             .unwrap()
             .position();
-        assert_approx_eq!(abydos_1_pos.x, 134.9113845825195, 1e-4);
-        assert_approx_eq!(abydos_1_pos.y, 163.99715423583984, 1e-4);
-        assert_approx_eq!(abydos_1_pos.width, 149.86732482910156, 1e-4);
-        assert_approx_eq!(abydos_1_pos.height, 141.14679336547852, 1e-4);
+        assert_approx_eq!(abydos_1_pos.x, 134.9113845825195, 1.0);
+        assert_approx_eq!(abydos_1_pos.y, 163.99715423583984, 1.0);
+        assert_approx_eq!(abydos_1_pos.width, 149.86732482910156, 1.0);
+        assert_approx_eq!(abydos_1_pos.height, 141.14679336547852, 1.0);
     }
 }

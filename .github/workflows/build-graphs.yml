@@ -55,7 +55,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Build graphs
-        run: RUST_BACKTRACE=1 cargo run --all-features --bin sw8s_rust_graphs
+        run: RUST_BACKTRACE=1 cargo run --features logging,graphing --bin sw8s_rust_graphs
 
       - name: Prepare graphs for web
         run: |

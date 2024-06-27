@@ -1,5 +1,10 @@
 use anyhow::Result;
-use opencv::{core::Size, prelude::Mat};
+use opencv::{
+    core::{Scalar, Size, CV_32F, CV_8S},
+    dnn::{blob_from_image, NetTrait},
+    imgcodecs::{imread, IMREAD_COLOR},
+    prelude::Mat,
+};
 
 use crate::load_onnx;
 
@@ -13,10 +18,11 @@ use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
-    LargeGate,
-    Earth,
-    Abydos,
+    Red,
     Pole,
+    Blue,
+    Gate,
+    Middle,
 }
 
 impl From<YoloClass<Target>> for Target {
@@ -42,10 +48,11 @@ impl TryFrom<i32> for Target {
     type Error = TargetError;
     fn try_from(value: i32) -> std::result::Result<Self, Self::Error> {
         match value {
-            0 => Ok(Self::LargeGate),
-            1 => Ok(Self::Earth),
-            2 => Ok(Self::Abydos),
-            3 => Ok(Self::Pole),
+            0 => Ok(Self::Red),
+            1 => Ok(Self::Pole),
+            2 => Ok(Self::Blue),
+            3 => Ok(Self::Gate),
+            4 => Ok(Self::Middle),
             x => Err(TargetError { x }),
         }
     }
@@ -65,30 +72,56 @@ pub struct GatePoles<T: VisionModel> {
 
 impl GatePoles<OnnxModel> {
     pub fn new(model_name: &str, model_size: i32, threshold: f64) -> Result<Self> {
-        Ok(Self {
-            model: OnnxModel::from_file(model_name, model_size, 4)?,
-            threshold,
-        })
+        let mut model = OnnxModel::from_file(model_name, model_size, 5)?;
+        #[cfg(feature = "quantize_i8")]
+        {
+            let blob = blob_from_image(
+                &imread("model_calib_data/gate_poles.png", IMREAD_COLOR).unwrap(),
+                1.0 / 255.0,
+                model.get_model_size(),
+                Scalar::from(0.0),
+                true,
+                false,
+                CV_32F,
+            )
+            .unwrap();
+            model.get_net().quantize_def(&blob, CV_32F, CV_8S).unwrap();
+        }
+
+        Ok(Self { model, threshold })
     }
 
     pub fn load_640(threshold: f64) -> Self {
-        Self {
-            model: load_onnx!("models/gate_640_poles.onnx", 640, 4),
-            threshold,
+        let mut model = load_onnx!("models/gate_new_640.onnx", 640, 5);
+        #[cfg(feature = "quantize_i8")]
+        {
+            let blob = blob_from_image(
+                &imread("model_calib_data/gate_poles.png", IMREAD_COLOR).unwrap(),
+                1.0 / 255.0,
+                model.get_model_size(),
+                Scalar::from(0.0),
+                true,
+                false,
+                CV_32F,
+            )
+            .unwrap();
+            model.get_net().quantize_def(&blob, CV_32F, CV_32F).unwrap();
         }
+
+        Self { model, threshold }
     }
 }
 
 impl Default for GatePoles<OnnxModel> {
     fn default() -> Self {
-        Self::load_640(0.7)
+        Self::load_640(0.3)
     }
 }
 
 impl YoloProcessor for GatePoles<OnnxModel> {
     type Target = Target;
 
-    fn detect_yolo_v5(&mut self, image: &Mat) -> Result<Vec<YoloDetection>> {
+    fn detect_yolo_v5(&mut self, image: &Mat) -> Vec<YoloDetection> {
         self.model.detect_yolo_v5(image, self.threshold)
     }
 

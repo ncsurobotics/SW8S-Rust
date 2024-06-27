@@ -15,7 +15,7 @@ use sw8s_rust_lib::{
         basic::descend_and_go_forward,
         circle_buoy::buoy_circle_sequence,
         example::initial_descent,
-        gate::{gate_run_complex, gate_run_naive},
+        gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         octagon::look_up_octagon,
     },
     video_source::appsink::Camera,
@@ -269,6 +269,18 @@ async fn run_mission(mission: &str) -> Result<()> {
         }
         "gate_run_complex" => {
             let _ = gate_run_complex(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "gate_run_testing" => {
+            let _ = gate_run_testing(&FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,

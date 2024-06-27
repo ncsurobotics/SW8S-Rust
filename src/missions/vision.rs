@@ -142,8 +142,7 @@ where
         let mut mat = self.context.get_front_camera_mat().await.clone();
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
-        println!("Detect attempt");
-        //println!("Detect attempt: {:#?}", detections);
+        println!("Detect attempt: {:#?}", detections);
         let detections = detections?;
         #[cfg(feature = "logging")]
         {
@@ -219,6 +218,7 @@ impl<
                 .cloned()
                 .collect();
             if !passing_vals.is_empty() {
+                println!("Passing this: {:#?}", passing_vals);
                 Some(passing_vals)
             } else {
                 None

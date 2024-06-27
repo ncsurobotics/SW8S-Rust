@@ -8,7 +8,6 @@ use async_trait::async_trait;
 use core::fmt::Debug;
 use derive_getters::Getters;
 use num_traits::clamp;
-use num_traits::Float;
 use num_traits::Pow;
 use num_traits::Zero;
 use std::ops::Rem;
@@ -1078,8 +1077,6 @@ impl Stability1Pos {
 
     /// Executes the position in stability assist
     pub async fn exec(&mut self, board: &ControlBoard<WriteHalf<SerialStream>>) -> Result<()> {
-        const SLEEP_LEN: Duration = Duration::from_millis(100);
-
         println!("Stability 1 speed set: {:#?}", self);
 
         board

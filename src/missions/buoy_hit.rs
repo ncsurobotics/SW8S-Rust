@@ -28,29 +28,11 @@ pub struct FindBuoy<'a, T> {
     buoy_model: Buoy<OnnxModel>,
 }
 
-pub struct DriveToBuoy<'a, T> {
-    context: &'a T,
-    target_depth: f32,
-    forward_power: f32,
-    k_p: f32,
-}
-
 impl<'a, T> FindBuoy<'a, T> {
     pub fn new(context: &'a T, buoy_model: Buoy<OnnxModel>) -> Self {
         FindBuoy {
             context,
             buoy_model,
-        }
-    }
-}
-
-impl<'a, T> DriveToBuoy<'a, T> {
-    pub fn new(context: &'a T, target_depth: f32, forward_power: f32) -> Self {
-        DriveToBuoy {
-            context,
-            target_depth,
-            forward_power,
-            k_p: 0.3,
         }
     }
 }
@@ -69,7 +51,6 @@ impl<'a, T> DriveToBuoyVision<'a, T> {
 
 impl<T> Action for DriveToBuoyVision<'_, T> {}
 
-impl<T> Action for DriveToBuoy<'_, T> {}
 impl<T> Action for FindBuoy<'_, T> {}
 
 #[async_trait]
