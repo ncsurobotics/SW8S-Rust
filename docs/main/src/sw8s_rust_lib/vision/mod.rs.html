@@ -284,6 +284,12 @@
 <a href="#284" id="284">284</a>
 <a href="#285" id="285">285</a>
 <a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{anyhow, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>itertools::Itertools;
@@ -331,6 +337,12 @@
 </span><span class="kw">pub struct </span>Offset2D&lt;T: Num&gt; {
     x: T,
     y: T,
+}
+
+<span class="kw">impl</span>&lt;T: Num&gt; Offset2D&lt;T&gt; {
+    <span class="kw">pub fn </span>new(x: T, y: T) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ x, y }
+    }
 }
 
 <span class="kw">pub trait </span>RelPos {

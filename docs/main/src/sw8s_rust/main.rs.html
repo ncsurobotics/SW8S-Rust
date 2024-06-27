@@ -366,6 +366,18 @@
 <a href="#366" id="366">366</a>
 <a href="#367" id="367">367</a>
 <a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -381,7 +393,7 @@
         action::ActionExec,
         action_context::FullActionContext,
         basic::descend_and_go_forward,
-        circle_buoy::buoy_circle_sequence,
+        circle_buoy::{buoy_circle_sequence, buoy_circle_sequence_model},
         example::initial_descent,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         octagon::look_up_octagon,
@@ -721,6 +733,18 @@
         }
         <span class="string">"buoy_circle" </span>=&gt; {
             <span class="kw">let _ </span>= buoy_circle_sequence(<span class="kw-2">&amp;</span>FullActionContext::new(
+                control_board().<span class="kw">await</span>,
+                meb().<span class="kw">await</span>,
+                front_cam().<span class="kw">await</span>,
+                bottom_cam().<span class="kw">await</span>,
+                gate_target().<span class="kw">await</span>,
+            ))
+            .execute()
+            .<span class="kw">await</span>;
+            <span class="prelude-val">Ok</span>(())
+        }
+        <span class="string">"buoy_model" </span>=&gt; {
+            <span class="kw">let _ </span>= buoy_circle_sequence_model(<span class="kw-2">&amp;</span>FullActionContext::new(
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
