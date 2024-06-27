@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["globals","globals_init"],"struct":["EventInfo","Globals","Registry"],"trait":["Init","Storage"],"type":["EventId"]};

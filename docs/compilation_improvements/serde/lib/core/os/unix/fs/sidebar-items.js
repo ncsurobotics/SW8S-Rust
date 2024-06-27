@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["chown","chroot","fchown","lchown","symlink"],"trait":["DirBuilderExt","DirEntryExt","DirEntryExt2","FileExt","FileTypeExt","MetadataExt","OpenOptionsExt","PermissionsExt"]};
