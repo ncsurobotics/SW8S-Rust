@@ -1,15 +1,16 @@
 use anyhow::Result;
+use derive_getters::Getters;
 use opencv::{core::Size, prelude::Mat};
 
 use crate::load_onnx;
 
 use super::{
-    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
+    nn_cv2::{ModelPipelined, OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
 use core::hash::Hash;
-use std::{error::Error, fmt::Display};
+use std::{error::Error, fmt::Display, num::NonZeroUsize};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
@@ -51,7 +52,7 @@ impl Display for Target {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Getters)]
 pub struct BuoyModel<T: VisionModel> {
     model: T,
     threshold: f64,
@@ -88,5 +89,24 @@ impl YoloProcessor for BuoyModel<OnnxModel> {
 
     fn model_size(&self) -> Size {
         self.model.size()
+    }
+}
+
+impl BuoyModel<OnnxModel> {
+    /// Convert into [`ModelPipelined`].
+    ///
+    /// See [`ModelPipelined::new`] for arguments.
+    pub async fn into_pipelined(
+        self,
+        model_threads: NonZeroUsize,
+        post_processing_threads: NonZeroUsize,
+    ) -> ModelPipelined {
+        ModelPipelined::new(
+            self.model,
+            model_threads,
+            post_processing_threads,
+            self.threshold,
+        )
+        .await
     }
 }

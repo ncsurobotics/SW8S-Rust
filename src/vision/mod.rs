@@ -3,7 +3,7 @@ use derive_getters::Getters;
 use itertools::Itertools;
 use num_traits::{zero, FromPrimitive, Num};
 use opencv::{
-    core::{MatTraitConst, Rect2d, Scalar},
+    core::{MatTraitConst, Rect2d, Scalar, Vector},
     imgproc::{self, LINE_8},
     prelude::Mat,
 };
@@ -11,7 +11,7 @@ use std::{
     fmt::Debug,
     hash::Hash,
     iter::Sum,
-    ops::{Add, Deref, Div, Mul},
+    ops::{Add, Deref, DerefMut, Div, Mul},
 };
 
 pub mod buoy;
@@ -290,3 +290,61 @@ impl Mul<&Mat> for DrawRect2d {
         }
     }
 }
+
+/// Allows [`Mat`] to be shared across threads for async.
+/// The C pointer is perfectly safe to share between threads, Rust just
+/// defaults to not giving any pointer Send/Sync so we have to use this wrapper
+/// pattern.
+#[derive(Debug, Default, Clone)]
+pub struct MatWrapper(pub Mat);
+
+impl Deref for MatWrapper {
+    type Target = Mat;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for MatWrapper {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<Mat> for MatWrapper {
+    fn from(value: Mat) -> Self {
+        Self(value)
+    }
+}
+
+unsafe impl Send for MatWrapper {}
+unsafe impl Sync for MatWrapper {}
+
+/// Allows [`Vector<Mat>`] to be shared across threads for async.
+/// The C pointer is perfectly safe to share between threads, Rust just
+/// defaults to not giving any pointer Send/Sync so we have to use this wrapper
+/// pattern.
+#[derive(Debug, Clone)]
+pub struct VecMatWrapper(pub Vector<Mat>);
+
+impl Deref for VecMatWrapper {
+    type Target = Vector<Mat>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for VecMatWrapper {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<Vector<Mat>> for VecMatWrapper {
+    fn from(value: Vector<Mat>) -> Self {
+        Self(value)
+    }
+}
+
+unsafe impl Send for VecMatWrapper {}
+unsafe impl Sync for VecMatWrapper {}

@@ -1,7 +1,4 @@
-use std::{
-    fs::create_dir_all,
-    ops::{Deref, DerefMut, RangeInclusive},
-};
+use std::{fs::create_dir_all, ops::RangeInclusive};
 
 use itertools::Itertools;
 use opencv::{
@@ -17,7 +14,7 @@ use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
 use super::{
     image_prep::{kmeans, resize},
     pca::PosVector,
-    VisualDetection, VisualDetector,
+    MatWrapper, VisualDetection, VisualDetector,
 };
 
 static FORWARD: (f64, f64) = (0.0, -1.0);
@@ -56,35 +53,6 @@ impl Yuv {
     }
 }
 
-/// Allows [`Mat`] to be shared across threads for async.
-/// The C pointer is perfectly safe to share between threads, Rust just
-/// defaults to not giving any pointer Send/Sync so we have to use this wrapper
-/// pattern.
-#[derive(Debug)]
-struct MatWrapper(Mat);
-
-impl Deref for MatWrapper {
-    type Target = Mat;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for MatWrapper {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl From<Mat> for MatWrapper {
-    fn from(value: Mat) -> Self {
-        Self(value)
-    }
-}
-
-unsafe impl Send for MatWrapper {}
-unsafe impl Sync for MatWrapper {}
-
 #[derive(Debug)]
 pub struct Path {
     color_bounds: RangeInclusive<Yuv>,
@@ -97,7 +65,7 @@ pub struct Path {
 
 impl Path {
     pub fn image(&self) -> Mat {
-        self.image.clone()
+        (*self.image).clone()
     }
 }
 

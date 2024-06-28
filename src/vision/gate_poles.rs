@@ -1,20 +1,16 @@
 use anyhow::Result;
-use opencv::{
-    core::{Scalar, Size, CV_32F, CV_8S},
-    dnn::{blob_from_image, NetTrait},
-    imgcodecs::{imread, IMREAD_COLOR},
-    prelude::Mat,
-};
+use derive_getters::Getters;
+use opencv::{core::Size, prelude::Mat};
 
 use crate::load_onnx;
 
 use super::{
-    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
+    nn_cv2::{ModelPipelined, OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
 use core::hash::Hash;
-use std::{error::Error, fmt::Display};
+use std::{error::Error, fmt::Display, num::NonZeroUsize};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
@@ -64,7 +60,7 @@ impl Display for Target {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Getters)]
 pub struct GatePoles<T: VisionModel> {
     model: T,
     threshold: f64,
@@ -72,41 +68,13 @@ pub struct GatePoles<T: VisionModel> {
 
 impl GatePoles<OnnxModel> {
     pub fn new(model_name: &str, model_size: i32, threshold: f64) -> Result<Self> {
-        let mut model = OnnxModel::from_file(model_name, model_size, 5)?;
-        #[cfg(feature = "quantize_i8")]
-        {
-            let blob = blob_from_image(
-                &imread("model_calib_data/gate_poles.png", IMREAD_COLOR).unwrap(),
-                1.0 / 255.0,
-                model.get_model_size(),
-                Scalar::from(0.0),
-                true,
-                false,
-                CV_32F,
-            )
-            .unwrap();
-            model.get_net().quantize_def(&blob, CV_32F, CV_8S).unwrap();
-        }
+        let model = OnnxModel::from_file(model_name, model_size, 5)?;
 
         Ok(Self { model, threshold })
     }
 
     pub fn load_640(threshold: f64) -> Self {
-        let mut model = load_onnx!("models/gate_new_640.onnx", 640, 5);
-        #[cfg(feature = "quantize_i8")]
-        {
-            let blob = blob_from_image(
-                &imread("model_calib_data/gate_poles.png", IMREAD_COLOR).unwrap(),
-                1.0 / 255.0,
-                model.get_model_size(),
-                Scalar::from(0.0),
-                true,
-                false,
-                CV_32F,
-            )
-            .unwrap();
-            model.get_net().quantize_def(&blob, CV_32F, CV_32F).unwrap();
-        }
+        let model = load_onnx!("models/gate_new_640.onnx", 640, 5);
 
         Self { model, threshold }
     }
@@ -127,5 +95,24 @@ impl YoloProcessor for GatePoles<OnnxModel> {
 
     fn model_size(&self) -> Size {
         self.model.size()
+    }
+}
+
+impl GatePoles<OnnxModel> {
+    /// Convert into [`ModelPipelined`].
+    ///
+    /// See [`ModelPipelined::new`] for arguments.
+    pub async fn into_pipelined(
+        self,
+        model_threads: NonZeroUsize,
+        post_processing_threads: NonZeroUsize,
+    ) -> ModelPipelined {
+        ModelPipelined::new(
+            self.model,
+            model_threads,
+            post_processing_threads,
+            self.threshold,
+        )
+        .await
     }
 }
