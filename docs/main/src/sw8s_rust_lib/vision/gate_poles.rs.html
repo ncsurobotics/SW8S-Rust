@@ -116,36 +116,19 @@
 <a href="#116" id="116">116</a>
 <a href="#117" id="117">117</a>
 <a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
-<span class="kw">use </span>opencv::{
-    core::{Scalar, Size, CV_32F, CV_8S},
-    dnn::{blob_from_image, NetTrait},
-    imgcodecs::{imread, IMREAD_COLOR},
-    prelude::Mat,
-};
+<span class="kw">use </span>derive_getters::Getters;
+<span class="kw">use </span>opencv::{core::Size, prelude::Mat};
 
 <span class="kw">use </span><span class="kw">crate</span>::load_onnx;
 
 <span class="kw">use super</span>::{
-    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
+    nn_cv2::{ModelPipelined, OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
 <span class="kw">use </span>core::hash::Hash;
-<span class="kw">use </span>std::{error::Error, fmt::Display};
+<span class="kw">use </span>std::{error::Error, fmt::Display, num::NonZeroUsize};
 
 <span class="attr">#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 </span><span class="kw">pub enum </span>Target {
@@ -195,7 +178,7 @@
     }
 }
 
-<span class="attr">#[derive(Debug)]
+<span class="attr">#[derive(Debug, Clone, Getters)]
 </span><span class="kw">pub struct </span>GatePoles&lt;T: VisionModel&gt; {
     model: T,
     threshold: f64,
@@ -203,41 +186,13 @@
 
 <span class="kw">impl </span>GatePoles&lt;OnnxModel&gt; {
     <span class="kw">pub fn </span>new(model_name: <span class="kw-2">&amp;</span>str, model_size: i32, threshold: f64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>model = OnnxModel::from_file(model_name, model_size, <span class="number">5</span>)<span class="question-mark">?</span>;
-        <span class="attr">#[cfg(feature = <span class="string">"quantize_i8"</span>)]
-        </span>{
-            <span class="kw">let </span>blob = blob_from_image(
-                <span class="kw-2">&amp;</span>imread(<span class="string">"model_calib_data/gate_poles.png"</span>, IMREAD_COLOR).unwrap(),
-                <span class="number">1.0 </span>/ <span class="number">255.0</span>,
-                model.get_model_size(),
-                Scalar::from(<span class="number">0.0</span>),
-                <span class="bool-val">true</span>,
-                <span class="bool-val">false</span>,
-                CV_32F,
-            )
-            .unwrap();
-            model.get_net().quantize_def(<span class="kw-2">&amp;</span>blob, CV_32F, CV_8S).unwrap();
-        }
+        <span class="kw">let </span>model = OnnxModel::from_file(model_name, model_size, <span class="number">5</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ model, threshold })
     }
 
     <span class="kw">pub fn </span>load_640(threshold: f64) -&gt; <span class="self">Self </span>{
-        <span class="kw">let </span><span class="kw-2">mut </span>model = <span class="macro">load_onnx!</span>(<span class="string">"models/gate_new_640.onnx"</span>, <span class="number">640</span>, <span class="number">5</span>);
-        <span class="attr">#[cfg(feature = <span class="string">"quantize_i8"</span>)]
-        </span>{
-            <span class="kw">let </span>blob = blob_from_image(
-                <span class="kw-2">&amp;</span>imread(<span class="string">"model_calib_data/gate_poles.png"</span>, IMREAD_COLOR).unwrap(),
-                <span class="number">1.0 </span>/ <span class="number">255.0</span>,
-                model.get_model_size(),
-                Scalar::from(<span class="number">0.0</span>),
-                <span class="bool-val">true</span>,
-                <span class="bool-val">false</span>,
-                CV_32F,
-            )
-            .unwrap();
-            model.get_net().quantize_def(<span class="kw-2">&amp;</span>blob, CV_32F, CV_32F).unwrap();
-        }
+        <span class="kw">let </span>model = <span class="macro">load_onnx!</span>(<span class="string">"models/gate_new_640.onnx"</span>, <span class="number">640</span>, <span class="number">5</span>);
 
         <span class="self">Self </span>{ model, threshold }
     }
@@ -259,5 +214,24 @@
     <span class="kw">fn </span>model_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Size {
         <span class="self">self</span>.model.size()
     }
+}
+
+<span class="kw">impl </span>GatePoles&lt;OnnxModel&gt; {
+    <span class="doccomment">/// Convert into [`ModelPipelined`].
+    ///
+    /// See [`ModelPipelined::new`] for arguments.
+    </span><span class="kw">pub async fn </span>into_pipelined(
+        <span class="self">self</span>,
+        model_threads: NonZeroUsize,
+        post_processing_threads: NonZeroUsize,
+    ) -&gt; ModelPipelined {
+        ModelPipelined::new(
+            <span class="self">self</span>.model,
+            model_threads,
+            post_processing_threads,
+            <span class="self">self</span>.threshold,
+        )
+        .<span class="kw">await
+    </span>}
 }
 </code></pre></div></section></main></body></html>

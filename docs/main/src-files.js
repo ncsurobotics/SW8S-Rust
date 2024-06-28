@@ -1,14 +1,24 @@
 var srcIndex = new Map(JSON.parse('[\
 ["anyhow",["",[],["backtrace.rs","chain.rs","context.rs","ensure.rs","error.rs","fmt.rs","kind.rs","lib.rs","macros.rs","ptr.rs","wrapper.rs"]]],\
+["async_channel",["",[],["lib.rs"]]],\
 ["bitflags",["",[],["external.rs","internal.rs","iter.rs","lib.rs","parser.rs","public.rs","traits.rs"]]],\
 ["bytes",["",[["buf",[],["buf_impl.rs","buf_mut.rs","chain.rs","iter.rs","limit.rs","mod.rs","reader.rs","take.rs","uninit_slice.rs","vec_deque.rs","writer.rs"]],["fmt",[],["debug.rs","hex.rs","mod.rs"]]],["bytes.rs","bytes_mut.rs","lib.rs","loom.rs"]]],\
 ["cfg_if",["",[],["lib.rs"]]],\
 ["chrono",["",[["datetime",[],["mod.rs"]],["format",[],["formatting.rs","locales.rs","mod.rs","parse.rs","parsed.rs","scan.rs","strftime.rs"]],["naive",[["date",[],["mod.rs"]],["datetime",[],["mod.rs"]],["time",[],["mod.rs"]]],["internals.rs","isoweek.rs","mod.rs"]],["offset",[["local",[["tz_info",[],["mod.rs","parser.rs","rule.rs","timezone.rs"]]],["mod.rs","unix.rs"]]],["fixed.rs","mod.rs","utc.rs"]]],["date.rs","lib.rs","month.rs","round.rs","time_delta.rs","traits.rs","weekday.rs"]]],\
+["concurrent_queue",["",[],["bounded.rs","lib.rs","single.rs","sync.rs","unbounded.rs"]]],\
+["crossbeam",["",[],["lib.rs"]]],\
+["crossbeam_channel",["",[["flavors",[],["array.rs","at.rs","list.rs","mod.rs","never.rs","tick.rs","zero.rs"]]],["channel.rs","context.rs","counter.rs","err.rs","lib.rs","select.rs","select_macro.rs","utils.rs","waker.rs"]]],\
+["crossbeam_deque",["",[],["deque.rs","lib.rs"]]],\
+["crossbeam_epoch",["",[["sync",[],["list.rs","mod.rs","once_lock.rs","queue.rs"]]],["atomic.rs","collector.rs","default.rs","deferred.rs","epoch.rs","guard.rs","internal.rs","lib.rs"]]],\
+["crossbeam_queue",["",[],["array_queue.rs","lib.rs","seg_queue.rs"]]],\
+["crossbeam_utils",["",[["atomic",[],["atomic_cell.rs","consume.rs","mod.rs","seq_lock.rs"]],["sync",[],["mod.rs","once_lock.rs","parker.rs","sharded_lock.rs","wait_group.rs"]]],["backoff.rs","cache_padded.rs","lib.rs","thread.rs"]]],\
 ["derive_getters",["",[],["dissolve.rs","extract.rs","faultmsg.rs","getters.rs","lib.rs"]]],\
 ["dot_generator",["",[],["lib.rs"]]],\
 ["dot_structures",["",[],["lib.rs"]]],\
 ["either",["",[],["lib.rs"]]],\
 ["equivalent",["",[],["lib.rs"]]],\
+["event_listener",["",[],["lib.rs","notify.rs","std.rs"]]],\
+["event_listener_strategy",["",[],["lib.rs"]]],\
 ["fastrand",["",[],["global_rng.rs","lib.rs"]]],\
 ["futures",["",[],["lib.rs"]]],\
 ["futures_channel",["",[["mpsc",[],["mod.rs","queue.rs","sink_impl.rs"]]],["lib.rs","lock.rs","oneshot.rs"]]],\
@@ -40,6 +50,7 @@ var srcIndex = new Map(JSON.parse('[\
 ["num_traits",["",[["ops",[],["bytes.rs","checked.rs","euclid.rs","inv.rs","mod.rs","mul_add.rs","overflowing.rs","saturating.rs","wrapping.rs"]]],["bounds.rs","cast.rs","float.rs","identities.rs","int.rs","lib.rs","macros.rs","pow.rs","real.rs","sign.rs"]]],\
 ["once_cell",["",[],["imp_std.rs","lib.rs","race.rs"]]],\
 ["opencv",["",[["manual",[["core",[["mat",[],["mat_.rs"]],["ptr",[],["ptr_extern.rs","ptr_f32.rs"]],["vec",[],["operations.rs"]],["vector",[],["iter.rs","vector_extern.rs"]]],["affine3.rs","data_type.rs","directx.rs","gpumat.rs","inplace.rs","input_output_array.rs","mat.rs","mat_ops.rs","matx.rs","point.rs","point3.rs","ptr.rs","rect.rs","scalar.rs","size.rs","sized.rs","tuple.rs","vec.rs","vector.rs"]],["types",[],["abstract_ref.rs"]]],["core.rs","dnn.rs","mod.rs","sys.rs","types.rs"]],["traits",[["opencv_type",[],["string.rs"]]],["boxed.rs","mod.rs","opencv_type.rs"]]],["boxed_ref.rs","cond_macros.rs","error.rs","lib.rs","opencv.rs","templ.rs"]]],\
+["parking",["",[],["lib.rs"]]],\
 ["parking_lot",["",[],["condvar.rs","deadlock.rs","elision.rs","fair_mutex.rs","lib.rs","mutex.rs","once.rs","raw_fair_mutex.rs","raw_mutex.rs","raw_rwlock.rs","remutex.rs","rwlock.rs","util.rs"]]],\
 ["parking_lot_core",["",[["thread_parker",[],["linux.rs","mod.rs"]]],["lib.rs","parking_lot.rs","spinwait.rs","util.rs","word_lock.rs"]]],\
 ["paste",["",[],["attr.rs","error.rs","lib.rs","segment.rs"]]],\
