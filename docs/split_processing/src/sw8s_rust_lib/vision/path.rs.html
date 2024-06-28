@@ -420,7 +420,7 @@
 
 <span class="kw">impl </span>Path {
     <span class="kw">pub fn </span>image(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
-        <span class="self">self</span>.image.clone()
+        (<span class="kw-2">*</span><span class="self">self</span>.image).clone()
     }
 }
 

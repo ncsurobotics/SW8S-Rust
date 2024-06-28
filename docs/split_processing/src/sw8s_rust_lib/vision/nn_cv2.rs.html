@@ -714,6 +714,9 @@
 <a href="#714" id="714">714</a>
 <a href="#715" id="715">715</a>
 <a href="#716" id="716">716</a>
+<a href="#717" id="717">717</a>
+<a href="#718" id="718">718</a>
+<a href="#719" id="719">719</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>opencv::{
@@ -789,7 +792,7 @@
     <span class="kw">type </span>ModelOutput;
 
     <span class="doccomment">/// Forward pass the matrix through the model, skipping post-processing
-    </span><span class="kw">fn </span>model_process(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat) -&gt; <span class="self">Self</span>::ModelOutput;
+    </span><span class="kw">fn </span>forward(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat) -&gt; <span class="self">Self</span>::ModelOutput;
     <span class="doccomment">/// Convert output from a model into detections
     </span><span class="kw">fn </span>post_process_args(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::PostProcessArgs;
     <span class="kw">fn </span>post_process(
@@ -800,7 +803,7 @@
 
     <span class="doccomment">/// Full input -&gt; output processing
     </span><span class="kw">fn </span>detect_yolo_v5(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat, threshold: f64) -&gt; Vec&lt;YoloDetection&gt; {
-        <span class="kw">let </span>model_output = <span class="self">self</span>.model_process(image);
+        <span class="kw">let </span>model_output = <span class="self">self</span>.forward(image);
         <span class="self">Self</span>::post_process(<span class="self">self</span>.post_process_args(), model_output, threshold)
     }
     <span class="kw">fn </span>size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Size;
@@ -1005,7 +1008,7 @@
 
 <span class="kw">impl </span>VisionModel <span class="kw">for </span>OnnxModel {
     <span class="kw">fn </span>detect_yolo_v5(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat, threshold: f64) -&gt; Vec&lt;YoloDetection&gt; {
-        <span class="kw">let </span>result = <span class="self">self</span>.model_process(image);
+        <span class="kw">let </span>result = <span class="self">self</span>.forward(image);
 
         <span class="attr">#[cfg(feature = <span class="string">"cuda"</span>)]
         </span><span class="kw">let </span>post_processing = <span class="self">Self</span>::process_net_cuda(
@@ -1019,14 +1022,14 @@
         </span><span class="kw">let </span>post_processing = <span class="self">Self</span>::process_net(
             <span class="self">self</span>.num_objects,
             <span class="self">self</span>.factor,
-            result.clone().into_iter(),
+            result.<span class="number">0</span>.into_iter(),
             threshold,
         );
 
         post_processing
     }
 
-    <span class="kw">fn </span>model_process(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat) -&gt; <span class="self">Self</span>::ModelOutput {
+    <span class="kw">fn </span>forward(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat) -&gt; <span class="self">Self</span>::ModelOutput {
         <span class="kw">let </span><span class="kw-2">mut </span>result: Vector&lt;Mat&gt; = Vector::new();
         <span class="kw">let </span>result_names = <span class="self">Self</span>::get_output_names(<span class="kw-2">&amp;</span><span class="self">self</span>.net.lock().unwrap());
         <span class="kw">let </span>blob = blob_from_image(
@@ -1081,8 +1084,7 @@
         </span><span class="kw">let </span>post_processing = <span class="self">Self</span>::process_net_cuda(args.<span class="number">0</span>, args.<span class="number">1</span>, <span class="kw-2">&amp;</span>output, threshold <span class="kw">as </span>f32);
 
         <span class="attr">#[cfg(not(feature = <span class="string">"cuda"</span>))]
-        </span><span class="kw">let </span>post_processing =
-            <span class="self">Self</span>::process_net(args.<span class="number">0</span>, args.<span class="number">1</span>, output.clone().into_iter(), threshold);
+        </span><span class="kw">let </span>post_processing = <span class="self">Self</span>::process_net(args.<span class="number">0</span>, args.<span class="number">1</span>, output.<span class="number">0</span>.into_iter(), threshold);
 
         post_processing
     }
@@ -1348,7 +1350,9 @@
                 };
 
                 <span class="comment">// Hand off to post processing
-                </span>inner_tx.send(model.model_process(<span class="kw-2">&amp;</span>input)).unwrap();
+                </span><span class="kw">if </span>inner_tx.send(model.forward(<span class="kw-2">&amp;</span>input)).is_err() {
+                    <span class="kw">break</span>;
+                };
             });
         }
 
@@ -1365,7 +1369,9 @@
                         T::post_process(post_process_args.clone(), input, threshold);
                     <span class="comment">// Blocking call on this end, async on the other.
                     // Never stalls for capacity, since output is unbounded.
-                    </span>output_tx.send_blocking(processed_output).unwrap();
+                    </span><span class="kw">if </span>output_tx.send_blocking(processed_output).is_err() {
+                        <span class="kw">break</span>;
+                    };
                 }
             });
         }

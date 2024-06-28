@@ -148,7 +148,9 @@
 <a href="#148" id="148">148</a>
 <a href="#149" id="149">149</a>
 <a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
+<span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>opencv::{
     core::{Scalar, Size, CV_32F, CV_8S},
     dnn::{blob_from_image, NetTrait},
@@ -214,7 +216,7 @@
     }
 }
 
-<span class="attr">#[derive(Debug, Clone)]
+<span class="attr">#[derive(Debug, Clone, Getters)]
 </span><span class="kw">pub struct </span>GatePoles&lt;T: VisionModel&gt; {
     model: T,
     threshold: f64,

@@ -109,7 +109,9 @@
 <a href="#109" id="109">109</a>
 <a href="#110" id="110">110</a>
 <a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
+<span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>opencv::{core::Size, prelude::Mat};
 
 <span class="kw">use </span><span class="kw">crate</span>::load_onnx;
@@ -162,7 +164,7 @@
     }
 }
 
-<span class="attr">#[derive(Debug)]
+<span class="attr">#[derive(Debug, Clone, Getters)]
 </span><span class="kw">pub struct </span>BuoyModel&lt;T: VisionModel&gt; {
     model: T,
     threshold: f64,
