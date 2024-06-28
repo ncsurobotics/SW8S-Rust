@@ -155,6 +155,110 @@ impl<U: Send + Sync, V: ActionExec<bool>, W: ActionExec<U>, X: ActionExec<U>> Ac
     }
 }
 
+/**
+ * An action that runs one of two actions depending on if its conditional
+ * reference is valid or not, passing processed output to the first child and
+ * unprocessed output to the second child.
+ */
+#[derive(Debug, Clone)]
+pub struct ActionDataConditional<V: Action, W: Action, X: Action, T, Y> {
+    condition: V,
+    true_branch: W,
+    false_branch: X,
+    _phantom: (PhantomData<T>, PhantomData<Y>),
+}
+
+impl<V: Action, W: Action, X: Action, T, Y> Action for ActionDataConditional<V, W, X, T, Y> {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let true_str = self.true_branch.dot_string(stripped_type::<Self>());
+        let false_str = self.false_branch.dot_string(stripped_type::<Self>());
+        let condition_str = self.condition.dot_string(stripped_type::<Self>());
+
+        let mut combined_str = true_str.body + &false_str.body + &condition_str.body;
+        for tail_id in &condition_str.tail_ids {
+            combined_str.push_str(&format!("\"{}\" [shape = diamond];\n", tail_id));
+            for head_id in &true_str.head_ids {
+                combined_str.push_str(&format!(
+                    "\"{}\" -> \"{}\" [color = purple, fontcolor = purple, label = \"True (Pass Data)\"];\n",
+                    tail_id, head_id,
+                ));
+            }
+            for head_id in &false_str.head_ids {
+                combined_str.push_str(&format!(
+                    "\"{}\" -> \"{}\" [label = \"False\"];\n",
+                    tail_id, head_id,
+                ));
+            }
+        }
+        for tail_id in &condition_str.head_ids {
+            for head_id in &false_str.head_ids {
+                combined_str.push_str(&format!(
+                    "\"{}\" -> \"{}\" [color = purple, fontcolor = purple, label = \"Pass Data\"];\n",
+                    tail_id, head_id,
+                ));
+            }
+        }
+        DotString {
+            head_ids: condition_str.head_ids,
+            tail_ids: vec![true_str.head_ids, false_str.head_ids]
+                .into_iter()
+                .flatten()
+                .collect(),
+            body: combined_str,
+        }
+    }
+}
+
+/**
+ * Implementation for the ActionDataConditional struct.
+ */
+impl<V: Action, W: Action, X: Action, T, Y> ActionDataConditional<V, W, X, T, Y> {
+    pub const fn new(condition: V, true_branch: W, false_branch: X) -> Self {
+        Self {
+            condition,
+            true_branch,
+            false_branch,
+            _phantom: (PhantomData, PhantomData),
+        }
+    }
+}
+
+/**
+ * Implement the passing and conditional logic.
+ */
+impl<
+        T: Send + Sync,
+        Input: Send + Sync,
+        U: Send + Sync,
+        V: ActionExec<Option<T>> + ActionMod<Input>,
+        W: ActionExec<U> + ActionMod<T>,
+        X: ActionExec<U> + ActionMod<Input>,
+    > ActionExec<U> for ActionDataConditional<V, W, X, T, Input>
+{
+    async fn execute(&mut self) -> U {
+        if let Some(output) = self.condition.execute().await {
+            self.true_branch.modify(&output);
+            self.true_branch.execute().await
+        } else {
+            self.false_branch.execute().await
+        }
+    }
+}
+
+impl<
+        V: ActionMod<Input> + Sync + Send,
+        W: Action,
+        X: ActionMod<Input> + Sync + Send,
+        T,
+        Input: Send + Sync,
+    > ActionMod<Input> for ActionDataConditional<V, W, X, T, Input>
+{
+    fn modify(&mut self, input: &Input) {
+        self.condition.modify(input);
+        self.false_branch.modify(input);
+    }
+}
+
 #[derive(Debug, Clone)]
 /**
  * Action that runs two actions at the same time and exits both when one exits
