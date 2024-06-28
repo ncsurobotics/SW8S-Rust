@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["TryRecvError","TrySendError"],"fn":["bounded","unbounded"],"struct":["Channel","Receiver","Recv","RecvError","RecvInner","Send","SendError","SendInner","Sender","WeakReceiver","WeakSender"]};

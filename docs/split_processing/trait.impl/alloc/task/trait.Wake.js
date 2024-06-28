@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"parking":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.79.0/alloc/task/trait.Wake.html\" title=\"trait alloc::task::Wake\">Wake</a> for <a class=\"struct\" href=\"parking/struct.Inner.html\" title=\"struct parking::Inner\">Inner</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

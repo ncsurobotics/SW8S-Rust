@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Trait"],"fn":["get","parse_error_attribute","parse_token_expr"],"struct":["Attrs","Display","Transparent"]};

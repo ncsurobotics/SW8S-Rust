@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["look_up_octagon","stub"]};

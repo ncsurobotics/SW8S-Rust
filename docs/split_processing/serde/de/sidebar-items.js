@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Unexpected"],"macro":["declare_error_trait"],"mod":["format","ignored_any","impls","size_hint","value"],"struct":["IgnoredAny","OneOf","WithDecimalPoint"],"trait":["Deserialize","DeserializeOwned","DeserializeSeed","Deserializer","EnumAccess","Error","Expected","IntoDeserializer","MapAccess","SeqAccess","VariantAccess","Visitor"]};
