@@ -73,7 +73,7 @@ pub trait VisionModel: Debug + Sync + Send {
     type ModelOutput;
 
     /// Forward pass the matrix through the model, skipping post-processing
-    fn model_process(&mut self, image: &Mat) -> Self::ModelOutput;
+    fn forward(&mut self, image: &Mat) -> Self::ModelOutput;
     /// Convert output from a model into detections
     fn post_process_args(&self) -> Self::PostProcessArgs;
     fn post_process(
@@ -84,7 +84,7 @@ pub trait VisionModel: Debug + Sync + Send {
 
     /// Full input -> output processing
     fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection> {
-        let model_output = self.model_process(image);
+        let model_output = self.forward(image);
         Self::post_process(self.post_process_args(), model_output, threshold)
     }
     fn size(&self) -> Size;
@@ -289,7 +289,7 @@ macro_rules! load_onnx {
 
 impl VisionModel for OnnxModel {
     fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection> {
-        let result = self.model_process(image);
+        let result = self.forward(image);
 
         #[cfg(feature = "cuda")]
         let post_processing = Self::process_net_cuda(
@@ -310,7 +310,7 @@ impl VisionModel for OnnxModel {
         post_processing
     }
 
-    fn model_process(&mut self, image: &Mat) -> Self::ModelOutput {
+    fn forward(&mut self, image: &Mat) -> Self::ModelOutput {
         let mut result: Vector<Mat> = Vector::new();
         let result_names = Self::get_output_names(&self.net.lock().unwrap());
         let blob = blob_from_image(
@@ -632,7 +632,9 @@ impl ModelPipelined {
                 };
 
                 // Hand off to post processing
-                inner_tx.send(model.model_process(&input)).unwrap();
+                if inner_tx.send(model.forward(&input)).is_err() {
+                    break;
+                };
             });
         }
 
@@ -649,7 +651,9 @@ impl ModelPipelined {
                         T::post_process(post_process_args.clone(), input, threshold);
                     // Blocking call on this end, async on the other.
                     // Never stalls for capacity, since output is unbounded.
-                    output_tx.send_blocking(processed_output).unwrap();
+                    if output_tx.send_blocking(processed_output).is_err() {
+                        break;
+                    };
                 }
             });
         }

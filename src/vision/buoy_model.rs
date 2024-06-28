@@ -1,4 +1,5 @@
 use anyhow::Result;
+use derive_getters::Getters;
 use opencv::{core::Size, prelude::Mat};
 
 use crate::load_onnx;
@@ -51,7 +52,7 @@ impl Display for Target {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Getters)]
 pub struct BuoyModel<T: VisionModel> {
     model: T,
     threshold: f64,

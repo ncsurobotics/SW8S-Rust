@@ -65,7 +65,7 @@ pub struct Path {
 
 impl Path {
     pub fn image(&self) -> Mat {
-        self.image.clone()
+        (*self.image).clone()
     }
 }
 

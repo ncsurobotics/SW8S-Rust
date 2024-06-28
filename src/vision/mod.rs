@@ -295,7 +295,7 @@ impl Mul<&Mat> for DrawRect2d {
 /// The C pointer is perfectly safe to share between threads, Rust just
 /// defaults to not giving any pointer Send/Sync so we have to use this wrapper
 /// pattern.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct MatWrapper(pub Mat);
 
 impl Deref for MatWrapper {
@@ -324,7 +324,7 @@ unsafe impl Sync for MatWrapper {}
 /// The C pointer is perfectly safe to share between threads, Rust just
 /// defaults to not giving any pointer Send/Sync so we have to use this wrapper
 /// pattern.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VecMatWrapper(pub Vector<Mat>);
 
 impl Deref for VecMatWrapper {

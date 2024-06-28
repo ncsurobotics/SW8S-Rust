@@ -1,4 +1,5 @@
 use anyhow::Result;
+use derive_getters::Getters;
 use opencv::{
     core::{Scalar, Size, CV_32F, CV_8S},
     dnn::{blob_from_image, NetTrait},
@@ -64,7 +65,7 @@ impl Display for Target {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Getters)]
 pub struct GatePoles<T: VisionModel> {
     model: T,
     threshold: f64,
