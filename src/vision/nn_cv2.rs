@@ -303,7 +303,7 @@ impl VisionModel for OnnxModel {
         let post_processing = Self::process_net(
             self.num_objects,
             self.factor,
-            result.clone().into_iter(),
+            result.0.into_iter(),
             threshold,
         );
 
@@ -365,8 +365,7 @@ impl VisionModel for OnnxModel {
         let post_processing = Self::process_net_cuda(args.0, args.1, &output, threshold as f32);
 
         #[cfg(not(feature = "cuda"))]
-        let post_processing =
-            Self::process_net(args.0, args.1, output.clone().into_iter(), threshold);
+        let post_processing = Self::process_net(args.0, args.1, output.0.into_iter(), threshold);
 
         post_processing
     }
