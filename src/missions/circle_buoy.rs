@@ -8,11 +8,14 @@ use crate::{
             aggressive_yaw_from_x, FlatX, FlipYaw, LinearYawFromX, OffsetToPose, Stability2Adjust,
             Stability2Movement, Stability2Pos, StripX, StripY,
         },
-        vision::{Average, DetectTarget, ExtractPosition, VisionNorm},
+        vision::{
+            Average, DetectTarget, ExtractPosition, OffsetClass, ToOffset, VisionNorm,
+            VisionPipelinedNorm,
+        },
     },
     vision::{
         buoy_model::{BuoyModel, Target},
-        nn_cv2::{OnnxModel, YoloClass},
+        nn_cv2::{ModelPipelined, OnnxModel, YoloClass},
         path::{Path, Yuv},
         Offset2D,
     },
@@ -25,6 +28,7 @@ use super::{
     movement::ZeroMovement,
 };
 
+use nonzero::nonzero;
 use opencv::core::Size;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
@@ -97,38 +101,38 @@ pub fn buoy_circle_sequence_model<
         + GetFrontCamMat
         + Unpin,
 >(
-    context: &Con,
+    context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
     const BUOY_X_SPEED: f32 = -0.2;
     const BUOY_Y_SPEED: f32 = 0.2;
     const DEPTH: f32 = -1.0;
 
-    ActionSequence::new(
+    act_nest!(
+        ActionSequence::new,
         descend_and_go_forward(context),
-        ActionWhile::new(ActionChain::new(
-            VisionNorm::<Con, BuoyModel<OnnxModel>, f64>::new(context, BuoyModel::default()),
-            ActionChain::new(
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Buoy),
-                TupleSecond::new(ActionConcurrent::new(
-                    act_nest!(
-                        ActionChain::new,
-                        ToVec::new(),
-                        ExtractPosition::new(),
-                        Average::new(),
-                        OffsetToPose::default(),
-                        LinearYawFromX::<Stability2Adjust>::new(60.0),
-                        FlipYaw::default(),
-                        StripY::default(),
-                        StripX::default(),
-                        Stability2Movement::new(
-                            context,
-                            Stability2Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, 0.0, 0.0, None, DEPTH)
-                        ),
-                        OutputType::<()>::new()
+        ActionWhile::new(act_nest!(
+            ActionChain::new,
+            VisionPipelinedNorm::new(context, BuoyModel::default()),
+            TupleSecond::new(ActionConcurrent::new(
+                act_nest!(
+                    ActionChain::new,
+                    ToVec::new(),
+                    ToOffset::new(),
+                    Average::new(),
+                    OffsetToPose::default(),
+                    LinearYawFromX::<Stability2Adjust>::new(60.0),
+                    FlipYaw::default(),
+                    StripY::default(),
+                    StripX::default(),
+                    Stability2Movement::new(
+                        context,
+                        Stability2Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, 0.0, 0.0, None, DEPTH)
                     ),
-                    AlwaysTrue::default(),
-                )),
-            ),
+                    OutputType::<()>::new()
+                ),
+                AlwaysTrue::default(),
+            )),
         )),
+        OutputType::<()>::new()
     )
 }

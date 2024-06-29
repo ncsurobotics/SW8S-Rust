@@ -29,7 +29,7 @@ pub trait GetMainElectronicsBoard: Send + Sync {
  */
 #[allow(async_fn_in_trait)]
 pub trait GetFrontCamMat {
-    async fn get_front_camera_mat(&self) -> Mat;
+    fn get_front_camera_mat(&self) -> impl std::future::Future<Output = Mat> + Send;
     async fn get_desired_buoy_gate(&self) -> Target;
     async fn set_desired_buoy_gate(&mut self, value: Target) -> &Self;
 }

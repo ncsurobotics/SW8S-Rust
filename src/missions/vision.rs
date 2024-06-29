@@ -1,13 +1,23 @@
 use std::fmt::{Debug, Display};
 use std::ops::{Add, Div, Mul};
+use std::pin::Pin;
+use std::sync::Arc;
 use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};
 use super::graph::DotString;
-use crate::vision::{Draw, Offset2D, RelPos, VisualDetection, VisualDetector};
+use crate::vision::nn_cv2::{ModelPipelined, VisionModel, YoloClass, YoloDetection};
+use crate::vision::yolo_model::YoloProcessor;
+use crate::vision::{
+    Draw, DrawRect2d, MatWrapper, Offset2D, RelPos, VisualDetection, VisualDetector,
+};
+
 use anyhow::{anyhow, Result};
+use futures::Future;
+use nonzero::nonzero;
 use num_traits::{Float, FromPrimitive, Num};
 use opencv::core::Mat;
+use tokio::sync::OnceCell;
 use uuid::Uuid;
 
 use crate::missions::action_context::GetFrontCamMat;
@@ -98,7 +108,7 @@ where
 /// Runs a vision routine to obtain object positions
 ///
 /// The relative positions are normalized to [-1, 1] on both axes.
-/// The values are returned without an angle
+/// The values are returned without an angle.
 #[derive(Debug)]
 pub struct VisionNorm<'a, T, U, V> {
     context: &'a T,
@@ -165,6 +175,117 @@ where
                 VisualDetection::new(
                     detect.class().clone(),
                     self.model.normalize(detect.position()).offset(),
+                )
+            })
+            .collect())
+    }
+}
+
+/// Normalizes vision output.
+///
+/// The relative positions are normalized to [-1, 1] on both axes.
+/// The values are returned without an angle.
+#[derive(Debug)]
+pub struct Norm<U, V> {
+    model: U,
+    _num: PhantomData<V>,
+}
+
+impl<U, V> Norm<U, V> {
+    pub const fn new(model: U) -> Self {
+        Self {
+            model,
+            _num: PhantomData,
+        }
+    }
+}
+
+/// Runs a pipelined vision routine to obtain object positions
+///
+/// The relative positions are normalized to [-1, 1] on both axes.
+/// The values are returned without an angle.
+#[derive(Debug)]
+pub struct VisionPipelinedNorm<T: 'static, U> {
+    context: &'static T,
+    model: U,
+    pipeline: OnceCell<Arc<ModelPipelined>>,
+}
+
+impl<T, U> VisionPipelinedNorm<T, U> {
+    pub fn new(context: &'static T, model: U) -> Self {
+        Self {
+            context,
+            model,
+            pipeline: OnceCell::new(),
+        }
+    }
+}
+
+impl<T, U> Action for VisionPipelinedNorm<T, U> {}
+
+impl<
+        T: GetFrontCamMat + Send + Sync,
+        U: VisionModel + YoloProcessor + VisualDetector<f64> + Send + Sync + Clone + 'static,
+    > ActionExec<Result<Vec<VisualDetection<YoloClass<U::Target>, DrawRect2d>>>>
+    for VisionPipelinedNorm<T, U>
+where
+    <U as YoloProcessor>::Target: Send + Sync,
+    <<U as YoloProcessor>::Target as TryFrom<i32>>::Error: Debug,
+    <U as VisionModel>::PostProcessArgs: Send + Sync + Clone,
+    <U as VisionModel>::ModelOutput: Send + Sync,
+{
+    async fn execute(&mut self) -> Result<Vec<VisualDetection<YoloClass<U::Target>, DrawRect2d>>> {
+        let model = self.model.clone();
+        let context = self.context;
+        let pipeline = self
+            .pipeline
+            .get_or_init(|| async {
+                let pipeline: Arc<ModelPipelined> = Arc::new(
+                    ModelPipelined::new(model, nonzero!(4_usize), nonzero!(1_usize), 0.7).await,
+                );
+                let pipeline_clone = pipeline.clone();
+                tokio::spawn(async move {
+                    loop {
+                        pipeline_clone
+                            .update_mat(MatWrapper(context.get_front_camera_mat().await.clone()));
+                    }
+                });
+                pipeline
+            })
+            .await;
+
+        #[cfg(feature = "logging")]
+        {
+            println!("Running detection...");
+        }
+
+        #[allow(unused_mut)]
+        let mut mat = self.context.get_front_camera_mat().await.clone();
+        let detections = pipeline.get_single().await;
+
+        #[cfg(feature = "logging")]
+        {
+            detections
+                .iter()
+                .for_each(|x| DrawRect2d::from(*x.bounding_box()).draw(&mut mat).unwrap());
+            create_dir_all("/tmp/detect").unwrap();
+            imwrite(
+                &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
+                &mat,
+                &Vector::default(),
+            )
+            .unwrap();
+        }
+
+        Ok(detections
+            .into_iter()
+            .map(|detect| {
+                VisualDetection::new(
+                    YoloClass {
+                        identifier: detect.class_id().clone().try_into().unwrap(),
+                        confidence: *detect.confidence(),
+                    },
+                    DrawRect2d::from(*detect.bounding_box()),
                 )
             })
             .collect())
@@ -423,6 +544,54 @@ impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetecti
 
 impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<VisualDetection<T, U>>
     for ExtractPosition<T, U>
+{
+    fn modify(&mut self, input: &VisualDetection<T, U>) {
+        self.values = vec![input.clone()];
+    }
+}
+
+#[derive(Debug)]
+pub struct ToOffset<T, U> {
+    values: Vec<VisualDetection<T, U>>,
+}
+
+impl<T, U> Default for ToOffset<T, U> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T, U> ToOffset<T, U> {
+    pub const fn new() -> Self {
+        Self { values: vec![] }
+    }
+}
+
+impl<T, U> Action for ToOffset<T, U> {}
+
+impl<T: Send + Sync, U: Send + Sync + RelPos> ActionExec<Vec<Offset2D<U::Number>>>
+    for ToOffset<T, U>
+where
+    <U as RelPos>::Number: Send + Sync,
+{
+    async fn execute(&mut self) -> Vec<Offset2D<U::Number>> {
+        self.values
+            .iter()
+            .map(|val| val.position().offset())
+            .collect()
+    }
+}
+
+impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetection<T, U>>>
+    for ToOffset<T, U>
+{
+    fn modify(&mut self, input: &Vec<VisualDetection<T, U>>) {
+        self.values.clone_from(input);
+    }
+}
+
+impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<VisualDetection<T, U>>
+    for ToOffset<T, U>
 {
     fn modify(&mut self, input: &VisualDetection<T, U>) {
         self.values = vec![input.clone()];

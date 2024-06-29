@@ -291,6 +291,22 @@ impl Mul<&Mat> for DrawRect2d {
     }
 }
 
+impl From<Rect2d> for DrawRect2d {
+    fn from(value: Rect2d) -> Self {
+        Self { inner: value }
+    }
+}
+
+impl Div<usize> for DrawRect2d {
+    type Output = Self;
+    fn div(self, rhs: usize) -> Self::Output {
+        let mut inner = self.inner;
+        inner.x /= rhs as f64;
+        inner.y /= rhs as f64;
+        Self { inner }
+    }
+}
+
 /// Allows [`Mat`] to be shared across threads for async.
 /// The C pointer is perfectly safe to share between threads, Rust just
 /// defaults to not giving any pointer Send/Sync so we have to use this wrapper

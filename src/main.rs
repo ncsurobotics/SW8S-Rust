@@ -90,6 +90,21 @@ async fn gate_target() -> &'static RwLock<Target> {
         .await
 }
 
+static STATIC_CONTEXT: OnceCell<FullActionContext<WriteHalf<SerialStream>>> = OnceCell::const_new();
+async fn static_context() -> &'static FullActionContext<'static, WriteHalf<SerialStream>> {
+    STATIC_CONTEXT
+        .get_or_init(|| async {
+            FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            )
+        })
+        .await
+}
+
 #[tokio::main]
 async fn main() {
     let shutdown_tx = shutdown_handler().await;
@@ -364,15 +379,9 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "buoy_model" => {
-            let _ = buoy_circle_sequence_model(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
+            let _ = buoy_circle_sequence_model(static_context().await)
+                .execute()
+                .await;
             Ok(())
         }
         x => bail!("Invalid argument: [{x}]"),

@@ -110,3 +110,28 @@ impl BuoyModel<OnnxModel> {
         .await
     }
 }
+
+impl VisionModel for BuoyModel<OnnxModel> {
+    type ModelOutput = <OnnxModel as VisionModel>::ModelOutput;
+    type PostProcessArgs = <OnnxModel as VisionModel>::PostProcessArgs;
+
+    fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection> {
+        self.model.detect_yolo_v5(image, threshold)
+    }
+    fn forward(&mut self, image: &Mat) -> Self::ModelOutput {
+        self.model.forward(image)
+    }
+    fn post_process_args(&self) -> Self::PostProcessArgs {
+        self.model.post_process_args()
+    }
+    fn post_process(
+        args: Self::PostProcessArgs,
+        output: Self::ModelOutput,
+        threshold: f64,
+    ) -> Vec<YoloDetection> {
+        OnnxModel::post_process(args, output, threshold)
+    }
+    fn size(&self) -> Size {
+        self.model.size()
+    }
+}
