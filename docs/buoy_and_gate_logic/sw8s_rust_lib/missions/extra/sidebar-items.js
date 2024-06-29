@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["TRUE"],"struct":["AlwaysFalse","AlwaysTrue","CountFalse","CountTrue","NoOp","OutputType","Terminal","ToVec","Transform","UnwrapAction"]};
+window.SIDEBAR_ITEMS = {"constant":["TRUE"],"struct":["AlwaysFalse","AlwaysTrue","CountFalse","CountTrue","InOrder","NoOp","OutputType","Terminal","ToVec","Transform","UnwrapAction"]};

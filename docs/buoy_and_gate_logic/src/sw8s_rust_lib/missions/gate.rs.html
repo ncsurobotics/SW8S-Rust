@@ -177,6 +177,9 @@
 <a href="#177" id="177">177</a>
 <a href="#178" id="178">178</a>
 <a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
@@ -203,7 +206,7 @@
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::descend_and_go_forward,
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, OutputType, ToVec},
+    extra::{CountFalse, CountTrue, InOrder, OutputType, ToVec},
     movement::{
         AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
         Stability2Pos, ZeroMovement,
@@ -264,8 +267,11 @@
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
         <span class="macro">act_nest!</span>(
             ActionSequence::new,
-            adjust_logic(context, depth, CountTrue::new(<span class="number">4</span>)),
-            adjust_logic(context, depth, CountFalse::new(<span class="number">4</span>)),
+            adjust_logic(
+                context,
+                depth,
+                InOrder::new(CountTrue::new(<span class="number">4</span>), CountFalse::new(<span class="number">4</span>))
+            ),
             ZeroMovement::new(context, depth)
         ),
     )
