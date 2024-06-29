@@ -1428,6 +1428,77 @@
 <a href="#1428" id="1428">1428</a>
 <a href="#1429" id="1429">1429</a>
 <a href="#1430" id="1430">1430</a>
+<a href="#1431" id="1431">1431</a>
+<a href="#1432" id="1432">1432</a>
+<a href="#1433" id="1433">1433</a>
+<a href="#1434" id="1434">1434</a>
+<a href="#1435" id="1435">1435</a>
+<a href="#1436" id="1436">1436</a>
+<a href="#1437" id="1437">1437</a>
+<a href="#1438" id="1438">1438</a>
+<a href="#1439" id="1439">1439</a>
+<a href="#1440" id="1440">1440</a>
+<a href="#1441" id="1441">1441</a>
+<a href="#1442" id="1442">1442</a>
+<a href="#1443" id="1443">1443</a>
+<a href="#1444" id="1444">1444</a>
+<a href="#1445" id="1445">1445</a>
+<a href="#1446" id="1446">1446</a>
+<a href="#1447" id="1447">1447</a>
+<a href="#1448" id="1448">1448</a>
+<a href="#1449" id="1449">1449</a>
+<a href="#1450" id="1450">1450</a>
+<a href="#1451" id="1451">1451</a>
+<a href="#1452" id="1452">1452</a>
+<a href="#1453" id="1453">1453</a>
+<a href="#1454" id="1454">1454</a>
+<a href="#1455" id="1455">1455</a>
+<a href="#1456" id="1456">1456</a>
+<a href="#1457" id="1457">1457</a>
+<a href="#1458" id="1458">1458</a>
+<a href="#1459" id="1459">1459</a>
+<a href="#1460" id="1460">1460</a>
+<a href="#1461" id="1461">1461</a>
+<a href="#1462" id="1462">1462</a>
+<a href="#1463" id="1463">1463</a>
+<a href="#1464" id="1464">1464</a>
+<a href="#1465" id="1465">1465</a>
+<a href="#1466" id="1466">1466</a>
+<a href="#1467" id="1467">1467</a>
+<a href="#1468" id="1468">1468</a>
+<a href="#1469" id="1469">1469</a>
+<a href="#1470" id="1470">1470</a>
+<a href="#1471" id="1471">1471</a>
+<a href="#1472" id="1472">1472</a>
+<a href="#1473" id="1473">1473</a>
+<a href="#1474" id="1474">1474</a>
+<a href="#1475" id="1475">1475</a>
+<a href="#1476" id="1476">1476</a>
+<a href="#1477" id="1477">1477</a>
+<a href="#1478" id="1478">1478</a>
+<a href="#1479" id="1479">1479</a>
+<a href="#1480" id="1480">1480</a>
+<a href="#1481" id="1481">1481</a>
+<a href="#1482" id="1482">1482</a>
+<a href="#1483" id="1483">1483</a>
+<a href="#1484" id="1484">1484</a>
+<a href="#1485" id="1485">1485</a>
+<a href="#1486" id="1486">1486</a>
+<a href="#1487" id="1487">1487</a>
+<a href="#1488" id="1488">1488</a>
+<a href="#1489" id="1489">1489</a>
+<a href="#1490" id="1490">1490</a>
+<a href="#1491" id="1491">1491</a>
+<a href="#1492" id="1492">1492</a>
+<a href="#1493" id="1493">1493</a>
+<a href="#1494" id="1494">1494</a>
+<a href="#1495" id="1495">1495</a>
+<a href="#1496" id="1496">1496</a>
+<a href="#1497" id="1497">1497</a>
+<a href="#1498" id="1498">1498</a>
+<a href="#1499" id="1499">1499</a>
+<a href="#1500" id="1500">1500</a>
+<a href="#1501" id="1501">1501</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::vision::Offset2D;
 <span class="kw">use </span><span class="kw">crate</span>::vision::RelPos;
@@ -1440,6 +1511,7 @@
 <span class="kw">use </span>num_traits::clamp;
 <span class="kw">use </span>num_traits::Pow;
 <span class="kw">use </span>num_traits::Zero;
+<span class="kw">use </span>std::marker::PhantomData;
 <span class="kw">use </span>std::ops::Rem;
 <span class="kw">use </span>std::time::Duration;
 <span class="kw">use </span>tokio::time::sleep;
@@ -2116,7 +2188,6 @@ where
 }
 
 <span class="kw">impl</span>&lt;T&gt; Action <span class="kw">for </span>LinearYawFromX&lt;T&gt; {}
-
 <span class="kw">impl </span>LinearYawFromX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
     <span class="kw">const </span>DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
     <span class="kw">pub const fn </span>new(angle_diff: f32) -&gt; <span class="self">Self </span>{
@@ -2314,6 +2385,46 @@ where
         } <span class="kw">else </span>{
             AdjustType::Replace(<span class="number">0.2</span>)
         });
+        <span class="self">self</span>.pose.clone()
+    }
+}
+
+<span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>SetY&lt;T&gt; {
+    pose: T,
+    y: AdjustType&lt;f32&gt;,
+}
+
+<span class="kw">impl</span>&lt;T&gt; Action <span class="kw">for </span>SetY&lt;T&gt; {}
+
+<span class="kw">impl </span>SetY&lt;Stability2Adjust&gt; {
+    <span class="kw">pub const fn </span>new(y: AdjustType&lt;f32&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            pose: Stability2Adjust::const_default(),
+            y,
+        }
+    }
+}
+
+<span class="kw">impl </span>SetY&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
+    <span class="kw">const </span>DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    <span class="kw">pub const fn </span>new(y: AdjustType&lt;f32&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            pose: <span class="kw-2">&amp;</span><span class="self">Self</span>::DEFAULT_POSE,
+            y,
+        }
+    }
+}
+
+<span class="kw">impl</span>&lt;T: Sync + Send + Clone&gt; ActionMod&lt;T&gt; <span class="kw">for </span>SetY&lt;T&gt; {
+    <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>T) {
+        <span class="self">self</span>.pose = input.clone();
+    }
+}
+
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>SetY&lt;Stability2Adjust&gt; {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
+        <span class="self">self</span>.pose.y = <span class="prelude-val">Some</span>(<span class="self">self</span>.y.clone());
         <span class="self">self</span>.pose.clone()
     }
 }
@@ -2856,6 +2967,37 @@ where
         adjust.set_x(AdjustType::Replace(<span class="kw-2">*</span><span class="self">self</span>.offset.x() <span class="kw">as </span>f32));
         adjust.set_y(AdjustType::Replace(<span class="kw-2">*</span><span class="self">self</span>.offset.y() <span class="kw">as </span>f32));
         adjust
+    }
+}
+
+<span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>DefaultGen&lt;T&gt; {
+    _phantom: PhantomData&lt;T&gt;,
+}
+
+<span class="kw">impl</span>&lt;T&gt; Action <span class="kw">for </span>DefaultGen&lt;T&gt; {}
+
+<span class="kw">impl</span>&lt;T&gt; DefaultGen&lt;T&gt; {
+    <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            _phantom: PhantomData,
+        }
+    }
+}
+
+<span class="kw">impl</span>&lt;T&gt; Default <span class="kw">for </span>DefaultGen&lt;T&gt; {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
+
+<span class="kw">impl</span>&lt;T, U: Send + Sync&gt; ActionMod&lt;U&gt; <span class="kw">for </span>DefaultGen&lt;T&gt; {
+    <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>U) {}
+}
+
+<span class="kw">impl</span>&lt;T: Default + Send + Sync&gt; ActionExec&lt;T&gt; <span class="kw">for </span>DefaultGen&lt;T&gt; {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; T {
+        T::default()
     }
 }
 </code></pre></div></section></main></body></html>
