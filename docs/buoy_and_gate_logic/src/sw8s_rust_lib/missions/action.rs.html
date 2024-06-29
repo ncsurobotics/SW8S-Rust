@@ -1169,7 +1169,7 @@
         }
         DotString {
             head_ids: condition_str.head_ids,
-            tail_ids: <span class="macro">vec!</span>[true_str.head_ids, false_str.head_ids]
+            tail_ids: <span class="macro">vec!</span>[true_str.tail_ids, false_str.tail_ids]
                 .into_iter()
                 .flatten()
                 .collect(),
@@ -1251,7 +1251,7 @@
         }
         DotString {
             head_ids: condition_str.head_ids,
-            tail_ids: <span class="macro">vec!</span>[true_str.head_ids, false_str.head_ids]
+            tail_ids: <span class="macro">vec!</span>[true_str.tail_ids, false_str.tail_ids]
                 .into_iter()
                 .flatten()
                 .collect(),
