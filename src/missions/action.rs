@@ -118,7 +118,7 @@ impl<V: Action, W: Action, X: Action> Action for ActionConditional<V, W, X> {
         }
         DotString {
             head_ids: condition_str.head_ids,
-            tail_ids: vec![true_str.head_ids, false_str.head_ids]
+            tail_ids: vec![true_str.tail_ids, false_str.tail_ids]
                 .into_iter()
                 .flatten()
                 .collect(),
@@ -200,7 +200,7 @@ impl<V: Action, W: Action, X: Action, T, Y> Action for ActionDataConditional<V, 
         }
         DotString {
             head_ids: condition_str.head_ids,
-            tail_ids: vec![true_str.head_ids, false_str.head_ids]
+            tail_ids: vec![true_str.tail_ids, false_str.tail_ids]
                 .into_iter()
                 .flatten()
                 .collect(),
