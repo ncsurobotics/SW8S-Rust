@@ -463,7 +463,6 @@ impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionMod<T> + ActionE
     ActionExec<U> for ActionChain<T, V, W>
 {
     async fn execute(&mut self) -> U {
-        let _: T = self.first.execute().await;
         self.second.modify(&self.first.execute().await);
         self.second.execute().await
     }
