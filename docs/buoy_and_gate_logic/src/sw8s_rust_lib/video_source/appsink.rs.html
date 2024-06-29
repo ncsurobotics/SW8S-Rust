@@ -119,6 +119,8 @@
 <a href="#119" id="119">119</a>
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{anyhow, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>opencv::prelude::Mat;
 <span class="kw">use </span>opencv::videoio::VideoCapture;
@@ -140,13 +142,15 @@
     <span class="kw">pub fn </span>new(
         camera_path: <span class="kw-2">&amp;</span>str,
         camera_name: <span class="kw-2">&amp;</span>str,
-        filesink_dir: <span class="kw-2">&amp;</span>Path,
+        filesink: <span class="kw-2">&amp;</span>Path,
         camera_dimensions: (u32, u32),
         rtsp: bool,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">if </span>!filesink_dir.is_dir() {
-            create_dir(filesink_dir)<span class="question-mark">?
-        </span>}
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(filesink_parent) = filesink.parent() {
+            <span class="kw">if </span>!filesink_parent.is_dir() {
+                create_dir(filesink_parent)<span class="question-mark">?
+            </span>}
+        }
 
         <span class="kw">let </span>rtsp_string = <span class="string">"h264. ! queue ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! rtspclientsink location=rtsp://127.0.0.1:8554/"</span>.to_string()
                         + camera_name + <span class="string">" "</span>;
@@ -160,7 +164,7 @@
                 + <span class="string">" ! tee name=h264 "
                 </span>+ <span class="kw">if </span>rtsp { <span class="kw-2">&amp;</span>rtsp_string } <span class="kw">else </span>{ <span class="string">"" </span>}
                 + <span class="string">"h264. ! queue ! mpegtsmux ! filesink location=\""
-                </span>+ filesink_dir
+                </span>+ filesink
                     .to_str()
                     .ok_or(<span class="macro">anyhow!</span>(<span class="string">"filesink_dir is not a string"</span>))<span class="question-mark">?
                 </span>+ <span class="string">"/"

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Average","DetectTarget","ExtractPosition","MidPoint","OffsetClass","VisionNorm","VisionNormOffset"]};
+window.SIDEBAR_ITEMS = {"static":["PIPELINE_KILL"],"struct":["Average","DetectTarget","ExtractPosition","MidPoint","Norm","OffsetClass","ToOffset","VisionNorm","VisionNormOffset","VisionPipelinedNorm"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["bottom_cam","control_board","front_cam","gate_target","main","meb","run_mission","shutdown_handler"],"mod":["config"],"static":["BOTTOM_CAM_CELL","CONTROL_BOARD_CELL","FRONT_CAM_CELL","GATE_TARGET","MEB_CELL"]};
+window.SIDEBAR_ITEMS = {"fn":["bottom_cam","control_board","front_cam","gate_target","main","meb","run_mission","shutdown_handler","static_context"],"mod":["config"],"static":["BOTTOM_CAM_CELL","CONTROL_BOARD_CELL","FRONT_CAM_CELL","GATE_TARGET","MEB_CELL","STATIC_CONTEXT"]};

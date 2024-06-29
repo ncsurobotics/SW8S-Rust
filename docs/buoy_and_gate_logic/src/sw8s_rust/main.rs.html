@@ -378,6 +378,25 @@
 <a href="#378" id="378">378</a>
 <a href="#379" id="379">379</a>
 <a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -397,6 +416,7 @@
         example::initial_descent,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         octagon::look_up_octagon,
+        vision::PIPELINE_KILL,
     },
     video_source::appsink::Camera,
     vision::buoy::Target,
@@ -470,6 +490,21 @@
         .<span class="kw">await
 </span>}
 
+<span class="kw">static </span>STATIC_CONTEXT: OnceCell&lt;FullActionContext&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; = OnceCell::const_new();
+<span class="kw">async fn </span>static_context() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>FullActionContext&lt;<span class="lifetime">'static</span>, WriteHalf&lt;SerialStream&gt;&gt; {
+    STATIC_CONTEXT
+        .get_or_init(|| <span class="kw">async </span>{
+            FullActionContext::new(
+                control_board().<span class="kw">await</span>,
+                meb().<span class="kw">await</span>,
+                front_cam().<span class="kw">await</span>,
+                bottom_cam().<span class="kw">await</span>,
+                gate_target().<span class="kw">await</span>,
+            )
+        })
+        .<span class="kw">await
+</span>}
+
 <span class="attr">#[tokio::main]
 </span><span class="kw">async fn </span>main() {
     <span class="kw">let </span>shutdown_tx = shutdown_handler().<span class="kw">await</span>;
@@ -524,7 +559,7 @@
 }
 
 <span class="kw">async fn </span>run_mission(mission: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">match </span>mission.to_lowercase().as_str() {
+    <span class="kw">let </span>res = <span class="kw">match </span>mission.to_lowercase().as_str() {
         <span class="string">"arm" </span>=&gt; {
             <span class="kw">let </span>cntrl_ready = tokio::spawn(<span class="kw">async </span>{ control_board().<span class="kw">await </span>});
             <span class="macro">println!</span>(<span class="string">"Waiting on MEB"</span>);
@@ -744,18 +779,21 @@
             <span class="prelude-val">Ok</span>(())
         }
         <span class="string">"buoy_model" </span>=&gt; {
-            <span class="kw">let _ </span>= buoy_circle_sequence_model(<span class="kw-2">&amp;</span>FullActionContext::new(
-                control_board().<span class="kw">await</span>,
-                meb().<span class="kw">await</span>,
-                front_cam().<span class="kw">await</span>,
-                bottom_cam().<span class="kw">await</span>,
-                gate_target().<span class="kw">await</span>,
-            ))
-            .execute()
-            .<span class="kw">await</span>;
+            <span class="kw">let _ </span>= buoy_circle_sequence_model(static_context().<span class="kw">await</span>)
+                .execute()
+                .<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }
         x =&gt; <span class="macro">bail!</span>(<span class="string">"Invalid argument: [{x}]"</span>),
+    };
+
+    <span class="comment">// Kill any vision pipelines
+    </span>PIPELINE_KILL.write().unwrap().<span class="number">1 </span>= <span class="bool-val">true</span>;
+    <span class="kw">while </span>PIPELINE_KILL.read().unwrap().<span class="number">0 </span>&gt; <span class="number">0 </span>{
+        sleep(Duration::from_millis(<span class="number">100</span>)).<span class="kw">await</span>;
     }
+    PIPELINE_KILL.write().unwrap().<span class="number">1 </span>= <span class="bool-val">false</span>;
+
+    res
 }
 </code></pre></div></section></main></body></html>

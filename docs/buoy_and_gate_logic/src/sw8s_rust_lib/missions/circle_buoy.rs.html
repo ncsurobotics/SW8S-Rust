@@ -132,21 +132,34 @@
 <a href="#132" id="132">132</a>
 <a href="#133" id="133">133</a>
 <a href="#134" id="134">134</a>
-</pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::num::NonZeroUsize;
+
+<span class="kw">use crate</span>::{
     act_nest,
     missions::{
         action::{ActionChain, ActionConcurrent, ActionWhile, TupleSecond},
         basic::descend_and_go_forward,
         extra::{AlwaysTrue, OutputType, ToVec, Transform},
         movement::{
-            aggressive_yaw_from_x, FlatX, FlipYaw, LinearYawFromX, OffsetToPose, Stability2Adjust,
-            Stability2Movement, Stability2Pos, StripX, StripY,
+            aggressive_yaw_from_x, BoxToPose, CautiousConstantX, FlatX, FlipX, LinearYawFromX,
+            OffsetToPose, Stability1Adjust, Stability1Movement, Stability1Pos, Stability2Adjust,
+            Stability2Movement, Stability2Pos, StripY,
         },
-        vision::{Average, DetectTarget, ExtractPosition, VisionNorm},
+        vision::{Average, DetectTarget, ExtractPosition, VisionNorm, VisionPipelinedNorm},
     },
     vision::{
-        buoy_model::{BuoyModel, Target},
-        nn_cv2::{OnnxModel, YoloClass},
+        buoy_model::BuoyModel,
         path::{Path, Yuv},
         Offset2D,
     },
@@ -159,6 +172,7 @@
     movement::ZeroMovement,
 };
 
+<span class="kw">use </span>nonzero::nonzero;
 <span class="kw">use </span>opencv::core::Size;
 <span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
@@ -231,39 +245,47 @@
         + GetFrontCamMat
         + Unpin,
 &gt;(
-    context: <span class="kw-2">&amp;</span>Con,
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>Con,
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
     <span class="kw">const </span>BUOY_X_SPEED: f32 = -<span class="number">0.2</span>;
     <span class="kw">const </span>BUOY_Y_SPEED: f32 = <span class="number">0.2</span>;
+    <span class="kw">const </span>BUOY_YAW_SPEED: f32 = <span class="number">0.2</span>;
     <span class="kw">const </span>DEPTH: f32 = -<span class="number">1.0</span>;
+    <span class="kw">const </span>NUM_MODEL_THREADS: NonZeroUsize = <span class="macro">nonzero!</span>(<span class="number">4_usize</span>);
 
-    ActionSequence::new(
+    <span class="macro">act_nest!</span>(
+        ActionSequence::new,
         descend_and_go_forward(context),
-        ActionWhile::new(ActionChain::new(
-            VisionNorm::&lt;Con, BuoyModel&lt;OnnxModel&gt;, f64&gt;::new(context, BuoyModel::default()),
-            ActionChain::new(
-                DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Buoy),
-                TupleSecond::new(ActionConcurrent::new(
-                    <span class="macro">act_nest!</span>(
-                        ActionChain::new,
-                        ToVec::new(),
-                        ExtractPosition::new(),
-                        Average::new(),
-                        OffsetToPose::default(),
-                        LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">60.0</span>),
-                        FlipYaw::default(),
-                        StripY::default(),
-                        StripX::default(),
-                        Stability2Movement::new(
-                            context,
-                            Stability2Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH)
-                        ),
-                        OutputType::&lt;()&gt;::new()
+        ActionWhile::new(<span class="macro">act_nest!</span>(
+            ActionChain::new,
+            VisionPipelinedNorm::new(context, BuoyModel::default(), NUM_MODEL_THREADS),
+            TupleSecond::new(ActionConcurrent::new(
+                <span class="macro">act_nest!</span>(
+                    ActionChain::new,
+                    ToVec::new(),
+                    ExtractPosition::new(),
+                    Average::new(),
+                    BoxToPose::default(),
+                    LinearYawFromX::&lt;Stability1Adjust&gt;::new(<span class="number">0.4</span>),
+                    CautiousConstantX::&lt;Stability1Adjust&gt;::new(<span class="number">0.2</span>),
+                    FlipX::&lt;Stability1Adjust&gt;::new(),
+                    Stability1Movement::new(
+                        context,
+                        Stability1Pos::new(
+                            BUOY_X_SPEED,
+                            BUOY_Y_SPEED,
+                            <span class="number">0.0</span>,
+                            <span class="number">0.0</span>,
+                            BUOY_YAW_SPEED,
+                            DEPTH
+                        )
                     ),
-                    AlwaysTrue::default(),
-                )),
-            ),
+                    OutputType::&lt;()&gt;::new()
+                ),
+                AlwaysTrue::default(),
+            )),
         )),
+        OutputType::&lt;()&gt;::new()
     )
 }
 </code></pre></div></section></main></body></html>

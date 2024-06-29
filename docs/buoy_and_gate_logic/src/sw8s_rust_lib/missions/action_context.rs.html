@@ -173,7 +173,7 @@
  */
 </span><span class="attr">#[allow(async_fn_in_trait)]
 </span><span class="kw">pub trait </span>GetFrontCamMat {
-    <span class="kw">async fn </span>get_front_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat;
+    <span class="kw">fn </span>get_front_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>std::future::Future&lt;Output = Mat&gt; + Send;
     <span class="kw">async fn </span>get_desired_buoy_gate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Target;
     <span class="kw">async fn </span>set_desired_buoy_gate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Target) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>;
 }
