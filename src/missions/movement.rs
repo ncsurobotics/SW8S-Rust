@@ -10,6 +10,7 @@ use num_traits::abs;
 use num_traits::clamp;
 use num_traits::Pow;
 use num_traits::Zero;
+use std::marker::PhantomData;
 use std::ops::Rem;
 use std::time::Duration;
 use tokio::time::sleep;
@@ -686,7 +687,6 @@ pub struct LinearYawFromX<T> {
 }
 
 impl<T> Action for LinearYawFromX<T> {}
-
 impl LinearYawFromX<&Stability2Adjust> {
     const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
     pub const fn new(angle_diff: f32) -> Self {
@@ -884,6 +884,46 @@ impl ActionExec<Stability2Adjust> for ConfidenceY<Stability2Adjust> {
         } else {
             AdjustType::Replace(0.2)
         });
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct SetY<T> {
+    pose: T,
+    y: AdjustType<f32>,
+}
+
+impl<T> Action for SetY<T> {}
+
+impl SetY<Stability2Adjust> {
+    pub const fn new(y: AdjustType<f32>) -> Self {
+        Self {
+            pose: Stability2Adjust::const_default(),
+            y,
+        }
+    }
+}
+
+impl SetY<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(y: AdjustType<f32>) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            y,
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for SetY<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for SetY<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        self.pose.y = Some(self.y.clone());
         self.pose.clone()
     }
 }
@@ -1426,5 +1466,36 @@ impl ActionExec<Stability1Adjust> for OffsetToPose<Offset2D<f64>> {
         adjust.set_x(AdjustType::Replace(*self.offset.x() as f32));
         adjust.set_y(AdjustType::Replace(*self.offset.y() as f32));
         adjust
+    }
+}
+
+#[derive(Debug)]
+pub struct DefaultGen<T> {
+    _phantom: PhantomData<T>,
+}
+
+impl<T> Action for DefaultGen<T> {}
+
+impl<T> DefaultGen<T> {
+    pub fn new() -> Self {
+        Self {
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<T> Default for DefaultGen<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T, U: Send + Sync> ActionMod<U> for DefaultGen<T> {
+    fn modify(&mut self, input: &U) {}
+}
+
+impl<T: Default + Send + Sync> ActionExec<T> for DefaultGen<T> {
+    async fn execute(&mut self) -> T {
+        T::default()
     }
 }

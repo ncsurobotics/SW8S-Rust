@@ -4,7 +4,9 @@ use tokio_serial::SerialStream;
 use crate::{
     act_nest,
     missions::{
-        movement::{ConfidenceY, FlipX, StripY},
+        action::{ActionConcurrentSplit, ActionDataConditional},
+        extra::{AlwaysFalse, AlwaysTrue, NoOp, Terminal},
+        movement::{AdjustType, ConfidenceY, DefaultGen, FlipX, FlipYaw, SetY, StripY},
         vision::{MidPoint, OffsetClass},
     },
     vision::{
@@ -97,9 +99,7 @@ pub fn adjust_logic<
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
         + GetFrontCamMat,
-    X: 'a
-        + ActionMod<Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
-        + ActionExec<anyhow::Result<()>>,
+    X: 'a + ActionMod<bool> + ActionExec<anyhow::Result<()>>,
 >(
     context: &'a Con,
     depth: f32,
@@ -110,30 +110,54 @@ pub fn adjust_logic<
     ActionWhile::new(ActionChain::new(
         VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
         ActionChain::new(
-            act_nest!(
-                wrap_action(ActionConcurrent::new, FirstValid::new),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
-            ),
-            TupleSecond::new(ActionConcurrent::new(
+            ActionDataConditional::new(
                 act_nest!(
-                    ActionChain::new,
-                    ToVec::new(),
-                    OffsetClass::new(Target::Middle, Offset2D::<f64>::new(-0.1, 0.0)),
-                    ExtractPosition::new(),
-                    MidPoint::new(),
-                    OffsetToPose::default(),
-                    LinearYawFromX::<Stability2Adjust>::default(),
-                    ConfidenceY::default(),
-                    FlipX::default(),
+                    wrap_action(ActionConcurrent::new, FirstValid::new),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
+                ),
+                ActionConcurrent::new(
+                    act_nest!(
+                        ActionChain::new,
+                        OffsetClass::new(Target::Middle, Offset2D::<f64>::new(-0.1, 0.0)),
+                        ExtractPosition::new(),
+                        MidPoint::new(),
+                        OffsetToPose::default(),
+                        LinearYawFromX::<Stability2Adjust>::default(),
+                        SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.05)),
+                        FlipX::default(),
+                    ),
+                    AlwaysTrue::new(),
+                ),
+                ActionConcurrent::new(
+                    ActionDataConditional::new(
+                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                        act_nest!(
+                            ActionChain::new,
+                            ExtractPosition::new(),
+                            MidPoint::new(),
+                            OffsetToPose::default(),
+                            LinearYawFromX::<Stability2Adjust>::default(),
+                            FlipYaw::default(),
+                            SetY::<Stability2Adjust>::new(AdjustType::Adjust(-0.1)),
+                        ),
+                        ActionSequence::new(
+                            Terminal::new(),
+                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
+                        ),
+                    ),
+                    AlwaysFalse::new(),
+                ),
+            ),
+            TupleSecond::new(ActionConcurrentSplit::new(
+                ActionChain::new(
                     Stability2Movement::new(
                         context,
-                        Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth)
+                        Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth),
                     ),
-                    OutputType::<()>::new()
+                    OutputType::<()>::new(),
                 ),
                 end_condition,
             )),

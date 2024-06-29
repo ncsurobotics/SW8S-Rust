@@ -148,7 +148,15 @@ impl ActionExec<bool> for AlwaysTrue {
     }
 }
 
-/// Always returns a falsej value
+const TRUE: bool = true;
+
+impl ActionExec<&'static bool> for AlwaysTrue {
+    async fn execute(&mut self) -> &'static bool {
+        &TRUE
+    }
+}
+
+/// Always returns a false value
 #[derive(Debug)]
 pub struct AlwaysFalse {}
 
@@ -267,6 +275,20 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
     }
 }
 
+impl ActionMod<bool> for CountTrue {
+    fn modify(&mut self, input: &bool) {
+        if *input {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+        println!("Update true count: {}", self.count);
+    }
+}
+
 impl ActionExec<anyhow::Result<()>> for CountTrue {
     async fn execute(&mut self) -> anyhow::Result<()> {
         println!("Check true count: {} ? {}", self.count, self.target);
@@ -329,6 +351,20 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
             self.count = 0;
         }
         println!("Update false count: {}", self.count);
+    }
+}
+
+impl ActionMod<bool> for CountFalse {
+    fn modify(&mut self, input: &bool) {
+        if !input {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+        println!("Update true count: {}", self.count);
     }
 }
 

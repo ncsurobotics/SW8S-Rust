@@ -528,6 +528,14 @@ impl<T: Send + Sync, X: Send + Sync, V: ActionExec<T>, W: ActionExec<X>> ActionE
     }
 }
 
+impl<T: Send + Sync, X: Send + Sync, V: ActionMod<X>, W: Action> ActionMod<X>
+    for ActionSequence<T, V, W>
+{
+    fn modify(&mut self, input: &X) {
+        self.first.modify(input)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct ActionParallel<V: Action, W: Action> {
     first: Arc<Mutex<V>>,
@@ -729,6 +737,113 @@ impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> 
     fn modify(&mut self, input: &Input) {
         self.first.modify(input);
         self.second.modify(input);
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ActionConcurrentSplit<V: Action, W: Action> {
+    first: V,
+    second: W,
+}
+
+impl<V: Action, W: Action> Action for ActionConcurrentSplit<V, W> {
+    fn dot_string(&self, parent: &str) -> DotString {
+        let mut self_type = stripped_type::<Self>().to_string();
+        if parent.contains("FirstValid")
+            && (parent == "FirstValid" || parent.contains("Concurrent"))
+        {
+            self_type += "_FirstValid";
+        }
+
+        let first_str = self.first.dot_string(&self_type);
+        let second_str = self.second.dot_string(&self_type);
+        let (concurrent_head, concurrent_tail) = (Uuid::new_v4(), Uuid::new_v4());
+
+        if parent.contains(stripped_type::<Self>()) {
+            DotString {
+                head_ids: [first_str.head_ids, second_str.head_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                tail_ids: [first_str.tail_ids, second_str.tail_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                body: first_str.body + &second_str.body,
+            }
+        } else {
+            let mut name = "Concurrent";
+            let mut color = "blue";
+            if parent == "FirstValid" {
+                name = "FirstValid (Concurrent)";
+                color = "darkgreen";
+            }
+
+            let mut body_str = format!(
+                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {};\n\"{}\" [label = \"{}\", shape = box, fontcolor = {}, style = dashed];\n",
+                Uuid::new_v4(),
+                color,
+                concurrent_head,
+                name,
+                color,
+            );
+
+            body_str.push_str(&(first_str.body + &second_str.body));
+            vec![first_str.head_ids, second_str.head_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| {
+                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id))
+                });
+
+            let tail_ids = if parent != "TupleSecond" {
+                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = {}, style = dashed];\n", concurrent_tail, color)));
+                vec![first_str.tail_ids, second_str.tail_ids.clone()]
+                    .into_iter()
+                    .flatten()
+                    .for_each(|id| {
+                        body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
+                    });
+                vec![concurrent_tail]
+            } else {
+                second_str.tail_ids
+            };
+
+            body_str.push_str("}\n");
+
+            DotString {
+                head_ids: vec![concurrent_head],
+                tail_ids,
+                body: body_str,
+            }
+        }
+    }
+}
+
+impl<V: Action, W: Action> ActionConcurrentSplit<V, W> {
+    pub const fn new(first: V, second: W) -> Self {
+        Self { first, second }
+    }
+}
+
+impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Y>, W: ActionExec<X>> ActionExec<(Y, X)>
+    for ActionConcurrentSplit<V, W>
+{
+    async fn execute(&mut self) -> (Y, X) {
+        join!(self.first.execute(), self.second.execute())
+    }
+}
+
+impl<
+        InputLhs: Send + Sync,
+        InputRhs: Send + Sync,
+        V: ActionMod<InputLhs> + Sync + Send,
+        W: ActionMod<InputRhs> + Sync + Send,
+    > ActionMod<(InputLhs, InputRhs)> for ActionConcurrentSplit<V, W>
+{
+    fn modify(&mut self, input: &(InputLhs, InputRhs)) {
+        self.first.modify(&input.0);
+        self.second.modify(&input.1);
     }
 }
 
