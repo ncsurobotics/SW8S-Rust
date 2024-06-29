@@ -19,12 +19,14 @@ impl Camera {
     pub fn new(
         camera_path: &str,
         camera_name: &str,
-        filesink_dir: &Path,
+        filesink: &Path,
         camera_dimensions: (u32, u32),
         rtsp: bool,
     ) -> Result<Self> {
-        if !filesink_dir.is_dir() {
-            create_dir(filesink_dir)?
+        if let Some(filesink_parent) = filesink.parent() {
+            if !filesink_parent.is_dir() {
+                create_dir(filesink_parent)?
+            }
         }
 
         let rtsp_string = "h264. ! queue ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! rtspclientsink location=rtsp://127.0.0.1:8554/".to_string()
@@ -39,7 +41,7 @@ impl Camera {
                 + " ! tee name=h264 "
                 + if rtsp { &rtsp_string } else { "" }
                 + "h264. ! queue ! mpegtsmux ! filesink location=\""
-                + filesink_dir
+                + filesink
                     .to_str()
                     .ok_or(anyhow!("filesink_dir is not a string"))?
                 + "/"
