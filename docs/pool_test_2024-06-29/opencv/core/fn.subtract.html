@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Calculates the per-element difference between two arrays or array and a scalar."><title>subtract in opencv::core - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-081576b923113409.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0 (129f3b996 2024-06-10)" data-channel="1.79.0" data-search-js="search-bf21c90c8c1d92b1.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-e32f0c247825364d.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../opencv/index.html">opencv</a><span class="version">0.92.0</span></h2></div><div class="sidebar-elems"><h2><a href="index.html">In opencv::core</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Type ‘S’ or ‘/’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings">Settings</a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Function <a href="../index.html">opencv</a>::<wbr><a href="index.html">core</a>::<wbr><a class="fn" href="#">subtract</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/core.rs.html#10708-10718">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub fn subtract(
+    src1: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    src2: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    dst: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    mask: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    dtype: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>
+) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Calculates the per-element difference between two arrays or array and a scalar.</p>
+<p>The function subtract calculates:</p>
+<ul>
+<li>Difference between two arrays, when both input arrays have the same size and the same number of
+channels:
+<img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7Bdst%7D%28I%29%20%3D%20%20%5Ctexttt%7Bsaturate%7D%20%28%20%5Ctexttt%7Bsrc1%7D%28I%29%20%2D%20%20%5Ctexttt%7Bsrc2%7D%28I%29%29%20%5Cquad%20%5Ctexttt%7Bif%20mask%7D%28I%29%20%5Cne0" alt="block formula" /></li>
+<li>Difference between an array and a scalar, when src2 is constructed from Scalar or has the same
+number of elements as <code>src1.channels()</code>:
+<img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7Bdst%7D%28I%29%20%3D%20%20%5Ctexttt%7Bsaturate%7D%20%28%20%5Ctexttt%7Bsrc1%7D%28I%29%20%2D%20%20%5Ctexttt%7Bsrc2%7D%20%29%20%5Cquad%20%5Ctexttt%7Bif%20mask%7D%28I%29%20%5Cne0" alt="block formula" /></li>
+<li>Difference between a scalar and an array, when src1 is constructed from Scalar or has the same
+number of elements as <code>src2.channels()</code>:
+<img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7Bdst%7D%28I%29%20%3D%20%20%5Ctexttt%7Bsaturate%7D%20%28%20%5Ctexttt%7Bsrc1%7D%20%2D%20%20%5Ctexttt%7Bsrc2%7D%28I%29%20%29%20%5Cquad%20%5Ctexttt%7Bif%20mask%7D%28I%29%20%5Cne0" alt="block formula" /></li>
+<li>The reverse difference between a scalar and an array in the case of <code>SubRS</code>:
+<img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7Bdst%7D%28I%29%20%3D%20%20%5Ctexttt%7Bsaturate%7D%20%28%20%5Ctexttt%7Bsrc2%7D%20%2D%20%20%5Ctexttt%7Bsrc1%7D%28I%29%20%29%20%5Cquad%20%5Ctexttt%7Bif%20mask%7D%28I%29%20%5Cne0" alt="block formula" />
+where I is a multi-dimensional index of array elements. In case of multi-channel arrays, each
+channel is processed independently.</li>
+</ul>
+<p>The first function in the list above can be replaced with matrix expressions:</p>
+<div class="example-wrap"><pre class="language-C++"><code>   dst = src1 - src2;
+   dst -= src1; // equivalent to subtract(dst, src1, dst);
+</code></pre></div>
+<p>The input arrays and the output array can all have the same or different depths. For example, you
+can subtract to 8-bit unsigned arrays and store the difference in a 16-bit signed array. Depth of
+the output array is determined by dtype parameter. In the second and third cases above, as well as
+in the first case, when src1.depth() == src2.depth(), dtype can be set to the default -1. In this
+case the output array will have the same depth as the input array, be it src1, src2 or both.</p>
+<p>Note: Saturation is not applied when the output array has the depth CV_32S. You may even get
+result of an incorrect sign in the case of overflow.</p>
+<h3 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h3>
+<ul>
+<li>src1: first input array or a scalar.</li>
+<li>src2: second input array or a scalar.</li>
+<li>dst: output array of the same size and the same number of channels as the input array.</li>
+<li>mask: optional operation mask; this is an 8-bit single channel array that specifies elements
+of the output array to be changed.</li>
+<li>dtype: optional depth of the output array</li>
+</ul>
+<h3 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h3>
+<p>add, addWeighted, scaleAdd, Mat::convertTo</p>
+<h3 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h3>
+<ul>
+<li>mask: noArray()</li>
+<li>dtype: -1</li>
+</ul>
+</div></details></section></div></main></body></html>

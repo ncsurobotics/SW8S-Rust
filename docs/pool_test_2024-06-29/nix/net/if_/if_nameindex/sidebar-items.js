@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["if_nameindex"],"struct":["Interface","Interfaces","InterfacesIter"]};
