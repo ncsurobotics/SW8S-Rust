@@ -5,14 +5,14 @@ use crate::{
     act_nest,
     missions::{
         action::{ActionConcurrentSplit, ActionDataConditional},
-        extra::{AlwaysFalse, AlwaysTrue, NoOp, Terminal},
-        movement::{AdjustType, ConfidenceY, DefaultGen, FlipX, FlipYaw, SetY, StripY},
+        extra::{AlwaysFalse, AlwaysTrue, Terminal},
+        movement::{AdjustType, FlipX, FlipYaw, SetY},
         vision::{MidPoint, OffsetClass},
     },
     vision::{
         gate_poles::{GatePoles, Target},
         nn_cv2::{OnnxModel, YoloClass},
-        Offset2D, VisualDetection,
+        Offset2D,
     },
 };
 
@@ -24,12 +24,12 @@ use super::{
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::descend_and_go_forward,
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, InOrder, OutputType, ToVec},
+    extra::{CountFalse, CountTrue, InOrder, OutputType},
     movement::{
         AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
         Stability2Pos, ZeroMovement,
     },
-    vision::{Average, DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
+    vision::{DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
 };
 
 pub fn gate_run_naive<

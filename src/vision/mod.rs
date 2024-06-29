@@ -235,7 +235,7 @@ impl RelPos for Offset2D<f64> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct DrawRect2d {
     inner: Rect2d,
 }
@@ -291,19 +291,39 @@ impl Mul<&Mat> for DrawRect2d {
     }
 }
 
-impl From<Rect2d> for DrawRect2d {
-    fn from(value: Rect2d) -> Self {
-        Self { inner: value }
-    }
-}
-
 impl Div<usize> for DrawRect2d {
     type Output = Self;
     fn div(self, rhs: usize) -> Self::Output {
         let mut inner = self.inner;
         inner.x /= rhs as f64;
         inner.y /= rhs as f64;
+        inner.width /= rhs as f64;
+        inner.height /= rhs as f64;
         Self { inner }
+    }
+}
+
+impl Add for DrawRect2d {
+    type Output = DrawRect2d;
+    fn add(self, rhs: Self) -> Self::Output {
+        let mut inner = self.inner;
+        inner.x += rhs.x;
+        inner.y += rhs.y;
+        inner.width += rhs.width;
+        inner.height += rhs.height;
+        Self { inner }
+    }
+}
+
+impl Sum for DrawRect2d {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.reduce(|acc, next| acc + next).unwrap_or_default()
+    }
+}
+
+impl From<Rect2d> for DrawRect2d {
+    fn from(value: Rect2d) -> Self {
+        Self { inner: value }
     }
 }
 

@@ -1,3 +1,5 @@
+use std::num::NonZeroUsize;
+
 use crate::{
     act_nest,
     missions::{
@@ -5,17 +7,14 @@ use crate::{
         basic::descend_and_go_forward,
         extra::{AlwaysTrue, OutputType, ToVec, Transform},
         movement::{
-            aggressive_yaw_from_x, FlatX, FlipYaw, LinearYawFromX, OffsetToPose, Stability2Adjust,
-            Stability2Movement, Stability2Pos, StripX, StripY,
+            aggressive_yaw_from_x, BoxToPose, CautiousConstantX, FlatX, FlipX, LinearYawFromX,
+            OffsetToPose, Stability1Adjust, Stability1Movement, Stability1Pos, Stability2Adjust,
+            Stability2Movement, Stability2Pos, StripY,
         },
-        vision::{
-            Average, DetectTarget, ExtractPosition, OffsetClass, ToOffset, VisionNorm,
-            VisionPipelinedNorm,
-        },
+        vision::{Average, DetectTarget, ExtractPosition, VisionNorm, VisionPipelinedNorm},
     },
     vision::{
-        buoy_model::{BuoyModel, Target},
-        nn_cv2::{ModelPipelined, OnnxModel, YoloClass},
+        buoy_model::BuoyModel,
         path::{Path, Yuv},
         Offset2D,
     },
@@ -105,28 +104,36 @@ pub fn buoy_circle_sequence_model<
 ) -> impl ActionExec<()> + '_ {
     const BUOY_X_SPEED: f32 = -0.2;
     const BUOY_Y_SPEED: f32 = 0.2;
+    const BUOY_YAW_SPEED: f32 = 0.2;
     const DEPTH: f32 = -1.0;
+    const NUM_MODEL_THREADS: NonZeroUsize = nonzero!(4_usize);
 
     act_nest!(
         ActionSequence::new,
         descend_and_go_forward(context),
         ActionWhile::new(act_nest!(
             ActionChain::new,
-            VisionPipelinedNorm::new(context, BuoyModel::default()),
+            VisionPipelinedNorm::new(context, BuoyModel::default(), NUM_MODEL_THREADS),
             TupleSecond::new(ActionConcurrent::new(
                 act_nest!(
                     ActionChain::new,
                     ToVec::new(),
-                    ToOffset::new(),
+                    ExtractPosition::new(),
                     Average::new(),
-                    OffsetToPose::default(),
-                    LinearYawFromX::<Stability2Adjust>::new(60.0),
-                    FlipYaw::default(),
-                    StripY::default(),
-                    StripX::default(),
-                    Stability2Movement::new(
+                    BoxToPose::default(),
+                    LinearYawFromX::<Stability1Adjust>::new(0.4),
+                    CautiousConstantX::<Stability1Adjust>::new(0.2),
+                    FlipX::<Stability1Adjust>::new(),
+                    Stability1Movement::new(
                         context,
-                        Stability2Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, 0.0, 0.0, None, DEPTH)
+                        Stability1Pos::new(
+                            BUOY_X_SPEED,
+                            BUOY_Y_SPEED,
+                            0.0,
+                            0.0,
+                            BUOY_YAW_SPEED,
+                            DEPTH
+                        )
                     ),
                     OutputType::<()>::new()
                 ),
