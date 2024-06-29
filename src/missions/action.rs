@@ -190,11 +190,11 @@ impl<V: Action, W: Action, X: Action, T, Y> Action for ActionDataConditional<V, 
                 ));
             }
         }
-        for tail_id in &condition_str.head_ids {
+        for condition_head_id in &condition_str.head_ids {
             for head_id in &false_str.head_ids {
                 combined_str.push_str(&format!(
                     "\"{}\" -> \"{}\" [color = purple, fontcolor = purple, label = \"Pass Data\"];\n",
-                    tail_id, head_id,
+                    condition_head_id, head_id,
                 ));
             }
         }
@@ -490,7 +490,8 @@ impl<T, V: Action, W: Action> Action for ActionSequence<T, V, W> {
         let second_str = self.second.dot_string(stripped_type::<Self>());
 
         let mut label = "";
-        if stripped_type::<V>() == "ActionWhile" {
+        let first_type = stripped_type::<V>();
+        if ["ActionWhile", "ActionDataConditional", "ActionConditional"].contains(&first_type) {
             label = "[label = \"False\"]";
         }
 
@@ -502,7 +503,11 @@ impl<T, V: Action, W: Action> Action for ActionSequence<T, V, W> {
         }
 
         DotString {
-            head_ids: first_str.head_ids,
+            head_ids: if first_type != "Terminal" {
+                first_str.head_ids
+            } else {
+                second_str.head_ids
+            },
             tail_ids: second_str.tail_ids,
             body: body_str,
         }
