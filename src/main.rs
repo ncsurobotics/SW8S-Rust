@@ -17,6 +17,7 @@ use sw8s_rust_lib::{
         example::initial_descent,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         octagon::look_up_octagon,
+        vision::PIPELINE_KILL,
     },
     video_source::appsink::Camera,
     vision::buoy::Target,
@@ -159,7 +160,7 @@ async fn shutdown_handler() -> UnboundedSender<()> {
 }
 
 async fn run_mission(mission: &str) -> Result<()> {
-    match mission.to_lowercase().as_str() {
+    let res = match mission.to_lowercase().as_str() {
         "arm" => {
             let cntrl_ready = tokio::spawn(async { control_board().await });
             println!("Waiting on MEB");
@@ -385,5 +386,14 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         x => bail!("Invalid argument: [{x}]"),
+    };
+
+    // Kill any vision pipelines
+    PIPELINE_KILL.write().unwrap().1 = true;
+    while PIPELINE_KILL.read().unwrap().0 > 0 {
+        sleep(Duration::from_millis(100)).await;
     }
+    PIPELINE_KILL.write().unwrap().1 = false;
+
+    res
 }

@@ -1,19 +1,18 @@
 use std::fmt::{Debug, Display};
+use std::num::NonZeroUsize;
 use std::ops::{Add, Div, Mul};
-use std::pin::Pin;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};
 use super::graph::DotString;
-use crate::vision::nn_cv2::{ModelPipelined, VisionModel, YoloClass, YoloDetection};
+use crate::vision::nn_cv2::{ModelPipelined, VisionModel, YoloClass};
 use crate::vision::yolo_model::YoloProcessor;
 use crate::vision::{
     Draw, DrawRect2d, MatWrapper, Offset2D, RelPos, VisualDetection, VisualDetector,
 };
 
 use anyhow::{anyhow, Result};
-use futures::Future;
 use nonzero::nonzero;
 use num_traits::{Float, FromPrimitive, Num};
 use opencv::core::Mat;
@@ -25,6 +24,10 @@ use crate::missions::action_context::GetFrontCamMat;
 use opencv::{core::Vector, imgcodecs::imwrite};
 #[cfg(feature = "logging")]
 use std::fs::create_dir_all;
+
+// Count number of active pipelines, set to true to kill all pipelines.
+// All pipelines are cleaned up when count is back to zero.
+pub static PIPELINE_KILL: RwLock<(u64, bool)> = RwLock::new((0, false));
 
 /// Runs a vision routine to obtain the average of object positions
 ///
@@ -209,14 +212,16 @@ pub struct VisionPipelinedNorm<T: 'static, U> {
     context: &'static T,
     model: U,
     pipeline: OnceCell<Arc<ModelPipelined>>,
+    num_model_threads: NonZeroUsize,
 }
 
 impl<T, U> VisionPipelinedNorm<T, U> {
-    pub fn new(context: &'static T, model: U) -> Self {
+    pub fn new(context: &'static T, model: U, num_model_threads: NonZeroUsize) -> Self {
         Self {
             context,
             model,
             pipeline: OnceCell::new(),
+            num_model_threads,
         }
     }
 }
@@ -237,18 +242,20 @@ where
     async fn execute(&mut self) -> Result<Vec<VisualDetection<YoloClass<U::Target>, DrawRect2d>>> {
         let model = self.model.clone();
         let context = self.context;
+        let num_model_threads = self.num_model_threads;
         let pipeline = self
             .pipeline
             .get_or_init(|| async {
                 let pipeline: Arc<ModelPipelined> = Arc::new(
-                    ModelPipelined::new(model, nonzero!(4_usize), nonzero!(1_usize), 0.7).await,
+                    ModelPipelined::new(model, num_model_threads, nonzero!(1_usize), 0.7).await,
                 );
                 let pipeline_clone = pipeline.clone();
                 tokio::spawn(async move {
-                    loop {
-                        pipeline_clone
-                            .update_mat(MatWrapper(context.get_front_camera_mat().await.clone()));
+                    PIPELINE_KILL.write().unwrap().0 += 1;
+                    while !PIPELINE_KILL.read().unwrap().1 {
+                        pipeline_clone.update_mat(MatWrapper(context.get_front_camera_mat().await));
                     }
+                    PIPELINE_KILL.write().unwrap().0 -= 1;
                 });
                 pipeline
             })
@@ -282,7 +289,7 @@ where
             .map(|detect| {
                 VisualDetection::new(
                     YoloClass {
-                        identifier: detect.class_id().clone().try_into().unwrap(),
+                        identifier: (*detect.class_id()).try_into().unwrap(),
                         confidence: *detect.confidence(),
                     },
                     DrawRect2d::from(*detect.bounding_box()),
