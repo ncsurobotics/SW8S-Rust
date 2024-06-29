@@ -24,7 +24,7 @@ use super::{
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::descend_and_go_forward,
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, OutputType, ToVec},
+    extra::{CountFalse, CountTrue, InOrder, OutputType, ToVec},
     movement::{
         AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
         Stability2Pos, ZeroMovement,
@@ -85,8 +85,11 @@ pub fn gate_run_complex<
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
         act_nest!(
             ActionSequence::new,
-            adjust_logic(context, depth, CountTrue::new(4)),
-            adjust_logic(context, depth, CountFalse::new(4)),
+            adjust_logic(
+                context,
+                depth,
+                InOrder::new(CountTrue::new(4), CountFalse::new(4))
+            ),
             ZeroMovement::new(context, depth)
         ),
     )

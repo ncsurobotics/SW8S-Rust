@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use super::{
     action::{Action, ActionExec, ActionMod},
-    graph::{stripped_fn, DotString},
+    graph::{stripped_fn, stripped_type, DotString},
 };
 
 /// Development Action that does... nothing
@@ -364,7 +364,7 @@ impl ActionMod<bool> for CountFalse {
         } else {
             self.count = 0;
         }
-        println!("Update true count: {}", self.count);
+        println!("Update false count: {}", self.count);
     }
 }
 
@@ -375,6 +375,82 @@ impl ActionExec<anyhow::Result<()>> for CountFalse {
             Ok(())
         } else {
             Err(anyhow!("At count"))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct InOrder<T, U> {
+    first: T,
+    second: U,
+    finished_first: bool,
+}
+
+impl<T, U> InOrder<T, U> {
+    pub fn new(first: T, second: U) -> Self {
+        Self {
+            first,
+            second,
+            finished_first: false,
+        }
+    }
+}
+
+impl<T: Action, U: Action> Action for InOrder<T, U> {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let first_str = self.first.dot_string(stripped_type::<Self>());
+        let second_str = self.second.dot_string(stripped_type::<Self>());
+        let (order_head, order_tail) = (Uuid::new_v4(), Uuid::new_v4());
+
+        let mut body_str = format!(
+                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = black;\n\"{}\" [label = \"{}\", shape = box, style = dashed];\n",
+                Uuid::new_v4(),
+                order_head,
+                "In Order",
+            );
+
+        body_str.push_str(&(format!("\"{}\" [label = \"All Resolved\", shape = diamond, fontcolor = black, style = dashed];\n", order_tail)));
+
+        body_str.push_str(&(first_str.body + &second_str.body));
+        first_str
+            .head_ids
+            .iter()
+            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", order_head, id)));
+        first_str.tail_ids.iter().for_each(|tail_id| {
+            second_str.head_ids.iter().for_each(|head_id| {
+                body_str.push_str(&format!("\"{}\" -> \"{}\";\n", tail_id, head_id))
+            })
+        });
+        second_str.tail_ids.iter().for_each(|tail_id| {
+            body_str.push_str(&format!("\"{}\" -> \"{}\";\n", tail_id, order_tail))
+        });
+
+        body_str.push_str("}\n");
+
+        DotString {
+            head_ids: vec![order_head],
+            tail_ids: vec![order_tail],
+            body: body_str,
+        }
+    }
+}
+
+impl<T: ActionMod<V>, U: ActionMod<V>, V: Send + Sync> ActionMod<V> for InOrder<T, U> {
+    fn modify(&mut self, input: &V) {
+        self.first.modify(input);
+        self.second.modify(input);
+    }
+}
+
+impl<T: ActionExec<anyhow::Result<V>>, U: ActionExec<anyhow::Result<V>>, V: Send + Sync>
+    ActionExec<anyhow::Result<V>> for InOrder<T, U>
+{
+    async fn execute(&mut self) -> anyhow::Result<V> {
+        if !self.finished_first {
+            self.finished_first = self.first.execute().await.is_ok();
+            bail!("")
+        } else {
+            self.second.execute().await
         }
     }
 }
