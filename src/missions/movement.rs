@@ -812,24 +812,28 @@ impl<T: Sync + Send + Clone> ActionMod<T> for FlipYaw<T> {
 
 impl ActionExec<Stability2Adjust> for FlipYaw<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
+        println!("YAW BEFORE: {:?}", self.pose.target_yaw);
         if let Some(ref mut yaw) = self.pose.target_yaw {
             match yaw {
                 AdjustType::Adjust(ref mut y) => *y = -*y,
                 AdjustType::Replace(ref mut y) => *y = -*y,
             }
         };
+        println!("YAW AFTER: {:?}", self.pose.target_yaw);
         self.pose.clone()
     }
 }
 
 impl ActionExec<Stability1Adjust> for FlipYaw<Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
+        println!("YAW BEFORE: {:?}", self.pose.yaw_speed);
         if let Some(ref mut yaw) = self.pose.yaw_speed {
             match yaw {
                 AdjustType::Adjust(ref mut y) => *y = -*y,
                 AdjustType::Replace(ref mut y) => *y = -*y,
             }
         };
+        println!("YAW AFTER: {:?}", self.pose.yaw_speed);
         self.pose.clone()
     }
 }
@@ -1672,8 +1676,8 @@ impl<T: Sync + Send + Clone> ActionMod<T> for CautiousConstantX<T> {
 impl ActionExec<Stability2Adjust> for CautiousConstantX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         if let Some(AdjustType::Replace(ref mut x)) = self.pose.x {
-            *x = if !x.is_zero() && x.signum() == self.speed.signum() {
-                0.2
+            *x = if x.abs() < 0.5 && x.signum() == self.speed.signum() {
+                self.speed
             } else {
                 0.0
             };
@@ -1691,6 +1695,112 @@ impl ActionExec<Stability1Adjust> for CautiousConstantX<Stability1Adjust> {
                 0.0
             };
         };
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct MinYaw<T> {
+    pose: T,
+    speed: f32,
+}
+
+impl<T> Action for MinYaw<T> {}
+
+impl MinYaw<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(speed: f32) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            speed,
+        }
+    }
+}
+
+impl MinYaw<&Stability1Adjust> {
+    const DEFAULT_POSE: Stability1Adjust = Stability1Adjust::const_default();
+    pub const fn new(speed: f32) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            speed,
+        }
+    }
+}
+
+impl<T: Default> MinYaw<T> {
+    pub fn new(speed: f32) -> Self {
+        Self {
+            pose: T::default(),
+            speed,
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for MinYaw<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for MinYaw<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        if let Some(AdjustType::Adjust(ref mut x)) = self.pose.target_yaw {
+            if x.is_zero() {
+                println!("ZERO, SETTING MIN SPEED");
+                *x = self.speed;
+            }
+        };
+        self.pose.clone()
+    }
+}
+
+impl ActionExec<Stability1Adjust> for MinYaw<Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        if let Some(AdjustType::Replace(ref mut x)) = self.pose.yaw_speed {
+            if x.is_zero() {
+                *x = self.speed;
+            }
+        };
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct SetX<T> {
+    pose: T,
+    x: AdjustType<f32>,
+}
+
+impl<T> Action for SetX<T> {}
+
+impl SetX<Stability2Adjust> {
+    pub const fn new(x: AdjustType<f32>) -> Self {
+        Self {
+            pose: Stability2Adjust::const_default(),
+            x,
+        }
+    }
+}
+
+impl SetX<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(x: AdjustType<f32>) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            x,
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for SetX<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for SetX<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        self.pose.x = Some(self.x.clone());
         self.pose.clone()
     }
 }

@@ -13,6 +13,7 @@ use crate::vision::{
 };
 
 use anyhow::{anyhow, Result};
+use itertools::Itertools;
 use nonzero::nonzero;
 use num_traits::{Float, FromPrimitive, Num};
 use opencv::core::Mat;
@@ -230,7 +231,13 @@ impl<T, U> Action for VisionPipelinedNorm<T, U> {}
 
 impl<
         T: GetFrontCamMat + Send + Sync,
-        U: VisionModel + YoloProcessor + VisualDetector<f64> + Send + Sync + Clone + 'static,
+        U: VisionModel
+            + YoloProcessor
+            + VisualDetector<f64, Position = DrawRect2d>
+            + Send
+            + Sync
+            + Clone
+            + 'static,
     > ActionExec<Result<Vec<VisualDetection<YoloClass<U::Target>, DrawRect2d>>>>
     for VisionPipelinedNorm<T, U>
 where
@@ -247,7 +254,7 @@ where
             .pipeline
             .get_or_init(|| async {
                 let pipeline: Arc<ModelPipelined> = Arc::new(
-                    ModelPipelined::new(model, num_model_threads, nonzero!(1_usize), 0.7).await,
+                    ModelPipelined::new(model, num_model_threads, nonzero!(1_usize), 70.0).await,
                 );
                 let pipeline_clone = pipeline.clone();
                 tokio::spawn(async move {
@@ -266,35 +273,32 @@ where
             println!("Running detection...");
         }
 
-        #[allow(unused_mut)]
-        let mut mat = self.context.get_front_camera_mat().await.clone();
         let detections = pipeline.get_single().await;
 
         #[cfg(feature = "logging")]
         {
-            detections
-                .iter()
-                .for_each(|x| DrawRect2d::from(*x.bounding_box()).draw(&mut mat).unwrap());
-            create_dir_all("/tmp/detect").unwrap();
-            imwrite(
-                &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
-                &mat,
-                &Vector::default(),
-            )
-            .unwrap();
+            println!("Pipeline detections: {:#?}", detections);
         }
 
         Ok(detections
             .into_iter()
+            .sorted_by(|lhs, rhs| {
+                lhs.confidence()
+                    .partial_cmp(rhs.confidence())
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .reverse()
+            })
             .map(|detect| {
                 VisualDetection::new(
                     YoloClass {
                         identifier: (*detect.class_id()).try_into().unwrap(),
                         confidence: *detect.confidence(),
                     },
-                    DrawRect2d::from(*detect.bounding_box()),
+                    self.model
+                        .normalize(&DrawRect2d::from(*detect.bounding_box())),
                 )
             })
+            .take(1)
             .collect())
     }
 }

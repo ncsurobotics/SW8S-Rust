@@ -1,7 +1,7 @@
 use anyhow::Result;
 use derive_getters::Getters;
 use opencv::{
-    core::{Rect2d, Scalar, Size, VecN, Vector, CV_32F},
+    core::{MatTraitConstManual, Rect2d, Scalar, Size, VecN, Vector, CV_32F},
     dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
@@ -624,6 +624,10 @@ impl ModelPipelined {
                     // thread.
                     std::mem::take(&mut guard.mat)
                 };
+
+                if !input.is_allocated() {
+                    continue;
+                }
 
                 // Hand off to post processing
                 if inner_tx.send(model.forward(&input)).is_err() {

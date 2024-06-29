@@ -95,7 +95,7 @@ fn buoy_model(c: &mut Criterion) {
 
 fn pipelined(c: &mut Criterion) {
     const MAX_MODEL_THREADS: usize = 6;
-    const MAX_POST_PROCESSING_THREADS: usize = 2;
+    const MAX_POST_PROCESSING_THREADS: usize = 1;
     const NUM_TAKES: usize = 60;
 
     let runtime = tokio::runtime::Builder::new_multi_thread()

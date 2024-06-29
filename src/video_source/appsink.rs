@@ -3,6 +3,8 @@ use opencv::prelude::Mat;
 use opencv::videoio::VideoCapture;
 use opencv::videoio::VideoCaptureAPIs;
 use opencv::videoio::VideoCaptureTrait;
+use std::fs::create_dir_all;
+use std::fs::File;
 use std::sync::Arc;
 use std::thread::spawn;
 use std::{fs::create_dir, path::Path};
@@ -23,14 +25,12 @@ impl Camera {
         camera_dimensions: (u32, u32),
         rtsp: bool,
     ) -> Result<Self> {
-        if let Some(filesink_parent) = filesink.parent() {
-            if !filesink_parent.is_dir() {
-                create_dir(filesink_parent)?
-            }
+        if !filesink.is_dir() {
+            create_dir_all(filesink)?
         }
 
         let rtsp_string = "h264. ! queue ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! rtspclientsink location=rtsp://127.0.0.1:8554/".to_string()
-                        + camera_name + " ";
+                        + camera_name + ".mp4 ";
 
         let capture_string =
             pipeline_head(camera_path, camera_dimensions.0, camera_dimensions.1, 30)

@@ -380,13 +380,13 @@ impl ActionExec<anyhow::Result<()>> for CountFalse {
 }
 
 #[derive(Debug)]
-pub struct InOrder<T, U> {
+pub struct InOrderFail<T, U> {
     first: T,
     second: U,
     finished_first: bool,
 }
 
-impl<T, U> InOrder<T, U> {
+impl<T, U> InOrderFail<T, U> {
     pub fn new(first: T, second: U) -> Self {
         Self {
             first,
@@ -396,7 +396,7 @@ impl<T, U> InOrder<T, U> {
     }
 }
 
-impl<T: Action, U: Action> Action for InOrder<T, U> {
+impl<T: Action, U: Action> Action for InOrderFail<T, U> {
     fn dot_string(&self, _parent: &str) -> DotString {
         let first_str = self.first.dot_string(stripped_type::<Self>());
         let second_str = self.second.dot_string(stripped_type::<Self>());
@@ -435,20 +435,24 @@ impl<T: Action, U: Action> Action for InOrder<T, U> {
     }
 }
 
-impl<T: ActionMod<V>, U: ActionMod<V>, V: Send + Sync> ActionMod<V> for InOrder<T, U> {
+impl<T: ActionMod<V>, U: ActionMod<V>, V: Send + Sync> ActionMod<V> for InOrderFail<T, U> {
     fn modify(&mut self, input: &V) {
         self.first.modify(input);
         self.second.modify(input);
     }
 }
 
-impl<T: ActionExec<anyhow::Result<V>>, U: ActionExec<anyhow::Result<V>>, V: Send + Sync>
-    ActionExec<anyhow::Result<V>> for InOrder<T, U>
+impl<
+        T: ActionExec<anyhow::Result<V>>,
+        U: ActionExec<anyhow::Result<V>>,
+        V: Send + Sync + Default,
+    > ActionExec<anyhow::Result<V>> for InOrderFail<T, U>
 {
     async fn execute(&mut self) -> anyhow::Result<V> {
         if !self.finished_first {
-            self.finished_first = self.first.execute().await.is_ok();
-            bail!("")
+            let ret = self.first.execute().await;
+            self.finished_first = ret.is_err();
+            Ok(V::default())
         } else {
             self.second.execute().await
         }

@@ -6,7 +6,7 @@ use crate::{
     missions::{
         action::{ActionConcurrentSplit, ActionDataConditional},
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
-        movement::{AdjustType, FlipX, FlipYaw, SetY},
+        movement::{AdjustType, FlipX, FlipYaw, SetX, SetY, StripX},
         vision::{MidPoint, OffsetClass},
     },
     vision::{
@@ -24,7 +24,7 @@ use super::{
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::descend_and_go_forward,
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, InOrder, OutputType},
+    extra::{CountFalse, CountTrue, InOrderFail, OutputType},
     movement::{
         AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
         Stability2Pos, ZeroMovement,
@@ -88,7 +88,7 @@ pub fn gate_run_complex<
             adjust_logic(
                 context,
                 depth,
-                InOrder::new(CountTrue::new(4), CountFalse::new(4))
+                InOrderFail::new(CountTrue::new(4), CountFalse::new(4))
             ),
             ZeroMovement::new(context, depth)
         ),
@@ -129,29 +129,31 @@ pub fn adjust_logic<
                         MidPoint::new(),
                         OffsetToPose::default(),
                         LinearYawFromX::<Stability2Adjust>::default(),
-                        SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.05)),
+                        SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.02)),
                         FlipX::default(),
                     ),
                     AlwaysTrue::new(),
                 ),
-                ActionConcurrent::new(
-                    ActionDataConditional::new(
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                ActionDataConditional::new(
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                    ActionConcurrent::new(
                         act_nest!(
                             ActionChain::new,
                             ExtractPosition::new(),
                             MidPoint::new(),
                             OffsetToPose::default(),
                             LinearYawFromX::<Stability2Adjust>::default(),
-                            FlipYaw::default(),
-                            SetY::<Stability2Adjust>::new(AdjustType::Adjust(-0.1)),
+                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
                         ),
+                        AlwaysTrue::new(),
+                    ),
+                    ActionConcurrent::new(
                         ActionSequence::new(
                             Terminal::new(),
                             SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
                         ),
+                        AlwaysFalse::new(),
                     ),
-                    AlwaysFalse::new(),
                 ),
             ),
             TupleSecond::new(ActionConcurrentSplit::new(
