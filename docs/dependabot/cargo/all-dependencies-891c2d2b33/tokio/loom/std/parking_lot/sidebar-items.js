@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Condvar","Mutex","MutexGuard","RwLock","RwLockReadGuard","RwLockWriteGuard","WaitTimeoutResult"]};

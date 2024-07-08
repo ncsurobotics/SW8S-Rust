@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["ANDROID_TIMEZONE_PROPERTY_NAME"],"fn":["android_timezone_property_name"]};

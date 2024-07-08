@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["impl_assign","impl_bitop","rotr_32","shuf_lane_bytes"],"struct":["u32x4x2_avx2"],"type":["u32x4x4_avx2"]};
