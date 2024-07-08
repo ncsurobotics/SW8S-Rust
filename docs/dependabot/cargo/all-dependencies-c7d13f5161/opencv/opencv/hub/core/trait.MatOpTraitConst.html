@@ -1,0 +1,298 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Constant methods for core::MatOp"><title>MatOpTraitConst in opencv::opencv::hub::core - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-081576b923113409.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0 (129f3b996 2024-06-10)" data-channel="1.79.0" data-search-js="search-bf21c90c8c1d92b1.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-e32f0c247825364d.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../opencv/index.html">opencv</a><span class="version">0.92.0</span></h2></div><h2 class="location"><a href="#">MatOpTraitConst</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.as_raw_MatOp">as_raw_MatOp</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.abs">abs</a></li><li><a href="#method.add">add</a></li><li><a href="#method.add_scalar">add_scalar</a></li><li><a href="#method.assign">assign</a></li><li><a href="#method.assign_def">assign_def</a></li><li><a href="#method.aug_assign_add">aug_assign_add</a></li><li><a href="#method.aug_assign_and">aug_assign_and</a></li><li><a href="#method.aug_assign_divide">aug_assign_divide</a></li><li><a href="#method.aug_assign_multiply">aug_assign_multiply</a></li><li><a href="#method.aug_assign_or">aug_assign_or</a></li><li><a href="#method.aug_assign_subtract">aug_assign_subtract</a></li><li><a href="#method.aug_assign_xor">aug_assign_xor</a></li><li><a href="#method.diag">diag</a></li><li><a href="#method.divide">divide</a></li><li><a href="#method.divide_def">divide_def</a></li><li><a href="#method.divide_f64">divide_f64</a></li><li><a href="#method.element_wise">element_wise</a></li><li><a href="#method.invert">invert</a></li><li><a href="#method.matmul">matmul</a></li><li><a href="#method.multiply">multiply</a></li><li><a href="#method.multiply_def">multiply_def</a></li><li><a href="#method.multiply_f64">multiply_f64</a></li><li><a href="#method.roi">roi</a></li><li><a href="#method.size">size</a></li><li><a href="#method.subtract">subtract</a></li><li><a href="#method.subtract_scalar">subtract_scalar</a></li><li><a href="#method.transpose">transpose</a></li><li><a href="#method.typ">typ</a></li></ul><h3><a href="#object-safety">Object Safety</a></h3><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In opencv::opencv::hub::core</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Type ‘S’ or ‘/’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings">Settings</a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="../../../index.html">opencv</a>::<wbr><a href="../../index.html">opencv</a>::<wbr><a href="../index.html">hub</a>::<wbr><a href="index.html">core</a>::<wbr><a class="trait" href="#">MatOpTraitConst</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20764-21034">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait MatOpTraitConst {
+<details class="toggle type-contents-toggle"><summary class="hideme"><span>Show 29 methods</span></summary>    // Required method
+    fn <a href="#tymethod.as_raw_MatOp" class="fn">as_raw_MatOp</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.pointer.html">*const </a><a class="enum" href="../../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a>;
+
+    // Provided methods
+    fn <a href="#method.element_wise" class="fn">element_wise</a>(&amp;self, expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.assign" class="fn">assign</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>,
+        typ: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.assign_def" class="fn">assign_def</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.roi" class="fn">roi</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        row_range: &amp;impl <a class="trait" href="trait.RangeTraitConst.html" title="trait opencv::opencv::hub::core::RangeTraitConst">RangeTraitConst</a>,
+        col_range: &amp;impl <a class="trait" href="trait.RangeTraitConst.html" title="trait opencv::opencv::hub::core::RangeTraitConst">RangeTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.diag" class="fn">diag</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        d: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.aug_assign_add" class="fn">aug_assign_add</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.aug_assign_subtract" class="fn">aug_assign_subtract</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.aug_assign_multiply" class="fn">aug_assign_multiply</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.aug_assign_divide" class="fn">aug_assign_divide</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.aug_assign_and" class="fn">aug_assign_and</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.aug_assign_or" class="fn">aug_assign_or</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.aug_assign_xor" class="fn">aug_assign_xor</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.add" class="fn">add</a>(
+        &amp;self,
+        expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.add_scalar" class="fn">add_scalar</a>(
+        &amp;self,
+        expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        s: <a class="type" href="type.Scalar.html" title="type opencv::opencv::hub::core::Scalar">Scalar</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.subtract" class="fn">subtract</a>(
+        &amp;self,
+        expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.subtract_scalar" class="fn">subtract_scalar</a>(
+        &amp;self,
+        s: <a class="type" href="type.Scalar.html" title="type opencv::opencv::hub::core::Scalar">Scalar</a>,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.multiply" class="fn">multiply</a>(
+        &amp;self,
+        expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>,
+        scale: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.multiply_def" class="fn">multiply_def</a>(
+        &amp;self,
+        expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.multiply_f64" class="fn">multiply_f64</a>(
+        &amp;self,
+        expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        s: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.divide" class="fn">divide</a>(
+        &amp;self,
+        expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>,
+        scale: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.divide_def" class="fn">divide_def</a>(
+        &amp;self,
+        expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.divide_f64" class="fn">divide_f64</a>(
+        &amp;self,
+        s: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.abs" class="fn">abs</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.transpose" class="fn">transpose</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.matmul" class="fn">matmul</a>(
+        &amp;self,
+        expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.invert" class="fn">invert</a>(
+        &amp;self,
+        expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+        method: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.size" class="fn">size</a>(&amp;self, expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="type" href="type.Size.html" title="type opencv::opencv::hub::core::Size">Size</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.typ" class="fn">typ</a>(&amp;self, expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt; { ... }
+</details>}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Constant methods for <a href="struct.MatOp.html" title="struct opencv::opencv::hub::core::MatOp">core::MatOp</a></p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><section id="tymethod.as_raw_MatOp" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20765">source</a><h4 class="code-header">fn <a href="#tymethod.as_raw_MatOp" class="fn">as_raw_MatOp</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.pointer.html">*const </a><a class="enum" href="../../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a></h4></section></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><section id="method.element_wise" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20768-20774">source</a><h4 class="code-header">fn <a href="#method.element_wise" class="fn">element_wise</a>(&amp;self, expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt;</h4></section><details class="toggle method-toggle" open><summary><section id="method.assign" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20779-20785">source</a><h4 class="code-header">fn <a href="#method.assign" class="fn">assign</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>,
+    typ: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><h6 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h6>
+<ul>
+<li>typ: -1</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.assign_def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20791-20797">source</a><h4 class="code-header">fn <a href="#method.assign_def" class="fn">assign_def</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><h6 id="note"><a class="doc-anchor" href="#note">§</a>Note</h6>
+<p>This alternative version of <a href="trait.MatOpTraitConst.html#method.assign" title="method opencv::opencv::hub::core::MatOpTraitConst::assign">MatOpTraitConst::assign</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>typ: -1</li>
+</ul>
+</div></details><section id="method.roi" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20800-20806">source</a><h4 class="code-header">fn <a href="#method.roi" class="fn">roi</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    row_range: &amp;impl <a class="trait" href="trait.RangeTraitConst.html" title="trait opencv::opencv::hub::core::RangeTraitConst">RangeTraitConst</a>,
+    col_range: &amp;impl <a class="trait" href="trait.RangeTraitConst.html" title="trait opencv::opencv::hub::core::RangeTraitConst">RangeTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.diag" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20809-20815">source</a><h4 class="code-header">fn <a href="#method.diag" class="fn">diag</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    d: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.aug_assign_add" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20818-20824">source</a><h4 class="code-header">fn <a href="#method.aug_assign_add" class="fn">aug_assign_add</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.aug_assign_subtract" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20827-20833">source</a><h4 class="code-header">fn <a href="#method.aug_assign_subtract" class="fn">aug_assign_subtract</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.aug_assign_multiply" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20836-20842">source</a><h4 class="code-header">fn <a href="#method.aug_assign_multiply" class="fn">aug_assign_multiply</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.aug_assign_divide" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20845-20851">source</a><h4 class="code-header">fn <a href="#method.aug_assign_divide" class="fn">aug_assign_divide</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.aug_assign_and" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20854-20860">source</a><h4 class="code-header">fn <a href="#method.aug_assign_and" class="fn">aug_assign_and</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.aug_assign_or" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20863-20869">source</a><h4 class="code-header">fn <a href="#method.aug_assign_or" class="fn">aug_assign_or</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.aug_assign_xor" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20872-20878">source</a><h4 class="code-header">fn <a href="#method.aug_assign_xor" class="fn">aug_assign_xor</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    m: &amp;mut impl <a class="trait" href="trait.MatTrait.html" title="trait opencv::opencv::hub::core::MatTrait">MatTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.add" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20881-20887">source</a><h4 class="code-header">fn <a href="#method.add" class="fn">add</a>(
+    &amp;self,
+    expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.add_scalar" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20890-20896">source</a><h4 class="code-header">fn <a href="#method.add_scalar" class="fn">add_scalar</a>(
+    &amp;self,
+    expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    s: <a class="type" href="type.Scalar.html" title="type opencv::opencv::hub::core::Scalar">Scalar</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.subtract" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20899-20905">source</a><h4 class="code-header">fn <a href="#method.subtract" class="fn">subtract</a>(
+    &amp;self,
+    expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.subtract_scalar" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20908-20914">source</a><h4 class="code-header">fn <a href="#method.subtract_scalar" class="fn">subtract_scalar</a>(
+    &amp;self,
+    s: <a class="type" href="type.Scalar.html" title="type opencv::opencv::hub::core::Scalar">Scalar</a>,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><details class="toggle method-toggle" open><summary><section id="method.multiply" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20919-20925">source</a><h4 class="code-header">fn <a href="#method.multiply" class="fn">multiply</a>(
+    &amp;self,
+    expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>,
+    scale: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><h6 id="c-default-parameters-1"><a class="doc-anchor" href="#c-default-parameters-1">§</a>C++ default parameters</h6>
+<ul>
+<li>scale: 1</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.multiply_def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20931-20937">source</a><h4 class="code-header">fn <a href="#method.multiply_def" class="fn">multiply_def</a>(
+    &amp;self,
+    expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><h6 id="note-1"><a class="doc-anchor" href="#note-1">§</a>Note</h6>
+<p>This alternative version of <a href="trait.MatOpTraitConst.html#method.multiply" title="method opencv::opencv::hub::core::MatOpTraitConst::multiply">MatOpTraitConst::multiply</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>scale: 1</li>
+</ul>
+</div></details><section id="method.multiply_f64" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20940-20946">source</a><h4 class="code-header">fn <a href="#method.multiply_f64" class="fn">multiply_f64</a>(
+    &amp;self,
+    expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    s: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><details class="toggle method-toggle" open><summary><section id="method.divide" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20951-20957">source</a><h4 class="code-header">fn <a href="#method.divide" class="fn">divide</a>(
+    &amp;self,
+    expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>,
+    scale: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><h6 id="c-default-parameters-2"><a class="doc-anchor" href="#c-default-parameters-2">§</a>C++ default parameters</h6>
+<ul>
+<li>scale: 1</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.divide_def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20963-20969">source</a><h4 class="code-header">fn <a href="#method.divide_def" class="fn">divide_def</a>(
+    &amp;self,
+    expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><h6 id="note-2"><a class="doc-anchor" href="#note-2">§</a>Note</h6>
+<p>This alternative version of <a href="trait.MatOpTraitConst.html#method.divide" title="method opencv::opencv::hub::core::MatOpTraitConst::divide">MatOpTraitConst::divide</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>scale: 1</li>
+</ul>
+</div></details><section id="method.divide_f64" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20972-20978">source</a><h4 class="code-header">fn <a href="#method.divide_f64" class="fn">divide_f64</a>(
+    &amp;self,
+    s: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.abs" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20981-20987">source</a><h4 class="code-header">fn <a href="#method.abs" class="fn">abs</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.transpose" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20990-20996">source</a><h4 class="code-header">fn <a href="#method.transpose" class="fn">transpose</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.matmul" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#20999-21005">source</a><h4 class="code-header">fn <a href="#method.matmul" class="fn">matmul</a>(
+    &amp;self,
+    expr1: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    expr2: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.invert" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#21008-21014">source</a><h4 class="code-header">fn <a href="#method.invert" class="fn">invert</a>(
+    &amp;self,
+    expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>,
+    method: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+    res: &amp;mut impl <a class="trait" href="trait.MatExprTrait.html" title="trait opencv::opencv::hub::core::MatExprTrait">MatExprTrait</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.size" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#21017-21023">source</a><h4 class="code-header">fn <a href="#method.size" class="fn">size</a>(&amp;self, expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="type" href="type.Size.html" title="type opencv::opencv::hub::core::Size">Size</a>&gt;</h4></section><section id="method.typ" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#21026-21032">source</a><h4 class="code-header">fn <a href="#method.typ" class="fn">typ</a>(&amp;self, expr: &amp;impl <a class="trait" href="trait.MatExprTraitConst.html" title="trait opencv::opencv::hub::core::MatExprTraitConst">MatExprTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt;</h4></section></div><h2 id="object-safety" class="section-header">Object Safety<a href="#object-safety" class="anchor">§</a></h2><div class="object-safety-info">This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.79.0/reference/items/traits.html#object-safety">object safe</a>.</div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-MatOpTraitConst-for-BoxedRef%3C'_,+MatOp%3E" class="impl"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#21066">source</a><a href="#impl-MatOpTraitConst-for-BoxedRef%3C'_,+MatOp%3E" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.MatOpTraitConst.html" title="trait opencv::opencv::hub::core::MatOpTraitConst">MatOpTraitConst</a> for <a class="struct" href="../../../boxed_ref/struct.BoxedRef.html" title="struct opencv::boxed_ref::BoxedRef">BoxedRef</a>&lt;'_, <a class="struct" href="struct.MatOp.html" title="struct opencv::opencv::hub::core::MatOp">MatOp</a>&gt;</h3></section><section id="impl-MatOpTraitConst-for-BoxedRefMut%3C'_,+MatOp%3E" class="impl"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#21066">source</a><a href="#impl-MatOpTraitConst-for-BoxedRefMut%3C'_,+MatOp%3E" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.MatOpTraitConst.html" title="trait opencv::opencv::hub::core::MatOpTraitConst">MatOpTraitConst</a> for <a class="struct" href="../../../boxed_ref/struct.BoxedRefMut.html" title="struct opencv::boxed_ref::BoxedRefMut">BoxedRefMut</a>&lt;'_, <a class="struct" href="struct.MatOp.html" title="struct opencv::opencv::hub::core::MatOp">MatOp</a>&gt;</h3></section><section id="impl-MatOpTraitConst-for-AbstractRefMut%3C'static,+MatOp%3E" class="impl"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/types.rs.html#14-16">source</a><a href="#impl-MatOpTraitConst-for-AbstractRefMut%3C'static,+MatOp%3E" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.MatOpTraitConst.html" title="trait opencv::opencv::hub::core::MatOpTraitConst">MatOpTraitConst</a> for <a class="struct" href="../../../manual/types/abstract_ref/struct.AbstractRefMut.html" title="struct opencv::manual::types::abstract_ref::AbstractRefMut">AbstractRefMut</a>&lt;'static, <a class="struct" href="struct.MatOp.html" title="struct opencv::opencv::hub::core::MatOp">MatOp</a>&gt;</h3></section><section id="impl-MatOpTraitConst-for-MatOp" class="impl"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-cea3b0a5a2998693/out/opencv/core.rs.html#21058-21060">source</a><a href="#impl-MatOpTraitConst-for-MatOp" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.MatOpTraitConst.html" title="trait opencv::opencv::hub::core::MatOpTraitConst">MatOpTraitConst</a> for <a class="struct" href="struct.MatOp.html" title="struct opencv::opencv::hub::core::MatOp">MatOp</a></h3></section></div><script src="../../../../trait.impl/opencv/opencv/hub/core/trait.MatOpTraitConst.js" async></script></section></div></main></body></html>

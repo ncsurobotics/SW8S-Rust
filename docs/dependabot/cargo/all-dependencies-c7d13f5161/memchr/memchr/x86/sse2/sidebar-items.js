@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["LOOP_SIZE","LOOP_SIZE2","VECTOR_ALIGN","VECTOR_SIZE"],"fn":["forward_pos","forward_pos2","forward_pos3","forward_search1","forward_search2","forward_search3","memchr","memchr2","memchr3","memrchr","memrchr2","memrchr3","reverse_pos","reverse_pos2","reverse_pos3","reverse_search1","reverse_search2","reverse_search3","sub"]};
