@@ -1804,6 +1804,66 @@
 <a href="#1804" id="1804">1804</a>
 <a href="#1805" id="1805">1805</a>
 <a href="#1806" id="1806">1806</a>
+<a href="#1807" id="1807">1807</a>
+<a href="#1808" id="1808">1808</a>
+<a href="#1809" id="1809">1809</a>
+<a href="#1810" id="1810">1810</a>
+<a href="#1811" id="1811">1811</a>
+<a href="#1812" id="1812">1812</a>
+<a href="#1813" id="1813">1813</a>
+<a href="#1814" id="1814">1814</a>
+<a href="#1815" id="1815">1815</a>
+<a href="#1816" id="1816">1816</a>
+<a href="#1817" id="1817">1817</a>
+<a href="#1818" id="1818">1818</a>
+<a href="#1819" id="1819">1819</a>
+<a href="#1820" id="1820">1820</a>
+<a href="#1821" id="1821">1821</a>
+<a href="#1822" id="1822">1822</a>
+<a href="#1823" id="1823">1823</a>
+<a href="#1824" id="1824">1824</a>
+<a href="#1825" id="1825">1825</a>
+<a href="#1826" id="1826">1826</a>
+<a href="#1827" id="1827">1827</a>
+<a href="#1828" id="1828">1828</a>
+<a href="#1829" id="1829">1829</a>
+<a href="#1830" id="1830">1830</a>
+<a href="#1831" id="1831">1831</a>
+<a href="#1832" id="1832">1832</a>
+<a href="#1833" id="1833">1833</a>
+<a href="#1834" id="1834">1834</a>
+<a href="#1835" id="1835">1835</a>
+<a href="#1836" id="1836">1836</a>
+<a href="#1837" id="1837">1837</a>
+<a href="#1838" id="1838">1838</a>
+<a href="#1839" id="1839">1839</a>
+<a href="#1840" id="1840">1840</a>
+<a href="#1841" id="1841">1841</a>
+<a href="#1842" id="1842">1842</a>
+<a href="#1843" id="1843">1843</a>
+<a href="#1844" id="1844">1844</a>
+<a href="#1845" id="1845">1845</a>
+<a href="#1846" id="1846">1846</a>
+<a href="#1847" id="1847">1847</a>
+<a href="#1848" id="1848">1848</a>
+<a href="#1849" id="1849">1849</a>
+<a href="#1850" id="1850">1850</a>
+<a href="#1851" id="1851">1851</a>
+<a href="#1852" id="1852">1852</a>
+<a href="#1853" id="1853">1853</a>
+<a href="#1854" id="1854">1854</a>
+<a href="#1855" id="1855">1855</a>
+<a href="#1856" id="1856">1856</a>
+<a href="#1857" id="1857">1857</a>
+<a href="#1858" id="1858">1858</a>
+<a href="#1859" id="1859">1859</a>
+<a href="#1860" id="1860">1860</a>
+<a href="#1861" id="1861">1861</a>
+<a href="#1862" id="1862">1862</a>
+<a href="#1863" id="1863">1863</a>
+<a href="#1864" id="1864">1864</a>
+<a href="#1865" id="1865">1865</a>
+<a href="#1866" id="1866">1866</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::vision::DrawRect2d;
 <span class="kw">use </span><span class="kw">crate</span>::vision::Offset2D;
@@ -2887,6 +2947,66 @@ where
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="self">self</span>.pose.x = <span class="prelude-val">None</span>;
         <span class="self">self</span>.pose.clone()
+    }
+}
+
+<span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>ClampX&lt;T&gt; {
+    pose: T,
+    max: f32,
+}
+
+<span class="kw">impl</span>&lt;T&gt; Action <span class="kw">for </span>ClampX&lt;T&gt; {}
+
+<span class="kw">impl </span>ClampX&lt;Stability2Adjust&gt; {
+    <span class="kw">pub const fn </span>new(max: f32) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            pose: Stability2Adjust::const_default(),
+            max,
+        }
+    }
+}
+
+<span class="comment">/*
+impl ClampX&lt;&amp;Stability2Adjust&gt; {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(max: f32) -&gt; Self {
+        Self {
+            pose: &amp;Self::DEFAULT_POSE,
+            max,
+        }
+    }
+}
+*/
+
+</span><span class="kw">impl</span>&lt;T: Sync + Send + Clone&gt; ActionMod&lt;T&gt; <span class="kw">for </span>ClampX&lt;T&gt; {
+    <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>T) {
+        <span class="self">self</span>.pose = input.clone();
+    }
+}
+
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>ClampX&lt;Stability2Adjust&gt; {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = <span class="self">self</span>.pose.x {
+            <span class="kw-2">*</span>x = <span class="kw">match </span><span class="kw-2">*</span>x {
+                AdjustType::Adjust(x) =&gt; AdjustType::Adjust(x.clamp(-<span class="self">self</span>.max, <span class="self">self</span>.max)),
+                AdjustType::Replace(x) =&gt; AdjustType::Replace(x.clamp(-<span class="self">self</span>.max, <span class="self">self</span>.max)),
+            };
+        }
+        <span class="self">self</span>.pose.clone()
+    }
+}
+
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>ClampX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
+        <span class="kw">let </span><span class="kw-2">mut </span>pose = <span class="self">self</span>.pose.clone();
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = pose.x {
+            <span class="kw-2">*</span>x = <span class="kw">match </span><span class="kw-2">*</span>x {
+                AdjustType::Adjust(x) =&gt; AdjustType::Adjust(x.clamp(-<span class="self">self</span>.max, <span class="self">self</span>.max)),
+                AdjustType::Replace(x) =&gt; AdjustType::Replace(x.clamp(-<span class="self">self</span>.max, <span class="self">self</span>.max)),
+            };
+        }
+        pose
     }
 }
 
