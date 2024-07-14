@@ -6,7 +6,7 @@ use crate::{
     missions::{
         action::{ActionConcurrentSplit, ActionDataConditional},
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
-        movement::{AdjustType, FlipX, FlipYaw, SetX, SetY, StripX},
+        movement::{AdjustType, ClampX, FlipX, FlipYaw, SetX, SetY, StripX},
         vision::{MidPoint, OffsetClass},
     },
     vision::{
@@ -22,7 +22,7 @@ use super::{
         ActionWhile, FirstValid, TupleSecond,
     },
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
-    basic::descend_and_go_forward,
+    basic::{descend_and_go_forward, DelayAction},
     comms::StartBno055,
     extra::{CountFalse, CountTrue, InOrderFail, OutputType},
     movement::{
@@ -41,7 +41,7 @@ pub fn gate_run_naive<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    let depth: f32 = -1.0;
+    let depth: f32 = -1.5;
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
@@ -79,7 +79,7 @@ pub fn gate_run_complex<
 >(
     context: &Con,
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
-    let depth: f32 = -1.0;
+    let depth: f32 = -1.25;
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
@@ -90,7 +90,15 @@ pub fn gate_run_complex<
                 depth,
                 InOrderFail::new(CountTrue::new(4), CountFalse::new(4))
             ),
-            ZeroMovement::new(context, depth)
+            ActionChain::new(
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
+                ),
+                OutputType::<()>::default()
+            ),
+            DelayAction::new(3.0),
+            ZeroMovement::new(context, depth),
         ),
     )
 }
@@ -129,6 +137,7 @@ pub fn adjust_logic<
                         MidPoint::new(),
                         OffsetToPose::default(),
                         LinearYawFromX::<Stability2Adjust>::default(),
+                        ClampX::new(0.6),
                         SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.02)),
                         FlipX::default(),
                     ),
@@ -143,21 +152,24 @@ pub fn adjust_logic<
                             MidPoint::new(),
                             OffsetToPose::default(),
                             LinearYawFromX::<Stability2Adjust>::default(),
-                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
+                            ClampX::new(0.2),
+                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.1)),
+                            FlipX::default(),
                         ),
                         AlwaysTrue::new(),
                     ),
                     ActionConcurrent::new(
                         ActionSequence::new(
                             Terminal::new(),
-                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
+                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.4)),
                         ),
                         AlwaysFalse::new(),
                     ),
                 ),
             ),
             TupleSecond::new(ActionConcurrentSplit::new(
-                ActionChain::new(
+                act_nest!(
+                    ActionChain::new,
                     Stability2Movement::new(
                         context,
                         Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth),

@@ -1085,6 +1085,66 @@ impl ActionExec<Stability2Adjust> for StripX<Stability2Adjust> {
 }
 
 #[derive(Debug)]
+pub struct ClampX<T> {
+    pose: T,
+    max: f32,
+}
+
+impl<T> Action for ClampX<T> {}
+
+impl ClampX<Stability2Adjust> {
+    pub const fn new(max: f32) -> Self {
+        Self {
+            pose: Stability2Adjust::const_default(),
+            max,
+        }
+    }
+}
+
+/*
+impl ClampX<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(max: f32) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            max,
+        }
+    }
+}
+*/
+
+impl<T: Sync + Send + Clone> ActionMod<T> for ClampX<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for ClampX<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        if let Some(ref mut x) = self.pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Adjust(x.clamp(-self.max, self.max)),
+                AdjustType::Replace(x) => AdjustType::Replace(x.clamp(-self.max, self.max)),
+            };
+        }
+        self.pose.clone()
+    }
+}
+
+impl ActionExec<Stability2Adjust> for ClampX<&Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut pose = self.pose.clone();
+        if let Some(ref mut x) = pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Adjust(x.clamp(-self.max, self.max)),
+                AdjustType::Replace(x) => AdjustType::Replace(x.clamp(-self.max, self.max)),
+            };
+        }
+        pose
+    }
+}
+
+#[derive(Debug)]
 pub struct FlatX<T> {
     pose: T,
 }
