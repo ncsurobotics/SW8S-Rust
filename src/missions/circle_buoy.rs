@@ -15,7 +15,7 @@ use crate::{
     },
     vision::{
         buoy_model::{BuoyModel, Target},
-        nn_cv2::YoloClass,
+        nn_cv2::{OnnxModel, YoloClass},
         path::{Path, Yuv},
         DrawRect2d, Offset2D,
     },
@@ -104,32 +104,35 @@ pub fn buoy_circle_sequence_model<
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
     const BUOY_X_SPEED: f32 = -0.0;
-    const BUOY_Y_SPEED: f32 = 0.2;
+    const BUOY_Y_SPEED: f32 = 0.0;
     const BUOY_YAW_SPEED: f32 = -0.0;
     const DEPTH: f32 = -1.0;
     const NUM_MODEL_THREADS: NonZeroUsize = nonzero!(4_usize);
 
     act_nest!(
         ActionSequence::new,
-        //descend_and_go_forward(context),
+        descend_and_go_forward(context),
         ActionWhile::new(act_nest!(
             ActionChain::new,
-            VisionPipelinedNorm::new(context, BuoyModel::default(), NUM_MODEL_THREADS),
-            DetectTarget::<Target, YoloClass<Target>, DrawRect2d>::new(Target::Buoy),
+            VisionNorm::<Con, BuoyModel<OnnxModel>, f64>::new(context, BuoyModel::default()),
+            DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Buoy),
             TupleSecond::new(ActionConcurrent::new(
                 act_nest!(
                     ActionChain::new,
                     ToVec::new(),
                     ExtractPosition::new(),
                     Average::new(),
-                    BoxToPose::default(),
-                    LinearYawFromX::<Stability2Adjust>::new(4.0),
-                    CautiousConstantX::<Stability2Adjust>::new(-0.2),
-                    FlipYaw::<Stability2Adjust>::new(),
-                    StripY::<Stability2Adjust>::new(),
-                    Stability2Movement::new(
+                    //BoxToPose::default(),
+                    OffsetToPose::default(),
+                    LinearYawFromX::<Stability1Adjust>::new(4.0),
+                    CautiousConstantX::<Stability1Adjust>::new(-0.3),
+                    StripY::<Stability1Adjust>::new(),
+                    //FlipYaw::<Stability1Adjust>::new(),
+                    //MinYaw::<Stability1Adjust>::new(-3.0),
+                    MinYaw::<Stability1Adjust>::new(12.0),
+                    Stability1Movement::new(
                         context,
-                        Stability2Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, 0.0, 0.0, None, DEPTH)
+                        Stability1Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, 0.0, 0.0, 0.0, DEPTH)
                     ),
                     OutputType::<()>::new()
                 ),

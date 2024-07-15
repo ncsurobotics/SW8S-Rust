@@ -527,7 +527,7 @@ impl Stability2Pos {
             }
         }
 
-        println!("Stability 2 speed set: {:#?}", self);
+        //println!("Stability 2 speed set: {:#?}", self);
 
         board
             .stability_2_speed_set(
@@ -571,8 +571,8 @@ impl Stability2Pos {
     /// The x and y fields are bounded to [-1, 1].
     /// The pitch, roll, yaw, depth fields wrap around 360 degrees.
     pub fn adjust(&mut self, adjuster: &Stability2Adjust) -> &Self {
-        println!("Stability 2 pre-adjust: {:#?}", self);
-        println!("Adjuster: {:#?}", adjuster);
+        //println!("Stability 2 pre-adjust: {:#?}", self);
+        //println!("Adjuster: {:#?}", adjuster);
 
         self.x = Self::set_speed(self.x, adjuster.x().clone());
         self.y = Self::set_speed(self.y, adjuster.y().clone());
@@ -1409,7 +1409,8 @@ impl Stability1Adjust {
     }
 
     pub fn set_yaw_speed(&mut self, yaw_speed: AdjustType<f32>) -> &Self {
-        self.yaw_speed = Self::bound_speed(Self::address_ieee(yaw_speed));
+        //self.yaw_speed = Self::bound_speed(Self::address_ieee(yaw_speed));
+        self.yaw_speed = Self::address_ieee(yaw_speed);
         self
     }
 
@@ -1508,7 +1509,8 @@ impl Stability1Pos {
         self.target_depth = Self::set_rot(self.target_depth, adjuster.target_depth().clone());
 
         // Accounting for uninitialized yaw
-        self.yaw_speed = Self::set_speed(self.yaw_speed, adjuster.yaw_speed().clone());
+        //self.yaw_speed = Self::set_speed(self.yaw_speed, adjuster.yaw_speed().clone());
+        self.yaw_speed = Self::set_rot(self.yaw_speed, adjuster.yaw_speed().clone());
 
         println!("Stability 1 post-adjust: {:#?}", self);
         self
@@ -1810,6 +1812,13 @@ impl ActionExec<Stability2Adjust> for MinYaw<Stability2Adjust> {
                 *x = self.speed;
             }
         };
+        if self.pose.target_yaw.is_none() {
+            println!("NONE, SETTING MIN SPEED");
+            self.pose.target_yaw = Some(AdjustType::Adjust(self.speed));
+            self.pose.y = Some(AdjustType::Replace(0.0));
+        } else {
+            self.pose.y = Some(AdjustType::Replace(0.2));
+        }
         self.pose.clone()
     }
 }
