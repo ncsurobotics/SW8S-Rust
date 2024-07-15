@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AncillaryData","AncillaryError"],"struct":["Incoming","Messages","ScmCredentials","ScmRights","SocketAddr","SocketAncillary","SocketCred","UCred","UnixDatagram","UnixListener","UnixStream"]};

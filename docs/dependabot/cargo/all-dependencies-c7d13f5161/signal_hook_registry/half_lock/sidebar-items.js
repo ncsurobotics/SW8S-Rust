@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAX_GUARDS","YIELD_EVERY"],"struct":["HalfLock","ReadGuard","WriteGuard"]};

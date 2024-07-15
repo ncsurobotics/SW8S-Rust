@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["graph_actions"],"struct":["Average","DetectTarget","ExtractPosition","MidPoint","OffsetClass","VisionNorm","VisionNormOffset"]};

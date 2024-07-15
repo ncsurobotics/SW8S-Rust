@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CLOSED","RX_TASK_SET","TX_TASK_SET","VALUE_SENT"],"fn":["channel","mut_load"],"mod":["error"],"struct":["Inner","Receiver","Sender","State","Task"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["SensorStatuses"],"mod":["response","util"],"struct":["ControlBoard"]};

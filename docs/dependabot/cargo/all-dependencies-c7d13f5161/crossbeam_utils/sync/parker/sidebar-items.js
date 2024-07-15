@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["EMPTY","NOTIFIED","PARKED"],"struct":["Inner","Parker","Unparker"]};

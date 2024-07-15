@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["fcntl_add_seals","fcntl_get_seals","fcntl_getfl","fcntl_lock","fcntl_setfl"]};
