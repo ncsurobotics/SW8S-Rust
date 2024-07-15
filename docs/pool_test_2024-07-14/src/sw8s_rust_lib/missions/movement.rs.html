@@ -1864,6 +1864,15 @@
 <a href="#1864" id="1864">1864</a>
 <a href="#1865" id="1865">1865</a>
 <a href="#1866" id="1866">1866</a>
+<a href="#1867" id="1867">1867</a>
+<a href="#1868" id="1868">1868</a>
+<a href="#1869" id="1869">1869</a>
+<a href="#1870" id="1870">1870</a>
+<a href="#1871" id="1871">1871</a>
+<a href="#1872" id="1872">1872</a>
+<a href="#1873" id="1873">1873</a>
+<a href="#1874" id="1874">1874</a>
+<a href="#1875" id="1875">1875</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::vision::DrawRect2d;
 <span class="kw">use </span><span class="kw">crate</span>::vision::Offset2D;
@@ -2393,9 +2402,9 @@ where
             }
         }
 
-        <span class="macro">println!</span>(<span class="string">"Stability 2 speed set: {:#?}"</span>, <span class="self">self</span>);
+        <span class="comment">//println!("Stability 2 speed set: {:#?}", self);
 
-        board
+        </span>board
             .stability_2_speed_set(
                 <span class="self">self</span>.x,
                 <span class="self">self</span>.y,
@@ -2437,10 +2446,10 @@ where
     /// The x and y fields are bounded to [-1, 1].
     /// The pitch, roll, yaw, depth fields wrap around 360 degrees.
     </span><span class="kw">pub fn </span>adjust(<span class="kw-2">&amp;mut </span><span class="self">self</span>, adjuster: <span class="kw-2">&amp;</span>Stability2Adjust) -&gt; <span class="kw-2">&amp;</span><span class="self">Self </span>{
-        <span class="macro">println!</span>(<span class="string">"Stability 2 pre-adjust: {:#?}"</span>, <span class="self">self</span>);
-        <span class="macro">println!</span>(<span class="string">"Adjuster: {:#?}"</span>, adjuster);
+        <span class="comment">//println!("Stability 2 pre-adjust: {:#?}", self);
+        //println!("Adjuster: {:#?}", adjuster);
 
-        <span class="self">self</span>.x = <span class="self">Self</span>::set_speed(<span class="self">self</span>.x, adjuster.x().clone());
+        </span><span class="self">self</span>.x = <span class="self">Self</span>::set_speed(<span class="self">self</span>.x, adjuster.x().clone());
         <span class="self">self</span>.y = <span class="self">Self</span>::set_speed(<span class="self">self</span>.y, adjuster.y().clone());
 
         <span class="self">self</span>.target_pitch = <span class="self">Self</span>::set_rot(<span class="self">self</span>.target_pitch, adjuster.target_pitch().clone());
@@ -3275,7 +3284,8 @@ impl ClampX&lt;&amp;Stability2Adjust&gt; {
     </span>}
 
     <span class="kw">pub fn </span>set_yaw_speed(<span class="kw-2">&amp;mut </span><span class="self">self</span>, yaw_speed: AdjustType&lt;f32&gt;) -&gt; <span class="kw-2">&amp;</span><span class="self">Self </span>{
-        <span class="self">self</span>.yaw_speed = <span class="self">Self</span>::bound_speed(<span class="self">Self</span>::address_ieee(yaw_speed));
+        <span class="comment">//self.yaw_speed = Self::bound_speed(Self::address_ieee(yaw_speed));
+        </span><span class="self">self</span>.yaw_speed = <span class="self">Self</span>::address_ieee(yaw_speed);
         <span class="self">self
     </span>}
 
@@ -3374,7 +3384,8 @@ impl ClampX&lt;&amp;Stability2Adjust&gt; {
         <span class="self">self</span>.target_depth = <span class="self">Self</span>::set_rot(<span class="self">self</span>.target_depth, adjuster.target_depth().clone());
 
         <span class="comment">// Accounting for uninitialized yaw
-        </span><span class="self">self</span>.yaw_speed = <span class="self">Self</span>::set_speed(<span class="self">self</span>.yaw_speed, adjuster.yaw_speed().clone());
+        //self.yaw_speed = Self::set_speed(self.yaw_speed, adjuster.yaw_speed().clone());
+        </span><span class="self">self</span>.yaw_speed = <span class="self">Self</span>::set_rot(<span class="self">self</span>.yaw_speed, adjuster.yaw_speed().clone());
 
         <span class="macro">println!</span>(<span class="string">"Stability 1 post-adjust: {:#?}"</span>, <span class="self">self</span>);
         <span class="self">self
@@ -3676,6 +3687,13 @@ impl ClampX&lt;&amp;Stability2Adjust&gt; {
                 <span class="kw-2">*</span>x = <span class="self">self</span>.speed;
             }
         };
+        <span class="kw">if </span><span class="self">self</span>.pose.target_yaw.is_none() {
+            <span class="macro">println!</span>(<span class="string">"NONE, SETTING MIN SPEED"</span>);
+            <span class="self">self</span>.pose.target_yaw = <span class="prelude-val">Some</span>(AdjustType::Adjust(<span class="self">self</span>.speed));
+            <span class="self">self</span>.pose.y = <span class="prelude-val">Some</span>(AdjustType::Replace(<span class="number">0.0</span>));
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.pose.y = <span class="prelude-val">Some</span>(AdjustType::Replace(<span class="number">0.2</span>));
+        }
         <span class="self">self</span>.pose.clone()
     }
 }

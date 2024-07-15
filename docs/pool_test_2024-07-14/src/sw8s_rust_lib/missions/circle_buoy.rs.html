@@ -139,6 +139,9 @@
 <a href="#139" id="139">139</a>
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::num::NonZeroUsize;
 
 <span class="kw">use crate</span>::{
@@ -156,7 +159,7 @@
     },
     vision::{
         buoy_model::{BuoyModel, Target},
-        nn_cv2::YoloClass,
+        nn_cv2::{OnnxModel, YoloClass},
         path::{Path, Yuv},
         DrawRect2d, Offset2D,
     },
@@ -245,32 +248,35 @@
     context: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>Con,
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
     <span class="kw">const </span>BUOY_X_SPEED: f32 = -<span class="number">0.0</span>;
-    <span class="kw">const </span>BUOY_Y_SPEED: f32 = <span class="number">0.2</span>;
+    <span class="kw">const </span>BUOY_Y_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>BUOY_YAW_SPEED: f32 = -<span class="number">0.0</span>;
     <span class="kw">const </span>DEPTH: f32 = -<span class="number">1.0</span>;
     <span class="kw">const </span>NUM_MODEL_THREADS: NonZeroUsize = <span class="macro">nonzero!</span>(<span class="number">4_usize</span>);
 
     <span class="macro">act_nest!</span>(
         ActionSequence::new,
-        <span class="comment">//descend_and_go_forward(context),
-        </span>ActionWhile::new(<span class="macro">act_nest!</span>(
+        descend_and_go_forward(context),
+        ActionWhile::new(<span class="macro">act_nest!</span>(
             ActionChain::new,
-            VisionPipelinedNorm::new(context, BuoyModel::default(), NUM_MODEL_THREADS),
-            DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, DrawRect2d&gt;::new(Target::Buoy),
+            VisionNorm::&lt;Con, BuoyModel&lt;OnnxModel&gt;, f64&gt;::new(context, BuoyModel::default()),
+            DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Buoy),
             TupleSecond::new(ActionConcurrent::new(
                 <span class="macro">act_nest!</span>(
                     ActionChain::new,
                     ToVec::new(),
                     ExtractPosition::new(),
                     Average::new(),
-                    BoxToPose::default(),
-                    LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">4.0</span>),
-                    CautiousConstantX::&lt;Stability2Adjust&gt;::new(-<span class="number">0.2</span>),
-                    FlipYaw::&lt;Stability2Adjust&gt;::new(),
-                    StripY::&lt;Stability2Adjust&gt;::new(),
-                    Stability2Movement::new(
+                    <span class="comment">//BoxToPose::default(),
+                    </span>OffsetToPose::default(),
+                    LinearYawFromX::&lt;Stability1Adjust&gt;::new(<span class="number">4.0</span>),
+                    CautiousConstantX::&lt;Stability1Adjust&gt;::new(-<span class="number">0.3</span>),
+                    StripY::&lt;Stability1Adjust&gt;::new(),
+                    <span class="comment">//FlipYaw::&lt;Stability1Adjust&gt;::new(),
+                    //MinYaw::&lt;Stability1Adjust&gt;::new(-3.0),
+                    </span>MinYaw::&lt;Stability1Adjust&gt;::new(<span class="number">12.0</span>),
+                    Stability1Movement::new(
                         context,
-                        Stability2Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH)
+                        Stability1Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, DEPTH)
                     ),
                     OutputType::&lt;()&gt;::new()
                 ),
