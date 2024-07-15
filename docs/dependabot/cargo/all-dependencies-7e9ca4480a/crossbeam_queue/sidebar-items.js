@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["array_queue","seg_queue"],"struct":["ArrayQueue","SegQueue"]};
