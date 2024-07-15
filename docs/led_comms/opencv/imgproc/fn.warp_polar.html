@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="\brief Remaps an image to polar or semilog-polar coordinates space"><title>warp_polar in opencv::imgproc - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-081576b923113409.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0 (129f3b996 2024-06-10)" data-channel="1.79.0" data-search-js="search-bf21c90c8c1d92b1.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-e32f0c247825364d.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../opencv/index.html">opencv</a><span class="version">0.92.0</span></h2></div><div class="sidebar-elems"><h2><a href="index.html">In opencv::imgproc</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Type ‘S’ or ‘/’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings">Settings</a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Function <a href="../index.html">opencv</a>::<wbr><a href="index.html">imgproc</a>::<wbr><a class="fn" href="#">warp_polar</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/imgproc.rs.html#10621-10629">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub fn warp_polar(
+    src: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    dst: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    dsize: <a class="type" href="../opencv/hub/core/type.Size.html" title="type opencv::opencv::hub::core::Size">Size</a>,
+    center: <a class="type" href="../opencv/hub/core/type.Point2f.html" title="type opencv::opencv::hub::core::Point2f">Point2f</a>,
+    max_radius: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>,
+    flags: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>
+) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>\brief Remaps an image to polar or semilog-polar coordinates space</p>
+<p>@anchor polar_remaps_reference_image
+<img src="https://docs.opencv.org/4.5.4/polar_remap_doc.png" alt="Polar remaps reference" /></p>
+<p>Transform the source image using the following transformation:
+<img src="https://latex.codecogs.com/png.latex?%0Adst%28%5Crho%20%2C%20%5Cphi%20%29%20%3D%20src%28x%2Cy%29%0A" alt="block formula" /></p>
+<p>where
+<img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Barray%7D%7Bl%7D%0A%5Cvec%7BI%7D%20%3D%20%28x%20%2D%20center%2Ex%2C%20%5C%3By%20%2D%20center%2Ey%29%20%5C%5C%0A%5Cphi%20%3D%20Kangle%20%5Ccdot%20%5Ctexttt%7Bangle%7D%20%28%5Cvec%7BI%7D%29%20%5C%5C%0A%5Crho%20%3D%20%5Cleft%5C%7B%5Cbegin%7Bmatrix%7D%0AKlin%20%5Ccdot%20%5Ctexttt%7Bmagnitude%7D%20%28%5Cvec%7BI%7D%29%20%26%20default%20%5C%5C%0AKlog%20%5Ccdot%20log%5Fe%28%5Ctexttt%7Bmagnitude%7D%20%28%5Cvec%7BI%7D%29%29%20%26%20if%20%5C%3B%20semilog%20%5C%5C%0A%5Cend%7Bmatrix%7D%5Cright%2E%0A%5Cend%7Barray%7D%0A" alt="block formula" /></p>
+<p>and
+<img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Barray%7D%7Bl%7D%0AKangle%20%3D%20dsize%2Eheight%20%2F%202%5CPi%20%5C%5C%0AKlin%20%3D%20dsize%2Ewidth%20%2F%20maxRadius%20%5C%5C%0AKlog%20%3D%20dsize%2Ewidth%20%2F%20log%5Fe%28maxRadius%29%20%5C%5C%0A%5Cend%7Barray%7D%0A" alt="block formula" /></p>
+<p>\par Linear vs semilog mapping</p>
+<p>Polar mapping can be linear or semi-log. Add one of [warp_polar_mode] to <code>flags</code> to specify the polar mapping mode.</p>
+<p>Linear is the default mode.</p>
+<p>The semilog mapping emulates the human “foveal” vision that permit very high acuity on the line of sight (central vision)
+in contrast to peripheral vision where acuity is minor.</p>
+<p>\par Option on <code>dsize</code>:</p>
+<ul>
+<li>
+<p>if both values in <code>dsize &lt;=0 </code> (default),
+the destination image will have (almost) same area of source bounding circle:
+<img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Barray%7D%7Bl%7D%0Adsize%2Earea%20%20%5Cleftarrow%20%28maxRadius%5E2%20%5Ccdot%20%5CPi%29%20%5C%5C%0Adsize%2Ewidth%20%3D%20%5Ctexttt%7BcvRound%7D%28maxRadius%29%20%5C%5C%0Adsize%2Eheight%20%3D%20%5Ctexttt%7BcvRound%7D%28maxRadius%20%5Ccdot%20%5CPi%29%20%5C%5C%0A%5Cend%7Barray%7D" alt="block formula" /></p>
+</li>
+<li>
+<p>if only <code>dsize.height &lt;= 0</code>,
+the destination image area will be proportional to the bounding circle area but scaled by <code>Kx * Kx</code>:
+<img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Barray%7D%7Bl%7D%0Adsize%2Eheight%20%3D%20%5Ctexttt%7BcvRound%7D%28dsize%2Ewidth%20%5Ccdot%20%5CPi%29%20%5C%5C%0A%5Cend%7Barray%7D%0A" alt="block formula" /></p>
+</li>
+<li>
+<p>if both values in <code>dsize &gt; 0 </code>,
+the destination image will have the given size therefore the area of the bounding circle will be scaled to <code>dsize</code>.</p>
+</li>
+</ul>
+<p>\par Reverse mapping</p>
+<p>You can get reverse mapping adding <a href="../opencv/hub/imgproc/constant.WARP_INVERSE_MAP.html" title="constant opencv::opencv::hub::imgproc::WARP_INVERSE_MAP">WARP_INVERSE_MAP</a> to <code>flags</code>
+\snippet polar_transforms.cpp InverseMap</p>
+<p>In addiction, to calculate the original coordinate from a polar mapped coordinate <img src="https://latex.codecogs.com/png.latex?%28rho%2C%20phi%29%2D%3E%28x%2C%20y%29" alt="inline formula" />:
+\snippet polar_transforms.cpp InverseCoordinate</p>
+<h3 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h3>
+<ul>
+<li>src: Source image.</li>
+<li>dst: Destination image. It will have same type as src.</li>
+<li>dsize: The destination image size (see description for valid options).</li>
+<li>center: The transformation center.</li>
+<li>maxRadius: The radius of the bounding circle to transform. It determines the inverse magnitude scale parameter too.</li>
+<li>flags: A combination of interpolation methods, [interpolation_flags] + #WarpPolarMode.
+- Add <a href="../opencv/hub/imgproc/constant.WARP_POLAR_LINEAR.html" title="constant opencv::opencv::hub::imgproc::WARP_POLAR_LINEAR">WARP_POLAR_LINEAR</a> to select linear polar mapping (default)
+- Add <a href="../opencv/hub/imgproc/constant.WARP_POLAR_LOG.html" title="constant opencv::opencv::hub::imgproc::WARP_POLAR_LOG">WARP_POLAR_LOG</a> to select semilog polar mapping
+- Add <a href="../opencv/hub/imgproc/constant.WARP_INVERSE_MAP.html" title="constant opencv::opencv::hub::imgproc::WARP_INVERSE_MAP">WARP_INVERSE_MAP</a> for reverse mapping.</li>
+</ul>
+<p>Note:</p>
+<ul>
+<li>The function can not operate in-place.</li>
+<li>To calculate magnitude and angle in degrees [cart_to_polar] is used internally thus angles are measured from 0 to 360 with accuracy about 0.3 degrees.</li>
+<li>This function uses #remap. Due to current implementation limitations the size of an input and output images should be less than 32767x32767.</li>
+</ul>
+<h3 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h3>
+<p>cv::remap</p>
+</div></details></section></div></main></body></html>
