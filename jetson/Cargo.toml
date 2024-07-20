@@ -9,6 +9,9 @@ edition = "2021"
 name = "sw8s_rust_crossbuild"
 path = "src/main.rs"
 
+[features]
+ubuntu = []
+
 [dependencies]
 futures-util = "0.3.30"
 indicatif = { version = "0.17.7", features = ["tokio"] }
