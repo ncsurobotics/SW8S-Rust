@@ -562,3 +562,54 @@ impl<T: Send + Sync + Clone> ActionExec<Vec<T>> for ToVec<T> {
         self.value.clone()
     }
 }
+
+/// Transform Option/Result wrapped vector to a vector
+#[derive(Debug)]
+pub struct IsSome<T> {
+    value: Vec<T>,
+}
+
+impl<T> Action for IsSome<T> {}
+
+impl<T> IsSome<T> {
+    pub const fn new() -> Self {
+        Self { value: vec![] }
+    }
+}
+
+impl<T> Default for IsSome<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: Send + Sync + Debug, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<Option<U>>
+    for IsSome<T>
+{
+    fn modify(&mut self, input: &Option<U>) {
+        if let Some(input) = input {
+            self.value = input.clone().into_iter().collect();
+            println!("VECTOR: {:#?}", self.value);
+        } else {
+            self.value = vec![];
+        }
+    }
+}
+
+impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<anyhow::Result<U>>
+    for IsSome<T>
+{
+    fn modify(&mut self, input: &anyhow::Result<U>) {
+        if let Ok(input) = input {
+            self.value = input.clone().into_iter().collect();
+        } else {
+            self.value = vec![];
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionExec<bool> for IsSome<T> {
+    async fn execute(&mut self) -> bool {
+        !self.value.is_empty()
+    }
+}

@@ -34,5 +34,7 @@ impl<T: GetMainElectronicsBoard> ActionExec<()> for WaitArm<'_, T> {
             sleep(Duration::from_millis(10)).await;
         }
         println!("Got ARM");
+        sleep(Duration::from_secs(2)).await;
+        println!("Finished ARM wait");
     }
 }

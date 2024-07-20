@@ -12,8 +12,11 @@ use sw8s_rust_lib::{
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
+        align_buoy::buoy_align,
         basic::descend_and_go_forward,
-        circle_buoy::{buoy_circle_sequence, buoy_circle_sequence_model},
+        circle_buoy::{
+            buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
+        },
         example::initial_descent,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         octagon::look_up_octagon,
@@ -383,6 +386,16 @@ async fn run_mission(mission: &str) -> Result<()> {
             let _ = buoy_circle_sequence_model(static_context().await)
                 .execute()
                 .await;
+            Ok(())
+        }
+        "buoy_blind" => {
+            let _ = buoy_circle_sequence_blind(static_context().await)
+                .execute()
+                .await;
+            Ok(())
+        }
+        "buoy_align" => {
+            let _ = buoy_align(static_context().await).execute().await;
             Ok(())
         }
         x => bail!("Invalid argument: [{x}]"),

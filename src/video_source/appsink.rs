@@ -4,10 +4,9 @@ use opencv::videoio::VideoCapture;
 use opencv::videoio::VideoCaptureAPIs;
 use opencv::videoio::VideoCaptureTrait;
 use std::fs::create_dir_all;
-use std::fs::File;
+use std::path::Path;
 use std::sync::Arc;
 use std::thread::spawn;
-use std::{fs::create_dir, path::Path};
 use tokio::sync::Mutex;
 
 use super::MatSource;

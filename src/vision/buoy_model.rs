@@ -5,12 +5,12 @@ use opencv::{core::Size, prelude::Mat};
 use crate::load_onnx;
 
 use super::{
-    nn_cv2::{ModelPipelined, OnnxModel, VisionModel, YoloClass, YoloDetection},
+    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
 use core::hash::Hash;
-use std::{error::Error, fmt::Display, num::NonZeroUsize};
+use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
@@ -76,7 +76,7 @@ impl BuoyModel<OnnxModel> {
 
 impl Default for BuoyModel<OnnxModel> {
     fn default() -> Self {
-        Self::load_640(0.7)
+        Self::load_640(0.9)
     }
 }
 
@@ -92,6 +92,7 @@ impl YoloProcessor for BuoyModel<OnnxModel> {
     }
 }
 
+/*
 impl BuoyModel<OnnxModel> {
     /// Convert into [`ModelPipelined`].
     ///
@@ -110,6 +111,7 @@ impl BuoyModel<OnnxModel> {
         .await
     }
 }
+*/
 
 impl VisionModel for BuoyModel<OnnxModel> {
     type ModelOutput = <OnnxModel as VisionModel>::ModelOutput;

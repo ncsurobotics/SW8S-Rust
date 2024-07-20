@@ -1,5 +1,6 @@
 pub mod action;
 pub mod action_context;
+pub mod align_buoy;
 pub mod basic;
 pub mod buoy_hit;
 pub mod circle_buoy;

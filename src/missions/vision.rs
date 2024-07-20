@@ -1,23 +1,16 @@
 use std::fmt::{Debug, Display};
-use std::num::NonZeroUsize;
 use std::ops::{Add, Div, Mul};
-use std::sync::{Arc, RwLock};
+use std::sync::RwLock;
 use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};
 use super::graph::DotString;
-use crate::vision::nn_cv2::{ModelPipelined, VisionModel, YoloClass};
-use crate::vision::yolo_model::YoloProcessor;
-use crate::vision::{
-    Draw, DrawRect2d, MatWrapper, Offset2D, RelPos, VisualDetection, VisualDetector,
-};
+use crate::vision::nn_cv2::VisionModel;
+use crate::vision::{Draw, DrawRect2d, Offset2D, RelPos, VisualDetection, VisualDetector};
 
-use anyhow::{anyhow, Result};
-use itertools::Itertools;
-use nonzero::nonzero;
+use anyhow::{anyhow, bail, Result};
 use num_traits::{Float, FromPrimitive, Num};
 use opencv::core::Mat;
-use tokio::sync::OnceCell;
 use uuid::Uuid;
 
 use crate::missions::action_context::GetFrontCamMat;
@@ -190,20 +183,94 @@ where
 /// The relative positions are normalized to [-1, 1] on both axes.
 /// The values are returned without an angle.
 #[derive(Debug)]
-pub struct Norm<U, V> {
+pub struct Norm<T, U, V> {
+    model: T,
+    detections: Vec<VisualDetection<U, V>>,
+}
+
+impl<T, U, V> Norm<T, U, V> {
+    pub const fn new(model: T) -> Self {
+        Self {
+            model,
+            detections: vec![],
+        }
+    }
+}
+
+impl<T, U, V> Action for Norm<T, U, V> {}
+
+impl<T, U: Send + Sync + Clone, V: Send + Sync + Clone> ActionMod<Vec<VisualDetection<U, V>>>
+    for Norm<T, U, V>
+{
+    fn modify(&mut self, input: &Vec<VisualDetection<U, V>>) {
+        self.detections = input.clone();
+    }
+}
+
+impl<T, U, V, N: Num + Float + FromPrimitive + Send + Sync>
+    ActionExec<Vec<VisualDetection<U, Offset2D<N>>>> for Norm<T, U, V>
+where
+    T: VisualDetector<N, Position = V> + Send + Sync,
+    V: RelPos<Number = N> + Debug + Send + Sync,
+    U: Send + Sync + Debug + Clone,
+{
+    async fn execute(&mut self) -> Vec<VisualDetection<U, Offset2D<N>>> {
+        std::mem::take(&mut self.detections)
+            .into_iter()
+            .map(|detect| {
+                VisualDetection::<U, Offset2D<N>>::new(
+                    detect.class().clone(),
+                    self.model.normalize(detect.position()).offset(),
+                )
+            })
+            .collect()
+    }
+}
+
+/// Runs a vision routine to obtain object positions.
+#[derive(Debug)]
+pub struct Vision<'a, T, U, V> {
+    context: &'a T,
     model: U,
     _num: PhantomData<V>,
 }
 
-impl<U, V> Norm<U, V> {
-    pub const fn new(model: U) -> Self {
+impl<'a, T, U, V> Vision<'a, T, U, V> {
+    pub const fn new(context: &'a T, model: U) -> Self {
         Self {
+            context,
             model,
             _num: PhantomData,
         }
     }
 }
 
+impl<T, U, V> Action for Vision<'_, T, U, V> {}
+
+impl<
+        T: GetFrontCamMat + Send + Sync,
+        V: Num + Float + FromPrimitive + Send + Sync,
+        U: VisualDetector<V> + Send + Sync,
+    > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, U::Position>>>> for Vision<'_, T, U, V>
+where
+    U::Position: Debug + Send + Sync,
+    VisualDetection<U::ClassEnum, U::Position>: Draw,
+    U::ClassEnum: Send + Sync + Debug,
+{
+    async fn execute(&mut self) -> Result<Vec<VisualDetection<U::ClassEnum, U::Position>>> {
+        #[cfg(feature = "logging")]
+        {
+            println!("Running detection...");
+        }
+
+        #[allow(unused_mut)]
+        let mut mat = self.context.get_front_camera_mat().await.clone();
+
+        self.model.detect(&mat)
+    }
+}
+
+/*
 /// Runs a pipelined vision routine to obtain object positions
 ///
 /// The relative positions are normalized to [-1, 1] on both axes.
@@ -231,7 +298,7 @@ impl<T, U> Action for VisionPipelinedNorm<T, U> {}
 
 impl<
         T: GetFrontCamMat + Send + Sync,
-        U: VisionModel
+        U: VisionModel<ModelOutput = Vector<Mat>>
             + YoloProcessor
             + VisualDetector<f64, Position = DrawRect2d>
             + Send
@@ -244,7 +311,6 @@ where
     <U as YoloProcessor>::Target: Send + Sync,
     <<U as YoloProcessor>::Target as TryFrom<i32>>::Error: Debug,
     <U as VisionModel>::PostProcessArgs: Send + Sync + Clone,
-    <U as VisionModel>::ModelOutput: Send + Sync,
 {
     async fn execute(&mut self) -> Result<Vec<VisualDetection<YoloClass<U::Target>, DrawRect2d>>> {
         let model = self.model.clone();
@@ -260,7 +326,7 @@ where
                 tokio::spawn(async move {
                     PIPELINE_KILL.write().unwrap().0 += 1;
                     while !PIPELINE_KILL.read().unwrap().1 {
-                        pipeline_clone.update_mat(MatWrapper(context.get_front_camera_mat().await));
+                        pipeline_clone.update_mat(context.get_front_camera_mat().await);
                     }
                     PIPELINE_KILL.write().unwrap().0 -= 1;
                 });
@@ -302,6 +368,7 @@ where
             .collect())
     }
 }
+*/
 
 #[derive(Debug)]
 pub struct DetectTarget<T, U, V> {
@@ -664,5 +731,65 @@ impl<T: Send + Sync + Clone, U: Send + Sync + Clone, V> ActionMod<VisualDetectio
 {
     fn modify(&mut self, input: &VisualDetection<T, U>) {
         self.values = vec![input.clone()];
+    }
+}
+
+#[derive(Debug)]
+pub struct SizeUnder<T, U> {
+    values: Vec<VisualDetection<T, U>>,
+    size: f64,
+}
+
+impl<T, U> SizeUnder<T, U> {
+    pub const fn new(size: f64) -> Self {
+        Self {
+            values: vec![],
+            size,
+        }
+    }
+}
+
+impl<T, U> Action for SizeUnder<T, U> {}
+
+impl<T: Send + Sync> ActionExec<Result<()>> for SizeUnder<T, DrawRect2d> {
+    async fn execute(&mut self) -> Result<()> {
+        let mut area = self
+            .values
+            .iter()
+            .map(|val| val.position().width * val.position().height)
+            .sum::<f64>()
+            / (self.values.len() as f64);
+
+        // IEEE, my enemy
+        if area.is_nan() {
+            area = 0.0;
+        };
+
+        println!("Area: {}", area);
+        if area < self.size {
+            Ok(())
+        } else {
+            bail!("")
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Vec<VisualDetection<T, U>>>
+    for SizeUnder<T, U>
+{
+    fn modify(&mut self, input: &Vec<VisualDetection<T, U>>) {
+        self.values.clone_from(input);
+    }
+}
+
+impl<T: Send + Sync + Clone, U: Send + Sync + Clone> ActionMod<Result<Vec<VisualDetection<T, U>>>>
+    for SizeUnder<T, U>
+{
+    fn modify(&mut self, input: &Result<Vec<VisualDetection<T, U>>>) {
+        if let Ok(val) = input {
+            self.modify(val)
+        } else {
+            self.values = vec![]
+        }
     }
 }

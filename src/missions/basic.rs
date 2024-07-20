@@ -47,7 +47,7 @@ pub fn descend_and_go_forward<
 where
     ZeroMovement<'a, Con>: ActionExec<T>,
 {
-    let depth: f32 = -1.0;
+    let depth: f32 = -1.5;
 
     // time in seconds that each action will wait until before continuing onto the next action.
     let dive_duration = 2.0;

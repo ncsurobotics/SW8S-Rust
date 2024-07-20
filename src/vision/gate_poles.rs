@@ -5,12 +5,12 @@ use opencv::{core::Size, prelude::Mat};
 use crate::load_onnx;
 
 use super::{
-    nn_cv2::{ModelPipelined, OnnxModel, VisionModel, YoloClass, YoloDetection},
+    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
 use core::hash::Hash;
-use std::{error::Error, fmt::Display, num::NonZeroUsize};
+use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
@@ -98,6 +98,7 @@ impl YoloProcessor for GatePoles<OnnxModel> {
     }
 }
 
+/*
 impl GatePoles<OnnxModel> {
     /// Convert into [`ModelPipelined`].
     ///
@@ -116,3 +117,4 @@ impl GatePoles<OnnxModel> {
         .await
     }
 }
+*/

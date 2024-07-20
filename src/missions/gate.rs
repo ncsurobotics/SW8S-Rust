@@ -6,7 +6,7 @@ use crate::{
     missions::{
         action::{ActionConcurrentSplit, ActionDataConditional},
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
-        movement::{AdjustType, ClampX, FlipX, FlipYaw, SetX, SetY, StripX},
+        movement::{AdjustType, ClampX, FlipX, SetY},
         vision::{MidPoint, OffsetClass},
     },
     vision::{

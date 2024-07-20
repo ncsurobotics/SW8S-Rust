@@ -5,19 +5,19 @@ use crate::{
     missions::{
         action::{ActionChain, ActionConcurrent, ActionWhile, TupleSecond},
         basic::descend_and_go_forward,
-        extra::{AlwaysTrue, OutputType, ToVec, Transform},
+        extra::{AlwaysTrue, CountTrue, OutputType, ToVec, Transform},
         movement::{
-            aggressive_yaw_from_x, BoxToPose, CautiousConstantX, FlatX, FlipX, FlipYaw,
+            aggressive_yaw_from_x, AdjustType, CautiousConstantX, ConstYaw, Descend, FlatX,
             LinearYawFromX, MinYaw, OffsetToPose, Stability1Adjust, Stability1Movement,
-            Stability1Pos, Stability2Adjust, Stability2Movement, Stability2Pos, StripX, StripY,
+            Stability1Pos, Stability2Adjust, Stability2Movement, Stability2Pos, StripY,
         },
-        vision::{Average, DetectTarget, ExtractPosition, VisionNorm, VisionPipelinedNorm},
+        vision::{Average, DetectTarget, ExtractPosition, VisionNorm},
     },
     vision::{
         buoy_model::{BuoyModel, Target},
         nn_cv2::{OnnxModel, YoloClass},
         path::{Path, Yuv},
-        DrawRect2d, Offset2D,
+        Offset2D,
     },
 };
 
@@ -139,6 +139,46 @@ pub fn buoy_circle_sequence_model<
                 AlwaysTrue::default(),
             )),
         )),
+        OutputType::<()>::new()
+    )
+}
+
+pub fn buoy_circle_sequence_blind<
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat
+        + Unpin,
+>(
+    context: &'static Con,
+) -> impl ActionExec<()> + '_ {
+    const BUOY_X_SPEED: f32 = -0.6;
+    const BUOY_Y_SPEED: f32 = 0.15;
+    const BUOY_YAW_SPEED: f32 = -12.0;
+    const DEPTH: f32 = -1.5;
+    const DESCEND_WAIT_DURATION: f32 = 3.0;
+    const CIRCLE_COUNT: u32 = 25;
+
+    act_nest!(
+        ActionSequence::new,
+        Descend::new(context, DEPTH),
+        DelayAction::new(DESCEND_WAIT_DURATION),
+        ActionWhile::new(act_nest!(
+            ActionSequence::new,
+            act_nest!(
+                ActionChain::new,
+                ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(BUOY_YAW_SPEED)),
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, 0.0, 0.0, None, DEPTH)
+                ),
+                OutputType::<()>::new()
+            ),
+            DelayAction::new(1.0),
+            ActionChain::<bool, _, _>::new(AlwaysTrue::default(), CountTrue::new(CIRCLE_COUNT)),
+        )),
+        ZeroMovement::new(context, DEPTH),
         OutputType::<()>::new()
     )
 }
