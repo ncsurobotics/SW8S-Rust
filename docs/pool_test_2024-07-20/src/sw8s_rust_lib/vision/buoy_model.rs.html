@@ -135,6 +135,8 @@
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
 <a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>opencv::{core::Size, prelude::Mat};
@@ -142,12 +144,12 @@
 <span class="kw">use </span><span class="kw">crate</span>::load_onnx;
 
 <span class="kw">use super</span>::{
-    nn_cv2::{ModelPipelined, OnnxModel, VisionModel, YoloClass, YoloDetection},
+    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
 <span class="kw">use </span>core::hash::Hash;
-<span class="kw">use </span>std::{error::Error, fmt::Display, num::NonZeroUsize};
+<span class="kw">use </span>std::{error::Error, fmt::Display};
 
 <span class="attr">#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 </span><span class="kw">pub enum </span>Target {
@@ -213,7 +215,7 @@
 
 <span class="kw">impl </span>Default <span class="kw">for </span>BuoyModel&lt;OnnxModel&gt; {
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>::load_640(<span class="number">0.7</span>)
+        <span class="self">Self</span>::load_640(<span class="number">0.9</span>)
     }
 }
 
@@ -229,26 +231,28 @@
     }
 }
 
-<span class="kw">impl </span>BuoyModel&lt;OnnxModel&gt; {
-    <span class="doccomment">/// Convert into [`ModelPipelined`].
+<span class="comment">/*
+impl BuoyModel&lt;OnnxModel&gt; {
+    /// Convert into [`ModelPipelined`].
     ///
     /// See [`ModelPipelined::new`] for arguments.
-    </span><span class="kw">pub async fn </span>into_pipelined(
-        <span class="self">self</span>,
+    pub async fn into_pipelined(
+        self,
         model_threads: NonZeroUsize,
         post_processing_threads: NonZeroUsize,
     ) -&gt; ModelPipelined {
         ModelPipelined::new(
-            <span class="self">self</span>.model,
+            self.model,
             model_threads,
             post_processing_threads,
-            <span class="self">self</span>.threshold,
+            self.threshold,
         )
-        .<span class="kw">await
-    </span>}
+        .await
+    }
 }
+*/
 
-<span class="kw">impl </span>VisionModel <span class="kw">for </span>BuoyModel&lt;OnnxModel&gt; {
+</span><span class="kw">impl </span>VisionModel <span class="kw">for </span>BuoyModel&lt;OnnxModel&gt; {
     <span class="kw">type </span>ModelOutput = &lt;OnnxModel <span class="kw">as </span>VisionModel&gt;::ModelOutput;
     <span class="kw">type </span>PostProcessArgs = &lt;OnnxModel <span class="kw">as </span>VisionModel&gt;::PostProcessArgs;
 

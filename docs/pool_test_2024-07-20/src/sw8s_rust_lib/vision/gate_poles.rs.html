@@ -116,6 +116,8 @@
 <a href="#116" id="116">116</a>
 <a href="#117" id="117">117</a>
 <a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>opencv::{core::Size, prelude::Mat};
@@ -123,12 +125,12 @@
 <span class="kw">use </span><span class="kw">crate</span>::load_onnx;
 
 <span class="kw">use super</span>::{
-    nn_cv2::{ModelPipelined, OnnxModel, VisionModel, YoloClass, YoloDetection},
+    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
 <span class="kw">use </span>core::hash::Hash;
-<span class="kw">use </span>std::{error::Error, fmt::Display, num::NonZeroUsize};
+<span class="kw">use </span>std::{error::Error, fmt::Display};
 
 <span class="attr">#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 </span><span class="kw">pub enum </span>Target {
@@ -216,22 +218,24 @@
     }
 }
 
-<span class="kw">impl </span>GatePoles&lt;OnnxModel&gt; {
-    <span class="doccomment">/// Convert into [`ModelPipelined`].
+<span class="comment">/*
+impl GatePoles&lt;OnnxModel&gt; {
+    /// Convert into [`ModelPipelined`].
     ///
     /// See [`ModelPipelined::new`] for arguments.
-    </span><span class="kw">pub async fn </span>into_pipelined(
-        <span class="self">self</span>,
+    pub async fn into_pipelined(
+        self,
         model_threads: NonZeroUsize,
         post_processing_threads: NonZeroUsize,
     ) -&gt; ModelPipelined {
         ModelPipelined::new(
-            <span class="self">self</span>.model,
+            self.model,
             model_threads,
             post_processing_threads,
-            <span class="self">self</span>.threshold,
+            self.threshold,
         )
-        .<span class="kw">await
-    </span>}
+        .await
+    }
 }
-</code></pre></div></section></main></body></html>
+*/
+</span></code></pre></div></section></main></body></html>

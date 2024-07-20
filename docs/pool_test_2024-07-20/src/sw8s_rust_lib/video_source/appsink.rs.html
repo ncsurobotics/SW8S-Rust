@@ -120,17 +120,15 @@
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{anyhow, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>opencv::prelude::Mat;
 <span class="kw">use </span>opencv::videoio::VideoCapture;
 <span class="kw">use </span>opencv::videoio::VideoCaptureAPIs;
 <span class="kw">use </span>opencv::videoio::VideoCaptureTrait;
 <span class="kw">use </span>std::fs::create_dir_all;
-<span class="kw">use </span>std::fs::File;
+<span class="kw">use </span>std::path::Path;
 <span class="kw">use </span>std::sync::Arc;
 <span class="kw">use </span>std::thread::spawn;
-<span class="kw">use </span>std::{fs::create_dir, path::Path};
 <span class="kw">use </span>tokio::sync::Mutex;
 
 <span class="kw">use </span><span class="kw">super</span>::MatSource;

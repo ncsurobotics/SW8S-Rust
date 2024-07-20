@@ -397,6 +397,19 @@
 <a href="#397" id="397">397</a>
 <a href="#398" id="398">398</a>
 <a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -411,8 +424,11 @@
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
+        align_buoy::buoy_align,
         basic::descend_and_go_forward,
-        circle_buoy::{buoy_circle_sequence, buoy_circle_sequence_model},
+        circle_buoy::{
+            buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
+        },
         example::initial_descent,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         octagon::look_up_octagon,
@@ -782,6 +798,16 @@
             <span class="kw">let _ </span>= buoy_circle_sequence_model(static_context().<span class="kw">await</span>)
                 .execute()
                 .<span class="kw">await</span>;
+            <span class="prelude-val">Ok</span>(())
+        }
+        <span class="string">"buoy_blind" </span>=&gt; {
+            <span class="kw">let _ </span>= buoy_circle_sequence_blind(static_context().<span class="kw">await</span>)
+                .execute()
+                .<span class="kw">await</span>;
+            <span class="prelude-val">Ok</span>(())
+        }
+        <span class="string">"buoy_align" </span>=&gt; {
+            <span class="kw">let _ </span>= buoy_align(static_context().<span class="kw">await</span>).execute().<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }
         x =&gt; <span class="macro">bail!</span>(<span class="string">"Invalid argument: [{x}]"</span>),
