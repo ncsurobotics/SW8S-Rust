@@ -31,7 +31,7 @@ async fn main() {
             "build".to_string(),
             "--release".to_string(),
             "--features".to_string(),
-            "cuda,logging".to_string(),
+            "logging".to_string(),
         ];
     }
 
