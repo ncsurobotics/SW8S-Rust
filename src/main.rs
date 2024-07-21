@@ -415,6 +415,11 @@ async fn run_mission(mission: &str) -> Result<()> {
             let _ = buoy_align(static_context().await).execute().await;
             Ok(())
         }
+        // Just stall out forever
+        "forever" | "infinite" => loop {
+            while control_board().await.raw_speed_set([0.0; 8]).await.is_err() {}
+            sleep(Duration::from_secs(u64::MAX)).await;
+        },
         x => bail!("Invalid argument: [{x}]"),
     };
 
