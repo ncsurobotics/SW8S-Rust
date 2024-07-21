@@ -153,12 +153,12 @@ pub fn buoy_circle_sequence_blind<
 >(
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
-    const BUOY_X_SPEED: f32 = -0.6;
+    const BUOY_X_SPEED: f32 = -0.4;
     const BUOY_Y_SPEED: f32 = 0.15;
     const BUOY_YAW_SPEED: f32 = -12.0;
     const DEPTH: f32 = -1.5;
     const DESCEND_WAIT_DURATION: f32 = 3.0;
-    const CIRCLE_COUNT: u32 = 25;
+    const CIRCLE_COUNT: u32 = 27;
 
     act_nest!(
         ActionSequence::new,

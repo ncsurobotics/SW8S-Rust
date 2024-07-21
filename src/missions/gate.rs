@@ -6,7 +6,7 @@ use crate::{
     missions::{
         action::{ActionConcurrentSplit, ActionDataConditional},
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
-        movement::{AdjustType, ClampX, FlipX, SetY},
+        movement::{AdjustType, ClampX, FlipX, ReplaceX, SetY},
         vision::{MidPoint, OffsetClass},
     },
     vision::{
@@ -127,7 +127,6 @@ pub fn adjust_logic<
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
                 ),
                 ActionConcurrent::new(
                     act_nest!(
@@ -137,14 +136,17 @@ pub fn adjust_logic<
                         MidPoint::new(),
                         OffsetToPose::default(),
                         LinearYawFromX::<Stability2Adjust>::default(),
-                        ClampX::new(0.6),
+                        ClampX::new(0.4),
                         SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.02)),
                         FlipX::default(),
                     ),
                     AlwaysTrue::new(),
                 ),
                 ActionDataConditional::new(
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                    FirstValid::new(ActionConcurrent::new(
+                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
+                    )),
                     ActionConcurrent::new(
                         act_nest!(
                             ActionChain::new,
@@ -153,8 +155,8 @@ pub fn adjust_logic<
                             OffsetToPose::default(),
                             LinearYawFromX::<Stability2Adjust>::default(),
                             ClampX::new(0.2),
-                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.1)),
-                            FlipX::default(),
+                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
+                            ReplaceX::new(),
                         ),
                         AlwaysTrue::new(),
                     ),

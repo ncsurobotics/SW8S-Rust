@@ -4,14 +4,18 @@ use tokio_serial::SerialStream;
 use crate::{
     act_nest,
     missions::{
-        action::{ActionChain, ActionConcurrent, ActionSequence, ActionWhile, TupleSecond},
-        basic::descend_and_go_forward,
-        extra::{AlwaysTrue, CountFalse, IsSome, OutputType, ToVec},
-        movement::{
-            ClampX, MultiplyX, OffsetToPose, ReplaceX, Stability2Adjust, Stability2Movement,
-            Stability2Pos, StripY, ZeroMovement,
+        action::{
+            ActionChain, ActionConcurrent, ActionConcurrentSplit, ActionSequence, ActionWhile,
+            TupleSecond,
         },
-        vision::{ExtractPosition, MidPoint, Norm, Vision},
+        basic::{descend_and_go_forward, DelayAction},
+        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, ToVec},
+        movement::{
+            AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, OffsetToPose,
+            ReplaceX, SetY, Stability2Adjust, Stability2Movement, Stability2Pos, StraightMovement,
+            StripY, ZeroMovement,
+        },
+        vision::{ExtractPosition, MidPoint, Norm, SizeUnder, Vision, VisionNorm},
     },
     vision::{buoy_model::BuoyModel, nn_cv2::OnnxModel, Offset2D},
 };
@@ -37,7 +41,10 @@ pub fn buoy_align<
 
     act_nest!(
         ActionSequence::new,
-        descend_and_go_forward(context),
+        Descend::new(context, -1.5),
+        DelayAction::new(2.0),
+        StraightMovement::new(context, -1.5, true),
+        DelayAction::new(4.0),
         ActionWhile::new(act_nest!(
             ActionChain::new,
             Vision::<Con, BuoyModel<OnnxModel>, f64>::new(context, BuoyModel::default()),
