@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["duplicates","duplicates_by"],"mod":["private"],"type":["Duplicates","DuplicatesBy"]};

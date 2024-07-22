@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Steal"],"mod":["deque"],"struct":["Injector","Stealer","Worker"]};

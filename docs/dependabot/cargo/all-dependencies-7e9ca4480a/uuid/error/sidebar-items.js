@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ErrorKind"],"mod":["std_support"],"struct":["Error","InvalidUuid"]};

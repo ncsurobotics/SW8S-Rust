@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["ModelPipelined","ModelPipelinedInput","NetWrapper","OnnxModel","YoloClass","YoloDetection"],"trait":["VisionModel"]};

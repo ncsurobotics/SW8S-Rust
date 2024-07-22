@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["current","panicking","park","park_timeout","sleep","spawn","yield_now"],"struct":["AccessError","Builder","JoinHandle","LocalKey","Thread","ThreadId"],"type":["Result"]};

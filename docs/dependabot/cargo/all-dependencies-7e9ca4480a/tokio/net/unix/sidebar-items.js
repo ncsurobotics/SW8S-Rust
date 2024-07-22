@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["listener","pipe","socket","socketaddr","split","split_owned","stream","ucred"],"struct":["OwnedReadHalf","OwnedWriteHalf","ReadHalf","ReuniteError","SocketAddr","UCred","WriteHalf"],"type":["gid_t","pid_t","uid_t"]};
