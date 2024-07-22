@@ -1,0 +1,153 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Mutable methods for crate::imgproc::LineSegmentDetector"><title>LineSegmentDetectorTrait in opencv::imgproc - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-081576b923113409.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0 (129f3b996 2024-06-10)" data-channel="1.79.0" data-search-js="search-bf21c90c8c1d92b1.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-e32f0c247825364d.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../opencv/index.html">opencv</a><span class="version">0.92.0</span></h2></div><h2 class="location"><a href="#">LineSegmentDetectorTrait</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.as_raw_mut_LineSegmentDetector">as_raw_mut_LineSegmentDetector</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.compare_segments">compare_segments</a></li><li><a href="#method.compare_segments_def">compare_segments_def</a></li><li><a href="#method.detect">detect</a></li><li><a href="#method.detect_def">detect_def</a></li><li><a href="#method.draw_segments">draw_segments</a></li></ul><h3><a href="#object-safety">Object Safety</a></h3><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In opencv::imgproc</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Type ‘S’ or ‘/’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings">Settings</a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="../index.html">opencv</a>::<wbr><a href="index.html">imgproc</a>::<wbr><a class="trait" href="#">LineSegmentDetectorTrait</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/imgproc.rs.html#11968-12109">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait LineSegmentDetectorTrait: <a class="trait" href="../opencv/hub/core/trait.AlgorithmTrait.html" title="trait opencv::opencv::hub::core::AlgorithmTrait">AlgorithmTrait</a> + <a class="trait" href="../opencv/hub/imgproc/trait.LineSegmentDetectorTraitConst.html" title="trait opencv::opencv::hub::imgproc::LineSegmentDetectorTraitConst">LineSegmentDetectorTraitConst</a> {
+    // Required method
+    fn <a href="#tymethod.as_raw_mut_LineSegmentDetector" class="fn">as_raw_mut_LineSegmentDetector</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.pointer.html">*mut </a><a class="enum" href="../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a>;
+
+    // Provided methods
+    fn <a href="#method.detect" class="fn">detect</a>(
+        &amp;mut self,
+        image: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+        lines: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+        width: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+        prec: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+        nfa: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>
+    ) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.detect_def" class="fn">detect_def</a>(
+        &amp;mut self,
+        image: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+        lines: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>
+    ) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.draw_segments" class="fn">draw_segments</a>(
+        &amp;mut self,
+        image: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputOutputArray.html" title="trait opencv::manual::core::input_output_array::ToInputOutputArray">ToInputOutputArray</a>,
+        lines: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>
+    ) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.compare_segments" class="fn">compare_segments</a>(
+        &amp;mut self,
+        size: <a class="type" href="../opencv/hub/core/type.Size.html" title="type opencv::opencv::hub::core::Size">Size</a>,
+        lines1: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+        lines2: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+        image: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputOutputArray.html" title="trait opencv::manual::core::input_output_array::ToInputOutputArray">ToInputOutputArray</a>
+    ) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.compare_segments_def" class="fn">compare_segments_def</a>(
+        &amp;mut self,
+        size: <a class="type" href="../opencv/hub/core/type.Size.html" title="type opencv::opencv::hub::core::Size">Size</a>,
+        lines1: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+        lines2: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>
+    ) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt; { ... }
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Mutable methods for <a href="../opencv/hub/imgproc/struct.LineSegmentDetector.html" title="struct opencv::opencv::hub::imgproc::LineSegmentDetector">crate::imgproc::LineSegmentDetector</a></p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><section id="tymethod.as_raw_mut_LineSegmentDetector" class="method"><a class="src rightside" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/imgproc.rs.html#11969">source</a><h4 class="code-header">fn <a href="#tymethod.as_raw_mut_LineSegmentDetector" class="fn">as_raw_mut_LineSegmentDetector</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.pointer.html">*mut </a><a class="enum" href="../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a></h4></section></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.detect" class="method"><a class="src rightside" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/imgproc.rs.html#11997-12008">source</a><h4 class="code-header">fn <a href="#method.detect" class="fn">detect</a>(
+    &amp;mut self,
+    image: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    lines: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    width: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    prec: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    nfa: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>
+) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Finds lines in the input image.</p>
+<p>This is the output of the default parameters of the algorithm on the above shown image.</p>
+<p><img src="https://docs.opencv.org/4.5.4/building_lsd.png" alt="image" /></p>
+<h6 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h6>
+<ul>
+<li>image: A grayscale (CV_8UC1) input image. If only a roi needs to be selected, use:
+<code>lsd_ptr-\&gt;detect(image(roi), lines, ...); lines += Scalar(roi.x, roi.y, roi.x, roi.y);</code></li>
+<li>lines: A vector of Vec4f elements specifying the beginning and ending point of a line. Where
+Vec4f is (x1, y1, x2, y2), point 1 is the start, point 2 - end. Returned lines are strictly
+oriented depending on the gradient.</li>
+<li>width: Vector of widths of the regions, where the lines are found. E.g. Width of line.</li>
+<li>prec: Vector of precisions with which the lines are found.</li>
+<li>nfa: Vector containing number of false alarms in the line region, with precision of 10%. The
+bigger the value, logarithmically better the detection.</li>
+</ul>
+<ul>
+<li>-1 corresponds to 10 mean false alarms</li>
+<li>0 corresponds to 1 mean false alarm</li>
+<li>1 corresponds to 0.1 mean false alarms
+This vector will be calculated only when the objects type is #LSD_REFINE_ADV.</li>
+</ul>
+<h6 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h6>
+<ul>
+<li>width: noArray()</li>
+<li>prec: noArray()</li>
+<li>nfa: noArray()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.detect_def" class="method"><a class="src rightside" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/imgproc.rs.html#12037-12045">source</a><h4 class="code-header">fn <a href="#method.detect_def" class="fn">detect_def</a>(
+    &amp;mut self,
+    image: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    lines: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>
+) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Finds lines in the input image.</p>
+<p>This is the output of the default parameters of the algorithm on the above shown image.</p>
+<p><img src="https://docs.opencv.org/4.5.4/building_lsd.png" alt="image" /></p>
+<h6 id="parameters-1"><a class="doc-anchor" href="#parameters-1">§</a>Parameters</h6>
+<ul>
+<li>image: A grayscale (CV_8UC1) input image. If only a roi needs to be selected, use:
+<code>lsd_ptr-\&gt;detect(image(roi), lines, ...); lines += Scalar(roi.x, roi.y, roi.x, roi.y);</code></li>
+<li>lines: A vector of Vec4f elements specifying the beginning and ending point of a line. Where
+Vec4f is (x1, y1, x2, y2), point 1 is the start, point 2 - end. Returned lines are strictly
+oriented depending on the gradient.</li>
+<li>width: Vector of widths of the regions, where the lines are found. E.g. Width of line.</li>
+<li>prec: Vector of precisions with which the lines are found.</li>
+<li>nfa: Vector containing number of false alarms in the line region, with precision of 10%. The
+bigger the value, logarithmically better the detection.</li>
+</ul>
+<ul>
+<li>-1 corresponds to 10 mean false alarms</li>
+<li>0 corresponds to 1 mean false alarm</li>
+<li>1 corresponds to 0.1 mean false alarms
+This vector will be calculated only when the objects type is #LSD_REFINE_ADV.</li>
+</ul>
+<h6 id="note"><a class="doc-anchor" href="#note">§</a>Note</h6>
+<p>This alternative version of <a href="../opencv/hub/imgproc/trait.LineSegmentDetectorTrait.html#method.detect" title="method opencv::opencv::hub::imgproc::LineSegmentDetectorTrait::detect">LineSegmentDetectorTrait::detect</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>width: noArray()</li>
+<li>prec: noArray()</li>
+<li>nfa: noArray()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.draw_segments" class="method"><a class="src rightside" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/imgproc.rs.html#12053-12061">source</a><h4 class="code-header">fn <a href="#method.draw_segments" class="fn">draw_segments</a>(
+    &amp;mut self,
+    image: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputOutputArray.html" title="trait opencv::manual::core::input_output_array::ToInputOutputArray">ToInputOutputArray</a>,
+    lines: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>
+) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Draws the line segments on a given image.</p>
+<h6 id="parameters-2"><a class="doc-anchor" href="#parameters-2">§</a>Parameters</h6>
+<ul>
+<li>image: The image, where the lines will be drawn. Should be bigger or equal to the image,
+where the lines were found.</li>
+<li>lines: A vector of the lines that needed to be drawn.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.compare_segments" class="method"><a class="src rightside" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/imgproc.rs.html#12075-12084">source</a><h4 class="code-header">fn <a href="#method.compare_segments" class="fn">compare_segments</a>(
+    &amp;mut self,
+    size: <a class="type" href="../opencv/hub/core/type.Size.html" title="type opencv::opencv::hub::core::Size">Size</a>,
+    lines1: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    lines2: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    image: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputOutputArray.html" title="trait opencv::manual::core::input_output_array::ToInputOutputArray">ToInputOutputArray</a>
+) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt;</h4></section></summary><div class="docblock"><p>Draws two groups of lines in blue and red, counting the non overlapping (mismatching) pixels.</p>
+<h6 id="parameters-3"><a class="doc-anchor" href="#parameters-3">§</a>Parameters</h6>
+<ul>
+<li>size: The size of the image, where lines1 and lines2 were found.</li>
+<li>lines1: The first group of lines that needs to be drawn. It is visualized in blue color.</li>
+<li>lines2: The second group of lines. They visualized in red color.</li>
+<li>image: Optional image, where the lines will be drawn. The image should be color(3-channel)
+in order for lines1 and lines2 to be drawn in the above mentioned colors.</li>
+</ul>
+<h6 id="c-default-parameters-1"><a class="doc-anchor" href="#c-default-parameters-1">§</a>C++ default parameters</h6>
+<ul>
+<li>image: noArray()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.compare_segments_def" class="method"><a class="src rightside" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/imgproc.rs.html#12099-12107">source</a><h4 class="code-header">fn <a href="#method.compare_segments_def" class="fn">compare_segments_def</a>(
+    &amp;mut self,
+    size: <a class="type" href="../opencv/hub/core/type.Size.html" title="type opencv::opencv::hub::core::Size">Size</a>,
+    lines1: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    lines2: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>
+) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt;</h4></section></summary><div class="docblock"><p>Draws two groups of lines in blue and red, counting the non overlapping (mismatching) pixels.</p>
+<h6 id="parameters-4"><a class="doc-anchor" href="#parameters-4">§</a>Parameters</h6>
+<ul>
+<li>size: The size of the image, where lines1 and lines2 were found.</li>
+<li>lines1: The first group of lines that needs to be drawn. It is visualized in blue color.</li>
+<li>lines2: The second group of lines. They visualized in red color.</li>
+<li>image: Optional image, where the lines will be drawn. The image should be color(3-channel)
+in order for lines1 and lines2 to be drawn in the above mentioned colors.</li>
+</ul>
+<h6 id="note-1"><a class="doc-anchor" href="#note-1">§</a>Note</h6>
+<p>This alternative version of <a href="../opencv/hub/imgproc/trait.LineSegmentDetectorTrait.html#method.compare_segments" title="method opencv::opencv::hub::imgproc::LineSegmentDetectorTrait::compare_segments">LineSegmentDetectorTrait::compare_segments</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>image: noArray()</li>
+</ul>
+</div></details></div><h2 id="object-safety" class="section-header">Object Safety<a href="#object-safety" class="anchor">§</a></h2><div class="object-safety-info">This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.79.0/reference/items/traits.html#object-safety">object safe</a>.</div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-LineSegmentDetectorTrait-for-BoxedRefMut%3C'_,+LineSegmentDetector%3E" class="impl"><a class="src rightside" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/imgproc.rs.html#12151">source</a><a href="#impl-LineSegmentDetectorTrait-for-BoxedRefMut%3C'_,+LineSegmentDetector%3E" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="../opencv/hub/imgproc/trait.LineSegmentDetectorTrait.html" title="trait opencv::opencv::hub::imgproc::LineSegmentDetectorTrait">LineSegmentDetectorTrait</a> for <a class="struct" href="../boxed_ref/struct.BoxedRefMut.html" title="struct opencv::boxed_ref::BoxedRefMut">BoxedRefMut</a>&lt;'_, <a class="struct" href="../opencv/hub/imgproc/struct.LineSegmentDetector.html" title="struct opencv::opencv::hub::imgproc::LineSegmentDetector">LineSegmentDetector</a>&gt;</h3></section><section id="impl-LineSegmentDetectorTrait-for-Ptr%3CLineSegmentDetector%3E" class="impl"><a class="src rightside" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/types.rs.html#6399-6401">source</a><a href="#impl-LineSegmentDetectorTrait-for-Ptr%3CLineSegmentDetector%3E" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="../opencv/hub/imgproc/trait.LineSegmentDetectorTrait.html" title="trait opencv::opencv::hub::imgproc::LineSegmentDetectorTrait">LineSegmentDetectorTrait</a> for <a class="struct" href="../manual/core/ptr/struct.Ptr.html" title="struct opencv::manual::core::ptr::Ptr">Ptr</a>&lt;<a class="struct" href="../opencv/hub/imgproc/struct.LineSegmentDetector.html" title="struct opencv::opencv::hub::imgproc::LineSegmentDetector">LineSegmentDetector</a>&gt;</h3></section><section id="impl-LineSegmentDetectorTrait-for-LineSegmentDetector" class="impl"><a class="src rightside" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-0247858ec17b7a7b/out/opencv/imgproc.rs.html#12147-12149">source</a><a href="#impl-LineSegmentDetectorTrait-for-LineSegmentDetector" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="../opencv/hub/imgproc/trait.LineSegmentDetectorTrait.html" title="trait opencv::opencv::hub::imgproc::LineSegmentDetectorTrait">LineSegmentDetectorTrait</a> for <a class="struct" href="../opencv/hub/imgproc/struct.LineSegmentDetector.html" title="struct opencv::opencv::hub::imgproc::LineSegmentDetector">LineSegmentDetector</a></h3></section></div><script src="../../trait.impl/opencv/opencv/hub/imgproc/trait.LineSegmentDetectorTrait.js" async></script></section></div></main></body></html>
