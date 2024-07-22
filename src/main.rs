@@ -19,6 +19,7 @@ use sw8s_rust_lib::{
         },
         example::initial_descent,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
+        meb::WaitArm,
         octagon::look_up_octagon,
         vision::PIPELINE_KILL,
     },
@@ -182,13 +183,7 @@ async fn shutdown_handler() -> UnboundedSender<i32> {
 async fn run_mission(mission: &str) -> Result<()> {
     let res = match mission.to_lowercase().as_str() {
         "arm" => {
-            let cntrl_ready = tokio::spawn(async { control_board().await });
-            println!("Waiting on MEB");
-            while meb().await.thruster_arm().await != Some(true) {
-                sleep(Duration::from_millis(10)).await;
-            }
-            println!("Got MEB");
-            let _ = cntrl_ready.await;
+            WaitArm::new(static_context().await).execute().await;
             Ok(())
         }
         "empty" => {

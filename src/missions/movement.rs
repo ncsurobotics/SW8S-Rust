@@ -13,6 +13,7 @@ use num_traits::Pow;
 use num_traits::Zero;
 use std::marker::PhantomData;
 use std::ops::Rem;
+use std::sync::Mutex;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -2039,5 +2040,140 @@ impl ActionExec<Stability2Adjust> for MultiplyX<&Stability2Adjust> {
             };
         }
         pose
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Eq)]
+pub enum Side {
+    #[default]
+    Red,
+    Blue,
+}
+
+static SIDE: Mutex<Side> = Mutex::new(Side::Red);
+
+#[derive(Debug)]
+pub struct SetSideRed<T> {
+    value: T,
+}
+
+impl<T> Action for SetSideRed<T> {}
+
+impl<T: Default> SetSideRed<T> {
+    pub fn new() -> Self {
+        Self {
+            value: T::default(),
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for SetSideRed<T> {
+    fn modify(&mut self, input: &T) {
+        self.value = input.clone();
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionExec<T> for SetSideRed<T> {
+    async fn execute(&mut self) -> T {
+        *SIDE.lock().unwrap() = Side::Red;
+        self.value.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct SetSideBlue<T> {
+    value: T,
+}
+
+impl<T> Action for SetSideBlue<T> {}
+
+impl<T: Default> SetSideBlue<T> {
+    pub fn new() -> Self {
+        Self {
+            value: T::default(),
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for SetSideBlue<T> {
+    fn modify(&mut self, input: &T) {
+        self.value = input.clone();
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionExec<T> for SetSideBlue<T> {
+    async fn execute(&mut self) -> T {
+        *SIDE.lock().unwrap() = Side::Blue;
+        self.value.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct SideIsRed {}
+
+impl Action for SideIsRed {}
+
+impl SideIsRed {
+    pub const fn new() -> Self {
+        Self {}
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for SideIsRed {
+    fn modify(&mut self, _input: &T) {}
+}
+
+impl ActionExec<bool> for SideIsRed {
+    async fn execute(&mut self) -> bool {
+        *SIDE.lock().unwrap() == Side::Blue
+    }
+}
+
+#[derive(Debug)]
+pub struct SideMult {
+    inner: Stability2Adjust,
+}
+
+impl Action for SideMult {}
+
+impl SideMult {
+    pub const fn new() -> Self {
+        Self {
+            inner: Stability2Adjust::const_default(),
+        }
+    }
+}
+
+impl ActionMod<Stability2Adjust> for SideMult {
+    fn modify(&mut self, input: &Stability2Adjust) {
+        self.inner = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for SideMult {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut inner = self.inner.clone();
+
+        if let Some(ref mut x) = inner.x {
+            if *SIDE.lock().unwrap() == Side::Red {
+                let x = match x {
+                    AdjustType::Adjust(x) => x,
+                    AdjustType::Replace(x) => x,
+                };
+                *x = -*x;
+            }
+        };
+
+        if let Some(ref mut yaw) = inner.target_yaw {
+            if *SIDE.lock().unwrap() == Side::Red {
+                let yaw = match yaw {
+                    AdjustType::Adjust(yaw) => yaw,
+                    AdjustType::Replace(yaw) => yaw,
+                };
+                *yaw = -*yaw;
+            }
+        };
+
+        inner
     }
 }

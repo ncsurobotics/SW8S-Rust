@@ -1,5 +1,3 @@
-use std::num::NonZeroUsize;
-
 use crate::{
     act_nest,
     missions::{
@@ -28,7 +26,6 @@ use super::{
     movement::ZeroMovement,
 };
 
-use nonzero::nonzero;
 use opencv::core::Size;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
@@ -105,9 +102,8 @@ pub fn buoy_circle_sequence_model<
 ) -> impl ActionExec<()> + '_ {
     const BUOY_X_SPEED: f32 = -0.0;
     const BUOY_Y_SPEED: f32 = 0.0;
-    const BUOY_YAW_SPEED: f32 = -0.0;
     const DEPTH: f32 = -1.0;
-    const NUM_MODEL_THREADS: NonZeroUsize = nonzero!(4_usize);
+    //const NUM_MODEL_THREADS: NonZeroUsize = nonzero!(4_usize);
 
     act_nest!(
         ActionSequence::new,
@@ -155,10 +151,10 @@ pub fn buoy_circle_sequence_blind<
 ) -> impl ActionExec<()> + '_ {
     const BUOY_X_SPEED: f32 = -0.4;
     const BUOY_Y_SPEED: f32 = 0.15;
-    const BUOY_YAW_SPEED: f32 = -12.0;
+    const BUOY_YAW_SPEED: f32 = -14.0;
     const DEPTH: f32 = -1.5;
     const DESCEND_WAIT_DURATION: f32 = 3.0;
-    const CIRCLE_COUNT: u32 = 27;
+    const CIRCLE_COUNT: u32 = 28;
 
     act_nest!(
         ActionSequence::new,

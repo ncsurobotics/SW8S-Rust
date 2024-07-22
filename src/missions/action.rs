@@ -1053,3 +1053,102 @@ impl<U: Send + Sync, T: ActionExec<(Option<U>, Option<U>)>> ActionExec<Option<U>
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct ActionSelect<V: Action, W: Action> {
+    first: V,
+    second: W,
+}
+
+impl<V: Action, W: Action> Action for ActionSelect<V, W> {
+    fn dot_string(&self, parent: &str) -> DotString {
+        let mut self_type = stripped_type::<Self>().to_string();
+        if parent.contains("FirstValid") && (parent == "FirstValid" || parent.contains("Select")) {
+            self_type += "_FirstValid";
+        }
+
+        let first_str = self.first.dot_string(&self_type);
+        let second_str = self.second.dot_string(&self_type);
+        let (concurrent_head, concurrent_tail) = (Uuid::new_v4(), Uuid::new_v4());
+
+        if parent.contains(stripped_type::<Self>()) {
+            DotString {
+                head_ids: [first_str.head_ids, second_str.head_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                tail_ids: [first_str.tail_ids, second_str.tail_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                body: first_str.body + &second_str.body,
+            }
+        } else {
+            let mut name = "Select";
+            let mut color = "blue";
+            if parent == "FirstValid" {
+                name = "FirstValid (Select)";
+                color = "darkgreen";
+            }
+
+            let mut body_str = format!(
+                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {};\n\"{}\" [label = \"{}\", shape = box, fontcolor = {}, style = dashed];\n",
+                Uuid::new_v4(),
+                color,
+                concurrent_head,
+                name,
+                color,
+            );
+
+            body_str.push_str(&(first_str.body + &second_str.body));
+            vec![first_str.head_ids, second_str.head_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| {
+                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id))
+                });
+
+            let tail_ids = if parent != "TupleSecond" {
+                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = {}, style = dashed];\n", concurrent_tail, color)));
+                vec![first_str.tail_ids, second_str.tail_ids.clone()]
+                    .into_iter()
+                    .flatten()
+                    .for_each(|id| {
+                        body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
+                    });
+                vec![concurrent_tail]
+            } else {
+                second_str.tail_ids
+            };
+
+            body_str.push_str("}\n");
+
+            DotString {
+                head_ids: vec![concurrent_head],
+                tail_ids,
+                body: body_str,
+            }
+        }
+    }
+}
+
+impl<V: Action, W: Action> ActionSelect<V, W> {
+    pub const fn new(first: V, second: W) -> Self {
+        Self { first, second }
+    }
+}
+
+impl<X: Send + Sync, V: ActionExec<X>, W: ActionExec<X>> ActionExec<X> for ActionSelect<V, W> {
+    async fn execute(&mut self) -> X {
+        tokio::select!(x = self.first.execute() => x, x = self.second.execute() => x)
+    }
+}
+
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> + Sync + Send>
+    ActionMod<Input> for ActionSelect<V, W>
+{
+    fn modify(&mut self, input: &Input) {
+        self.first.modify(input);
+        self.second.modify(input);
+    }
+}
