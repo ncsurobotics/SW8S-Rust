@@ -1,0 +1,243 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Mutable methods for core::Kernel"><title>KernelTrait in opencv::opencv::hub::core - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-081576b923113409.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0 (129f3b996 2024-06-10)" data-channel="1.79.0" data-search-js="search-bf21c90c8c1d92b1.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-e32f0c247825364d.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../opencv/index.html">opencv</a><span class="version">0.92.0</span></h2></div><h2 class="location"><a href="#">KernelTrait</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.as_raw_mut_Kernel">as_raw_mut_Kernel</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.create">create</a></li><li><a href="#method.create_ext">create_ext</a></li><li><a href="#method.create_ext_def">create_ext_def</a></li><li><a href="#method.run">run</a></li><li><a href="#method.run_">run_</a></li><li><a href="#method.run__def">run__def</a></li><li><a href="#method.run_def">run_def</a></li><li><a href="#method.run_profiling">run_profiling</a></li><li><a href="#method.run_profiling_def">run_profiling_def</a></li><li><a href="#method.run_task">run_task</a></li><li><a href="#method.run_task_def">run_task_def</a></li><li><a href="#method.set">set</a></li><li><a href="#method.set_1">set_1</a></li><li><a href="#method.set_2">set_2</a></li><li><a href="#method.set_3">set_3</a></li><li><a href="#method.set_kernel_arg">set_kernel_arg</a></li><li><a href="#method.set_umat">set_umat</a></li></ul><h3><a href="#object-safety">Object Safety</a></h3><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In opencv::opencv::hub::core</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Type ‘S’ or ‘/’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings">Settings</a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="../../../index.html">opencv</a>::<wbr><a href="../../index.html">opencv</a>::<wbr><a href="../index.html">hub</a>::<wbr><a href="index.html">core</a>::<wbr><a class="trait" href="#">KernelTrait</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35089-35334">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait KernelTrait: <a class="trait" href="trait.KernelTraitConst.html" title="trait opencv::opencv::hub::core::KernelTraitConst">KernelTraitConst</a> {
+<details class="toggle type-contents-toggle"><summary class="hideme"><span>Show 18 methods</span></summary>    // Required method
+    fn <a href="#tymethod.as_raw_mut_Kernel" class="fn">as_raw_mut_Kernel</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.pointer.html">*mut </a><a class="enum" href="../../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a>;
+
+    // Provided methods
+    fn <a href="#method.set" class="fn">set</a>(&amp;mut self, k: &amp;impl <a class="trait" href="trait.KernelTraitConst.html" title="trait opencv::opencv::hub::core::KernelTraitConst">KernelTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_1" class="fn">set_1</a>(&amp;mut self, k: <a class="struct" href="struct.Kernel.html" title="struct opencv::opencv::hub::core::Kernel">Kernel</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.create" class="fn">create</a>(
+        &amp;mut self,
+        kname: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.str.html">str</a>,
+        prog: &amp;impl <a class="trait" href="trait.ProgramTraitConst.html" title="trait opencv::opencv::hub::core::ProgramTraitConst">ProgramTraitConst</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.create_ext" class="fn">create_ext</a>(
+        &amp;mut self,
+        kname: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.str.html">str</a>,
+        prog: &amp;impl <a class="trait" href="trait.ProgramSourceTraitConst.html" title="trait opencv::opencv::hub::core::ProgramSourceTraitConst">ProgramSourceTraitConst</a>,
+        buildopts: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.str.html">str</a>,
+        errmsg: &amp;mut <a class="struct" href="https://doc.rust-lang.org/1.79.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.create_ext_def" class="fn">create_ext_def</a>(
+        &amp;mut self,
+        kname: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.str.html">str</a>,
+        prog: &amp;impl <a class="trait" href="trait.ProgramSourceTraitConst.html" title="trait opencv::opencv::hub::core::ProgramSourceTraitConst">ProgramSourceTraitConst</a>,
+        buildopts: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.str.html">str</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    unsafe fn <a href="#method.set_2" class="fn">set_2</a>(
+        &amp;mut self,
+        i: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        value: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.pointer.html">*const </a><a class="enum" href="../../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a>,
+        sz: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_3" class="fn">set_3</a>(
+        &amp;mut self,
+        i: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        image_2d: &amp;impl <a class="trait" href="trait.Image2DTraitConst.html" title="trait opencv::opencv::hub::core::Image2DTraitConst">Image2DTraitConst</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_umat" class="fn">set_umat</a>(&amp;mut self, i: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>, m: &amp;impl <a class="trait" href="trait.UMatTraitConst.html" title="trait opencv::opencv::hub::core::UMatTraitConst">UMatTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.set_kernel_arg" class="fn">set_kernel_arg</a>(
+        &amp;mut self,
+        i: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        arg: &amp;impl <a class="trait" href="trait.KernelArgTraitConst.html" title="trait opencv::opencv::hub::core::KernelArgTraitConst">KernelArgTraitConst</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.run" class="fn">run</a>(
+        &amp;mut self,
+        dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>,
+        q: &amp;impl <a class="trait" href="trait.QueueTraitConst.html" title="trait opencv::opencv::hub::core::QueueTraitConst">QueueTraitConst</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.run_def" class="fn">run_def</a>(
+        &amp;mut self,
+        dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.run_" class="fn">run_</a>(
+        &amp;mut self,
+        dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>,
+        q: &amp;impl <a class="trait" href="trait.QueueTraitConst.html" title="trait opencv::opencv::hub::core::QueueTraitConst">QueueTraitConst</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.run__def" class="fn">run__def</a>(
+        &amp;mut self,
+        dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.run_task" class="fn">run_task</a>(&amp;mut self, sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>, q: &amp;impl <a class="trait" href="trait.QueueTraitConst.html" title="trait opencv::opencv::hub::core::QueueTraitConst">QueueTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.run_task_def" class="fn">run_task_def</a>(&amp;mut self, sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.run_profiling" class="fn">run_profiling</a>(
+        &amp;mut self,
+        dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        q: &amp;impl <a class="trait" href="trait.QueueTraitConst.html" title="trait opencv::opencv::hub::core::QueueTraitConst">QueueTraitConst</a>
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i64.html">i64</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.run_profiling_def" class="fn">run_profiling_def</a>(
+        &amp;mut self,
+        dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+        globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+        localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>]
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i64.html">i64</a>&gt; { ... }
+</details>}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Mutable methods for <a href="struct.Kernel.html" title="struct opencv::opencv::hub::core::Kernel">core::Kernel</a></p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><section id="tymethod.as_raw_mut_Kernel" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35090">source</a><h4 class="code-header">fn <a href="#tymethod.as_raw_mut_Kernel" class="fn">as_raw_mut_Kernel</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.pointer.html">*mut </a><a class="enum" href="../../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a></h4></section></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><section id="method.set" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35093-35099">source</a><h4 class="code-header">fn <a href="#method.set" class="fn">set</a>(&amp;mut self, k: &amp;impl <a class="trait" href="trait.KernelTraitConst.html" title="trait opencv::opencv::hub::core::KernelTraitConst">KernelTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.unit.html">()</a>&gt;</h4></section><section id="method.set_1" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35102-35105">source</a><h4 class="code-header">fn <a href="#method.set_1" class="fn">set_1</a>(&amp;mut self, k: <a class="struct" href="struct.Kernel.html" title="struct opencv::opencv::hub::core::Kernel">Kernel</a>)</h4></section><section id="method.create" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35108-35115">source</a><h4 class="code-header">fn <a href="#method.create" class="fn">create</a>(&amp;mut self, kname: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.str.html">str</a>, prog: &amp;impl <a class="trait" href="trait.ProgramTraitConst.html" title="trait opencv::opencv::hub::core::ProgramTraitConst">ProgramTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt;</h4></section><details class="toggle method-toggle" open><summary><section id="method.create_ext" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35120-35130">source</a><h4 class="code-header">fn <a href="#method.create_ext" class="fn">create_ext</a>(
+    &amp;mut self,
+    kname: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.str.html">str</a>,
+    prog: &amp;impl <a class="trait" href="trait.ProgramSourceTraitConst.html" title="trait opencv::opencv::hub::core::ProgramSourceTraitConst">ProgramSourceTraitConst</a>,
+    buildopts: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.str.html">str</a>,
+    errmsg: &amp;mut <a class="struct" href="https://doc.rust-lang.org/1.79.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt;</h4></section></summary><div class="docblock"><h6 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h6>
+<ul>
+<li>errmsg: 0</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.create_ext_def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35136-35144">source</a><h4 class="code-header">fn <a href="#method.create_ext_def" class="fn">create_ext_def</a>(
+    &amp;mut self,
+    kname: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.str.html">str</a>,
+    prog: &amp;impl <a class="trait" href="trait.ProgramSourceTraitConst.html" title="trait opencv::opencv::hub::core::ProgramSourceTraitConst">ProgramSourceTraitConst</a>,
+    buildopts: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.str.html">str</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt;</h4></section></summary><div class="docblock"><h6 id="note"><a class="doc-anchor" href="#note">§</a>Note</h6>
+<p>This alternative version of <a href="trait.KernelTrait.html#method.create_ext" title="method opencv::opencv::hub::core::KernelTrait::create_ext">KernelTrait::create_ext</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>errmsg: 0</li>
+</ul>
+</div></details><section id="method.set_2" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35147-35153">source</a><h4 class="code-header">unsafe fn <a href="#method.set_2" class="fn">set_2</a>(
+    &amp;mut self,
+    i: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+    value: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.pointer.html">*const </a><a class="enum" href="../../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a>,
+    sz: <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt;</h4></section><section id="method.set_3" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35156-35162">source</a><h4 class="code-header">fn <a href="#method.set_3" class="fn">set_3</a>(&amp;mut self, i: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>, image_2d: &amp;impl <a class="trait" href="trait.Image2DTraitConst.html" title="trait opencv::opencv::hub::core::Image2DTraitConst">Image2DTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt;</h4></section><section id="method.set_umat" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35165-35171">source</a><h4 class="code-header">fn <a href="#method.set_umat" class="fn">set_umat</a>(&amp;mut self, i: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>, m: &amp;impl <a class="trait" href="trait.UMatTraitConst.html" title="trait opencv::opencv::hub::core::UMatTraitConst">UMatTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt;</h4></section><section id="method.set_kernel_arg" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35174-35180">source</a><h4 class="code-header">fn <a href="#method.set_kernel_arg" class="fn">set_kernel_arg</a>(
+    &amp;mut self,
+    i: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+    arg: &amp;impl <a class="trait" href="trait.KernelArgTraitConst.html" title="trait opencv::opencv::hub::core::KernelArgTraitConst">KernelArgTraitConst</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>&gt;</h4></section><details class="toggle method-toggle" open><summary><section id="method.run" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35200-35206">source</a><h4 class="code-header">fn <a href="#method.run" class="fn">run</a>(
+    &amp;mut self,
+    dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+    globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>,
+    q: &amp;impl <a class="trait" href="trait.QueueTraitConst.html" title="trait opencv::opencv::hub::core::QueueTraitConst">QueueTraitConst</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt;</h4></section></summary><div class="docblock"><p>Run the OpenCL kernel (globalsize value may be adjusted)</p>
+<h6 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h6>
+<ul>
+<li>dims: the work problem dimensions. It is the length of globalsize and localsize. It can be either 1, 2 or 3.</li>
+<li>globalsize: work items for each dimension. It is not the final globalsize passed to
+OpenCL. Each dimension will be adjusted to the nearest integer divisible by the corresponding
+value in localsize. If localsize is NULL, it will still be adjusted depending on dims. The
+adjusted values are greater than or equal to the original values.</li>
+<li>localsize: work-group size for each dimension.</li>
+<li>sync: specify whether to wait for OpenCL computation to finish before return.</li>
+<li>q: command queue</li>
+</ul>
+<p>Note: Use run_() if your kernel code doesn’t support adjusted globalsize.</p>
+<h6 id="c-default-parameters-1"><a class="doc-anchor" href="#c-default-parameters-1">§</a>C++ default parameters</h6>
+<ul>
+<li>q: Queue()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.run_def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35227-35233">source</a><h4 class="code-header">fn <a href="#method.run_def" class="fn">run_def</a>(
+    &amp;mut self,
+    dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+    globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt;</h4></section></summary><div class="docblock"><p>Run the OpenCL kernel (globalsize value may be adjusted)</p>
+<h6 id="parameters-1"><a class="doc-anchor" href="#parameters-1">§</a>Parameters</h6>
+<ul>
+<li>dims: the work problem dimensions. It is the length of globalsize and localsize. It can be either 1, 2 or 3.</li>
+<li>globalsize: work items for each dimension. It is not the final globalsize passed to
+OpenCL. Each dimension will be adjusted to the nearest integer divisible by the corresponding
+value in localsize. If localsize is NULL, it will still be adjusted depending on dims. The
+adjusted values are greater than or equal to the original values.</li>
+<li>localsize: work-group size for each dimension.</li>
+<li>sync: specify whether to wait for OpenCL computation to finish before return.</li>
+<li>q: command queue</li>
+</ul>
+<p>Note: Use run_() if your kernel code doesn’t support adjusted globalsize.</p>
+<h6 id="note-1"><a class="doc-anchor" href="#note-1">§</a>Note</h6>
+<p>This alternative version of <a href="trait.KernelTrait.html#method.run" title="method opencv::opencv::hub::core::KernelTrait::run">KernelTrait::run</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>q: Queue()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.run_" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35247-35253">source</a><h4 class="code-header">fn <a href="#method.run_" class="fn">run_</a>(
+    &amp;mut self,
+    dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+    globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>,
+    q: &amp;impl <a class="trait" href="trait.QueueTraitConst.html" title="trait opencv::opencv::hub::core::QueueTraitConst">QueueTraitConst</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt;</h4></section></summary><div class="docblock"><p>Run the OpenCL kernel</p>
+<h6 id="parameters-2"><a class="doc-anchor" href="#parameters-2">§</a>Parameters</h6>
+<ul>
+<li>dims: the work problem dimensions. It is the length of globalsize and localsize. It can be either 1, 2 or 3.</li>
+<li>globalsize: work items for each dimension. This value is passed to OpenCL without changes.</li>
+<li>localsize: work-group size for each dimension.</li>
+<li>sync: specify whether to wait for OpenCL computation to finish before return.</li>
+<li>q: command queue</li>
+</ul>
+<h6 id="c-default-parameters-2"><a class="doc-anchor" href="#c-default-parameters-2">§</a>C++ default parameters</h6>
+<ul>
+<li>q: Queue()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.run__def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35268-35274">source</a><h4 class="code-header">fn <a href="#method.run__def" class="fn">run__def</a>(
+    &amp;mut self,
+    dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+    globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt;</h4></section></summary><div class="docblock"><p>Run the OpenCL kernel</p>
+<h6 id="parameters-3"><a class="doc-anchor" href="#parameters-3">§</a>Parameters</h6>
+<ul>
+<li>dims: the work problem dimensions. It is the length of globalsize and localsize. It can be either 1, 2 or 3.</li>
+<li>globalsize: work items for each dimension. This value is passed to OpenCL without changes.</li>
+<li>localsize: work-group size for each dimension.</li>
+<li>sync: specify whether to wait for OpenCL computation to finish before return.</li>
+<li>q: command queue</li>
+</ul>
+<h6 id="note-2"><a class="doc-anchor" href="#note-2">§</a>Note</h6>
+<p>This alternative version of <a href="trait.KernelTrait.html#method.run_" title="method opencv::opencv::hub::core::KernelTrait::run_">KernelTrait::run_</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>q: Queue()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.run_task" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35279-35285">source</a><h4 class="code-header">fn <a href="#method.run_task" class="fn">run_task</a>(&amp;mut self, sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>, q: &amp;impl <a class="trait" href="trait.QueueTraitConst.html" title="trait opencv::opencv::hub::core::QueueTraitConst">QueueTraitConst</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt;</h4></section></summary><div class="docblock"><h6 id="c-default-parameters-3"><a class="doc-anchor" href="#c-default-parameters-3">§</a>C++ default parameters</h6>
+<ul>
+<li>q: Queue()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.run_task_def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35291-35297">source</a><h4 class="code-header">fn <a href="#method.run_task_def" class="fn">run_task_def</a>(&amp;mut self, sync: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.bool.html">bool</a>&gt;</h4></section></summary><div class="docblock"><h6 id="note-3"><a class="doc-anchor" href="#note-3">§</a>Note</h6>
+<p>This alternative version of <a href="trait.KernelTrait.html#method.run_task" title="method opencv::opencv::hub::core::KernelTrait::run_task">KernelTrait::run_task</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>q: Queue()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.run_profiling" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35308-35314">source</a><h4 class="code-header">fn <a href="#method.run_profiling" class="fn">run_profiling</a>(
+    &amp;mut self,
+    dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+    globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    q: &amp;impl <a class="trait" href="trait.QueueTraitConst.html" title="trait opencv::opencv::hub::core::QueueTraitConst">QueueTraitConst</a>
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i64.html">i64</a>&gt;</h4></section></summary><div class="docblock"><p>Similar to synchronized run_() call with returning of kernel execution time</p>
+<p>Separate OpenCL command queue may be used (with CL_QUEUE_PROFILING_ENABLE)</p>
+<h6 id="returns"><a class="doc-anchor" href="#returns">§</a>Returns</h6>
+<p>Execution time in nanoseconds or negative number on error</p>
+<h6 id="c-default-parameters-4"><a class="doc-anchor" href="#c-default-parameters-4">§</a>C++ default parameters</h6>
+<ul>
+<li>q: Queue()</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.run_profiling_def" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35326-35332">source</a><h4 class="code-header">fn <a href="#method.run_profiling_def" class="fn">run_profiling_def</a>(
+    &amp;mut self,
+    dims: <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i32.html">i32</a>,
+    globalsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>],
+    localsize: &amp;mut [<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>]
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.i64.html">i64</a>&gt;</h4></section></summary><div class="docblock"><p>Similar to synchronized run_() call with returning of kernel execution time</p>
+<p>Separate OpenCL command queue may be used (with CL_QUEUE_PROFILING_ENABLE)</p>
+<h6 id="returns-1"><a class="doc-anchor" href="#returns-1">§</a>Returns</h6>
+<p>Execution time in nanoseconds or negative number on error</p>
+<h6 id="note-4"><a class="doc-anchor" href="#note-4">§</a>Note</h6>
+<p>This alternative version of <a href="trait.KernelTrait.html#method.run_profiling" title="method opencv::opencv::hub::core::KernelTrait::run_profiling">KernelTrait::run_profiling</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>q: Queue()</li>
+</ul>
+</div></details></div><h2 id="object-safety" class="section-header">Object Safety<a href="#object-safety" class="anchor">§</a></h2><div class="object-safety-info">This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.79.0/reference/items/traits.html#object-safety">object safe</a>.</div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-KernelTrait-for-BoxedRefMut%3C'_,+Kernel%3E" class="impl"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35359">source</a><a href="#impl-KernelTrait-for-BoxedRefMut%3C'_,+Kernel%3E" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.KernelTrait.html" title="trait opencv::opencv::hub::core::KernelTrait">KernelTrait</a> for <a class="struct" href="../../../boxed_ref/struct.BoxedRefMut.html" title="struct opencv::boxed_ref::BoxedRefMut">BoxedRefMut</a>&lt;'_, <a class="struct" href="struct.Kernel.html" title="struct opencv::opencv::hub::core::Kernel">Kernel</a>&gt;</h3></section><section id="impl-KernelTrait-for-Kernel" class="impl"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/core.rs.html#35355-35357">source</a><a href="#impl-KernelTrait-for-Kernel" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.KernelTrait.html" title="trait opencv::opencv::hub::core::KernelTrait">KernelTrait</a> for <a class="struct" href="struct.Kernel.html" title="struct opencv::opencv::hub::core::Kernel">Kernel</a></h3></section></div><script src="../../../../trait.impl/opencv/opencv/hub/core/trait.KernelTrait.js" async></script></section></div></main></body></html>

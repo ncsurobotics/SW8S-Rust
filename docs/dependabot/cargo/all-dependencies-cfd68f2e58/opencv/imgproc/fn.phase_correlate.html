@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The function is used to detect translational shifts that occur between two images."><title>phase_correlate in opencv::imgproc - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-081576b923113409.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0 (129f3b996 2024-06-10)" data-channel="1.79.0" data-search-js="search-bf21c90c8c1d92b1.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-e32f0c247825364d.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../opencv/index.html">opencv</a><span class="version">0.92.0</span></h2></div><div class="sidebar-elems"><h2><a href="index.html">In opencv::imgproc</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../opencv/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Type ‘S’ or ‘/’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings">Settings</a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Function <a href="../index.html">opencv</a>::<wbr><a href="index.html">imgproc</a>::<wbr><a class="fn" href="#">phase_correlate</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-28655e039b387fea/out/opencv/imgproc.rs.html#9321-9330">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub fn phase_correlate(
+    src1: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    src2: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    window: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    response: &amp;mut <a class="primitive" href="https://doc.rust-lang.org/1.79.0/std/primitive.f64.html">f64</a>
+) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="type" href="../opencv/hub/core/type.Point2d.html" title="type opencv::opencv::hub::core::Point2d">Point2d</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The function is used to detect translational shifts that occur between two images.</p>
+<p>The operation takes advantage of the Fourier shift theorem for detecting the translational shift in
+the frequency domain. It can be used for fast image registration as well as motion estimation. For
+more information please see <a href="http://en.wikipedia.org/wiki/Phase_correlation">http://en.wikipedia.org/wiki/Phase_correlation</a></p>
+<p>Calculates the cross-power spectrum of two supplied source arrays. The arrays are padded if needed
+with getOptimalDFTSize.</p>
+<p>The function performs the following equations:</p>
+<ul>
+<li>First it applies a Hanning window (see <a href="http://en.wikipedia.org/wiki/Hann_function">http://en.wikipedia.org/wiki/Hann_function</a>) to each
+image to remove possible edge effects. This window is cached until the array size changes to speed
+up processing time.</li>
+<li>Next it computes the forward DFTs of each source array:
+<img src="https://latex.codecogs.com/png.latex?%5Cmathbf%7BG%7D%5Fa%20%3D%20%5Cmathcal%7BF%7D%5C%7Bsrc%5F1%5C%7D%2C%20%5C%3B%20%5Cmathbf%7BG%7D%5Fb%20%3D%20%5Cmathcal%7BF%7D%5C%7Bsrc%5F2%5C%7D" alt="block formula" />
+where <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%7BF%7D" alt="inline formula" /> is the forward DFT.</li>
+<li>It then computes the cross-power spectrum of each frequency domain array:
+<img src="https://latex.codecogs.com/png.latex?R%20%3D%20%5Cfrac%7B%20%5Cmathbf%7BG%7D%5Fa%20%5Cmathbf%7BG%7D%5Fb%5E%2A%7D%7B%7C%5Cmathbf%7BG%7D%5Fa%20%5Cmathbf%7BG%7D%5Fb%5E%2A%7C%7D" alt="block formula" /></li>
+<li>Next the cross-correlation is converted back into the time domain via the inverse DFT:
+<img src="https://latex.codecogs.com/png.latex?r%20%3D%20%5Cmathcal%7BF%7D%5E%7B%2D1%7D%5C%7BR%5C%7D" alt="block formula" /></li>
+<li>Finally, it computes the peak location and computes a 5x5 weighted centroid around the peak to
+achieve sub-pixel accuracy.
+<img src="https://latex.codecogs.com/png.latex?%28%5CDelta%20x%2C%20%5CDelta%20y%29%20%3D%20%5Ctexttt%7BweightedCentroid%7D%20%5C%7B%5Carg%20%5Cmax%5F%7B%28x%2C%20y%29%7D%5C%7Br%5C%7D%5C%7D" alt="block formula" /></li>
+<li>If non-zero, the response parameter is computed as the sum of the elements of r within the 5x5
+centroid around the peak location. It is normalized to a maximum of 1 (meaning there is a single
+peak) and will be smaller when there are multiple peaks.</li>
+</ul>
+<h3 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h3>
+<ul>
+<li>src1: Source floating point array (CV_32FC1 or CV_64FC1)</li>
+<li>src2: Source floating point array (CV_32FC1 or CV_64FC1)</li>
+<li>window: Floating point array with windowing coefficients to reduce edge effects (optional).</li>
+<li>response: Signal power within the 5x5 centroid around the peak, between 0 and 1 (optional).</li>
+</ul>
+<h3 id="returns"><a class="doc-anchor" href="#returns">§</a>Returns</h3>
+<p>detected phase shift (sub-pixel) between the two arrays.</p>
+<h3 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h3>
+<p>dft, getOptimalDFTSize, idft, mulSpectrums createHanningWindow</p>
+<h3 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h3>
+<ul>
+<li>window: noArray()</li>
+<li>response: 0</li>
+</ul>
+</div></details></section></div></main></body></html>
