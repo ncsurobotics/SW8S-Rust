@@ -1,0 +1,15 @@
+digraph G {
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	"5945793b-595d-4b7f-9144-8d3f28a975f2" [shape = diamond];
+	"fe74231a-d1bd-4ebb-9a17-3776ec634a81" -> "45b66048-3fc6-4fe5-a1ff-403e0fff49a0" ;
+	"5945793b-595d-4b7f-9144-8d3f28a975f2" -> "cf47d4b0-f309-4130-9490-12d238ac2fee" [label = "True"];
+	"5945793b-595d-4b7f-9144-8d3f28a975f2" -> "7c94127a-057e-41e6-a848-5f9ca26a34f8" [label = "False"];
+	"45b66048-3fc6-4fe5-a1ff-403e0fff49a0" -> "5945793b-595d-4b7f-9144-8d3f28a975f2" ;
+	"fe74231a-d1bd-4ebb-9a17-3776ec634a81" [label = "WaitArm", margin = 0];
+	"45b66048-3fc6-4fe5-a1ff-403e0fff49a0" [label = "Descend", margin = 0];
+	"cf47d4b0-f309-4130-9490-12d238ac2fee" [label = "WaitArm", margin = 0];
+	"7c94127a-057e-41e6-a848-5f9ca26a34f8" [label = "UnwrapAction", margin = 0];
+	"5945793b-595d-4b7f-9144-8d3f28a975f2" [label = "AlwaysTrue", margin = 0];
+}

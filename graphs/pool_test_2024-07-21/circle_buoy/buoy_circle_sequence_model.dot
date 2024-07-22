@@ -1,0 +1,49 @@
+digraph G {
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	"17a25a5c-9dd1-4eae-864f-77a302305c51" [shape = diamond];
+	subgraph "cluster_c3365728-36b8-456f-ad62-b621aab8d469" {
+		style = dashed;
+		color = blue;
+		"ebc6b9b2-b306-47b7-b74d-8d77990a9273" -> "9c7fc67d-6eaf-461e-b697-1098b6c413d7" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"0befef0d-8924-4dc3-98bf-3ed198c085dd" -> "ebc6b9b2-b306-47b7-b74d-8d77990a9273" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"5d6f07ca-d1d9-420d-b18f-07e1bfc36c29" -> "0befef0d-8924-4dc3-98bf-3ed198c085dd" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"197c3112-ad15-4ade-8bd9-9d74c63ebc47" -> "5d6f07ca-d1d9-420d-b18f-07e1bfc36c29" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"6dffbfd1-999b-4045-87af-e4e66f1ed40b" -> "197c3112-ad15-4ade-8bd9-9d74c63ebc47" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"a2f141c7-5f73-4557-bd3a-3f258d56f80e" -> "6dffbfd1-999b-4045-87af-e4e66f1ed40b" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"2d58cf84-d6e0-4af2-a836-225510d0626c" -> "a2f141c7-5f73-4557-bd3a-3f258d56f80e" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"5717dc37-c58f-439c-a9c9-b436db50de63" -> "2d58cf84-d6e0-4af2-a836-225510d0626c" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"98f668f3-d09f-4eff-a109-7d1ec94889e8" -> "5717dc37-c58f-439c-a9c9-b436db50de63";
+		"98f668f3-d09f-4eff-a109-7d1ec94889e8" -> "17a25a5c-9dd1-4eae-864f-77a302305c51";
+		"98f668f3-d09f-4eff-a109-7d1ec94889e8" [label = "Concurrent", shape = box, fontcolor = blue, style = dashed];
+		"5717dc37-c58f-439c-a9c9-b436db50de63" [label = "ToVec", margin = 0];
+		"2d58cf84-d6e0-4af2-a836-225510d0626c" [label = "ExtractPosition", margin = 0];
+		"a2f141c7-5f73-4557-bd3a-3f258d56f80e" [label = "Average", margin = 0];
+		"6dffbfd1-999b-4045-87af-e4e66f1ed40b" [label = "OffsetToPose", margin = 0];
+		"197c3112-ad15-4ade-8bd9-9d74c63ebc47" [label = "LinearYawFromX", margin = 0];
+		"5d6f07ca-d1d9-420d-b18f-07e1bfc36c29" [label = "CautiousConstantX", margin = 0];
+		"0befef0d-8924-4dc3-98bf-3ed198c085dd" [label = "StripY", margin = 0];
+		"ebc6b9b2-b306-47b7-b74d-8d77990a9273" [label = "MinYaw", margin = 0];
+		"9c7fc67d-6eaf-461e-b697-1098b6c413d7" [label = "Stability1Movement", margin = 0];
+		"17a25a5c-9dd1-4eae-864f-77a302305c51" [label = "AlwaysTrue", margin = 0];
+	}
+	
+	"31c61182-8706-49f0-859a-2f46653875da" -> "66974d7b-422d-457a-8fc0-ec1181684873" ;
+	"d92d23f3-072c-4dbb-af74-81ebfcca1045" -> "20577d09-d4ea-4de1-b460-fc3b0725b694" ;
+	"20577d09-d4ea-4de1-b460-fc3b0725b694" -> "e4fd509c-c6ec-444f-bf1b-ce0070cf4fb8" ;
+	"66974d7b-422d-457a-8fc0-ec1181684873" -> "d92d23f3-072c-4dbb-af74-81ebfcca1045" ;
+	"81576014-e566-453c-a2b6-3317126f4eae" -> "31c61182-8706-49f0-859a-2f46653875da" ;
+	"3ba4587d-8e10-4342-a826-5f2941f524bc" -> "98f668f3-d09f-4eff-a109-7d1ec94889e8" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"a6f65c54-d2c9-4066-a4c4-7cbb5d1c9f3a" -> "3ba4587d-8e10-4342-a826-5f2941f524bc" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"17a25a5c-9dd1-4eae-864f-77a302305c51" -> "a6f65c54-d2c9-4066-a4c4-7cbb5d1c9f3a" [label = "True"];
+	"e4fd509c-c6ec-444f-bf1b-ce0070cf4fb8" -> "a6f65c54-d2c9-4066-a4c4-7cbb5d1c9f3a" ;
+	"81576014-e566-453c-a2b6-3317126f4eae" [label = "WaitArm", margin = 0];
+	"31c61182-8706-49f0-859a-2f46653875da" [label = "Descend", margin = 0];
+	"66974d7b-422d-457a-8fc0-ec1181684873" [label = "DelayAction", margin = 0];
+	"d92d23f3-072c-4dbb-af74-81ebfcca1045" [label = "StraightMovement", margin = 0];
+	"20577d09-d4ea-4de1-b460-fc3b0725b694" [label = "DelayAction", margin = 0];
+	"e4fd509c-c6ec-444f-bf1b-ce0070cf4fb8" [label = "ZeroMovement", margin = 0];
+	"a6f65c54-d2c9-4066-a4c4-7cbb5d1c9f3a" [label = "VisionNorm", margin = 0];
+	"3ba4587d-8e10-4342-a826-5f2941f524bc" [label = "Detect Buoy", margin = 0];
+}
