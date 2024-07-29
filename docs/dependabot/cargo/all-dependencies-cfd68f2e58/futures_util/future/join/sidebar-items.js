@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["join","join3","join4","join5"],"macro":["generate"],"struct":["Join","Join3","Join4","Join5"]};

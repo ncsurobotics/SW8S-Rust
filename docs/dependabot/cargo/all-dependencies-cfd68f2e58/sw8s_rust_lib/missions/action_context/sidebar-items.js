@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["EmptyActionContext","FullActionContext"],"trait":["GetBottomCamMat","GetControlBoard","GetFrontCamMat","GetMainElectronicsBoard"]};

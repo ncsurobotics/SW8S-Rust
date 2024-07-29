@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["from_document","from_slice","from_str","validate_struct_keys"],"mod":["array","datetime","key","spanned","table","table_enum","value"],"struct":["Deserializer","Error","ValueDeserializer"]};

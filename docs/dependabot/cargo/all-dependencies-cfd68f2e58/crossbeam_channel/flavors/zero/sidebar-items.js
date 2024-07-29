@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Channel","Inner","Packet","Receiver","Sender","ZeroToken"]};
