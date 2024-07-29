@@ -1,0 +1,322 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Constant methods for crate::dnn::Net"><title>NetTraitConst in opencv::opencv::hub::dnn - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0 (051478957 2024-07-21)" data-channel="1.80.0" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../opencv/index.html">opencv</a><span class="version">0.92.1</span></h2></div><h2 class="location"><a href="#">NetTraitConst</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.as_raw_Net">as_raw_Net</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.empty">empty</a></li><li><a href="#method.get_flops">get_flops</a></li><li><a href="#method.get_flops_1">get_flops_1</a></li><li><a href="#method.get_flops_2">get_flops_2</a></li><li><a href="#method.get_flops_3">get_flops_3</a></li><li><a href="#method.get_input_details">get_input_details</a></li><li><a href="#method.get_layer_names">get_layer_names</a></li><li><a href="#method.get_layer_shapes">get_layer_shapes</a></li><li><a href="#method.get_layer_shapes_1">get_layer_shapes_1</a></li><li><a href="#method.get_layer_types">get_layer_types</a></li><li><a href="#method.get_layers_count">get_layers_count</a></li><li><a href="#method.get_layers_shapes">get_layers_shapes</a></li><li><a href="#method.get_layers_shapes_1">get_layers_shapes_1</a></li><li><a href="#method.get_memory_consumption">get_memory_consumption</a></li><li><a href="#method.get_memory_consumption_1">get_memory_consumption_1</a></li><li><a href="#method.get_memory_consumption_2">get_memory_consumption_2</a></li><li><a href="#method.get_memory_consumption_3">get_memory_consumption_3</a></li><li><a href="#method.get_memory_consumption_for_layer">get_memory_consumption_for_layer</a></li><li><a href="#method.get_memory_consumption_for_layers">get_memory_consumption_for_layers</a></li><li><a href="#method.get_output_details">get_output_details</a></li><li><a href="#method.get_unconnected_out_layers">get_unconnected_out_layers</a></li><li><a href="#method.get_unconnected_out_layers_names">get_unconnected_out_layers_names</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In opencv::opencv::hub::dnn</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="../../../index.html">opencv</a>::<wbr><a href="../../index.html">opencv</a>::<wbr><a href="../index.html">hub</a>::<wbr><a href="index.html">dnn</a>::<wbr><a class="trait" href="#">NetTraitConst</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#8977-9313">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait NetTraitConst {
+<details class="toggle type-contents-toggle"><summary class="hideme"><span>Show 23 methods</span></summary>    // Required method
+    fn <a href="#tymethod.as_raw_Net" class="fn">as_raw_Net</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.pointer.html">*const </a><a class="enum" href="../../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a>;
+
+    // Provided methods
+    fn <a href="#method.empty" class="fn">empty</a>(&amp;self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.bool.html">bool</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_layer_names" class="fn">get_layer_names</a>(&amp;self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.80.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_input_details" class="fn">get_input_details</a>(
+        &amp;self,
+        scales: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.f32.html">f32</a>&gt;,
+        zeropoints: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_output_details" class="fn">get_output_details</a>(
+        &amp;self,
+        scales: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.f32.html">f32</a>&gt;,
+        zeropoints: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_unconnected_out_layers" class="fn">get_unconnected_out_layers</a>(&amp;self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_unconnected_out_layers_names" class="fn">get_unconnected_out_layers_names</a>(&amp;self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.80.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_layers_shapes" class="fn">get_layers_shapes</a>(
+        &amp;self,
+        net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+        layers_ids: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+        in_layers_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;&gt;,
+        out_layers_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;&gt;,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_layers_shapes_1" class="fn">get_layers_shapes_1</a>(
+        &amp;self,
+        net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+        layers_ids: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+        in_layers_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;&gt;,
+        out_layers_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;&gt;,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_layer_shapes" class="fn">get_layer_shapes</a>(
+        &amp;self,
+        net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+        layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+        in_layer_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+        out_layer_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_layer_shapes_1" class="fn">get_layer_shapes_1</a>(
+        &amp;self,
+        net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+        layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+        in_layer_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+        out_layer_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_flops" class="fn">get_flops</a>(&amp;self, net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i64.html">i64</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_flops_1" class="fn">get_flops_1</a>(&amp;self, net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i64.html">i64</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_flops_2" class="fn">get_flops_2</a>(
+        &amp;self,
+        layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+        net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i64.html">i64</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_flops_3" class="fn">get_flops_3</a>(
+        &amp;self,
+        layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+        net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i64.html">i64</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_layer_types" class="fn">get_layer_types</a>(&amp;self, layers_types: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.80.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_layers_count" class="fn">get_layers_count</a>(&amp;self, layer_type: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.str.html">str</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_memory_consumption" class="fn">get_memory_consumption</a>(
+        &amp;self,
+        net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+        weights: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+        blobs: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_memory_consumption_1" class="fn">get_memory_consumption_1</a>(
+        &amp;self,
+        net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+        weights: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+        blobs: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_memory_consumption_for_layer" class="fn">get_memory_consumption_for_layer</a>(
+        &amp;self,
+        layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+        net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+        weights: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+        blobs: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_memory_consumption_2" class="fn">get_memory_consumption_2</a>(
+        &amp;self,
+        layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+        net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+        weights: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+        blobs: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_memory_consumption_for_layers" class="fn">get_memory_consumption_for_layers</a>(
+        &amp;self,
+        net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+        layer_ids: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+        weights: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>&gt;,
+        blobs: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>&gt;,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_memory_consumption_3" class="fn">get_memory_consumption_3</a>(
+        &amp;self,
+        net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+        layer_ids: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+        weights: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>&gt;,
+        blobs: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>&gt;,
+    ) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt; { ... }
+</details>}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Constant methods for <a href="struct.Net.html" title="struct opencv::opencv::hub::dnn::Net">crate::dnn::Net</a></p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><section id="tymethod.as_raw_Net" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#8978">source</a><h4 class="code-header">fn <a href="#tymethod.as_raw_Net" class="fn">as_raw_Net</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.pointer.html">*const </a><a class="enum" href="../../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a></h4></section></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.empty" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#8982-8988">source</a><h4 class="code-header">fn <a href="#method.empty" class="fn">empty</a>(&amp;self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.bool.html">bool</a>&gt;</h4></section></summary><div class="docblock"><p>Returns true if there are no layers in the network.</p>
+</div></details><section id="method.get_layer_names" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#8991-8998">source</a><h4 class="code-header">fn <a href="#method.get_layer_names" class="fn">get_layer_names</a>(&amp;self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.80.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;&gt;</h4></section><details class="toggle method-toggle" open><summary><section id="method.get_input_details" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9005-9011">source</a><h4 class="code-header">fn <a href="#method.get_input_details" class="fn">get_input_details</a>(
+    &amp;self,
+    scales: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.f32.html">f32</a>&gt;,
+    zeropoints: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Returns input scale and zeropoint for a quantized Net.</p>
+<h6 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h6>
+<ul>
+<li>scales: output parameter for returning input scales.</li>
+<li>zeropoints: output parameter for returning input zeropoints.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_output_details" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9018-9024">source</a><h4 class="code-header">fn <a href="#method.get_output_details" class="fn">get_output_details</a>(
+    &amp;self,
+    scales: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.f32.html">f32</a>&gt;,
+    zeropoints: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Returns output scale and zeropoint for a quantized Net.</p>
+<h6 id="parameters-1"><a class="doc-anchor" href="#parameters-1">§</a>Parameters</h6>
+<ul>
+<li>scales: output parameter for returning output scales.</li>
+<li>zeropoints: output parameter for returning output zeropoints.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_unconnected_out_layers" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9028-9035">source</a><h4 class="code-header">fn <a href="#method.get_unconnected_out_layers" class="fn">get_unconnected_out_layers</a>(&amp;self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>Returns indexes of layers with unconnected outputs.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_unconnected_out_layers_names" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9039-9046">source</a><h4 class="code-header">fn <a href="#method.get_unconnected_out_layers_names" class="fn">get_unconnected_out_layers_names</a>(&amp;self) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.80.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>Returns names of layers with unconnected outputs.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_layers_shapes" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9058-9064">source</a><h4 class="code-header">fn <a href="#method.get_layers_shapes" class="fn">get_layers_shapes</a>(
+    &amp;self,
+    net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+    layers_ids: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+    in_layers_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;&gt;,
+    out_layers_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;&gt;,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Returns input and output shapes for all layers in loaded model;
+preliminary inferencing isn’t necessary.</p>
+<h6 id="parameters-2"><a class="doc-anchor" href="#parameters-2">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: shapes for all input blobs in net input layer.</li>
+<li>layersIds: output parameter for layer IDs.</li>
+<li>inLayersShapes: output parameter for input layers shapes;
+order is the same as in layersIds</li>
+<li>outLayersShapes: output parameter for output layers shapes;
+order is the same as in layersIds</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_layers_shapes_1" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9078-9084">source</a><h4 class="code-header">fn <a href="#method.get_layers_shapes_1" class="fn">get_layers_shapes_1</a>(
+    &amp;self,
+    net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+    layers_ids: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+    in_layers_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;&gt;,
+    out_layers_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;&gt;,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Returns input and output shapes for all layers in loaded model;
+preliminary inferencing isn’t necessary.</p>
+<h6 id="parameters-3"><a class="doc-anchor" href="#parameters-3">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: shapes for all input blobs in net input layer.</li>
+<li>layersIds: output parameter for layer IDs.</li>
+<li>inLayersShapes: output parameter for input layers shapes;
+order is the same as in layersIds</li>
+<li>outLayersShapes: output parameter for output layers shapes;
+order is the same as in layersIds</li>
+</ul>
+<h6 id="overloaded-parameters"><a class="doc-anchor" href="#overloaded-parameters">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.get_layer_shapes" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9096-9102">source</a><h4 class="code-header">fn <a href="#method.get_layer_shapes" class="fn">get_layer_shapes</a>(
+    &amp;self,
+    net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+    layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+    in_layer_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+    out_layer_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Returns input and output shapes for layer with specified
+id in loaded model; preliminary inferencing isn’t necessary.</p>
+<h6 id="parameters-4"><a class="doc-anchor" href="#parameters-4">§</a>Parameters</h6>
+<ul>
+<li>netInputShape: shape input blob in net input layer.</li>
+<li>layerId: id for layer.</li>
+<li>inLayerShapes: output parameter for input layers shapes;
+order is the same as in layersIds</li>
+<li>outLayerShapes: output parameter for output layers shapes;
+order is the same as in layersIds</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_layer_shapes_1" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9116-9122">source</a><h4 class="code-header">fn <a href="#method.get_layer_shapes_1" class="fn">get_layer_shapes_1</a>(
+    &amp;self,
+    net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+    layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+    in_layer_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+    out_layer_shapes: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Returns input and output shapes for layer with specified
+id in loaded model; preliminary inferencing isn’t necessary.</p>
+<h6 id="parameters-5"><a class="doc-anchor" href="#parameters-5">§</a>Parameters</h6>
+<ul>
+<li>netInputShape: shape input blob in net input layer.</li>
+<li>layerId: id for layer.</li>
+<li>inLayerShapes: output parameter for input layers shapes;
+order is the same as in layersIds</li>
+<li>outLayerShapes: output parameter for output layers shapes;
+order is the same as in layersIds</li>
+</ul>
+<h6 id="overloaded-parameters-1"><a class="doc-anchor" href="#overloaded-parameters-1">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.get_flops" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9130-9136">source</a><h4 class="code-header">fn <a href="#method.get_flops" class="fn">get_flops</a>(&amp;self, net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i64.html">i64</a>&gt;</h4></section></summary><div class="docblock"><p>Computes FLOP for whole loaded model with specified input shapes.</p>
+<h6 id="parameters-6"><a class="doc-anchor" href="#parameters-6">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: vector of shapes for all net inputs.</li>
+</ul>
+<h6 id="returns"><a class="doc-anchor" href="#returns">§</a>Returns</h6>
+<p>computed FLOP.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_flops_1" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9146-9152">source</a><h4 class="code-header">fn <a href="#method.get_flops_1" class="fn">get_flops_1</a>(&amp;self, net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i64.html">i64</a>&gt;</h4></section></summary><div class="docblock"><p>Computes FLOP for whole loaded model with specified input shapes.</p>
+<h6 id="parameters-7"><a class="doc-anchor" href="#parameters-7">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: vector of shapes for all net inputs.</li>
+</ul>
+<h6 id="returns-1"><a class="doc-anchor" href="#returns-1">§</a>Returns</h6>
+<p>computed FLOP.</p>
+<h6 id="overloaded-parameters-2"><a class="doc-anchor" href="#overloaded-parameters-2">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.get_flops_2" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9162-9168">source</a><h4 class="code-header">fn <a href="#method.get_flops_2" class="fn">get_flops_2</a>(
+    &amp;self,
+    layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+    net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i64.html">i64</a>&gt;</h4></section></summary><div class="docblock"><p>Computes FLOP for whole loaded model with specified input shapes.</p>
+<h6 id="parameters-8"><a class="doc-anchor" href="#parameters-8">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: vector of shapes for all net inputs.</li>
+</ul>
+<h6 id="returns-2"><a class="doc-anchor" href="#returns-2">§</a>Returns</h6>
+<p>computed FLOP.</p>
+<h6 id="overloaded-parameters-3"><a class="doc-anchor" href="#overloaded-parameters-3">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.get_flops_3" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9178-9184">source</a><h4 class="code-header">fn <a href="#method.get_flops_3" class="fn">get_flops_3</a>(&amp;self, layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>, net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i64.html">i64</a>&gt;</h4></section></summary><div class="docblock"><p>Computes FLOP for whole loaded model with specified input shapes.</p>
+<h6 id="parameters-9"><a class="doc-anchor" href="#parameters-9">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: vector of shapes for all net inputs.</li>
+</ul>
+<h6 id="returns-3"><a class="doc-anchor" href="#returns-3">§</a>Returns</h6>
+<p>computed FLOP.</p>
+<h6 id="overloaded-parameters-4"><a class="doc-anchor" href="#overloaded-parameters-4">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.get_layer_types" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9190-9196">source</a><h4 class="code-header">fn <a href="#method.get_layer_types" class="fn">get_layer_types</a>(&amp;self, layers_types: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.80.0/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Returns list of types for layer used in model.</p>
+<h6 id="parameters-10"><a class="doc-anchor" href="#parameters-10">§</a>Parameters</h6>
+<ul>
+<li>layersTypes: output parameter for returning types.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_layers_count" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9204-9211">source</a><h4 class="code-header">fn <a href="#method.get_layers_count" class="fn">get_layers_count</a>(&amp;self, layer_type: &amp;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.str.html">str</a>) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;</h4></section></summary><div class="docblock"><p>Returns count of layers of specified type.</p>
+<h6 id="parameters-11"><a class="doc-anchor" href="#parameters-11">§</a>Parameters</h6>
+<ul>
+<li>layerType: type.</li>
+</ul>
+<h6 id="returns-4"><a class="doc-anchor" href="#returns-4">§</a>Returns</h6>
+<p>count of layers</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_memory_consumption" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9220-9226">source</a><h4 class="code-header">fn <a href="#method.get_memory_consumption" class="fn">get_memory_consumption</a>(
+    &amp;self,
+    net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+    weights: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+    blobs: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Computes bytes number which are required to store
+all weights and intermediate blobs for model.</p>
+<h6 id="parameters-12"><a class="doc-anchor" href="#parameters-12">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: vector of shapes for all net inputs.</li>
+<li>weights: output parameter to store resulting bytes for weights.</li>
+<li>blobs: output parameter to store resulting bytes for intermediate blobs.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_memory_consumption_1" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9237-9243">source</a><h4 class="code-header">fn <a href="#method.get_memory_consumption_1" class="fn">get_memory_consumption_1</a>(
+    &amp;self,
+    net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+    weights: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+    blobs: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Computes bytes number which are required to store
+all weights and intermediate blobs for model.</p>
+<h6 id="parameters-13"><a class="doc-anchor" href="#parameters-13">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: vector of shapes for all net inputs.</li>
+<li>weights: output parameter to store resulting bytes for weights.</li>
+<li>blobs: output parameter to store resulting bytes for intermediate blobs.</li>
+</ul>
+<h6 id="overloaded-parameters-5"><a class="doc-anchor" href="#overloaded-parameters-5">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.get_memory_consumption_for_layer" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9254-9260">source</a><h4 class="code-header">fn <a href="#method.get_memory_consumption_for_layer" class="fn">get_memory_consumption_for_layer</a>(
+    &amp;self,
+    layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+    net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+    weights: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+    blobs: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Computes bytes number which are required to store
+all weights and intermediate blobs for model.</p>
+<h6 id="parameters-14"><a class="doc-anchor" href="#parameters-14">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: vector of shapes for all net inputs.</li>
+<li>weights: output parameter to store resulting bytes for weights.</li>
+<li>blobs: output parameter to store resulting bytes for intermediate blobs.</li>
+</ul>
+<h6 id="overloaded-parameters-6"><a class="doc-anchor" href="#overloaded-parameters-6">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.get_memory_consumption_2" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9271-9277">source</a><h4 class="code-header">fn <a href="#method.get_memory_consumption_2" class="fn">get_memory_consumption_2</a>(
+    &amp;self,
+    layer_id: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+    net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+    weights: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+    blobs: &amp;mut <a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Computes bytes number which are required to store
+all weights and intermediate blobs for model.</p>
+<h6 id="parameters-15"><a class="doc-anchor" href="#parameters-15">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: vector of shapes for all net inputs.</li>
+<li>weights: output parameter to store resulting bytes for weights.</li>
+<li>blobs: output parameter to store resulting bytes for intermediate blobs.</li>
+</ul>
+<h6 id="overloaded-parameters-7"><a class="doc-anchor" href="#overloaded-parameters-7">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.get_memory_consumption_for_layers" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9287-9293">source</a><h4 class="code-header">fn <a href="#method.get_memory_consumption_for_layers" class="fn">get_memory_consumption_for_layers</a>(
+    &amp;self,
+    net_input_shapes: &amp;<a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>&gt;,
+    layer_ids: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+    weights: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>&gt;,
+    blobs: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>&gt;,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Computes bytes number which are required to store
+all weights and intermediate blobs for each layer.</p>
+<h6 id="parameters-16"><a class="doc-anchor" href="#parameters-16">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: vector of shapes for all net inputs.</li>
+<li>layerIds: output vector to save layer IDs.</li>
+<li>weights: output parameter to store resulting bytes for weights.</li>
+<li>blobs: output parameter to store resulting bytes for intermediate blobs.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_memory_consumption_3" class="method"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9305-9311">source</a><h4 class="code-header">fn <a href="#method.get_memory_consumption_3" class="fn">get_memory_consumption_3</a>(
+    &amp;self,
+    net_input_shape: &amp;<a class="type" href="type.MatShape.html" title="type opencv::opencv::hub::dnn::MatShape">MatShape</a>,
+    layer_ids: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>&gt;,
+    weights: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>&gt;,
+    blobs: &amp;mut <a class="struct" href="../../../manual/core/vector/struct.Vector.html" title="struct opencv::manual::core::vector::Vector">Vector</a>&lt;<a class="type" href="../../../platform_types/type.size_t.html" title="type opencv::platform_types::size_t">size_t</a>&gt;,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Computes bytes number which are required to store
+all weights and intermediate blobs for each layer.</p>
+<h6 id="parameters-17"><a class="doc-anchor" href="#parameters-17">§</a>Parameters</h6>
+<ul>
+<li>netInputShapes: vector of shapes for all net inputs.</li>
+<li>layerIds: output vector to save layer IDs.</li>
+<li>weights: output parameter to store resulting bytes for weights.</li>
+<li>blobs: output parameter to store resulting bytes for intermediate blobs.</li>
+</ul>
+<h6 id="overloaded-parameters-8"><a class="doc-anchor" href="#overloaded-parameters-8">§</a>Overloaded parameters</h6></div></details></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-NetTraitConst-for-BoxedRef%3C'_,+Net%3E" class="impl"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9922">source</a><a href="#impl-NetTraitConst-for-BoxedRef%3C'_,+Net%3E" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.NetTraitConst.html" title="trait opencv::opencv::hub::dnn::NetTraitConst">NetTraitConst</a> for <a class="struct" href="../../../boxed_ref/struct.BoxedRef.html" title="struct opencv::boxed_ref::BoxedRef">BoxedRef</a>&lt;'_, <a class="struct" href="struct.Net.html" title="struct opencv::opencv::hub::dnn::Net">Net</a>&gt;</h3></section><section id="impl-NetTraitConst-for-BoxedRefMut%3C'_,+Net%3E" class="impl"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9922">source</a><a href="#impl-NetTraitConst-for-BoxedRefMut%3C'_,+Net%3E" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.NetTraitConst.html" title="trait opencv::opencv::hub::dnn::NetTraitConst">NetTraitConst</a> for <a class="struct" href="../../../boxed_ref/struct.BoxedRefMut.html" title="struct opencv::boxed_ref::BoxedRefMut">BoxedRefMut</a>&lt;'_, <a class="struct" href="struct.Net.html" title="struct opencv::opencv::hub::dnn::Net">Net</a>&gt;</h3></section><section id="impl-NetTraitConst-for-Net" class="impl"><a class="src rightside" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/dnn.rs.html#9914-9916">source</a><a href="#impl-NetTraitConst-for-Net" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.NetTraitConst.html" title="trait opencv::opencv::hub::dnn::NetTraitConst">NetTraitConst</a> for <a class="struct" href="struct.Net.html" title="struct opencv::opencv::hub::dnn::Net">Net</a></h3></section></div><script src="../../../../trait.impl/opencv/opencv/hub/dnn/trait.NetTraitConst.js" async></script></section></div></main></body></html>

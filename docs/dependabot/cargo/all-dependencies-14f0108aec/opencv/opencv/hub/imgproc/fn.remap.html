@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Applies a generic geometrical transformation to an image."><title>remap in opencv::opencv::hub::imgproc - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0 (051478957 2024-07-21)" data-channel="1.80.0" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../opencv/index.html">opencv</a><span class="version">0.92.1</span></h2></div><div class="sidebar-elems"><h2><a href="index.html">In opencv::opencv::hub::imgproc</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Function <a href="../../../index.html">opencv</a>::<wbr><a href="../../index.html">opencv</a>::<wbr><a href="../index.html">hub</a>::<wbr><a href="index.html">imgproc</a>::<wbr><a class="fn" href="#">remap</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-020fe3784c2ac8e0/out/opencv/imgproc.rs.html#10001-10011">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub fn remap(
+    src: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    dst: &amp;mut impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    map1: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    map2: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    interpolation: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+    border_mode: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+    border_value: <a class="type" href="../core/type.Scalar.html" title="type opencv::opencv::hub::core::Scalar">Scalar</a>,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Applies a generic geometrical transformation to an image.</p>
+<p>The function remap transforms the source image using the specified map:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7Bdst%7D%20%28x%2Cy%29%20%3D%20%20%5Ctexttt%7Bsrc%7D%20%28map%5Fx%28x%2Cy%29%2Cmap%5Fy%28x%2Cy%29%29" alt="block formula" /></p>
+<p>where values of pixels with non-integer coordinates are computed using one of available
+interpolation methods. <img src="https://latex.codecogs.com/png.latex?map%5Fx" alt="inline formula" /> and <img src="https://latex.codecogs.com/png.latex?map%5Fy" alt="inline formula" /> can be encoded as separate floating-point maps
+in <img src="https://latex.codecogs.com/png.latex?map%5F1" alt="inline formula" /> and <img src="https://latex.codecogs.com/png.latex?map%5F2" alt="inline formula" /> respectively, or interleaved floating-point maps of <img src="https://latex.codecogs.com/png.latex?%28x%2Cy%29" alt="inline formula" /> in
+<img src="https://latex.codecogs.com/png.latex?map%5F1" alt="inline formula" />, or fixed-point maps created by using convertMaps. The reason you might want to
+convert from floating to fixed-point representations of a map is that they can yield much faster
+(~2x) remapping operations. In the converted case, <img src="https://latex.codecogs.com/png.latex?map%5F1" alt="inline formula" /> contains pairs (cvFloor(x),
+cvFloor(y)) and <img src="https://latex.codecogs.com/png.latex?map%5F2" alt="inline formula" /> contains indices in a table of interpolation coefficients.</p>
+<p>This function cannot operate in-place.</p>
+<h3 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h3>
+<ul>
+<li>src: Source image.</li>
+<li>dst: Destination image. It has the same size as map1 and the same type as src .</li>
+<li>map1: The first map of either (x,y) points or just x values having the type CV_16SC2 ,
+CV_32FC1, or CV_32FC2. See convertMaps for details on converting a floating point
+representation to fixed-point for speed.</li>
+<li>map2: The second map of y values having the type CV_16UC1, CV_32FC1, or none (empty map
+if map1 is (x,y) points), respectively.</li>
+<li>interpolation: Interpolation method (see #InterpolationFlags). The methods <a href="constant.INTER_AREA.html" title="constant opencv::opencv::hub::imgproc::INTER_AREA">INTER_AREA</a>
+and <a href="constant.INTER_LINEAR_EXACT.html" title="constant opencv::opencv::hub::imgproc::INTER_LINEAR_EXACT">INTER_LINEAR_EXACT</a> are not supported by this function.</li>
+<li>borderMode: Pixel extrapolation method (see #BorderTypes). When
+borderMode=#BORDER_TRANSPARENT, it means that the pixels in the destination image that
+corresponds to the “outliers” in the source image are not modified by the function.</li>
+<li>borderValue: Value used in case of a constant border. By default, it is 0.</li>
+</ul>
+<p>Note:
+Due to current implementation limitations the size of an input and output images should be less than 32767x32767.</p>
+<h3 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h3>
+<ul>
+<li>border_mode: BORDER_CONSTANT</li>
+<li>border_value: Scalar()</li>
+</ul>
+</div></details></section></div></main></body></html>
