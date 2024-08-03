@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["full_fence"],"macro":["impl_for_numeric_types"],"mod":["__private"],"struct":["GenericNotify"],"trait":["IntoNotification","Notification","TagProducer"]};

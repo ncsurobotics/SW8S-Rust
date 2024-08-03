@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Prefilter","SearcherKind","SearcherRevKind"],"fn":["find","find_iter","rfind","rfind_iter"],"mod":["byte_frequencies","genericsimd","prefilter","rabinkarp","rarebytes","twoway","util","vector","x86"],"struct":["FindIter","FindRevIter","Finder","FinderBuilder","FinderRev","NeedleInfo","Searcher","SearcherConfig","SearcherRev"]};
