@@ -1218,6 +1218,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nonzero"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d9b9acd66930a3f7754cac98e17dbb17eb8018ad2c0b2e9ccccfbf23330127e"
+dependencies = [
+ "num-traits",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.68",
+]
+
+[[package]]
 name = "num-traits"
 version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1964,6 +1976,7 @@ dependencies = [
  "futures",
  "graphviz-rust",
  "itertools 0.13.0",
+ "nonzero",
  "num-traits",
  "opencv",
  "paste",

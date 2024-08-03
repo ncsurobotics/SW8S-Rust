@@ -118,7 +118,7 @@ impl<V: Action, W: Action, X: Action> Action for ActionConditional<V, W, X> {
         }
         DotString {
             head_ids: condition_str.head_ids,
-            tail_ids: vec![true_str.head_ids, false_str.head_ids]
+            tail_ids: vec![true_str.tail_ids, false_str.tail_ids]
                 .into_iter()
                 .flatten()
                 .collect(),
@@ -152,6 +152,110 @@ impl<U: Send + Sync, V: ActionExec<bool>, W: ActionExec<U>, X: ActionExec<U>> Ac
         } else {
             self.false_branch.execute().await
         }
+    }
+}
+
+/**
+ * An action that runs one of two actions depending on if its conditional
+ * reference is valid or not, passing processed output to the first child and
+ * unprocessed output to the second child.
+ */
+#[derive(Debug, Clone)]
+pub struct ActionDataConditional<V: Action, W: Action, X: Action, T, Y> {
+    condition: V,
+    true_branch: W,
+    false_branch: X,
+    _phantom: (PhantomData<T>, PhantomData<Y>),
+}
+
+impl<V: Action, W: Action, X: Action, T, Y> Action for ActionDataConditional<V, W, X, T, Y> {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let true_str = self.true_branch.dot_string(stripped_type::<Self>());
+        let false_str = self.false_branch.dot_string(stripped_type::<Self>());
+        let condition_str = self.condition.dot_string(stripped_type::<Self>());
+
+        let mut combined_str = true_str.body + &false_str.body + &condition_str.body;
+        for tail_id in &condition_str.tail_ids {
+            combined_str.push_str(&format!("\"{}\" [shape = diamond];\n", tail_id));
+            for head_id in &true_str.head_ids {
+                combined_str.push_str(&format!(
+                    "\"{}\" -> \"{}\" [color = purple, fontcolor = purple, label = \"True (Pass Data)\"];\n",
+                    tail_id, head_id,
+                ));
+            }
+            for head_id in &false_str.head_ids {
+                combined_str.push_str(&format!(
+                    "\"{}\" -> \"{}\" [label = \"False\"];\n",
+                    tail_id, head_id,
+                ));
+            }
+        }
+        for condition_head_id in &condition_str.head_ids {
+            for head_id in &false_str.head_ids {
+                combined_str.push_str(&format!(
+                    "\"{}\" -> \"{}\" [color = purple, fontcolor = purple, label = \"Pass Data\"];\n",
+                    condition_head_id, head_id,
+                ));
+            }
+        }
+        DotString {
+            head_ids: condition_str.head_ids,
+            tail_ids: vec![true_str.tail_ids, false_str.tail_ids]
+                .into_iter()
+                .flatten()
+                .collect(),
+            body: combined_str,
+        }
+    }
+}
+
+/**
+ * Implementation for the ActionDataConditional struct.
+ */
+impl<V: Action, W: Action, X: Action, T, Y> ActionDataConditional<V, W, X, T, Y> {
+    pub const fn new(condition: V, true_branch: W, false_branch: X) -> Self {
+        Self {
+            condition,
+            true_branch,
+            false_branch,
+            _phantom: (PhantomData, PhantomData),
+        }
+    }
+}
+
+/**
+ * Implement the passing and conditional logic.
+ */
+impl<
+        T: Send + Sync,
+        Input: Send + Sync,
+        U: Send + Sync,
+        V: ActionExec<Option<T>> + ActionMod<Input>,
+        W: ActionExec<U> + ActionMod<T>,
+        X: ActionExec<U> + ActionMod<Input>,
+    > ActionExec<U> for ActionDataConditional<V, W, X, T, Input>
+{
+    async fn execute(&mut self) -> U {
+        if let Some(output) = self.condition.execute().await {
+            self.true_branch.modify(&output);
+            self.true_branch.execute().await
+        } else {
+            self.false_branch.execute().await
+        }
+    }
+}
+
+impl<
+        V: ActionMod<Input> + Sync + Send,
+        W: Action,
+        X: ActionMod<Input> + Sync + Send,
+        T,
+        Input: Send + Sync,
+    > ActionMod<Input> for ActionDataConditional<V, W, X, T, Input>
+{
+    fn modify(&mut self, input: &Input) {
+        self.condition.modify(input);
+        self.false_branch.modify(input);
     }
 }
 
@@ -359,7 +463,6 @@ impl<T: Send + Sync, U: Send + Sync, V: ActionExec<T>, W: ActionMod<T> + ActionE
     ActionExec<U> for ActionChain<T, V, W>
 {
     async fn execute(&mut self) -> U {
-        let _: T = self.first.execute().await;
         self.second.modify(&self.first.execute().await);
         self.second.execute().await
     }
@@ -386,7 +489,8 @@ impl<T, V: Action, W: Action> Action for ActionSequence<T, V, W> {
         let second_str = self.second.dot_string(stripped_type::<Self>());
 
         let mut label = "";
-        if stripped_type::<V>() == "ActionWhile" {
+        let first_type = stripped_type::<V>();
+        if ["ActionWhile", "ActionDataConditional", "ActionConditional"].contains(&first_type) {
             label = "[label = \"False\"]";
         }
 
@@ -398,7 +502,11 @@ impl<T, V: Action, W: Action> Action for ActionSequence<T, V, W> {
         }
 
         DotString {
-            head_ids: first_str.head_ids,
+            head_ids: if first_type != "Terminal" {
+                first_str.head_ids
+            } else {
+                second_str.head_ids
+            },
             tail_ids: second_str.tail_ids,
             body: body_str,
         }
@@ -421,6 +529,14 @@ impl<T: Send + Sync, X: Send + Sync, V: ActionExec<T>, W: ActionExec<X>> ActionE
     async fn execute(&mut self) -> X {
         self.first.execute().await;
         self.second.execute().await
+    }
+}
+
+impl<T: Send + Sync, X: Send + Sync, V: ActionMod<X>, W: Action> ActionMod<X>
+    for ActionSequence<T, V, W>
+{
+    fn modify(&mut self, input: &X) {
+        self.first.modify(input)
     }
 }
 
@@ -628,6 +744,113 @@ impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> 
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ActionConcurrentSplit<V: Action, W: Action> {
+    first: V,
+    second: W,
+}
+
+impl<V: Action, W: Action> Action for ActionConcurrentSplit<V, W> {
+    fn dot_string(&self, parent: &str) -> DotString {
+        let mut self_type = stripped_type::<Self>().to_string();
+        if parent.contains("FirstValid")
+            && (parent == "FirstValid" || parent.contains("Concurrent"))
+        {
+            self_type += "_FirstValid";
+        }
+
+        let first_str = self.first.dot_string(&self_type);
+        let second_str = self.second.dot_string(&self_type);
+        let (concurrent_head, concurrent_tail) = (Uuid::new_v4(), Uuid::new_v4());
+
+        if parent.contains(stripped_type::<Self>()) {
+            DotString {
+                head_ids: [first_str.head_ids, second_str.head_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                tail_ids: [first_str.tail_ids, second_str.tail_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                body: first_str.body + &second_str.body,
+            }
+        } else {
+            let mut name = "Concurrent";
+            let mut color = "blue";
+            if parent == "FirstValid" {
+                name = "FirstValid (Concurrent)";
+                color = "darkgreen";
+            }
+
+            let mut body_str = format!(
+                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {};\n\"{}\" [label = \"{}\", shape = box, fontcolor = {}, style = dashed];\n",
+                Uuid::new_v4(),
+                color,
+                concurrent_head,
+                name,
+                color,
+            );
+
+            body_str.push_str(&(first_str.body + &second_str.body));
+            vec![first_str.head_ids, second_str.head_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| {
+                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id))
+                });
+
+            let tail_ids = if parent != "TupleSecond" {
+                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = {}, style = dashed];\n", concurrent_tail, color)));
+                vec![first_str.tail_ids, second_str.tail_ids.clone()]
+                    .into_iter()
+                    .flatten()
+                    .for_each(|id| {
+                        body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
+                    });
+                vec![concurrent_tail]
+            } else {
+                second_str.tail_ids
+            };
+
+            body_str.push_str("}\n");
+
+            DotString {
+                head_ids: vec![concurrent_head],
+                tail_ids,
+                body: body_str,
+            }
+        }
+    }
+}
+
+impl<V: Action, W: Action> ActionConcurrentSplit<V, W> {
+    pub const fn new(first: V, second: W) -> Self {
+        Self { first, second }
+    }
+}
+
+impl<X: Send + Sync, Y: Send + Sync, V: ActionExec<Y>, W: ActionExec<X>> ActionExec<(Y, X)>
+    for ActionConcurrentSplit<V, W>
+{
+    async fn execute(&mut self) -> (Y, X) {
+        join!(self.first.execute(), self.second.execute())
+    }
+}
+
+impl<
+        InputLhs: Send + Sync,
+        InputRhs: Send + Sync,
+        V: ActionMod<InputLhs> + Sync + Send,
+        W: ActionMod<InputRhs> + Sync + Send,
+    > ActionMod<(InputLhs, InputRhs)> for ActionConcurrentSplit<V, W>
+{
+    fn modify(&mut self, input: &(InputLhs, InputRhs)) {
+        self.first.modify(&input.0);
+        self.second.modify(&input.1);
+    }
+}
+
 /**
  * An action that tries `count` times for a success
  */
@@ -828,5 +1051,104 @@ impl<U: Send + Sync, T: ActionExec<(Option<U>, Option<U>)>> ActionExec<Option<U>
         } else {
             second
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ActionSelect<V: Action, W: Action> {
+    first: V,
+    second: W,
+}
+
+impl<V: Action, W: Action> Action for ActionSelect<V, W> {
+    fn dot_string(&self, parent: &str) -> DotString {
+        let mut self_type = stripped_type::<Self>().to_string();
+        if parent.contains("FirstValid") && (parent == "FirstValid" || parent.contains("Select")) {
+            self_type += "_FirstValid";
+        }
+
+        let first_str = self.first.dot_string(&self_type);
+        let second_str = self.second.dot_string(&self_type);
+        let (concurrent_head, concurrent_tail) = (Uuid::new_v4(), Uuid::new_v4());
+
+        if parent.contains(stripped_type::<Self>()) {
+            DotString {
+                head_ids: [first_str.head_ids, second_str.head_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                tail_ids: [first_str.tail_ids, second_str.tail_ids]
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                body: first_str.body + &second_str.body,
+            }
+        } else {
+            let mut name = "Select";
+            let mut color = "blue";
+            if parent == "FirstValid" {
+                name = "FirstValid (Select)";
+                color = "darkgreen";
+            }
+
+            let mut body_str = format!(
+                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {};\n\"{}\" [label = \"{}\", shape = box, fontcolor = {}, style = dashed];\n",
+                Uuid::new_v4(),
+                color,
+                concurrent_head,
+                name,
+                color,
+            );
+
+            body_str.push_str(&(first_str.body + &second_str.body));
+            vec![first_str.head_ids, second_str.head_ids]
+                .into_iter()
+                .flatten()
+                .for_each(|id| {
+                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id))
+                });
+
+            let tail_ids = if parent != "TupleSecond" {
+                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = {}, style = dashed];\n", concurrent_tail, color)));
+                vec![first_str.tail_ids, second_str.tail_ids.clone()]
+                    .into_iter()
+                    .flatten()
+                    .for_each(|id| {
+                        body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
+                    });
+                vec![concurrent_tail]
+            } else {
+                second_str.tail_ids
+            };
+
+            body_str.push_str("}\n");
+
+            DotString {
+                head_ids: vec![concurrent_head],
+                tail_ids,
+                body: body_str,
+            }
+        }
+    }
+}
+
+impl<V: Action, W: Action> ActionSelect<V, W> {
+    pub const fn new(first: V, second: W) -> Self {
+        Self { first, second }
+    }
+}
+
+impl<X: Send + Sync, V: ActionExec<X>, W: ActionExec<X>> ActionExec<X> for ActionSelect<V, W> {
+    async fn execute(&mut self) -> X {
+        tokio::select!(x = self.first.execute() => x, x = self.second.execute() => x)
+    }
+}
+
+impl<Input: Send + Sync, V: ActionMod<Input> + Sync + Send, W: ActionMod<Input> + Sync + Send>
+    ActionMod<Input> for ActionSelect<V, W>
+{
+    fn modify(&mut self, input: &Input) {
+        self.first.modify(input);
+        self.second.modify(input);
     }
 }

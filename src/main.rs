@@ -12,11 +12,16 @@ use sw8s_rust_lib::{
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
+        align_buoy::buoy_align,
         basic::descend_and_go_forward,
-        circle_buoy::{buoy_circle_sequence, buoy_circle_sequence_model},
+        circle_buoy::{
+            buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
+        },
         example::initial_descent,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
+        meb::WaitArm,
         octagon::look_up_octagon,
+        vision::PIPELINE_KILL,
     },
     video_source::appsink::Camera,
     vision::buoy::Target,
@@ -90,26 +95,58 @@ async fn gate_target() -> &'static RwLock<Target> {
         .await
 }
 
+static STATIC_CONTEXT: OnceCell<FullActionContext<WriteHalf<SerialStream>>> = OnceCell::const_new();
+async fn static_context() -> &'static FullActionContext<'static, WriteHalf<SerialStream>> {
+    STATIC_CONTEXT
+        .get_or_init(|| async {
+            FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            )
+        })
+        .await
+}
+
 #[tokio::main]
 async fn main() {
     let shutdown_tx = shutdown_handler().await;
     let _config = Configuration::default();
+
+    let shutdown_tx_clone = shutdown_tx.clone();
+    tokio::spawn(async move {
+        let meb = meb().await;
+
+        // Wait for arm condition
+        while meb.thruster_arm().await != Some(true) {
+            sleep(Duration::from_secs(1)).await;
+        }
+
+        // Wait for disarm condition
+        while meb.thruster_arm().await != Some(false) {
+            sleep(Duration::from_secs(1)).await;
+        }
+
+        shutdown_tx_clone.send(1).unwrap();
+    });
 
     for arg in env::args().skip(1).collect::<Vec<String>>() {
         run_mission(&arg).await.unwrap();
     }
 
     // Send shutdown signal
-    shutdown_tx.send(()).unwrap();
+    shutdown_tx.send(0).unwrap();
 }
 
 /// Graceful shutdown, see <https://tokio.rs/tokio/topics/shutdown>
-async fn shutdown_handler() -> UnboundedSender<()> {
-    let (shutdown_tx, mut shutdown_rx) = mpsc::unbounded_channel::<()>();
+async fn shutdown_handler() -> UnboundedSender<i32> {
+    let (shutdown_tx, mut shutdown_rx) = mpsc::unbounded_channel::<i32>();
     tokio::spawn(async move {
         // Wait for shutdown signal
         let exit_status =
-            tokio::select! {_ = signal::ctrl_c() => { 1 }, _ = shutdown_rx.recv() => { 0 }};
+            tokio::select! {_ = signal::ctrl_c() => { 1 }, Some(x) = shutdown_rx.recv() => { x }};
 
         let status = control_board().await.sensor_status_query().await;
 
@@ -144,15 +181,9 @@ async fn shutdown_handler() -> UnboundedSender<()> {
 }
 
 async fn run_mission(mission: &str) -> Result<()> {
-    match mission.to_lowercase().as_str() {
+    let res = match mission.to_lowercase().as_str() {
         "arm" => {
-            let cntrl_ready = tokio::spawn(async { control_board().await });
-            println!("Waiting on MEB");
-            while meb().await.thruster_arm().await != Some(true) {
-                sleep(Duration::from_millis(10)).await;
-            }
-            println!("Got MEB");
-            let _ = cntrl_ready.await;
+            WaitArm::new(static_context().await).execute().await;
             Ok(())
         }
         "empty" => {
@@ -364,17 +395,35 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "buoy_model" => {
-            let _ = buoy_circle_sequence_model(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
+            let _ = buoy_circle_sequence_model(static_context().await)
+                .execute()
+                .await;
             Ok(())
         }
+        "buoy_blind" => {
+            let _ = buoy_circle_sequence_blind(static_context().await)
+                .execute()
+                .await;
+            Ok(())
+        }
+        "buoy_align" => {
+            let _ = buoy_align(static_context().await).execute().await;
+            Ok(())
+        }
+        // Just stall out forever
+        "forever" | "infinite" => loop {
+            while control_board().await.raw_speed_set([0.0; 8]).await.is_err() {}
+            sleep(Duration::from_secs(u64::MAX)).await;
+        },
         x => bail!("Invalid argument: [{x}]"),
+    };
+
+    // Kill any vision pipelines
+    PIPELINE_KILL.write().unwrap().1 = true;
+    while PIPELINE_KILL.read().unwrap().0 > 0 {
+        sleep(Duration::from_millis(100)).await;
     }
+    PIPELINE_KILL.write().unwrap().1 = false;
+
+    res
 }

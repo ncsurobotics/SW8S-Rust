@@ -4,13 +4,20 @@ use tokio_serial::SerialStream;
 use crate::{
     act_nest,
     missions::{
-        movement::{ConfidenceY, FlipX, StripY},
+        action::{ActionConcurrentSplit, ActionDataConditional, ActionSelect},
+        basic::descend_depth_and_go_forward,
+        extra::{AlwaysFalse, AlwaysTrue, Terminal},
+        meb::WaitArm,
+        movement::{
+            AdjustType, ClampX, FlipX, ReplaceX, SetSideBlue, SetSideRed, SetY, Stability1Adjust,
+            Stability1Movement, Stability1Pos,
+        },
         vision::{MidPoint, OffsetClass},
     },
     vision::{
         gate_poles::{GatePoles, Target},
         nn_cv2::{OnnxModel, YoloClass},
-        Offset2D, VisualDetection,
+        Offset2D,
     },
 };
 
@@ -20,14 +27,14 @@ use super::{
         ActionWhile, FirstValid, TupleSecond,
     },
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
-    basic::descend_and_go_forward,
+    basic::{descend_and_go_forward, DelayAction},
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, OutputType, ToVec},
+    extra::{CountFalse, CountTrue, InOrderFail, OutputType},
     movement::{
         AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
         Stability2Pos, ZeroMovement,
     },
-    vision::{Average, DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
+    vision::{DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
 };
 
 pub fn gate_run_naive<
@@ -39,7 +46,7 @@ pub fn gate_run_naive<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    let depth: f32 = -1.0;
+    let depth: f32 = -1.5;
 
     ActionSequence::new(
         ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
@@ -77,15 +84,29 @@ pub fn gate_run_complex<
 >(
     context: &Con,
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
-    let depth: f32 = -1.0;
+    const TIMEOUT: f32 = 30.0;
+
+    let first_depth: f32 = -0.75;
+    let depth: f32 = -1.25;
 
     ActionSequence::new(
-        ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
+        ActionConcurrent::new(
+            descend_depth_and_go_forward(context, first_depth),
+            StartBno055::new(context),
+        ),
         act_nest!(
             ActionSequence::new,
-            adjust_logic(context, depth, CountTrue::new(4)),
-            adjust_logic(context, depth, CountFalse::new(4)),
-            ZeroMovement::new(context, depth)
+            adjust_logic(context, first_depth, CountTrue::new(4)),
+            adjust_logic_timeout(context, depth, TIMEOUT, CountFalse::new(4)),
+            ActionChain::new(
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
+                ),
+                OutputType::<()>::default()
+            ),
+            DelayAction::new(3.0),
+            ZeroMovement::new(context, depth),
         ),
     )
 }
@@ -97,9 +118,7 @@ pub fn adjust_logic<
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
         + GetFrontCamMat,
-    X: 'a
-        + ActionMod<Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
-        + ActionExec<anyhow::Result<()>>,
+    X: 'a + ActionMod<bool> + ActionExec<anyhow::Result<()>>,
 >(
     context: &'a Con,
     depth: f32,
@@ -110,30 +129,66 @@ pub fn adjust_logic<
     ActionWhile::new(ActionChain::new(
         VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
         ActionChain::new(
-            act_nest!(
-                wrap_action(ActionConcurrent::new, FirstValid::new),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+            ActionDataConditional::new(
+                act_nest!(
+                    wrap_action(ActionConcurrent::new, FirstValid::new),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
+                ),
+                act_nest!(
+                    ActionConcurrent::new,
+                    act_nest!(
+                        ActionChain::new,
+                        OffsetClass::new(Target::Middle, Offset2D::<f64>::new(-0.1, 0.0)),
+                        ExtractPosition::new(),
+                        MidPoint::new(),
+                        OffsetToPose::default(),
+                        LinearYawFromX::<Stability2Adjust>::default(),
+                        ClampX::new(0.4),
+                        SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.02)),
+                        FlipX::default(),
+                        SetSideBlue::new(),
+                    ),
+                    AlwaysTrue::new(),
+                ),
+                ActionDataConditional::new(
+                    FirstValid::new(ActionConcurrent::new(
+                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
+                    )),
+                    act_nest!(
+                        ActionConcurrent::new,
+                        act_nest!(
+                            ActionChain::new,
+                            ExtractPosition::new(),
+                            MidPoint::new(),
+                            OffsetToPose::default(),
+                            LinearYawFromX::<Stability2Adjust>::default(),
+                            ClampX::new(0.2),
+                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
+                            ReplaceX::new(),
+                            SetSideRed::new(),
+                        ),
+                        AlwaysTrue::new(),
+                    ),
+                    ActionConcurrent::new(
+                        ActionSequence::new(
+                            Terminal::new(),
+                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.4)),
+                        ),
+                        AlwaysFalse::new(),
+                    ),
+                ),
             ),
-            TupleSecond::new(ActionConcurrent::new(
+            TupleSecond::new(ActionConcurrentSplit::new(
                 act_nest!(
                     ActionChain::new,
-                    ToVec::new(),
-                    OffsetClass::new(Target::Middle, Offset2D::<f64>::new(-0.1, 0.0)),
-                    ExtractPosition::new(),
-                    MidPoint::new(),
-                    OffsetToPose::default(),
-                    LinearYawFromX::<Stability2Adjust>::default(),
-                    ConfidenceY::default(),
-                    FlipX::default(),
                     Stability2Movement::new(
                         context,
-                        Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth)
+                        Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth),
                     ),
-                    OutputType::<()>::new()
+                    OutputType::<()>::new(),
                 ),
                 end_condition,
             )),
@@ -141,98 +196,97 @@ pub fn adjust_logic<
     ))
 }
 
-pub fn adjust_left<
+pub fn adjust_logic_timeout<
     'a,
     Con: Send
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
         + GetFrontCamMat,
-    X: 'a
-        + ActionMod<Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
-        + ActionExec<anyhow::Result<()>>,
+    X: 'a + ActionMod<bool> + ActionExec<anyhow::Result<()>>,
 >(
     context: &'a Con,
     depth: f32,
+    timeout: f32,
     end_condition: X,
 ) -> impl ActionExec<()> + 'a {
-    const GATE_TRAVERSAL_SPEED: f32 = 0.5;
+    const GATE_TRAVERSAL_SPEED: f32 = 0.2;
 
-    ActionWhile::new(ActionChain::new(
-        VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
-        ActionChain::new(
-            act_nest!(
-                wrap_action(ActionConcurrent::new, FirstValid::new),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
-            ),
-            TupleSecond::new(ActionConcurrent::new(
-                act_nest!(
-                    ActionChain::new,
-                    ToVec::new(),
-                    ExtractPosition::new(),
-                    Average::new(),
-                    OffsetToPose::default(),
-                    LinearYawFromX::<Stability2Adjust>::default(),
-                    StripY::default(),
-                    Stability2Movement::new(
-                        context,
-                        Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth)
+    ActionSelect::new(
+        ActionWhile::new(ActionChain::new(
+            VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
+            ActionChain::new(
+                ActionDataConditional::new(
+                    act_nest!(
+                        wrap_action(ActionConcurrent::new, FirstValid::new),
+                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
+                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
+                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
+                            Target::Middle
+                        ),
                     ),
-                    OutputType::<()>::new()
-                ),
-                end_condition,
-            )),
-        ),
-    ))
-}
-
-pub fn adjust_right<
-    'a,
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
-    X: 'a
-        + ActionMod<Option<Vec<VisualDetection<YoloClass<Target>, Offset2D<f64>>>>>
-        + ActionExec<anyhow::Result<()>>,
->(
-    context: &'a Con,
-    depth: f32,
-    end_condition: X,
-) -> impl ActionExec<()> + 'a {
-    const GATE_TRAVERSAL_SPEED: f32 = 0.5;
-
-    ActionWhile::new(ActionChain::new(
-        VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
-        ActionChain::new(
-            act_nest!(
-                wrap_action(ActionConcurrent::new, FirstValid::new),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
-                DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
-            ),
-            TupleSecond::new(ActionConcurrent::new(
-                act_nest!(
-                    ActionChain::new,
-                    ToVec::new(),
-                    ExtractPosition::new(),
-                    Average::new(),
-                    OffsetToPose::default(),
-                    LinearYawFromX::<Stability2Adjust>::default(),
-                    StripY::default(),
-                    Stability2Movement::new(
-                        context,
-                        Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth)
+                    ActionConcurrent::new(
+                        act_nest!(
+                            ActionChain::new,
+                            OffsetClass::new(Target::Middle, Offset2D::<f64>::new(-0.1, 0.0)),
+                            ExtractPosition::new(),
+                            MidPoint::new(),
+                            OffsetToPose::default(),
+                            LinearYawFromX::<Stability2Adjust>::default(),
+                            ClampX::new(0.4),
+                            SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.02)),
+                            FlipX::default(),
+                            SetSideBlue::new(),
+                        ),
+                        AlwaysTrue::new(),
                     ),
-                    OutputType::<()>::new()
+                    ActionDataConditional::new(
+                        FirstValid::new(ActionConcurrent::new(
+                            DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
+                                Target::Pole,
+                            ),
+                            DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
+                                Target::Red,
+                            ),
+                        )),
+                        ActionConcurrent::new(
+                            act_nest!(
+                                ActionChain::new,
+                                ExtractPosition::new(),
+                                MidPoint::new(),
+                                OffsetToPose::default(),
+                                LinearYawFromX::<Stability2Adjust>::default(),
+                                ClampX::new(0.2),
+                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
+                                ReplaceX::new(),
+                                SetSideRed::new(),
+                            ),
+                            AlwaysTrue::new(),
+                        ),
+                        ActionConcurrent::new(
+                            ActionSequence::new(
+                                Terminal::new(),
+                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.0)),
+                            ),
+                            AlwaysFalse::new(),
+                        ),
+                    ),
                 ),
-                end_condition,
-            )),
-        ),
-    ))
+                TupleSecond::new(ActionConcurrentSplit::new(
+                    act_nest!(
+                        ActionChain::new,
+                        Stability2Movement::new(
+                            context,
+                            Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 30.0, 0.0, None, depth),
+                        ),
+                        OutputType::<()>::new(),
+                    ),
+                    end_condition,
+                )),
+            ),
+        )),
+        DelayAction::new(timeout),
+    )
 }
 
 pub fn gate_run_testing<

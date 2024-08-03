@@ -1,25 +1,20 @@
 use anyhow::Result;
 use derive_getters::Getters;
+use itertools::Itertools;
 use opencv::{
-    core::{Rect2d, Scalar, Size, VecN, Vector, CV_32F},
+    core::{MatTraitConstManual, Rect2d, Scalar, Size, VecN, Vector, CV_32F},
     dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
+use std::hash::Hash;
 use std::{
     fmt::Debug,
-    iter,
     ops::{Deref, DerefMut},
-    sync::{Arc, Condvar, Mutex},
+    sync::Mutex,
 };
-use std::{hash::Hash, num::NonZeroUsize};
-use tokio::task::spawn_blocking;
 
 #[cfg(feature = "cuda_min_max_loc")]
 use opencv::cudaarithm::min_max_loc as cuda_min_max_loc;
-
-use crate::vision::VecMatWrapper;
-
-use super::MatWrapper;
 
 #[derive(Debug, Clone, Getters, PartialEq)]
 pub struct YoloDetection {
@@ -300,7 +295,7 @@ impl VisionModel for OnnxModel {
         );
 
         #[cfg(not(feature = "cuda"))]
-        let post_processing = Self::process_net(self.num_objects, self.factor, result.0, threshold);
+        let post_processing = Self::process_net(self.num_objects, self.factor, result, threshold);
 
         post_processing
     }
@@ -330,10 +325,10 @@ impl VisionModel for OnnxModel {
             .forward(&mut result, &result_names)
             .unwrap();
 
-        VecMatWrapper(result)
+        result
     }
 
-    type ModelOutput = VecMatWrapper;
+    type ModelOutput = Vector<Mat>;
 
     #[cfg(feature = "cuda")]
     type PostProcessArgs = (usize, f32);
@@ -360,7 +355,7 @@ impl VisionModel for OnnxModel {
         let post_processing = Self::process_net_cuda(args.0, args.1, &output, threshold as f32);
 
         #[cfg(not(feature = "cuda"))]
-        let post_processing = Self::process_net(args.0, args.1, output.0, threshold);
+        let post_processing = Self::process_net(args.0, args.1, output, threshold);
 
         post_processing
     }
@@ -546,13 +541,14 @@ impl OnnxModel {
     }
 }
 
+/*
 /// Utility struct for [`ModelPipelined`].
 ///
 /// * `mat`: latest available matrix. Set to default on read.
 /// * `dropped`: tracks if ModelPipelined is dropped, for thread cleanup.
 #[derive(Debug)]
 struct ModelPipelinedInput {
-    pub mat: MatWrapper,
+    pub mat: Box<[u8]>,
     pub dropped: bool,
 }
 
@@ -586,14 +582,18 @@ impl ModelPipelined {
         threshold: f64,
     ) -> Self
     where
-        T: VisionModel + Clone + Send + Sync + 'static,
-        T::ModelOutput: Send,
+        T: VisionModel<ModelOutput = Vector<Mat>>
+            + Clone
+            + Send
+            + Sync
+            + 'static
+            + opencv::prelude::DataType,
         T::PostProcessArgs: Send + Clone,
     {
         let input_mut = Arc::new((
             Condvar::new(),
             Mutex::new(ModelPipelinedInput {
-                mat: MatWrapper(Mat::default()),
+                mat: Box::new([]),
                 dropped: false,
             }),
         ));
@@ -605,10 +605,10 @@ impl ModelPipelined {
         for _ in 0..model_threads.into() {
             let mut model = model.clone();
             let input_mut = input_mut.clone();
-            let inner_tx = inner_tx.clone();
+            let inner_tx: crossbeam::channel::Sender<Box<[Box<[T]>]>> = inner_tx.clone();
 
             spawn_blocking(move || loop {
-                let input = {
+                let input = Mat::from_slice(&{
                     // When we get a notification on this thread, new data can
                     // always be directly claimed.
                     let mut guard = input_mut.1.lock().unwrap();
@@ -623,10 +623,29 @@ impl ModelPipelined {
                     // lock. The default value should never be read by another
                     // thread.
                     std::mem::take(&mut guard.mat)
-                };
+                })
+                .unwrap()
+                .clone_pointee();
+
+                if !input.is_allocated() {
+                    continue;
+                }
 
                 // Hand off to post processing
-                if inner_tx.send(model.forward(&input)).is_err() {
+                let forwarded = model.forward(&input);
+                let boxed = forwarded
+                    .into_iter()
+                    .map(|x| {
+                        x.to_vec_2d()
+                            .unwrap()
+                            .into_iter()
+                            .flatten()
+                            .collect_vec()
+                            .into_boxed_slice()
+                    })
+                    .collect_vec()
+                    .into_boxed_slice();
+                if inner_tx.send(boxed).is_err() {
                     break;
                 };
             });
@@ -640,6 +659,10 @@ impl ModelPipelined {
             spawn_blocking(move || {
                 // Thread exits when model output threads exit (struct drop).
                 while let Ok(input) = inner_rx.recv() {
+                    let input = input
+                        .into_iter()
+                        .map(|x| Mat::from_slice(&x).unwrap().clone_pointee())
+                        .collect();
                     let post_process_args = post_process_args.clone();
                     let processed_output =
                         T::post_process(post_process_args.clone(), input, threshold);
@@ -659,9 +682,15 @@ impl ModelPipelined {
     }
 
     /// Update the model with a newer [`Mat`] to process.
-    pub fn update_mat(&self, mat: MatWrapper) -> &Self {
+    pub fn update_mat(&self, mat: Mat) -> &Self {
         let mut input = self.input_mut.1.lock().unwrap();
-        input.mat = mat;
+        input.mat = mat
+            .to_vec_2d()
+            .unwrap()
+            .into_iter()
+            .flatten()
+            .collect_vec()
+            .into_boxed_slice();
         self.input_mut.0.notify_one();
         self
     }
@@ -712,3 +741,4 @@ impl Drop for ModelPipelined {
         self.input_mut.0.notify_all();
     }
 }
+*/

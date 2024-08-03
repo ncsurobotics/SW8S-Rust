@@ -1,5 +1,6 @@
+use criterion::{criterion_group, criterion_main, Criterion};
+/*
 use std::{num::NonZeroUsize, sync::Arc, time::Duration};
-
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use opencv::imgcodecs::{imread, IMREAD_COLOR};
 use sw8s_rust_lib::vision::{
@@ -95,7 +96,7 @@ fn buoy_model(c: &mut Criterion) {
 
 fn pipelined(c: &mut Criterion) {
     const MAX_MODEL_THREADS: usize = 6;
-    const MAX_POST_PROCESSING_THREADS: usize = 2;
+    const MAX_POST_PROCESSING_THREADS: usize = 1;
     const NUM_TAKES: usize = 60;
 
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -238,3 +239,8 @@ fn stages(c: &mut Criterion) {
 criterion_group!(model_processing, gate_pole_model, buoy_model);
 criterion_group!(model_processing_throughput, stages, pipelined);
 criterion_main!(model_processing, model_processing_throughput);
+*/
+
+fn buoy_model(c: &mut Criterion) {}
+criterion_group!(model_processing, buoy_model);
+criterion_main!(model_processing);

@@ -1,4 +1,5 @@
 use crate::comms::control_board::ControlBoard;
+use crate::vision::DrawRect2d;
 use crate::vision::Offset2D;
 use crate::vision::RelPos;
 use crate::vision::RelPosAngle;
@@ -10,7 +11,9 @@ use num_traits::abs;
 use num_traits::clamp;
 use num_traits::Pow;
 use num_traits::Zero;
+use std::marker::PhantomData;
 use std::ops::Rem;
+use std::sync::Mutex;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -525,7 +528,7 @@ impl Stability2Pos {
             }
         }
 
-        println!("Stability 2 speed set: {:#?}", self);
+        //println!("Stability 2 speed set: {:#?}", self);
 
         board
             .stability_2_speed_set(
@@ -569,8 +572,8 @@ impl Stability2Pos {
     /// The x and y fields are bounded to [-1, 1].
     /// The pitch, roll, yaw, depth fields wrap around 360 degrees.
     pub fn adjust(&mut self, adjuster: &Stability2Adjust) -> &Self {
-        println!("Stability 2 pre-adjust: {:#?}", self);
-        println!("Adjuster: {:#?}", adjuster);
+        //println!("Stability 2 pre-adjust: {:#?}", self);
+        //println!("Adjuster: {:#?}", adjuster);
 
         self.x = Self::set_speed(self.x, adjuster.x().clone());
         self.y = Self::set_speed(self.y, adjuster.y().clone());
@@ -663,6 +666,19 @@ pub fn linear_yaw_from_x(mut input: Stability2Adjust, angle_diff: f32) -> Stabil
     input
 }
 
+/// Generates a yaw adjustment from an x axis set, multiplying by angle_diff
+///
+/// Does not set a yaw adjustment if the x difference is below 0.1
+pub fn linear_yaw_from_x_stab1(mut input: Stability1Adjust, angle_diff: f32) -> Stability1Adjust {
+    const MIN_TO_CHANGE_ANGLE: f32 = 0.1;
+    if let Some(AdjustType::Replace(x)) = input.x() {
+        if abs(*x) > MIN_TO_CHANGE_ANGLE {
+            input.set_yaw_speed(AdjustType::Adjust(-x * angle_diff));
+        };
+    };
+    input
+}
+
 pub fn aggressive_yaw_from_x(mut input: Stability2Adjust, angle_diff: f32) -> Stability2Adjust {
     if let Some(AdjustType::Replace(x)) = input.x() {
         if !x.is_zero() {
@@ -686,9 +702,18 @@ pub struct LinearYawFromX<T> {
 }
 
 impl<T> Action for LinearYawFromX<T> {}
-
 impl LinearYawFromX<&Stability2Adjust> {
     const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(angle_diff: f32) -> Self {
+        Self {
+            angle_diff,
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+impl LinearYawFromX<&Stability1Adjust> {
+    const DEFAULT_POSE: Stability1Adjust = Stability1Adjust::const_default();
     pub const fn new(angle_diff: f32) -> Self {
         Self {
             angle_diff,
@@ -728,6 +753,18 @@ impl ActionExec<Stability2Adjust> for LinearYawFromX<&Stability2Adjust> {
 impl ActionExec<Stability2Adjust> for LinearYawFromX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         linear_yaw_from_x(self.pose.clone(), self.angle_diff)
+    }
+}
+
+impl ActionExec<Stability1Adjust> for LinearYawFromX<&Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        linear_yaw_from_x_stab1(self.pose.clone(), self.angle_diff)
+    }
+}
+
+impl ActionExec<Stability1Adjust> for LinearYawFromX<Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        linear_yaw_from_x_stab1(self.pose.clone(), self.angle_diff)
     }
 }
 
@@ -776,24 +813,28 @@ impl<T: Sync + Send + Clone> ActionMod<T> for FlipYaw<T> {
 
 impl ActionExec<Stability2Adjust> for FlipYaw<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
+        println!("YAW BEFORE: {:?}", self.pose.target_yaw);
         if let Some(ref mut yaw) = self.pose.target_yaw {
             match yaw {
                 AdjustType::Adjust(ref mut y) => *y = -*y,
                 AdjustType::Replace(ref mut y) => *y = -*y,
             }
         };
+        println!("YAW AFTER: {:?}", self.pose.target_yaw);
         self.pose.clone()
     }
 }
 
 impl ActionExec<Stability1Adjust> for FlipYaw<Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
+        println!("YAW BEFORE: {:?}", self.pose.yaw_speed);
         if let Some(ref mut yaw) = self.pose.yaw_speed {
             match yaw {
                 AdjustType::Adjust(ref mut y) => *y = -*y,
                 AdjustType::Replace(ref mut y) => *y = -*y,
             }
         };
+        println!("YAW AFTER: {:?}", self.pose.yaw_speed);
         self.pose.clone()
     }
 }
@@ -889,6 +930,46 @@ impl ActionExec<Stability2Adjust> for ConfidenceY<Stability2Adjust> {
 }
 
 #[derive(Debug)]
+pub struct SetY<T> {
+    pose: T,
+    y: AdjustType<f32>,
+}
+
+impl<T> Action for SetY<T> {}
+
+impl SetY<Stability2Adjust> {
+    pub const fn new(y: AdjustType<f32>) -> Self {
+        Self {
+            pose: Stability2Adjust::const_default(),
+            y,
+        }
+    }
+}
+
+impl SetY<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(y: AdjustType<f32>) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            y,
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for SetY<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for SetY<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        self.pose.y = Some(self.y.clone());
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
 pub struct FlipX<T> {
     pose: T,
 }
@@ -897,6 +978,15 @@ impl<T> Action for FlipX<T> {}
 
 impl FlipX<&Stability2Adjust> {
     const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new() -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+impl FlipX<&Stability1Adjust> {
+    const DEFAULT_POSE: Stability1Adjust = Stability1Adjust::const_default();
     pub const fn new() -> Self {
         Self {
             pose: &Self::DEFAULT_POSE,
@@ -926,8 +1016,20 @@ impl ActionExec<Stability2Adjust> for FlipX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         if let Some(ref mut x) = self.pose.x {
             *x = match *x {
-                AdjustType::Adjust(x) => AdjustType::Adjust(x.clamp(-0.1, 0.1)),
-                AdjustType::Replace(x) => AdjustType::Replace(x.clamp(-0.1, 0.1)),
+                AdjustType::Adjust(x) => AdjustType::Adjust(-x),
+                AdjustType::Replace(x) => AdjustType::Replace(-x),
+            };
+        }
+        self.pose.clone()
+    }
+}
+
+impl ActionExec<Stability1Adjust> for FlipX<Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        if let Some(ref mut x) = self.pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Adjust(-x),
+                AdjustType::Replace(x) => AdjustType::Replace(-x),
             };
         }
         self.pose.clone()
@@ -980,6 +1082,66 @@ impl ActionExec<Stability2Adjust> for StripX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         self.pose.x = None;
         self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct ClampX<T> {
+    pose: T,
+    max: f32,
+}
+
+impl<T> Action for ClampX<T> {}
+
+impl ClampX<Stability2Adjust> {
+    pub const fn new(max: f32) -> Self {
+        Self {
+            pose: Stability2Adjust::const_default(),
+            max,
+        }
+    }
+}
+
+/*
+impl ClampX<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(max: f32) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            max,
+        }
+    }
+}
+*/
+
+impl<T: Sync + Send + Clone> ActionMod<T> for ClampX<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for ClampX<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        if let Some(ref mut x) = self.pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Adjust(x.clamp(-self.max, self.max)),
+                AdjustType::Replace(x) => AdjustType::Replace(x.clamp(-self.max, self.max)),
+            };
+        }
+        self.pose.clone()
+    }
+}
+
+impl ActionExec<Stability2Adjust> for ClampX<&Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut pose = self.pose.clone();
+        if let Some(ref mut x) = pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Adjust(x.clamp(-self.max, self.max)),
+                AdjustType::Replace(x) => AdjustType::Replace(x.clamp(-self.max, self.max)),
+            };
+        }
+        pose
     }
 }
 
@@ -1100,6 +1262,75 @@ impl ActionExec<Stability2Adjust> for OffsetToPose<Offset2D<f64>> {
     }
 }
 
+#[derive(Debug)]
+pub struct BoxToPose<T> {
+    input: T,
+}
+
+impl<T> Action for BoxToPose<T> {}
+
+impl<T> BoxToPose<T> {
+    pub const fn new(input: T) -> Self {
+        Self { input }
+    }
+}
+
+impl<T: Default> Default for BoxToPose<T> {
+    fn default() -> Self {
+        Self {
+            input: T::default(),
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionMod<T> for BoxToPose<T> {
+    fn modify(&mut self, input: &T) {
+        self.input = input.clone();
+    }
+}
+
+impl<T: Send + Sync + Clone + Default> ActionMod<Option<T>> for BoxToPose<T> {
+    fn modify(&mut self, input: &Option<T>) {
+        if let Some(input) = input {
+            self.input = input.clone();
+        } else {
+            self.input = T::default();
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone + Default> ActionMod<anyhow::Result<T>> for BoxToPose<T> {
+    fn modify(&mut self, input: &anyhow::Result<T>) {
+        if let Ok(input) = input {
+            self.input = input.clone();
+        } else {
+            self.input = T::default();
+        }
+    }
+}
+
+impl ActionExec<Stability2Adjust> for BoxToPose<DrawRect2d> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut adjust = Stability2Adjust::default();
+        adjust.set_x(AdjustType::Replace(self.input.x as f32));
+        adjust.set_y(AdjustType::Replace(
+            ((self.input.width + self.input.height) / 2.0) as f32,
+        ));
+        adjust
+    }
+}
+
+impl ActionExec<Stability1Adjust> for BoxToPose<DrawRect2d> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        let mut adjust = Stability1Adjust::default();
+        adjust.set_x(AdjustType::Replace(self.input.x as f32));
+        adjust.set_y(AdjustType::Replace(
+            ((self.input.width + self.input.height) / 2.0) as f32,
+        ));
+        adjust
+    }
+}
+
 /// Modification for a stability assist 1 command
 ///
 /// When values are None, they do not cause adjustments
@@ -1179,7 +1410,8 @@ impl Stability1Adjust {
     }
 
     pub fn set_yaw_speed(&mut self, yaw_speed: AdjustType<f32>) -> &Self {
-        self.yaw_speed = Self::bound_speed(Self::address_ieee(yaw_speed));
+        //self.yaw_speed = Self::bound_speed(Self::address_ieee(yaw_speed));
+        self.yaw_speed = Self::address_ieee(yaw_speed);
         self
     }
 
@@ -1278,7 +1510,8 @@ impl Stability1Pos {
         self.target_depth = Self::set_rot(self.target_depth, adjuster.target_depth().clone());
 
         // Accounting for uninitialized yaw
-        self.yaw_speed = Self::set_speed(self.yaw_speed, adjuster.yaw_speed().clone());
+        //self.yaw_speed = Self::set_speed(self.yaw_speed, adjuster.yaw_speed().clone());
+        self.yaw_speed = Self::set_rot(self.yaw_speed, adjuster.yaw_speed().clone());
 
         println!("Stability 1 post-adjust: {:#?}", self);
         self
@@ -1426,5 +1659,521 @@ impl ActionExec<Stability1Adjust> for OffsetToPose<Offset2D<f64>> {
         adjust.set_x(AdjustType::Replace(*self.offset.x() as f32));
         adjust.set_y(AdjustType::Replace(*self.offset.y() as f32));
         adjust
+    }
+}
+
+#[derive(Debug)]
+pub struct DefaultGen<T> {
+    _phantom: PhantomData<T>,
+}
+
+impl<T> Action for DefaultGen<T> {}
+
+impl<T> DefaultGen<T> {
+    pub fn new() -> Self {
+        Self {
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<T> Default for DefaultGen<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T, U: Send + Sync> ActionMod<U> for DefaultGen<T> {
+    fn modify(&mut self, _input: &U) {}
+}
+
+impl<T: Default + Send + Sync> ActionExec<T> for DefaultGen<T> {
+    async fn execute(&mut self) -> T {
+        T::default()
+    }
+}
+
+#[derive(Debug)]
+pub struct CautiousConstantX<T> {
+    pose: T,
+    speed: f32,
+}
+
+impl<T> Action for CautiousConstantX<T> {}
+
+impl CautiousConstantX<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(speed: f32) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            speed,
+        }
+    }
+}
+
+impl CautiousConstantX<&Stability1Adjust> {
+    const DEFAULT_POSE: Stability1Adjust = Stability1Adjust::const_default();
+    pub const fn new(speed: f32) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            speed,
+        }
+    }
+}
+
+impl<T: Default> CautiousConstantX<T> {
+    pub fn new(speed: f32) -> Self {
+        Self {
+            pose: T::default(),
+            speed,
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for CautiousConstantX<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for CautiousConstantX<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        if let Some(AdjustType::Replace(ref mut x)) = self.pose.x {
+            *x = if x.abs() < 0.5 && x.signum() == self.speed.signum() {
+                self.speed
+            } else {
+                0.0
+            };
+        };
+        self.pose.clone()
+    }
+}
+
+impl ActionExec<Stability1Adjust> for CautiousConstantX<Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        if let Some(AdjustType::Replace(ref mut x)) = self.pose.x {
+            *x = if !x.is_zero() && x.signum() == self.speed.signum() {
+                0.2
+            } else {
+                0.0
+            };
+        };
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct MinYaw<T> {
+    pose: T,
+    speed: f32,
+}
+
+impl<T> Action for MinYaw<T> {}
+
+impl MinYaw<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(speed: f32) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            speed,
+        }
+    }
+}
+
+impl MinYaw<&Stability1Adjust> {
+    const DEFAULT_POSE: Stability1Adjust = Stability1Adjust::const_default();
+    pub const fn new(speed: f32) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            speed,
+        }
+    }
+}
+
+impl<T: Default> MinYaw<T> {
+    pub fn new(speed: f32) -> Self {
+        Self {
+            pose: T::default(),
+            speed,
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for MinYaw<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for MinYaw<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        if let Some(AdjustType::Adjust(ref mut x)) = self.pose.target_yaw {
+            if x.is_zero() {
+                println!("ZERO, SETTING MIN SPEED");
+                *x = self.speed;
+            }
+        };
+        if self.pose.target_yaw.is_none() {
+            println!("NONE, SETTING MIN SPEED");
+            self.pose.target_yaw = Some(AdjustType::Adjust(self.speed));
+            self.pose.y = Some(AdjustType::Replace(0.0));
+        } else {
+            self.pose.y = Some(AdjustType::Replace(0.2));
+        }
+        self.pose.clone()
+    }
+}
+
+impl ActionExec<Stability1Adjust> for MinYaw<Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        if let Some(AdjustType::Replace(ref mut x)) = self.pose.yaw_speed {
+            if x.is_zero() {
+                *x = self.speed;
+            }
+        };
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct SetX<T> {
+    pose: T,
+    x: AdjustType<f32>,
+}
+
+impl<T> Action for SetX<T> {}
+
+impl SetX<Stability2Adjust> {
+    pub const fn new(x: AdjustType<f32>) -> Self {
+        Self {
+            pose: Stability2Adjust::const_default(),
+            x,
+        }
+    }
+}
+
+impl SetX<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(x: AdjustType<f32>) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            x,
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for SetX<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for SetX<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        self.pose.x = Some(self.x.clone());
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct ConstYaw<T> {
+    pose: T,
+    yaw: AdjustType<f32>,
+}
+
+impl<T> Action for ConstYaw<T> {}
+
+impl ConstYaw<Stability2Adjust> {
+    pub const fn new(yaw: AdjustType<f32>) -> Self {
+        Self {
+            pose: Stability2Adjust::const_default(),
+            yaw,
+        }
+    }
+}
+
+impl ConstYaw<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(yaw: AdjustType<f32>) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            yaw,
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for ConstYaw<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for ConstYaw<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        self.pose.target_yaw = Some(self.yaw.clone());
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct ReplaceX<T> {
+    pose: T,
+}
+
+impl<T> Action for ReplaceX<T> {}
+
+impl Default for ReplaceX<Stability2Adjust> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ReplaceX<Stability2Adjust> {
+    pub const fn new() -> Self {
+        Self {
+            pose: Stability2Adjust::const_default(),
+        }
+    }
+}
+
+/*
+impl ReplaceX<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(max: f32) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            max,
+        }
+    }
+}
+*/
+
+impl<T: Sync + Send + Clone> ActionMod<T> for ReplaceX<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for ReplaceX<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        if let Some(ref mut x) = self.pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Replace(x),
+                AdjustType::Replace(x) => AdjustType::Replace(x),
+            };
+        } else {
+            self.pose.x = Some(AdjustType::Replace(0.0));
+        }
+        self.pose.clone()
+    }
+}
+
+impl ActionExec<Stability2Adjust> for ReplaceX<&Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut pose = self.pose.clone();
+        if let Some(ref mut x) = pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Replace(x),
+                AdjustType::Replace(x) => AdjustType::Replace(x),
+            };
+        } else {
+            pose.x = Some(AdjustType::Replace(0.0));
+        }
+        pose
+    }
+}
+
+#[derive(Debug)]
+pub struct MultiplyX<T> {
+    pose: T,
+    factor: f32,
+}
+
+impl<T> Action for MultiplyX<T> {}
+
+impl MultiplyX<Stability2Adjust> {
+    pub const fn new(factor: f32) -> Self {
+        Self {
+            pose: Stability2Adjust::const_default(),
+            factor,
+        }
+    }
+}
+
+/*
+impl MultiplyX<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new(max: f32) -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+            max,
+        }
+    }
+}
+*/
+
+impl<T: Sync + Send + Clone> ActionMod<T> for MultiplyX<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for MultiplyX<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        if let Some(ref mut x) = self.pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Adjust(x * self.factor),
+                AdjustType::Replace(x) => AdjustType::Replace(x * self.factor),
+            };
+        }
+        self.pose.clone()
+    }
+}
+
+impl ActionExec<Stability2Adjust> for MultiplyX<&Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut pose = self.pose.clone();
+        if let Some(ref mut x) = pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Adjust(x * self.factor),
+                AdjustType::Replace(x) => AdjustType::Replace(x * self.factor),
+            };
+        }
+        pose
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Eq)]
+pub enum Side {
+    #[default]
+    Red,
+    Blue,
+}
+
+static SIDE: Mutex<Side> = Mutex::new(Side::Red);
+
+#[derive(Debug)]
+pub struct SetSideRed<T> {
+    value: T,
+}
+
+impl<T> Action for SetSideRed<T> {}
+
+impl<T: Default> SetSideRed<T> {
+    pub fn new() -> Self {
+        Self {
+            value: T::default(),
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for SetSideRed<T> {
+    fn modify(&mut self, input: &T) {
+        self.value = input.clone();
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionExec<T> for SetSideRed<T> {
+    async fn execute(&mut self) -> T {
+        *SIDE.lock().unwrap() = Side::Red;
+        self.value.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct SetSideBlue<T> {
+    value: T,
+}
+
+impl<T> Action for SetSideBlue<T> {}
+
+impl<T: Default> SetSideBlue<T> {
+    pub fn new() -> Self {
+        Self {
+            value: T::default(),
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for SetSideBlue<T> {
+    fn modify(&mut self, input: &T) {
+        self.value = input.clone();
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionExec<T> for SetSideBlue<T> {
+    async fn execute(&mut self) -> T {
+        *SIDE.lock().unwrap() = Side::Blue;
+        self.value.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct SideIsRed {}
+
+impl Action for SideIsRed {}
+
+impl SideIsRed {
+    pub const fn new() -> Self {
+        Self {}
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for SideIsRed {
+    fn modify(&mut self, _input: &T) {}
+}
+
+impl ActionExec<bool> for SideIsRed {
+    async fn execute(&mut self) -> bool {
+        *SIDE.lock().unwrap() == Side::Blue
+    }
+}
+
+#[derive(Debug)]
+pub struct SideMult {
+    inner: Stability2Adjust,
+}
+
+impl Action for SideMult {}
+
+impl SideMult {
+    pub const fn new() -> Self {
+        Self {
+            inner: Stability2Adjust::const_default(),
+        }
+    }
+}
+
+impl ActionMod<Stability2Adjust> for SideMult {
+    fn modify(&mut self, input: &Stability2Adjust) {
+        self.inner = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for SideMult {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut inner = self.inner.clone();
+
+        if let Some(ref mut x) = inner.x {
+            if *SIDE.lock().unwrap() == Side::Red {
+                let x = match x {
+                    AdjustType::Adjust(x) => x,
+                    AdjustType::Replace(x) => x,
+                };
+                *x = -*x;
+            }
+        };
+
+        if let Some(ref mut yaw) = inner.target_yaw {
+            if *SIDE.lock().unwrap() == Side::Red {
+                let yaw = match yaw {
+                    AdjustType::Adjust(yaw) => yaw,
+                    AdjustType::Replace(yaw) => yaw,
+                };
+                *yaw = -*yaw;
+            }
+        };
+
+        inner
     }
 }

@@ -31,7 +31,7 @@ async fn main() {
             "build".to_string(),
             "--release".to_string(),
             "--features".to_string(),
-            "cuda,logging".to_string(),
+            "logging".to_string(),
         ];
     }
 
@@ -107,7 +107,11 @@ async fn main() {
         + sysroot_str
         + " -L"
         + sysroot_str
-        + "/usr/local/cuda-10.2/targets/aarch64-linux/lib/ -L"
+        + if cfg!(feature = "ubuntu") {
+            "/usr/include -L"
+        } else {
+            "/usr/local/cuda-10.2/targets/aarch64-linux/lib/ -L"
+        }
         + sysroot_str
         + "/opt/opencv-4.6.0/lib/";
     // Only to clang to compile C code

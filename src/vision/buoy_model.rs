@@ -5,12 +5,12 @@ use opencv::{core::Size, prelude::Mat};
 use crate::load_onnx;
 
 use super::{
-    nn_cv2::{ModelPipelined, OnnxModel, VisionModel, YoloClass, YoloDetection},
+    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
     yolo_model::YoloProcessor,
 };
 
 use core::hash::Hash;
-use std::{error::Error, fmt::Display, num::NonZeroUsize};
+use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
@@ -76,7 +76,7 @@ impl BuoyModel<OnnxModel> {
 
 impl Default for BuoyModel<OnnxModel> {
     fn default() -> Self {
-        Self::load_640(0.7)
+        Self::load_640(0.9)
     }
 }
 
@@ -92,6 +92,7 @@ impl YoloProcessor for BuoyModel<OnnxModel> {
     }
 }
 
+/*
 impl BuoyModel<OnnxModel> {
     /// Convert into [`ModelPipelined`].
     ///
@@ -108,5 +109,31 @@ impl BuoyModel<OnnxModel> {
             self.threshold,
         )
         .await
+    }
+}
+*/
+
+impl VisionModel for BuoyModel<OnnxModel> {
+    type ModelOutput = <OnnxModel as VisionModel>::ModelOutput;
+    type PostProcessArgs = <OnnxModel as VisionModel>::PostProcessArgs;
+
+    fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection> {
+        self.model.detect_yolo_v5(image, threshold)
+    }
+    fn forward(&mut self, image: &Mat) -> Self::ModelOutput {
+        self.model.forward(image)
+    }
+    fn post_process_args(&self) -> Self::PostProcessArgs {
+        self.model.post_process_args()
+    }
+    fn post_process(
+        args: Self::PostProcessArgs,
+        output: Self::ModelOutput,
+        threshold: f64,
+    ) -> Vec<YoloDetection> {
+        OnnxModel::post_process(args, output, threshold)
+    }
+    fn size(&self) -> Size {
+        self.model.size()
     }
 }

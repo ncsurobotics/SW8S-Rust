@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use super::{
     action::{Action, ActionExec, ActionMod},
-    graph::{stripped_fn, DotString},
+    graph::{stripped_fn, stripped_type, DotString},
 };
 
 /// Development Action that does... nothing
@@ -148,7 +148,15 @@ impl ActionExec<bool> for AlwaysTrue {
     }
 }
 
-/// Always returns a falsej value
+const TRUE: bool = true;
+
+impl ActionExec<&'static bool> for AlwaysTrue {
+    async fn execute(&mut self) -> &'static bool {
+        &TRUE
+    }
+}
+
+/// Always returns a false value
 #[derive(Debug)]
 pub struct AlwaysFalse {}
 
@@ -267,6 +275,20 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
     }
 }
 
+impl ActionMod<bool> for CountTrue {
+    fn modify(&mut self, input: &bool) {
+        if *input {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+        println!("Update true count: {}", self.count);
+    }
+}
+
 impl ActionExec<anyhow::Result<()>> for CountTrue {
     async fn execute(&mut self) -> anyhow::Result<()> {
         println!("Check true count: {} ? {}", self.count, self.target);
@@ -332,6 +354,20 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
     }
 }
 
+impl ActionMod<bool> for CountFalse {
+    fn modify(&mut self, input: &bool) {
+        if !input {
+            self.count += 1;
+            if self.count > self.target {
+                self.count = self.target;
+            }
+        } else {
+            self.count = 0;
+        }
+        println!("Update false count: {}", self.count);
+    }
+}
+
 impl ActionExec<anyhow::Result<()>> for CountFalse {
     async fn execute(&mut self) -> anyhow::Result<()> {
         println!("Check false count: {} ? {}", self.count, self.target);
@@ -339,6 +375,86 @@ impl ActionExec<anyhow::Result<()>> for CountFalse {
             Ok(())
         } else {
             Err(anyhow!("At count"))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct InOrderFail<T, U> {
+    first: T,
+    second: U,
+    finished_first: bool,
+}
+
+impl<T, U> InOrderFail<T, U> {
+    pub fn new(first: T, second: U) -> Self {
+        Self {
+            first,
+            second,
+            finished_first: false,
+        }
+    }
+}
+
+impl<T: Action, U: Action> Action for InOrderFail<T, U> {
+    fn dot_string(&self, _parent: &str) -> DotString {
+        let first_str = self.first.dot_string(stripped_type::<Self>());
+        let second_str = self.second.dot_string(stripped_type::<Self>());
+        let (order_head, order_tail) = (Uuid::new_v4(), Uuid::new_v4());
+
+        let mut body_str = format!(
+                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = black;\n\"{}\" [label = \"{}\", shape = box, style = dashed];\n",
+                Uuid::new_v4(),
+                order_head,
+                "In Order",
+            );
+
+        body_str.push_str(&(format!("\"{}\" [label = \"All Resolved\", shape = diamond, fontcolor = black, style = dashed];\n", order_tail)));
+
+        body_str.push_str(&(first_str.body + &second_str.body));
+        first_str
+            .head_ids
+            .iter()
+            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", order_head, id)));
+        first_str.tail_ids.iter().for_each(|tail_id| {
+            second_str.head_ids.iter().for_each(|head_id| {
+                body_str.push_str(&format!("\"{}\" -> \"{}\";\n", tail_id, head_id))
+            })
+        });
+        second_str.tail_ids.iter().for_each(|tail_id| {
+            body_str.push_str(&format!("\"{}\" -> \"{}\";\n", tail_id, order_tail))
+        });
+
+        body_str.push_str("}\n");
+
+        DotString {
+            head_ids: vec![order_head],
+            tail_ids: vec![order_tail],
+            body: body_str,
+        }
+    }
+}
+
+impl<T: ActionMod<V>, U: ActionMod<V>, V: Send + Sync> ActionMod<V> for InOrderFail<T, U> {
+    fn modify(&mut self, input: &V) {
+        self.first.modify(input);
+        self.second.modify(input);
+    }
+}
+
+impl<
+        T: ActionExec<anyhow::Result<V>>,
+        U: ActionExec<anyhow::Result<V>>,
+        V: Send + Sync + Default,
+    > ActionExec<anyhow::Result<V>> for InOrderFail<T, U>
+{
+    async fn execute(&mut self) -> anyhow::Result<V> {
+        if !self.finished_first {
+            let ret = self.first.execute().await;
+            self.finished_first = ret.is_err();
+            Ok(V::default())
+        } else {
+            self.second.execute().await
         }
     }
 }
@@ -444,5 +560,56 @@ impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<
 impl<T: Send + Sync + Clone> ActionExec<Vec<T>> for ToVec<T> {
     async fn execute(&mut self) -> Vec<T> {
         self.value.clone()
+    }
+}
+
+/// Transform Option/Result wrapped vector to a vector
+#[derive(Debug)]
+pub struct IsSome<T> {
+    value: Vec<T>,
+}
+
+impl<T> Action for IsSome<T> {}
+
+impl<T> IsSome<T> {
+    pub const fn new() -> Self {
+        Self { value: vec![] }
+    }
+}
+
+impl<T> Default for IsSome<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: Send + Sync + Debug, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<Option<U>>
+    for IsSome<T>
+{
+    fn modify(&mut self, input: &Option<U>) {
+        if let Some(input) = input {
+            self.value = input.clone().into_iter().collect();
+            println!("VECTOR: {:#?}", self.value);
+        } else {
+            self.value = vec![];
+        }
+    }
+}
+
+impl<T: Send + Sync, U: IntoIterator<Item = T> + Send + Sync + Clone> ActionMod<anyhow::Result<U>>
+    for IsSome<T>
+{
+    fn modify(&mut self, input: &anyhow::Result<U>) {
+        if let Ok(input) = input {
+            self.value = input.clone().into_iter().collect();
+        } else {
+            self.value = vec![];
+        }
+    }
+}
+
+impl<T: Send + Sync + Clone> ActionExec<bool> for IsSome<T> {
+    async fn execute(&mut self) -> bool {
+        !self.value.is_empty()
     }
 }

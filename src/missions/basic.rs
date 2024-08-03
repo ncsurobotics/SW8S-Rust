@@ -47,8 +47,40 @@ pub fn descend_and_go_forward<
 where
     ZeroMovement<'a, Con>: ActionExec<T>,
 {
-    let depth: f32 = -1.0;
+    let depth: f32 = -1.5;
 
+    // time in seconds that each action will wait until before continuing onto the next action.
+    let dive_duration = 2.0;
+    let forward_duration = 2.0;
+    ActionSequence::new(
+        WaitArm::new(context),
+        ActionSequence::new(
+            ActionSequence::new(
+                Descend::new(context, depth),
+                DelayAction::new(dive_duration),
+            ),
+            ActionSequence::new(
+                ActionSequence::new(
+                    StraightMovement::new(context, depth, true),
+                    DelayAction::new(forward_duration),
+                ),
+                ZeroMovement::new(context, depth),
+            ),
+        ),
+    )
+}
+
+pub fn descend_depth_and_go_forward<
+    'a,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard,
+    T: Send + Sync,
+>(
+    context: &'a Con,
+    depth: f32,
+) -> impl ActionExec<T> + 'a
+where
+    ZeroMovement<'a, Con>: ActionExec<T>,
+{
     // time in seconds that each action will wait until before continuing onto the next action.
     let dive_duration = 2.0;
     let forward_duration = 2.0;
