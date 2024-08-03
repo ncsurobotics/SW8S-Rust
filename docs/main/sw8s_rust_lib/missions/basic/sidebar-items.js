@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["descend_and_go_forward"],"struct":["DelayAction"]};
+window.SIDEBAR_ITEMS = {"fn":["descend_and_go_forward","descend_depth_and_go_forward"],"struct":["DelayAction"]};

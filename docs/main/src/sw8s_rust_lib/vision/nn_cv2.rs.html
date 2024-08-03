@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vision/nn_cv2.rs`."><title>nn_cv2.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-081576b923113409.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="sw8s_rust_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0 (129f3b996 2024-06-10)" data-channel="1.79.0" data-search-js="search-bf21c90c8c1d92b1.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-e32f0c247825364d.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../sw8s_rust_lib/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Type ‘S’ or ‘/’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings">Settings</a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vision/nn_cv2.rs`."><title>nn_cv2.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="sw8s_rust_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0 (051478957 2024-07-21)" data-channel="1.80.0" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -712,28 +712,53 @@
 <a href="#712" id="712">712</a>
 <a href="#713" id="713">713</a>
 <a href="#714" id="714">714</a>
+<a href="#715" id="715">715</a>
+<a href="#716" id="716">716</a>
+<a href="#717" id="717">717</a>
+<a href="#718" id="718">718</a>
+<a href="#719" id="719">719</a>
+<a href="#720" id="720">720</a>
+<a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
+<a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>derive_getters::Getters;
+<span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>opencv::{
-    core::{Rect2d, Scalar, Size, VecN, Vector, CV_32F},
+    core::{MatTraitConstManual, Rect2d, Scalar, Size, VecN, Vector, CV_32F},
     dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };
+<span class="kw">use </span>std::hash::Hash;
 <span class="kw">use </span>std::{
     fmt::Debug,
-    iter,
     ops::{Deref, DerefMut},
-    sync::{Arc, Condvar, Mutex},
+    sync::Mutex,
 };
-<span class="kw">use </span>std::{hash::Hash, num::NonZeroUsize};
-<span class="kw">use </span>tokio::task::spawn_blocking;
 
 <span class="attr">#[cfg(feature = <span class="string">"cuda_min_max_loc"</span>)]
 </span><span class="kw">use </span>opencv::cudaarithm::min_max_loc <span class="kw">as </span>cuda_min_max_loc;
-
-<span class="kw">use </span><span class="kw">crate</span>::vision::VecMatWrapper;
-
-<span class="kw">use </span><span class="kw">super</span>::MatWrapper;
 
 <span class="attr">#[derive(Debug, Clone, Getters, PartialEq)]
 </span><span class="kw">pub struct </span>YoloDetection {
@@ -1014,7 +1039,7 @@
         );
 
         <span class="attr">#[cfg(not(feature = <span class="string">"cuda"</span>))]
-        </span><span class="kw">let </span>post_processing = <span class="self">Self</span>::process_net(<span class="self">self</span>.num_objects, <span class="self">self</span>.factor, result.<span class="number">0</span>, threshold);
+        </span><span class="kw">let </span>post_processing = <span class="self">Self</span>::process_net(<span class="self">self</span>.num_objects, <span class="self">self</span>.factor, result, threshold);
 
         post_processing
     }
@@ -1044,10 +1069,10 @@
             .forward(<span class="kw-2">&amp;mut </span>result, <span class="kw-2">&amp;</span>result_names)
             .unwrap();
 
-        VecMatWrapper(result)
+        result
     }
 
-    <span class="kw">type </span>ModelOutput = VecMatWrapper;
+    <span class="kw">type </span>ModelOutput = Vector&lt;Mat&gt;;
 
     <span class="attr">#[cfg(feature = <span class="string">"cuda"</span>)]
     </span><span class="kw">type </span>PostProcessArgs = (usize, f32);
@@ -1074,7 +1099,7 @@
         </span><span class="kw">let </span>post_processing = <span class="self">Self</span>::process_net_cuda(args.<span class="number">0</span>, args.<span class="number">1</span>, <span class="kw-2">&amp;</span>output, threshold <span class="kw">as </span>f32);
 
         <span class="attr">#[cfg(not(feature = <span class="string">"cuda"</span>))]
-        </span><span class="kw">let </span>post_processing = <span class="self">Self</span>::process_net(args.<span class="number">0</span>, args.<span class="number">1</span>, output.<span class="number">0</span>, threshold);
+        </span><span class="kw">let </span>post_processing = <span class="self">Self</span>::process_net(args.<span class="number">0</span>, args.<span class="number">1</span>, output, threshold);
 
         post_processing
     }
@@ -1260,17 +1285,18 @@
     }
 }
 
-<span class="doccomment">/// Utility struct for [`ModelPipelined`].
+<span class="comment">/*
+/// Utility struct for [`ModelPipelined`].
 ///
 /// * `mat`: latest available matrix. Set to default on read.
 /// * `dropped`: tracks if ModelPipelined is dropped, for thread cleanup.
-</span><span class="attr">#[derive(Debug)]
-</span><span class="kw">struct </span>ModelPipelinedInput {
-    <span class="kw">pub </span>mat: MatWrapper,
-    <span class="kw">pub </span>dropped: bool,
+#[derive(Debug)]
+struct ModelPipelinedInput {
+    pub mat: Box&lt;[u8]&gt;,
+    pub dropped: bool,
 }
 
-<span class="doccomment">/// [`OnnxModel`] that pipelines processing in blocking threads.
+/// [`OnnxModel`] that pipelines processing in blocking threads.
 ///
 /// The input is processed on blocking threads, and only the newest available
 /// input should be processed, so `input_mut` is used for threads to claim
@@ -1279,151 +1305,185 @@
 ///
 /// The output is asynchronous, written to with blocking synchronous calls from
 /// the post processing stage.
-</span><span class="attr">#[derive(Debug)]
-</span><span class="kw">pub struct </span>ModelPipelined {
+#[derive(Debug)]
+pub struct ModelPipelined {
     input_mut: Arc&lt;(Condvar, Mutex&lt;ModelPipelinedInput&gt;)&gt;,
     output_ch: async_channel::Receiver&lt;Vec&lt;YoloDetection&gt;&gt;,
 }
 
-<span class="kw">impl </span>ModelPipelined {
-    <span class="doccomment">/// Pipelines model processing in blocking threads.
+impl ModelPipelined {
+    /// Pipelines model processing in blocking threads.
     ///
     /// # Parameters
     /// * `model`: A model to be cloned into threads.
     /// * `model_threads`: Number of threads with processing models.
     /// * `post_processing_threads`: Number of threads converting model output.
     /// * `threshold`: [0, 1] minimum score for a detection.
-    </span><span class="kw">pub async fn </span>new&lt;T&gt;(
+    pub async fn new&lt;T&gt;(
         model: T,
         model_threads: NonZeroUsize,
         post_processing_threads: NonZeroUsize,
         threshold: f64,
-    ) -&gt; <span class="self">Self
-    </span><span class="kw">where
-        </span>T: VisionModel + Clone + Send + Sync + <span class="lifetime">'static</span>,
-        T::ModelOutput: Send,
+    ) -&gt; Self
+    where
+        T: VisionModel&lt;ModelOutput = Vector&lt;Mat&gt;&gt;
+            + Clone
+            + Send
+            + Sync
+            + 'static
+            + opencv::prelude::DataType,
         T::PostProcessArgs: Send + Clone,
     {
-        <span class="kw">let </span>input_mut = Arc::new((
+        let input_mut = Arc::new((
             Condvar::new(),
             Mutex::new(ModelPipelinedInput {
-                mat: MatWrapper(Mat::default()),
-                dropped: <span class="bool-val">false</span>,
+                mat: Box::new([]),
+                dropped: false,
             }),
         ));
-        <span class="kw">let </span>(output_tx, output_ch) = async_channel::unbounded();
+        let (output_tx, output_ch) = async_channel::unbounded();
 
-        <span class="comment">// Both processing threads are blocking, so using a sync structure.
-        </span><span class="kw">let </span>(inner_tx, inner_rx) = crossbeam::channel::unbounded();
+        // Both processing threads are blocking, so using a sync structure.
+        let (inner_tx, inner_rx) = crossbeam::channel::unbounded();
 
-        <span class="kw">for _ in </span><span class="number">0</span>..model_threads.into() {
-            <span class="kw">let </span><span class="kw-2">mut </span>model = model.clone();
-            <span class="kw">let </span>input_mut = input_mut.clone();
-            <span class="kw">let </span>inner_tx = inner_tx.clone();
+        for _ in 0..model_threads.into() {
+            let mut model = model.clone();
+            let input_mut = input_mut.clone();
+            let inner_tx: crossbeam::channel::Sender&lt;Box&lt;[Box&lt;[T]&gt;]&gt;&gt; = inner_tx.clone();
 
-            spawn_blocking(<span class="kw">move </span>|| <span class="kw">loop </span>{
-                <span class="kw">let </span>input = {
-                    <span class="comment">// When we get a notification on this thread, new data can
+            spawn_blocking(move || loop {
+                let input = Mat::from_slice(&amp;{
+                    // When we get a notification on this thread, new data can
                     // always be directly claimed.
-                    </span><span class="kw">let </span><span class="kw-2">mut </span>guard = input_mut.<span class="number">1</span>.lock().unwrap();
-                    guard = input_mut.<span class="number">0</span>.wait(guard).unwrap();
+                    let mut guard = input_mut.1.lock().unwrap();
+                    guard = input_mut.0.wait(guard).unwrap();
 
-                    <span class="comment">// Exit this thread if the struct was dropped
-                    </span><span class="kw">if </span>guard.dropped {
-                        <span class="kw">break</span>;
+                    // Exit this thread if the struct was dropped
+                    if guard.dropped {
+                        break;
                     };
 
-                    <span class="comment">// Move the matrix to local memory to avoid holding up the
+                    // Move the matrix to local memory to avoid holding up the
                     // lock. The default value should never be read by another
                     // thread.
-                    </span>std::mem::take(<span class="kw-2">&amp;mut </span>guard.mat)
-                };
+                    std::mem::take(&amp;mut guard.mat)
+                })
+                .unwrap()
+                .clone_pointee();
 
-                <span class="comment">// Hand off to post processing
-                </span><span class="kw">if </span>inner_tx.send(model.forward(<span class="kw-2">&amp;</span>input)).is_err() {
-                    <span class="kw">break</span>;
+                if !input.is_allocated() {
+                    continue;
+                }
+
+                // Hand off to post processing
+                let forwarded = model.forward(&amp;input);
+                let boxed = forwarded
+                    .into_iter()
+                    .map(|x| {
+                        x.to_vec_2d()
+                            .unwrap()
+                            .into_iter()
+                            .flatten()
+                            .collect_vec()
+                            .into_boxed_slice()
+                    })
+                    .collect_vec()
+                    .into_boxed_slice();
+                if inner_tx.send(boxed).is_err() {
+                    break;
                 };
             });
         }
 
-        <span class="kw">for _ in </span><span class="number">0</span>..post_processing_threads.into() {
-            <span class="kw">let </span>inner_rx = inner_rx.clone();
-            <span class="kw">let </span>output_tx = output_tx.clone();
-            <span class="kw">let </span>post_process_args = model.post_process_args();
+        for _ in 0..post_processing_threads.into() {
+            let inner_rx = inner_rx.clone();
+            let output_tx = output_tx.clone();
+            let post_process_args = model.post_process_args();
 
-            spawn_blocking(<span class="kw">move </span>|| {
-                <span class="comment">// Thread exits when model output threads exit (struct drop).
-                </span><span class="kw">while let </span><span class="prelude-val">Ok</span>(input) = inner_rx.recv() {
-                    <span class="kw">let </span>post_process_args = post_process_args.clone();
-                    <span class="kw">let </span>processed_output =
+            spawn_blocking(move || {
+                // Thread exits when model output threads exit (struct drop).
+                while let Ok(input) = inner_rx.recv() {
+                    let input = input
+                        .into_iter()
+                        .map(|x| Mat::from_slice(&amp;x).unwrap().clone_pointee())
+                        .collect();
+                    let post_process_args = post_process_args.clone();
+                    let processed_output =
                         T::post_process(post_process_args.clone(), input, threshold);
-                    <span class="comment">// Blocking call on this end, async on the other.
+                    // Blocking call on this end, async on the other.
                     // Never stalls for capacity, since output is unbounded.
-                    </span><span class="kw">if </span>output_tx.send_blocking(processed_output).is_err() {
-                        <span class="kw">break</span>;
+                    if output_tx.send_blocking(processed_output).is_err() {
+                        break;
                     };
                 }
             });
         }
 
-        <span class="self">Self </span>{
+        Self {
             input_mut,
             output_ch,
         }
     }
 
-    <span class="doccomment">/// Update the model with a newer [`Mat`] to process.
-    </span><span class="kw">pub fn </span>update_mat(<span class="kw-2">&amp;</span><span class="self">self</span>, mat: MatWrapper) -&gt; <span class="kw-2">&amp;</span><span class="self">Self </span>{
-        <span class="kw">let </span><span class="kw-2">mut </span>input = <span class="self">self</span>.input_mut.<span class="number">1</span>.lock().unwrap();
-        input.mat = mat;
-        <span class="self">self</span>.input_mut.<span class="number">0</span>.notify_one();
-        <span class="self">self
-    </span>}
-
-    <span class="doccomment">/// Get the oldest available output.
-    ///
-    /// Stalls until an output is available.
-    </span><span class="kw">pub async fn </span>get_single(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;YoloDetection&gt; {
-        <span class="self">self</span>.output_ch.recv().<span class="kw">await</span>.unwrap()
+    /// Update the model with a newer [`Mat`] to process.
+    pub fn update_mat(&amp;self, mat: Mat) -&gt; &amp;Self {
+        let mut input = self.input_mut.1.lock().unwrap();
+        input.mat = mat
+            .to_vec_2d()
+            .unwrap()
+            .into_iter()
+            .flatten()
+            .collect_vec()
+            .into_boxed_slice();
+        self.input_mut.0.notify_one();
+        self
     }
 
-    <span class="doccomment">/// Get the oldest N available outputs.
+    /// Get the oldest available output.
+    ///
+    /// Stalls until an output is available.
+    pub async fn get_single(&amp;self) -&gt; Vec&lt;YoloDetection&gt; {
+        self.output_ch.recv().await.unwrap()
+    }
+
+    /// Get the oldest N available outputs.
     ///
     /// Stalls until N outputs are available.
     /// Returns in order oldest -&gt; newest.
-    </span><span class="kw">pub async fn </span>get_multiple(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) -&gt; Vec&lt;Vec&lt;YoloDetection&gt;&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>output = Vec::with_capacity(count);
-        <span class="kw">for _ in </span><span class="number">0</span>..count {
-            output.push(<span class="self">self</span>.output_ch.recv().<span class="kw">await</span>.unwrap())
+    pub async fn get_multiple(&amp;self, count: usize) -&gt; Vec&lt;Vec&lt;YoloDetection&gt;&gt; {
+        let mut output = Vec::with_capacity(count);
+        for _ in 0..count {
+            output.push(self.output_ch.recv().await.unwrap())
         }
         output
     }
 
-    <span class="doccomment">/// Get the newest N available outputs.
+    /// Get the newest N available outputs.
     ///
     /// Stalls until N outputs are available.
     /// Returns in order oldest -&gt; newest.
-    </span><span class="kw">pub async fn </span>get_multiple_newest(<span class="kw-2">&amp;</span><span class="self">self</span>, count: usize) -&gt; Vec&lt;Vec&lt;YoloDetection&gt;&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>output = Vec::with_capacity(count);
-        <span class="kw">for _ in </span><span class="number">0</span>..count {
-            output.push(<span class="self">self</span>.output_ch.recv().<span class="kw">await</span>.unwrap())
+    pub async fn get_multiple_newest(&amp;self, count: usize) -&gt; Vec&lt;Vec&lt;YoloDetection&gt;&gt; {
+        let mut output = Vec::with_capacity(count);
+        for _ in 0..count {
+            output.push(self.output_ch.recv().await.unwrap())
         }
-        output.extend(iter::from_fn(|| <span class="self">self</span>.output_ch.try_recv().ok()));
+        output.extend(iter::from_fn(|| self.output_ch.try_recv().ok()));
 
         output.into_iter().rev().take(count).rev().collect()
     }
 
-    <span class="doccomment">/// Get all available output immediately.
-    </span><span class="kw">pub async fn </span>get_all(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;Vec&lt;YoloDetection&gt;&gt; {
-        iter::from_fn(|| <span class="self">self</span>.output_ch.try_recv().ok()).collect()
+    /// Get all available output immediately.
+    pub async fn get_all(&amp;self) -&gt; Vec&lt;Vec&lt;YoloDetection&gt;&gt; {
+        iter::from_fn(|| self.output_ch.try_recv().ok()).collect()
     }
 }
 
-<span class="kw">impl </span>Drop <span class="kw">for </span>ModelPipelined {
-    <span class="doccomment">/// Trigger thread cleanup.
-    </span><span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="self">self</span>.input_mut.<span class="number">1</span>.lock().unwrap().dropped = <span class="bool-val">true</span>;
-        <span class="self">self</span>.input_mut.<span class="number">0</span>.notify_all();
+impl Drop for ModelPipelined {
+    /// Trigger thread cleanup.
+    fn drop(&amp;mut self) {
+        self.input_mut.1.lock().unwrap().dropped = true;
+        self.input_mut.0.notify_all();
     }
 }
-</code></pre></div></section></main></body></html>
+*/
+</span></code></pre></div></section></main></body></html>
