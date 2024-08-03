@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Ordering"],"fn":["compiler_fence"],"struct":["AtomicBool","AtomicI16","AtomicI32","AtomicI64","AtomicI8","AtomicIsize","AtomicU16","AtomicU32","AtomicU64","AtomicU8","AtomicUsize"]};

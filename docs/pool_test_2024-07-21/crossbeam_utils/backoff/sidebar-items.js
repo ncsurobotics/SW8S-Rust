@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["SPIN_LIMIT","YIELD_LIMIT"],"struct":["Backoff"]};

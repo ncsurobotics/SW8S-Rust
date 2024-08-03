@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Selected","Timeout"],"fn":["run_ready","run_select","select","select_deadline","select_timeout","try_select"],"struct":["Operation","Select","SelectedOperation","Token"],"trait":["SelectHandle"]};
