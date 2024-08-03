@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["as_mut_ptr","as_ptr","check_raw_pointer","default_array","option_as_mut_ptr","option_as_ptr"],"macro":["default_union"]};
