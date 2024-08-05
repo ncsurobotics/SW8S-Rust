@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["BLOCK_CAP","DESTROY","HAS_NEXT","LAP","READ","SHIFT","WRITE"],"struct":["Block","IntoIter","Position","SegQueue","Slot"]};
