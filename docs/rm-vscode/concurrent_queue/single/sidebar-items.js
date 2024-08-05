@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CLOSED","LOCKED","PUSHED"],"struct":["Single"]};

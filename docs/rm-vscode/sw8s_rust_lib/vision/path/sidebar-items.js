@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["compute_angle"],"static":["FORWARD"],"struct":["Path","Yuv"]};
