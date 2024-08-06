@@ -106,9 +106,22 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
             // speed -= speeed;
             speed = -speed;
         }
-        self.context
-            .get_control_board()
-            .stability_2_speed_set_initial_yaw(0.0, speed, 0.0, 0.0, self.target_depth)
+
+        let cntrl_board = self.context.get_control_board();
+        let mut cur_angles = cntrl_board.responses().get_angles().await;
+        while cur_angles.is_none() {
+            cur_angles = cntrl_board.responses().get_angles().await;
+        }
+
+        cntrl_board
+            .stability_2_speed_set(
+                0.0,
+                speed,
+                0.0,
+                0.0,
+                *cur_angles.unwrap().yaw(),
+                self.target_depth,
+            )
             .await
     }
 }
