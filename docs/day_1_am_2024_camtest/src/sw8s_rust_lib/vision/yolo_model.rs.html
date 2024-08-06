@@ -142,8 +142,8 @@
 
     <span class="kw">fn </span>normalize(<span class="kw-2">&amp;mut </span><span class="self">self</span>, pos: <span class="kw-2">&amp;</span><span class="self">Self</span>::Position) -&gt; <span class="self">Self</span>::Position {
         <span class="comment">// Temporary constants
-        </span><span class="kw">const </span>IMAGE_WIDTH: f64 = <span class="number">800.0</span>;
-        <span class="kw">const </span>IMAGE_HEIGHT: f64 = <span class="number">600.0</span>;
+        </span><span class="kw">const </span>IMAGE_WIDTH: f64 = <span class="number">640.0</span>;
+        <span class="kw">const </span>IMAGE_HEIGHT: f64 = <span class="number">480.0</span>;
         <span class="self">Self</span>::Position {
             inner: Rect2d::new(
                 ((pos.inner.x / IMAGE_WIDTH) - <span class="number">0.5</span>) * <span class="number">2.0</span>,
