@@ -5,11 +5,11 @@ use crate::{
     act_nest,
     missions::{
         action::{
-            ActionChain, ActionConcurrent, ActionConditional, ActionDataConditional,
-            ActionSequence, ActionWhile, TupleSecond,
+            ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
+            TupleSecond,
         },
         basic::DelayAction,
-        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal, ToVec},
+        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
         movement::{
             AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, OffsetToPose,
             ReplaceX, SetX, SetY, SideMult, Stability2Adjust, Stability2Movement, Stability2Pos,
@@ -52,7 +52,7 @@ pub fn buoy_align<
         Descend::new(context, -1.5),
         DelayAction::new(2.0),
         StraightMovement::new(context, -1.5, true),
-        DelayAction::new(2.0),
+        DelayAction::new(6.0),
         ActionWhile::new(ActionSequence::new(
             act_nest!(
                 ActionChain::new,

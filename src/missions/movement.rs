@@ -98,7 +98,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
     for StraightMovement<'_, T>
 {
     async fn execute(&mut self) -> Result<()> {
-        let mut speed: f32 = 0.3;
+        let mut speed: f32 = 0.6;
         if !self.forward {
             // Eric Liu is a very talented programmer and utilizes the most effective linear programming techniques from the FIRST™ Robotics Competition.
             // let speeed: f32 = speed;
@@ -2059,6 +2059,12 @@ pub struct SetSideRed<T> {
 
 impl<T> Action for SetSideRed<T> {}
 
+impl<T: Default> Default for SetSideRed<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: Default> SetSideRed<T> {
     pub fn new() -> Self {
         Self {
@@ -2087,6 +2093,12 @@ pub struct SetSideBlue<T> {
 
 impl<T> Action for SetSideBlue<T> {}
 
+impl<T: Default> Default for SetSideBlue<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: Default> SetSideBlue<T> {
     pub fn new() -> Self {
         Self {
@@ -2113,6 +2125,12 @@ pub struct SideIsRed {}
 
 impl Action for SideIsRed {}
 
+impl Default for SideIsRed {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SideIsRed {
     pub const fn new() -> Self {
         Self {}
@@ -2135,6 +2153,12 @@ pub struct SideMult {
 }
 
 impl Action for SideMult {}
+
+impl Default for SideMult {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl SideMult {
     pub const fn new() -> Self {
@@ -2175,5 +2199,57 @@ impl ActionExec<Stability2Adjust> for SideMult {
         };
 
         inner
+    }
+}
+
+#[derive(Debug)]
+pub struct InvertX<T> {
+    pose: T,
+}
+
+impl<T> Action for InvertX<T> {}
+
+impl InvertX<Stability2Adjust> {
+    pub const fn new() -> Self {
+        Self {
+            pose: Stability2Adjust::const_default(),
+        }
+    }
+}
+
+impl Default for InvertX<Stability2Adjust> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for InvertX<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for InvertX<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        if let Some(ref mut x) = self.pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Adjust(x.signum() * (1.0 - x.abs())),
+                AdjustType::Replace(x) => AdjustType::Replace(x.signum() * (1.0 - x.abs())),
+            };
+        }
+        self.pose.clone()
+    }
+}
+
+impl ActionExec<Stability2Adjust> for InvertX<&Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        let mut pose = self.pose.clone();
+        if let Some(ref mut x) = pose.x {
+            *x = match *x {
+                AdjustType::Adjust(x) => AdjustType::Adjust(x.signum() * (1.0 - x.abs())),
+                AdjustType::Replace(x) => AdjustType::Replace(x.signum() * (1.0 - x.abs())),
+            };
+        }
+        pose
     }
 }
