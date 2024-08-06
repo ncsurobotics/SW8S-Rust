@@ -41,7 +41,8 @@ pub fn buoy_align<
 ) -> impl ActionExec<()> + '_ {
     const Y_SPEED: f32 = 0.2;
     const DEPTH: f32 = -1.0;
-    const FALSE_COUNT: u32 = 3;
+    const SPIN_DEPTH: f32 = -1.25;
+    const FALSE_COUNT: u32 = 9;
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
@@ -57,10 +58,9 @@ pub fn buoy_align<
             act_nest!(
                 ActionChain::new,
                 ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
-                SideMult::new(),
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(ALIGN_X_SPEED, ALIGN_Y_SPEED, 0.0, 0.0, None, DEPTH)
+                    Stability2Pos::new(ALIGN_X_SPEED, ALIGN_Y_SPEED, 0.0, 0.0, None, SPIN_DEPTH)
                 ),
                 OutputType::<()>::new(),
             ),
@@ -87,7 +87,7 @@ pub fn buoy_align<
                                 MidPoint::new(),
                                 OffsetToPose::<Offset2D<f64>>::default(),
                                 ReplaceX::new(),
-                                LinearYawFromX::<Stability2Adjust>::new(7.0),
+                                LinearYawFromX::<Stability2Adjust>::new(4.0),
                                 MultiplyX::new(0.5),
                                 ClampX::<Stability2Adjust>::new(0.15),
                                 StripY::<Stability2Adjust>::default(),

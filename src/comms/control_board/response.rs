@@ -128,7 +128,10 @@ impl ResponseMap {
                 } else if message_body.get(0..4) == Some(&WDGS) {
                     *watchdog_status.write().await = Some(message_body[4] != 0);
                 } else if message_body.get(0..7) == Some(&BNO055D) {
-                    *bno055_status.write().await = Some(message_body[7..].try_into().unwrap());
+                    //let cur_status = bno055_status.write().await;
+                    //let prev_yaw = Angles::from_raw(*cur_status).yaw();
+                    let new_status = message_body[7..].try_into().unwrap();
+                    *bno055_status.write().await = Some(new_status);
                 } else if message_body.get(0..7) == Some(&MS5837D) {
                     *ms5837_status.write().await = Some(message_body[7..].try_into().unwrap());
                 } else {

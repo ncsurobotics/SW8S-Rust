@@ -8,7 +8,8 @@ use crate::{
         basic::descend_depth_and_go_forward,
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
         movement::{
-            AdjustType, ClampX, FlipX, InvertX, MultiplyX, ReplaceX, SetSideBlue, SetSideRed, SetY,
+            AdjustType, ClampX, FlipX, InvertX, MultiplyX, ReplaceX, SetSideBlue, SetSideRed, SetX,
+            SetY,
         },
         vision::{MidPoint, OffsetClass},
     },
@@ -181,16 +182,18 @@ pub fn adjust_logic<
                                 MultiplyX::new(2.0),
                                 LinearYawFromX::<Stability2Adjust>::default(),
                                 MultiplyX::new(5.0),
-                                ClampX::new(0.6),
+                                ClampX::new(0.3),
                                 SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
                                 ReplaceX::new(),
                             ),
                             AlwaysTrue::new(),
                         ),
                         ActionConcurrent::new(
-                            ActionSequence::new(
+                            act_nest!(
+                                ActionSequence::new,
                                 Terminal::new(),
                                 SetY::<Stability2Adjust>::new(AdjustType::Replace(0.4)),
+                                SetX::<Stability2Adjust>::new(AdjustType::Replace(0.0)),
                             ),
                             AlwaysFalse::new(),
                         ),

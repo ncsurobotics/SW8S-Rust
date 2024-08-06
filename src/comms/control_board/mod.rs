@@ -45,7 +45,7 @@ fn stab_2_drift() -> f32 {
                 let start_time = SystemTime::now();
                 {
                     let mut drift_val_inner = drift_val_clone.lock().unwrap();
-                    *drift_val_inner = (*drift_val_inner + 0.15) % 360.0;
+                    *drift_val_inner += 0.015;
                 }
                 let lock_adjusted_time = SystemTime::now().duration_since(start_time).unwrap();
                 sleep(lock_adjusted_time).await

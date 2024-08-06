@@ -2179,23 +2179,19 @@ impl ActionExec<Stability2Adjust> for SideMult {
         let mut inner = self.inner.clone();
 
         if let Some(ref mut x) = inner.x {
-            if *SIDE.lock().unwrap() == Side::Red {
-                let x = match x {
-                    AdjustType::Adjust(x) => x,
-                    AdjustType::Replace(x) => x,
-                };
-                *x = -*x;
-            }
+            let x = match x {
+                AdjustType::Adjust(x) => x,
+                AdjustType::Replace(x) => x,
+            };
+            *x = -*x;
         };
 
         if let Some(ref mut yaw) = inner.target_yaw {
-            if *SIDE.lock().unwrap() == Side::Red {
-                let yaw = match yaw {
-                    AdjustType::Adjust(yaw) => yaw,
-                    AdjustType::Replace(yaw) => yaw,
-                };
-                *yaw = -*yaw;
-            }
+            let yaw = match yaw {
+                AdjustType::Adjust(yaw) => yaw,
+                AdjustType::Replace(yaw) => yaw,
+            };
+            *yaw = -*yaw;
         };
 
         inner
