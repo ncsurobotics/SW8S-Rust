@@ -2,24 +2,24 @@ digraph G {
 	splines = true;
 	nodesep = 1.0;
 	bgcolor = "none"
-	"ebd1da1a-d1c3-4d28-8cb4-4a935f67fa23" [shape = diamond];
-	subgraph "cluster_6a6c4982-5dac-4bdf-bcad-eed58c430241" {
+	"331d7b38-0998-40f3-94e5-a5c9a9e6e0c3" [shape = diamond];
+	subgraph "cluster_d268a1cb-0396-4233-9b5f-5f7d8ba2d41f" {
 		style = dashed;
 		color = red;
 		style = dashed;
 		color = red;
-		"5e5465b1-3a58-401e-a6cb-71094c137acb" -> "ba5c80ab-1de6-433e-9554-7fc15d0c0a05";
-		"5e5465b1-3a58-401e-a6cb-71094c137acb" -> "1a7850d6-a67f-4d0b-ae39-b0b7d761f313";
-		"ba5c80ab-1de6-433e-9554-7fc15d0c0a05" -> "8398a482-3c58-43d6-bcf6-86e9944c631b";
-		"1a7850d6-a67f-4d0b-ae39-b0b7d761f313" -> "8398a482-3c58-43d6-bcf6-86e9944c631b";
-		"5e5465b1-3a58-401e-a6cb-71094c137acb" [label = "Race", shape = box, fontcolor = red, style = dashed];
-		"8398a482-3c58-43d6-bcf6-86e9944c631b" [label = "Resolve", shape = box, fontcolor = red, style = dashed];
-		"ba5c80ab-1de6-433e-9554-7fc15d0c0a05" [label = "UnwrapAction", margin = 0];
-		"1a7850d6-a67f-4d0b-ae39-b0b7d761f313" [label = "DelayAction", margin = 0];
+		"90ced3ba-fa52-4953-bd19-eb260667338e" -> "71fa068f-48f2-46b9-94cd-065331f594be";
+		"90ced3ba-fa52-4953-bd19-eb260667338e" -> "5cc6d4de-c6b2-4141-aac0-f7403848a7a1";
+		"71fa068f-48f2-46b9-94cd-065331f594be" -> "2c6b4cfa-1784-4ba5-955c-ad6c0bb30c1c";
+		"5cc6d4de-c6b2-4141-aac0-f7403848a7a1" -> "2c6b4cfa-1784-4ba5-955c-ad6c0bb30c1c";
+		"90ced3ba-fa52-4953-bd19-eb260667338e" [label = "Race", shape = box, fontcolor = red, style = dashed];
+		"2c6b4cfa-1784-4ba5-955c-ad6c0bb30c1c" [label = "Resolve", shape = box, fontcolor = red, style = dashed];
+		"71fa068f-48f2-46b9-94cd-065331f594be" [label = "UnwrapAction", margin = 0];
+		"5cc6d4de-c6b2-4141-aac0-f7403848a7a1" [label = "DelayAction", margin = 0];
 	}
 	
-	"ebd1da1a-d1c3-4d28-8cb4-4a935f67fa23" -> "5e161a62-7354-4285-af9c-dd4a465e3482" [label = "True"];
-	"ebd1da1a-d1c3-4d28-8cb4-4a935f67fa23" -> "5e5465b1-3a58-401e-a6cb-71094c137acb" [label = "False"];
-	"5e161a62-7354-4285-af9c-dd4a465e3482" [label = "WaitArm", margin = 0];
-	"ebd1da1a-d1c3-4d28-8cb4-4a935f67fa23" [label = "AlwaysTrue", margin = 0];
+	"331d7b38-0998-40f3-94e5-a5c9a9e6e0c3" -> "c1fd984c-3078-4d14-a17f-7e05595e588a" [label = "True"];
+	"331d7b38-0998-40f3-94e5-a5c9a9e6e0c3" -> "90ced3ba-fa52-4953-bd19-eb260667338e" [label = "False"];
+	"c1fd984c-3078-4d14-a17f-7e05595e588a" [label = "WaitArm", margin = 0];
+	"331d7b38-0998-40f3-94e5-a5c9a9e6e0c3" [label = "AlwaysTrue", margin = 0];
 }

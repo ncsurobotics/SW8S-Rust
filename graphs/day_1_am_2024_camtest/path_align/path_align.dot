@@ -1,0 +1,29 @@
+digraph G {
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	subgraph "cluster_e8f86b49-749f-4574-890f-a57bda02ae57" {
+		style = dashed;
+		color = blue;
+		"8f7f94d3-4399-4538-8aeb-49f0cdd39367" -> "80aa0663-7693-4d65-9517-e943c893ca9c" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"29352933-d406-4d46-95f7-2efc23e81ad7" -> "8f7f94d3-4399-4538-8aeb-49f0cdd39367" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"4ca7a712-17b2-416f-90d5-76f29af2f9e6" -> "29352933-d406-4d46-95f7-2efc23e81ad7" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"a4ce008e-a414-4fad-89e4-70216b051268" -> "4ca7a712-17b2-416f-90d5-76f29af2f9e6" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"7776ffcf-842f-4c21-bad2-d436dce4b534" -> "a4ce008e-a414-4fad-89e4-70216b051268" [color = purple, fontcolor = purple, label = "Pass Data"];
+		"d0cce2c3-eb68-4203-a4f9-c94964ff4746" -> "7776ffcf-842f-4c21-bad2-d436dce4b534";
+		"d0cce2c3-eb68-4203-a4f9-c94964ff4746" -> "8873a98d-a667-4471-8d28-c172ba723e55";
+		"d0cce2c3-eb68-4203-a4f9-c94964ff4746" [label = "Concurrent", shape = box, fontcolor = blue, style = dashed];
+		"7776ffcf-842f-4c21-bad2-d436dce4b534" [label = "ToVec", margin = 0];
+		"a4ce008e-a414-4fad-89e4-70216b051268" [label = "ExtractPosition", margin = 0];
+		"4ca7a712-17b2-416f-90d5-76f29af2f9e6" [label = "MidPoint", margin = 0];
+		"29352933-d406-4d46-95f7-2efc23e81ad7" [label = "OffsetToPose", margin = 0];
+		"8f7f94d3-4399-4538-8aeb-49f0cdd39367" [label = "LinearYawFromX", margin = 0];
+		"80aa0663-7693-4d65-9517-e943c893ca9c" [label = "Stability2Movement", margin = 0];
+		"8873a98d-a667-4471-8d28-c172ba723e55" [label = "Consecutive True < 3", margin = 0];
+	}
+	
+	"06cc6057-9a84-4779-981e-7b4f7103fe66" -> "d0cce2c3-eb68-4203-a4f9-c94964ff4746" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"5252f5d2-076c-41fc-a97d-a20fa386b78c" -> "06cc6057-9a84-4779-981e-7b4f7103fe66" ;
+	"5252f5d2-076c-41fc-a97d-a20fa386b78c" [label = "ZeroMovement", margin = 0];
+	"06cc6057-9a84-4779-981e-7b4f7103fe66" [label = "VisionNormBottom", margin = 0];
+}
