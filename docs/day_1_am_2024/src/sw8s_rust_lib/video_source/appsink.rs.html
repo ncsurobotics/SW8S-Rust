@@ -120,6 +120,7 @@
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{anyhow, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>opencv::prelude::Mat;
 <span class="kw">use </span>opencv::videoio::VideoCapture;
@@ -177,6 +178,7 @@
         <span class="kw">let </span>frame: Arc&lt;Mutex&lt;<span class="prelude-ty">Option</span>&lt;Mat&gt;&gt;&gt; = Arc::default();
         <span class="kw">let </span>frame_copy = frame.clone();
 
+        <span class="kw">let </span>camera_path = camera_path.to_string();
         spawn(<span class="kw">move </span>|| <span class="kw">loop </span>{
             <span class="kw">let </span><span class="kw-2">mut </span>mat = Mat::default();
             <span class="kw">if </span>capture.read(<span class="kw-2">&amp;mut </span>mat).unwrap() {

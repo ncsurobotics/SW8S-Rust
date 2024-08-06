@@ -408,25 +408,6 @@
 <a href="#408" id="408">408</a>
 <a href="#409" id="409">409</a>
 <a href="#410" id="410">410</a>
-<a href="#411" id="411">411</a>
-<a href="#412" id="412">412</a>
-<a href="#413" id="413">413</a>
-<a href="#414" id="414">414</a>
-<a href="#415" id="415">415</a>
-<a href="#416" id="416">416</a>
-<a href="#417" id="417">417</a>
-<a href="#418" id="418">418</a>
-<a href="#419" id="419">419</a>
-<a href="#420" id="420">420</a>
-<a href="#421" id="421">421</a>
-<a href="#422" id="422">422</a>
-<a href="#423" id="423">423</a>
-<a href="#424" id="424">424</a>
-<a href="#425" id="425">425</a>
-<a href="#426" id="426">426</a>
-<a href="#427" id="427">427</a>
-<a href="#428" id="428">428</a>
-<a href="#429" id="429">429</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -503,20 +484,6 @@
         })
         .<span class="kw">await
 </span>}
-
-<span class="kw">static </span>BOTTOM_CAM_CELL: OnceCell&lt;Camera&gt; = OnceCell::const_new();
-<span class="kw">async fn </span>bottom_cam() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>Camera {
-    BOTTOM_CAM_CELL
-        .get_or_init(|| <span class="kw">async </span>{
-            Camera::jetson_new(
-                <span class="kw-2">&amp;</span>Configuration::default().bottom_cam,
-                <span class="string">"bottom"</span>,
-                Path::new(<span class="string">"/tmp/bottom_feed.mp4"</span>),
-            )
-            .unwrap()
-        })
-        .<span class="kw">await
-</span>}
 <span class="kw">static </span>GATE_TARGET: OnceCell&lt;RwLock&lt;Target&gt;&gt; = OnceCell::const_new();
 <span class="kw">async fn </span>gate_target() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>RwLock&lt;Target&gt; {
     GATE_TARGET
@@ -532,7 +499,6 @@
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
-                bottom_cam().<span class="kw">await</span>,
                 gate_target().<span class="kw">await</span>,
             )
         })
@@ -543,6 +509,12 @@
 </span><span class="kw">async fn </span>main() {
     <span class="kw">let </span>shutdown_tx = shutdown_handler().<span class="kw">await</span>;
     <span class="kw">let </span>_config = Configuration::default();
+
+    <span class="kw">let </span>orig_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(<span class="kw">move </span>|panic_info| {
+        orig_hook(panic_info);
+        exit(<span class="number">1</span>);
+    }));
 
     <span class="kw">let </span>shutdown_tx_clone = shutdown_tx.clone();
     tokio::spawn(<span class="kw">async move </span>{
@@ -708,7 +680,6 @@
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
-                bottom_cam().<span class="kw">await</span>,
                 gate_target().<span class="kw">await</span>,
             ))
             .execute()
@@ -720,7 +691,6 @@
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
-                bottom_cam().<span class="kw">await</span>,
                 gate_target().<span class="kw">await</span>,
             ))
             .execute()
@@ -732,7 +702,6 @@
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
-                bottom_cam().<span class="kw">await</span>,
                 gate_target().<span class="kw">await</span>,
             ))
             .execute()
@@ -744,7 +713,6 @@
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
-                bottom_cam().<span class="kw">await</span>,
                 gate_target().<span class="kw">await</span>,
             ))
             .execute()
@@ -755,7 +723,6 @@
             <span class="comment">// This has not been tested
             </span><span class="macro">println!</span>(<span class="string">"Opening camera"</span>);
             front_cam().<span class="kw">await</span>;
-            bottom_cam().<span class="kw">await</span>;
             <span class="macro">println!</span>(<span class="string">"Opened camera"</span>);
             <span class="prelude-val">Ok</span>(())
         }
@@ -766,7 +733,6 @@
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -779,7 +745,6 @@
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -792,7 +757,6 @@
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
-                bottom_cam().<span class="kw">await</span>,
                 gate_target().<span class="kw">await</span>,
             ))
             .execute()
@@ -804,7 +768,6 @@
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
-                bottom_cam().<span class="kw">await</span>,
                 gate_target().<span class="kw">await</span>,
             ))
             .execute()
@@ -816,7 +779,6 @@
                 control_board().<span class="kw">await</span>,
                 meb().<span class="kw">await</span>,
                 front_cam().<span class="kw">await</span>,
-                bottom_cam().<span class="kw">await</span>,
                 gate_target().<span class="kw">await</span>,
             ))
             .execute()

@@ -133,15 +133,6 @@
 <a href="#133" id="133">133</a>
 <a href="#134" id="134">134</a>
 <a href="#135" id="135">135</a>
-<a href="#136" id="136">136</a>
-<a href="#137" id="137">137</a>
-<a href="#138" id="138">138</a>
-<a href="#139" id="139">139</a>
-<a href="#140" id="140">140</a>
-<a href="#141" id="141">141</a>
-<a href="#142" id="142">142</a>
-<a href="#143" id="143">143</a>
-<a href="#144" id="144">144</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>opencv::core::Mat;
 <span class="kw">use </span>tokio::io::{AsyncWriteExt, WriteHalf};
@@ -203,7 +194,6 @@ pub trait GetConfig {
     control_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ControlBoard&lt;T&gt;,
     main_electronics_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>MainElectronicsBoard,
     front_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
-    bottom_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
     desired_buoy_target: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>RwLock&lt;Target&gt;,
 }
 
@@ -212,14 +202,12 @@ pub trait GetConfig {
         control_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ControlBoard&lt;T&gt;,
         main_electronics_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>MainElectronicsBoard,
         front_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
-        bottom_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
         desired_buoy_target: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>RwLock&lt;Target&gt;,
     ) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             control_board,
             main_electronics_board,
             front_cam,
-            bottom_cam,
             desired_buoy_target,
         }
     }
@@ -248,12 +236,6 @@ pub trait GetConfig {
     <span class="kw">async fn </span>set_desired_buoy_gate(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Target) -&gt; <span class="kw-2">&amp;</span><span class="self">Self </span>{
         <span class="kw-2">*</span><span class="self">self</span>.desired_buoy_target.write().<span class="kw">await </span>= value;
         <span class="self">self
-    </span>}
-}
-
-<span class="kw">impl</span>&lt;T: AsyncWriteExt + Unpin + Send&gt; GetBottomCamMat <span class="kw">for </span>FullActionContext&lt;<span class="lifetime">'_</span>, T&gt; {
-    <span class="kw">async fn </span>get_bottom_camera_mat(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Mat {
-        <span class="self">self</span>.bottom_cam.get_mat().<span class="kw">await
     </span>}
 }
 
