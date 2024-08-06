@@ -74,20 +74,6 @@ async fn front_cam() -> &'static Camera {
         })
         .await
 }
-
-static BOTTOM_CAM_CELL: OnceCell<Camera> = OnceCell::const_new();
-async fn bottom_cam() -> &'static Camera {
-    BOTTOM_CAM_CELL
-        .get_or_init(|| async {
-            Camera::jetson_new(
-                &Configuration::default().bottom_cam,
-                "bottom",
-                Path::new("/tmp/bottom_feed.mp4"),
-            )
-            .unwrap()
-        })
-        .await
-}
 static GATE_TARGET: OnceCell<RwLock<Target>> = OnceCell::const_new();
 async fn gate_target() -> &'static RwLock<Target> {
     GATE_TARGET
@@ -103,7 +89,6 @@ async fn static_context() -> &'static FullActionContext<'static, WriteHalf<Seria
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             )
         })
@@ -114,6 +99,12 @@ async fn static_context() -> &'static FullActionContext<'static, WriteHalf<Seria
 async fn main() {
     let shutdown_tx = shutdown_handler().await;
     let _config = Configuration::default();
+
+    let orig_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |panic_info| {
+        orig_hook(panic_info);
+        exit(1);
+    }));
 
     let shutdown_tx_clone = shutdown_tx.clone();
     tokio::spawn(async move {
@@ -279,7 +270,6 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -291,7 +281,6 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -303,7 +292,6 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -315,7 +303,6 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -326,7 +313,6 @@ async fn run_mission(mission: &str) -> Result<()> {
             // This has not been tested
             println!("Opening camera");
             front_cam().await;
-            bottom_cam().await;
             println!("Opened camera");
             Ok(())
         }
@@ -337,7 +323,6 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -350,7 +335,6 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -363,7 +347,6 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -375,7 +358,6 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -387,7 +369,6 @@ async fn run_mission(mission: &str) -> Result<()> {
                 control_board().await,
                 meb().await,
                 front_cam().await,
-                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()

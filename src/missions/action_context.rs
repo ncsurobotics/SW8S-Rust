@@ -59,7 +59,6 @@ pub struct FullActionContext<'a, T: AsyncWriteExt + Unpin + Send> {
     control_board: &'a ControlBoard<T>,
     main_electronics_board: &'a MainElectronicsBoard,
     front_cam: &'a Camera,
-    bottom_cam: &'a Camera,
     desired_buoy_target: &'a RwLock<Target>,
 }
 
@@ -68,14 +67,12 @@ impl<'a, T: AsyncWriteExt + Unpin + Send> FullActionContext<'a, T> {
         control_board: &'a ControlBoard<T>,
         main_electronics_board: &'a MainElectronicsBoard,
         front_cam: &'a Camera,
-        bottom_cam: &'a Camera,
         desired_buoy_target: &'a RwLock<Target>,
     ) -> Self {
         Self {
             control_board,
             main_electronics_board,
             front_cam,
-            bottom_cam,
             desired_buoy_target,
         }
     }
@@ -104,12 +101,6 @@ impl<T: AsyncWriteExt + Unpin + Send> GetFrontCamMat for FullActionContext<'_, T
     async fn set_desired_buoy_gate(&mut self, value: Target) -> &Self {
         *self.desired_buoy_target.write().await = value;
         self
-    }
-}
-
-impl<T: AsyncWriteExt + Unpin + Send> GetBottomCamMat for FullActionContext<'_, T> {
-    async fn get_bottom_camera_mat(&self) -> Mat {
-        self.bottom_cam.get_mat().await
     }
 }
 

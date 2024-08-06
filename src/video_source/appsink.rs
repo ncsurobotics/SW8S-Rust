@@ -55,6 +55,7 @@ impl Camera {
         let frame: Arc<Mutex<Option<Mat>>> = Arc::default();
         let frame_copy = frame.clone();
 
+        let camera_path = camera_path.to_string();
         spawn(move || loop {
             let mut mat = Mat::default();
             if capture.read(&mut mat).unwrap() {
