@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["ocvrs_create_byte_string","ocvrs_create_string","receive_string"],"macro":["callback_arg","extern_container_arg","input_array_arg","input_output_array_arg","output_array_arg","return_receive","return_send","string_arg_output_receive","string_arg_output_send","string_array_arg","string_array_arg_mut","userdata_arg"]};
