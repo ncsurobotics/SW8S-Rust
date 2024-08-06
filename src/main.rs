@@ -396,6 +396,24 @@ async fn run_mission(mission: &str) -> Result<()> {
             while control_board().await.raw_speed_set([0.0; 8]).await.is_err() {}
             sleep(Duration::from_secs(u64::MAX)).await;
         },
+        "open_cam_test" => {
+            Camera::jetson_new(
+                &Configuration::default().bottom_cam,
+                "front",
+                Path::new("/tmp/front_feed.mp4"),
+            )
+            .unwrap();
+
+            /*
+            Camera::jetson_new(
+                &Configuration::default().bottom_cam,
+                "bottom",
+                Path::new("/tmp/bottom_feed.mp4"),
+            )
+            .unwrap();
+            */
+            Ok(())
+        }
         x => bail!("Invalid argument: [{x}]"),
     };
 

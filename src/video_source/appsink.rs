@@ -47,19 +47,20 @@ impl Camera {
                 + camera_name
                 + "\" ";
 
-        #[cfg(feature = "logging")]
-        println!("Capture string: {capture_string}");
-        let mut capture =
-            VideoCapture::from_file(&capture_string, VideoCaptureAPIs::CAP_GSTREAMER as i32)?;
-
         let frame: Arc<Mutex<Option<Mat>>> = Arc::default();
         let frame_copy = frame.clone();
 
-        let camera_path = camera_path.to_string();
-        spawn(move || loop {
-            let mut mat = Mat::default();
-            if capture.read(&mut mat).unwrap() {
-                *frame_copy.blocking_lock() = Some(mat)
+        #[cfg(feature = "logging")]
+        println!("Capture string: {capture_string}");
+        spawn(move || {
+            let mut capture =
+                VideoCapture::from_file(&capture_string, VideoCaptureAPIs::CAP_GSTREAMER as i32)
+                    .unwrap();
+            loop {
+                let mut mat = Mat::default();
+                if capture.read(&mut mat).unwrap() {
+                    *frame_copy.blocking_lock() = Some(mat)
+                }
             }
         });
 
