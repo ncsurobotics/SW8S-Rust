@@ -450,6 +450,7 @@
 <a href="#450" id="450">450</a>
 <a href="#451" id="451">451</a>
 <a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -473,6 +474,7 @@
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         meb::WaitArm,
         octagon::look_up_octagon,
+        path_align::path_align,
         vision::PIPELINE_KILL,
     },
     video_source::appsink::Camera,
@@ -789,19 +791,19 @@
             <span class="macro">println!</span>(<span class="string">"Opened camera"</span>);
             <span class="prelude-val">Ok</span>(())
         }
-        <span class="comment">/*
-        "path_align" =&gt; {
-            bail!("TODO");
-            let _ = path_align(&amp;FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,bottom_cam().await,
-                gate_target().await,
+        <span class="string">"path_align" </span>=&gt; {
+            <span class="kw">let _ </span>= path_align(<span class="kw-2">&amp;</span>FullActionContext::new(
+                control_board().<span class="kw">await</span>,
+                meb().<span class="kw">await</span>,
+                front_cam().<span class="kw">await</span>,
+                bottom_cam().<span class="kw">await</span>,
+                gate_target().<span class="kw">await</span>,
             ))
             .execute()
-            .await;
-            Ok(())
+            .<span class="kw">await</span>;
+            <span class="prelude-val">Ok</span>(())
         }
+        <span class="comment">/*
         "buoy_circle" =&gt; {
             bail!("TODO");
             let _ = gate_run(&amp;FullActionContext::new(
