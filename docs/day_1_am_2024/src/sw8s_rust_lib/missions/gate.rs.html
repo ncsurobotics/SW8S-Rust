@@ -224,7 +224,6 @@
 <a href="#224" id="224">224</a>
 <a href="#225" id="225">225</a>
 <a href="#226" id="226">226</a>
-<a href="#227" id="227">227</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
@@ -408,9 +407,8 @@
                                 MidPoint::new(),
                                 OffsetToPose::default(),
                                 LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
-                                ClampX::new(<span class="number">0.2</span>),
+                                ClampX::new(<span class="number">0.3</span>),
                                 SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.2</span>)),
-                                FlipX::default(),
                                 ReplaceX::new(),
                             ),
                             AlwaysTrue::new(),
