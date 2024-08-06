@@ -2177,6 +2177,82 @@
 <a href="#2177" id="2177">2177</a>
 <a href="#2178" id="2178">2178</a>
 <a href="#2179" id="2179">2179</a>
+<a href="#2180" id="2180">2180</a>
+<a href="#2181" id="2181">2181</a>
+<a href="#2182" id="2182">2182</a>
+<a href="#2183" id="2183">2183</a>
+<a href="#2184" id="2184">2184</a>
+<a href="#2185" id="2185">2185</a>
+<a href="#2186" id="2186">2186</a>
+<a href="#2187" id="2187">2187</a>
+<a href="#2188" id="2188">2188</a>
+<a href="#2189" id="2189">2189</a>
+<a href="#2190" id="2190">2190</a>
+<a href="#2191" id="2191">2191</a>
+<a href="#2192" id="2192">2192</a>
+<a href="#2193" id="2193">2193</a>
+<a href="#2194" id="2194">2194</a>
+<a href="#2195" id="2195">2195</a>
+<a href="#2196" id="2196">2196</a>
+<a href="#2197" id="2197">2197</a>
+<a href="#2198" id="2198">2198</a>
+<a href="#2199" id="2199">2199</a>
+<a href="#2200" id="2200">2200</a>
+<a href="#2201" id="2201">2201</a>
+<a href="#2202" id="2202">2202</a>
+<a href="#2203" id="2203">2203</a>
+<a href="#2204" id="2204">2204</a>
+<a href="#2205" id="2205">2205</a>
+<a href="#2206" id="2206">2206</a>
+<a href="#2207" id="2207">2207</a>
+<a href="#2208" id="2208">2208</a>
+<a href="#2209" id="2209">2209</a>
+<a href="#2210" id="2210">2210</a>
+<a href="#2211" id="2211">2211</a>
+<a href="#2212" id="2212">2212</a>
+<a href="#2213" id="2213">2213</a>
+<a href="#2214" id="2214">2214</a>
+<a href="#2215" id="2215">2215</a>
+<a href="#2216" id="2216">2216</a>
+<a href="#2217" id="2217">2217</a>
+<a href="#2218" id="2218">2218</a>
+<a href="#2219" id="2219">2219</a>
+<a href="#2220" id="2220">2220</a>
+<a href="#2221" id="2221">2221</a>
+<a href="#2222" id="2222">2222</a>
+<a href="#2223" id="2223">2223</a>
+<a href="#2224" id="2224">2224</a>
+<a href="#2225" id="2225">2225</a>
+<a href="#2226" id="2226">2226</a>
+<a href="#2227" id="2227">2227</a>
+<a href="#2228" id="2228">2228</a>
+<a href="#2229" id="2229">2229</a>
+<a href="#2230" id="2230">2230</a>
+<a href="#2231" id="2231">2231</a>
+<a href="#2232" id="2232">2232</a>
+<a href="#2233" id="2233">2233</a>
+<a href="#2234" id="2234">2234</a>
+<a href="#2235" id="2235">2235</a>
+<a href="#2236" id="2236">2236</a>
+<a href="#2237" id="2237">2237</a>
+<a href="#2238" id="2238">2238</a>
+<a href="#2239" id="2239">2239</a>
+<a href="#2240" id="2240">2240</a>
+<a href="#2241" id="2241">2241</a>
+<a href="#2242" id="2242">2242</a>
+<a href="#2243" id="2243">2243</a>
+<a href="#2244" id="2244">2244</a>
+<a href="#2245" id="2245">2245</a>
+<a href="#2246" id="2246">2246</a>
+<a href="#2247" id="2247">2247</a>
+<a href="#2248" id="2248">2248</a>
+<a href="#2249" id="2249">2249</a>
+<a href="#2250" id="2250">2250</a>
+<a href="#2251" id="2251">2251</a>
+<a href="#2252" id="2252">2252</a>
+<a href="#2253" id="2253">2253</a>
+<a href="#2254" id="2254">2254</a>
+<a href="#2255" id="2255">2255</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::vision::DrawRect2d;
 <span class="kw">use </span><span class="kw">crate</span>::vision::Offset2D;
@@ -2277,7 +2353,7 @@
     <span class="kw">for </span>StraightMovement&lt;<span class="lifetime">'_</span>, T&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>speed: f32 = <span class="number">0.3</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>speed: f32 = <span class="number">0.6</span>;
         <span class="kw">if </span>!<span class="self">self</span>.forward {
             <span class="comment">// Eric Liu is a very talented programmer and utilizes the most effective linear programming techniques from the FIRST™ Robotics Competition.
             // let speeed: f32 = speed;
@@ -4238,6 +4314,12 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="kw">impl</span>&lt;T&gt; Action <span class="kw">for </span>SetSideRed&lt;T&gt; {}
 
+<span class="kw">impl</span>&lt;T: Default&gt; Default <span class="kw">for </span>SetSideRed&lt;T&gt; {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
+
 <span class="kw">impl</span>&lt;T: Default&gt; SetSideRed&lt;T&gt; {
     <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
@@ -4266,6 +4348,12 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="kw">impl</span>&lt;T&gt; Action <span class="kw">for </span>SetSideBlue&lt;T&gt; {}
 
+<span class="kw">impl</span>&lt;T: Default&gt; Default <span class="kw">for </span>SetSideBlue&lt;T&gt; {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
+
 <span class="kw">impl</span>&lt;T: Default&gt; SetSideBlue&lt;T&gt; {
     <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
@@ -4292,6 +4380,12 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="kw">impl </span>Action <span class="kw">for </span>SideIsRed {}
 
+<span class="kw">impl </span>Default <span class="kw">for </span>SideIsRed {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
+
 <span class="kw">impl </span>SideIsRed {
     <span class="kw">pub const fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{}
@@ -4314,6 +4408,12 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 }
 
 <span class="kw">impl </span>Action <span class="kw">for </span>SideMult {}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>SideMult {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
 
 <span class="kw">impl </span>SideMult {
     <span class="kw">pub const fn </span>new() -&gt; <span class="self">Self </span>{
@@ -4354,6 +4454,58 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
         };
 
         inner
+    }
+}
+
+<span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>InvertX&lt;T&gt; {
+    pose: T,
+}
+
+<span class="kw">impl</span>&lt;T&gt; Action <span class="kw">for </span>InvertX&lt;T&gt; {}
+
+<span class="kw">impl </span>InvertX&lt;Stability2Adjust&gt; {
+    <span class="kw">pub const fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            pose: Stability2Adjust::const_default(),
+        }
+    }
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>InvertX&lt;Stability2Adjust&gt; {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
+    }
+}
+
+<span class="kw">impl</span>&lt;T: Sync + Send + Clone&gt; ActionMod&lt;T&gt; <span class="kw">for </span>InvertX&lt;T&gt; {
+    <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>T) {
+        <span class="self">self</span>.pose = input.clone();
+    }
+}
+
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>InvertX&lt;Stability2Adjust&gt; {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = <span class="self">self</span>.pose.x {
+            <span class="kw-2">*</span>x = <span class="kw">match </span><span class="kw-2">*</span>x {
+                AdjustType::Adjust(x) =&gt; AdjustType::Adjust(x.signum() * (<span class="number">1.0 </span>- x.abs())),
+                AdjustType::Replace(x) =&gt; AdjustType::Replace(x.signum() * (<span class="number">1.0 </span>- x.abs())),
+            };
+        }
+        <span class="self">self</span>.pose.clone()
+    }
+}
+
+<span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>InvertX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
+        <span class="kw">let </span><span class="kw-2">mut </span>pose = <span class="self">self</span>.pose.clone();
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = pose.x {
+            <span class="kw-2">*</span>x = <span class="kw">match </span><span class="kw-2">*</span>x {
+                AdjustType::Adjust(x) =&gt; AdjustType::Adjust(x.signum() * (<span class="number">1.0 </span>- x.abs())),
+                AdjustType::Replace(x) =&gt; AdjustType::Replace(x.signum() * (<span class="number">1.0 </span>- x.abs())),
+            };
+        }
+        pose
     }
 }
 </code></pre></div></section></main></body></html>

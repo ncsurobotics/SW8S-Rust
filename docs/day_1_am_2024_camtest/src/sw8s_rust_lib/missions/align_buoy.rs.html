@@ -121,11 +121,11 @@
     act_nest,
     missions::{
         action::{
-            ActionChain, ActionConcurrent, ActionConditional, ActionDataConditional,
-            ActionSequence, ActionWhile, TupleSecond,
+            ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
+            TupleSecond,
         },
         basic::DelayAction,
-        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal, ToVec},
+        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
         movement::{
             AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, OffsetToPose,
             ReplaceX, SetX, SetY, SideMult, Stability2Adjust, Stability2Movement, Stability2Pos,
@@ -168,7 +168,7 @@
         Descend::new(context, -<span class="number">1.5</span>),
         DelayAction::new(<span class="number">2.0</span>),
         StraightMovement::new(context, -<span class="number">1.5</span>, <span class="bool-val">true</span>),
-        DelayAction::new(<span class="number">2.0</span>),
+        DelayAction::new(<span class="number">6.0</span>),
         ActionWhile::new(ActionSequence::new(
             <span class="macro">act_nest!</span>(
                 ActionChain::new,
