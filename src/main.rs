@@ -21,6 +21,7 @@ use sw8s_rust_lib::{
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         meb::WaitArm,
         octagon::look_up_octagon,
+        path_align::path_align,
         vision::PIPELINE_KILL,
     },
     video_source::appsink::Camera,
@@ -337,19 +338,19 @@ async fn run_mission(mission: &str) -> Result<()> {
             println!("Opened camera");
             Ok(())
         }
-        /*
         "path_align" => {
-            bail!("TODO");
             let _ = path_align(&FullActionContext::new(
                 control_board().await,
                 meb().await,
-                front_cam().await,bottom_cam().await,
+                front_cam().await,
+                bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
             .await;
             Ok(())
         }
+        /*
         "buoy_circle" => {
             bail!("TODO");
             let _ = gate_run(&FullActionContext::new(

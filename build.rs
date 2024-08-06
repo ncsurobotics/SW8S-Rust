@@ -125,7 +125,7 @@ mod graphing {
             })
             .for_each(|(path, file, actions)| {
                 let actions_str =
-                    "pub fn graph_actions<T: GraphActionContext::GetMainElectronicsBoard + GraphActionContext::GetControlBoard<tokio::io::WriteHalf<tokio_serial::SerialStream>> + GraphActionContext::GetFrontCamMat + Send + Sync + std::marker::Unpin>(context: &'static T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
+                    "pub fn graph_actions<T: GraphActionContext::GetMainElectronicsBoard + GraphActionContext::GetControlBoard<tokio::io::WriteHalf<tokio_serial::SerialStream>> + GraphActionContext::GetFrontCamMat + GraphActionContext::GetBottomCamMat + Send + Sync + std::marker::Unpin>(context: &'static T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
                         .to_string()
                         + &actions
                             .into_iter()
