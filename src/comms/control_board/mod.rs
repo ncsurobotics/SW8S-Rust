@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 use std::{
     ops::Deref,
-    sync::{Arc, Mutex, OnceLock},
+    sync::{Arc, OnceLock},
     time::{Duration, SystemTime},
 };
 
@@ -31,16 +31,16 @@ pub enum SensorStatuses {
     AllGood,
 }
 
-static STAB_2_DRIFT: OnceLock<Arc<Mutex<f32>>> = OnceLock::new();
+static STAB_2_DRIFT: OnceLock<Arc<std::sync::Mutex<f32>>> = OnceLock::new();
 fn stab_2_drift() -> f32 {
     let drift_val = STAB_2_DRIFT.get_or_init(|| {
-        let drift_val = Arc::new(Mutex::new(0.0));
+        let drift_val = Arc::new(std::sync::Mutex::new(0.0));
 
         let drift_val_clone = drift_val.clone();
         spawn(async move {
             let sleep_dur = Duration::from_secs(1);
 
-            sleep(sleep_dur);
+            sleep(sleep_dur).await;
             loop {
                 let start_time = SystemTime::now();
                 {
