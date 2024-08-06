@@ -68,7 +68,7 @@ impl Camera {
     }
 
     pub fn jetson_new(camera_path: &str, camera_name: &str, filesink_dir: &Path) -> Result<Self> {
-        Camera::new(camera_path, camera_name, filesink_dir, (800, 600), true)
+        Camera::new(camera_path, camera_name, filesink_dir, (640, 480), true)
     }
 }
 

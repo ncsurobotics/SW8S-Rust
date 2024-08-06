@@ -52,8 +52,8 @@ where
 
     fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
         // Temporary constants
-        const IMAGE_WIDTH: f64 = 800.0;
-        const IMAGE_HEIGHT: f64 = 600.0;
+        const IMAGE_WIDTH: f64 = 640.0;
+        const IMAGE_HEIGHT: f64 = 480.0;
         Self::Position {
             inner: Rect2d::new(
                 ((pos.inner.x / IMAGE_WIDTH) - 0.5) * 2.0,
