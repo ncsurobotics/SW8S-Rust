@@ -98,7 +98,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
     for StraightMovement<'_, T>
 {
     async fn execute(&mut self) -> Result<()> {
-        let mut speed: f32 = 0.3;
+        let mut speed: f32 = 0.6;
         if !self.forward {
             // Eric Liu is a very talented programmer and utilizes the most effective linear programming techniques from the FIRST™ Robotics Competition.
             // let speeed: f32 = speed;

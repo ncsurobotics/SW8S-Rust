@@ -52,7 +52,7 @@ pub fn buoy_align<
         Descend::new(context, -1.5),
         DelayAction::new(2.0),
         StraightMovement::new(context, -1.5, true),
-        DelayAction::new(2.0),
+        DelayAction::new(6.0),
         ActionWhile::new(ActionSequence::new(
             act_nest!(
                 ActionChain::new,

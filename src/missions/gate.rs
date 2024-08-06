@@ -86,18 +86,16 @@ pub fn gate_run_complex<
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
     const TIMEOUT: f32 = 30.0;
 
-    let first_depth: f32 = -0.75;
     let depth: f32 = -1.25;
 
     ActionSequence::new(
         ActionConcurrent::new(
-            descend_depth_and_go_forward(context, first_depth),
+            descend_depth_and_go_forward(context, depth),
             StartBno055::new(context),
         ),
         act_nest!(
             ActionSequence::new,
-            adjust_logic(context, first_depth, CountTrue::new(4)),
-            adjust_logic_timeout(context, depth, TIMEOUT, CountFalse::new(4)),
+            adjust_logic(context, depth, CountTrue::new(4)),
             ActionChain::new(
                 Stability2Movement::new(
                     context,
@@ -153,10 +151,11 @@ pub fn adjust_logic<
                     AlwaysTrue::new(),
                 ),
                 ActionDataConditional::new(
-                    FirstValid::new(ActionConcurrent::new(
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                    act_nest!(
+                        wrap_action(ActionConcurrent::new, FirstValid::new),
+                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
                         DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
-                    )),
+                    ),
                     act_nest!(
                         ActionConcurrent::new,
                         act_nest!(
@@ -172,12 +171,30 @@ pub fn adjust_logic<
                         ),
                         AlwaysTrue::new(),
                     ),
-                    ActionConcurrent::new(
-                        ActionSequence::new(
-                            Terminal::new(),
-                            SetY::<Stability2Adjust>::new(AdjustType::Replace(0.4)),
+                    ActionDataConditional::new(
+                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                        act_nest!(
+                            ActionConcurrent::new,
+                            act_nest!(
+                                ActionChain::new,
+                                ExtractPosition::new(),
+                                MidPoint::new(),
+                                OffsetToPose::default(),
+                                LinearYawFromX::<Stability2Adjust>::default(),
+                                ClampX::new(0.2),
+                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
+                                FlipX::default(),
+                                ReplaceX::new(),
+                            ),
+                            AlwaysTrue::new(),
                         ),
-                        AlwaysFalse::new(),
+                        ActionConcurrent::new(
+                            ActionSequence::new(
+                                Terminal::new(),
+                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.4)),
+                            ),
+                            AlwaysFalse::new(),
+                        ),
                     ),
                 ),
             ),
@@ -194,99 +211,6 @@ pub fn adjust_logic<
             )),
         ),
     ))
-}
-
-pub fn adjust_logic_timeout<
-    'a,
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
-    X: 'a + ActionMod<bool> + ActionExec<anyhow::Result<()>>,
->(
-    context: &'a Con,
-    depth: f32,
-    timeout: f32,
-    end_condition: X,
-) -> impl ActionExec<()> + 'a {
-    const GATE_TRAVERSAL_SPEED: f32 = 0.2;
-
-    ActionSelect::new(
-        ActionWhile::new(ActionChain::new(
-            VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
-            ActionChain::new(
-                ActionDataConditional::new(
-                    act_nest!(
-                        wrap_action(ActionConcurrent::new, FirstValid::new),
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
-                            Target::Middle
-                        ),
-                    ),
-                    ActionConcurrent::new(
-                        act_nest!(
-                            ActionChain::new,
-                            OffsetClass::new(Target::Middle, Offset2D::<f64>::new(-0.1, 0.0)),
-                            ExtractPosition::new(),
-                            MidPoint::new(),
-                            OffsetToPose::default(),
-                            LinearYawFromX::<Stability2Adjust>::default(),
-                            ClampX::new(0.4),
-                            SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.02)),
-                            FlipX::default(),
-                            SetSideBlue::new(),
-                        ),
-                        AlwaysTrue::new(),
-                    ),
-                    ActionDataConditional::new(
-                        FirstValid::new(ActionConcurrent::new(
-                            DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
-                                Target::Pole,
-                            ),
-                            DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
-                                Target::Red,
-                            ),
-                        )),
-                        ActionConcurrent::new(
-                            act_nest!(
-                                ActionChain::new,
-                                ExtractPosition::new(),
-                                MidPoint::new(),
-                                OffsetToPose::default(),
-                                LinearYawFromX::<Stability2Adjust>::default(),
-                                ClampX::new(0.2),
-                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
-                                ReplaceX::new(),
-                                SetSideRed::new(),
-                            ),
-                            AlwaysTrue::new(),
-                        ),
-                        ActionConcurrent::new(
-                            ActionSequence::new(
-                                Terminal::new(),
-                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.0)),
-                            ),
-                            AlwaysFalse::new(),
-                        ),
-                    ),
-                ),
-                TupleSecond::new(ActionConcurrentSplit::new(
-                    act_nest!(
-                        ActionChain::new,
-                        Stability2Movement::new(
-                            context,
-                            Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 30.0, 0.0, None, depth),
-                        ),
-                        OutputType::<()>::new(),
-                    ),
-                    end_condition,
-                )),
-            ),
-        )),
-        DelayAction::new(timeout),
-    )
 }
 
 pub fn gate_run_testing<
