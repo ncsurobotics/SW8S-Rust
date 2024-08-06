@@ -220,24 +220,16 @@
 <a href="#220" id="220">220</a>
 <a href="#221" id="221">221</a>
 <a href="#222" id="222">222</a>
-<a href="#223" id="223">223</a>
-<a href="#224" id="224">224</a>
-<a href="#225" id="225">225</a>
-<a href="#226" id="226">226</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
 <span class="kw">use crate</span>::{
     act_nest,
     missions::{
-        action::{ActionConcurrentSplit, ActionDataConditional, ActionSelect},
+        action::{ActionConcurrentSplit, ActionDataConditional},
         basic::descend_depth_and_go_forward,
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
-        meb::WaitArm,
-        movement::{
-            AdjustType, ClampX, FlipX, ReplaceX, SetSideBlue, SetSideRed, SetY, Stability1Adjust,
-            Stability1Movement, Stability1Pos,
-        },
+        movement::{AdjustType, ClampX, FlipX, InvertX, ReplaceX, SetSideBlue, SetSideRed, SetY},
         vision::{MidPoint, OffsetClass},
     },
     vision::{
@@ -255,7 +247,7 @@
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::{descend_and_go_forward, DelayAction},
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, InOrderFail, OutputType},
+    extra::{CountFalse, CountTrue, OutputType},
     movement::{
         AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
         Stability2Pos, ZeroMovement,
@@ -406,7 +398,7 @@
                                 ExtractPosition::new(),
                                 MidPoint::new(),
                                 OffsetToPose::default(),
-                                LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
+                                InvertX::default(),
                                 ClampX::new(<span class="number">0.3</span>),
                                 SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.2</span>)),
                                 ReplaceX::new(),
