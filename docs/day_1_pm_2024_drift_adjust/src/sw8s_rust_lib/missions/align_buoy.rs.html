@@ -157,7 +157,8 @@
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
     <span class="kw">const </span>Y_SPEED: f32 = <span class="number">0.2</span>;
     <span class="kw">const </span>DEPTH: f32 = -<span class="number">1.0</span>;
-    <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">3</span>;
+    <span class="kw">const </span>SPIN_DEPTH: f32 = -<span class="number">1.25</span>;
+    <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">9</span>;
 
     <span class="kw">const </span>ALIGN_X_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>ALIGN_Y_SPEED: f32 = <span class="number">0.0</span>;
@@ -173,10 +174,9 @@
             <span class="macro">act_nest!</span>(
                 ActionChain::new,
                 ConstYaw::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
-                SideMult::new(),
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(ALIGN_X_SPEED, ALIGN_Y_SPEED, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH)
+                    Stability2Pos::new(ALIGN_X_SPEED, ALIGN_Y_SPEED, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, SPIN_DEPTH)
                 ),
                 OutputType::&lt;()&gt;::new(),
             ),
@@ -203,7 +203,7 @@
                                 MidPoint::new(),
                                 OffsetToPose::&lt;Offset2D&lt;f64&gt;&gt;::default(),
                                 ReplaceX::new(),
-                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">7.0</span>),
+                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">4.0</span>),
                                 MultiplyX::new(<span class="number">0.5</span>),
                                 ClampX::&lt;Stability2Adjust&gt;::new(<span class="number">0.15</span>),
                                 StripY::&lt;Stability2Adjust&gt;::default(),

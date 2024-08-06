@@ -2249,10 +2249,6 @@
 <a href="#2249" id="2249">2249</a>
 <a href="#2250" id="2250">2250</a>
 <a href="#2251" id="2251">2251</a>
-<a href="#2252" id="2252">2252</a>
-<a href="#2253" id="2253">2253</a>
-<a href="#2254" id="2254">2254</a>
-<a href="#2255" id="2255">2255</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::vision::DrawRect2d;
 <span class="kw">use </span><span class="kw">crate</span>::vision::Offset2D;
@@ -4434,23 +4430,19 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>inner = <span class="self">self</span>.inner.clone();
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = inner.x {
-            <span class="kw">if </span><span class="kw-2">*</span>SIDE.lock().unwrap() == Side::Red {
-                <span class="kw">let </span>x = <span class="kw">match </span>x {
-                    AdjustType::Adjust(x) =&gt; x,
-                    AdjustType::Replace(x) =&gt; x,
-                };
-                <span class="kw-2">*</span>x = -<span class="kw-2">*</span>x;
-            }
+            <span class="kw">let </span>x = <span class="kw">match </span>x {
+                AdjustType::Adjust(x) =&gt; x,
+                AdjustType::Replace(x) =&gt; x,
+            };
+            <span class="kw-2">*</span>x = -<span class="kw-2">*</span>x;
         };
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>yaw) = inner.target_yaw {
-            <span class="kw">if </span><span class="kw-2">*</span>SIDE.lock().unwrap() == Side::Red {
-                <span class="kw">let </span>yaw = <span class="kw">match </span>yaw {
-                    AdjustType::Adjust(yaw) =&gt; yaw,
-                    AdjustType::Replace(yaw) =&gt; yaw,
-                };
-                <span class="kw-2">*</span>yaw = -<span class="kw-2">*</span>yaw;
-            }
+            <span class="kw">let </span>yaw = <span class="kw">match </span>yaw {
+                AdjustType::Adjust(yaw) =&gt; yaw,
+                AdjustType::Replace(yaw) =&gt; yaw,
+            };
+            <span class="kw-2">*</span>yaw = -<span class="kw-2">*</span>yaw;
         };
 
         inner

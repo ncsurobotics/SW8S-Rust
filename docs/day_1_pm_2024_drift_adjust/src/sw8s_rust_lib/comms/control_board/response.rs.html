@@ -162,6 +162,9 @@
 <a href="#162" id="162">162</a>
 <a href="#163" id="163">163</a>
 <a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
     collections::HashMap,
     sync::{
@@ -292,7 +295,10 @@
                 } <span class="kw">else if </span>message_body.get(<span class="number">0</span>..<span class="number">4</span>) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>WDGS) {
                     <span class="kw-2">*</span>watchdog_status.write().<span class="kw">await </span>= <span class="prelude-val">Some</span>(message_body[<span class="number">4</span>] != <span class="number">0</span>);
                 } <span class="kw">else if </span>message_body.get(<span class="number">0</span>..<span class="number">7</span>) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>BNO055D) {
-                    <span class="kw-2">*</span>bno055_status.write().<span class="kw">await </span>= <span class="prelude-val">Some</span>(message_body[<span class="number">7</span>..].try_into().unwrap());
+                    <span class="comment">//let cur_status = bno055_status.write().await;
+                    //let prev_yaw = Angles::from_raw(*cur_status).yaw();
+                    </span><span class="kw">let </span>new_status = message_body[<span class="number">7</span>..].try_into().unwrap();
+                    <span class="kw-2">*</span>bno055_status.write().<span class="kw">await </span>= <span class="prelude-val">Some</span>(new_status);
                 } <span class="kw">else if </span>message_body.get(<span class="number">0</span>..<span class="number">7</span>) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>MS5837D) {
                     <span class="kw-2">*</span>ms5837_status.write().<span class="kw">await </span>= <span class="prelude-val">Some</span>(message_body[<span class="number">7</span>..].try_into().unwrap());
                 } <span class="kw">else </span>{

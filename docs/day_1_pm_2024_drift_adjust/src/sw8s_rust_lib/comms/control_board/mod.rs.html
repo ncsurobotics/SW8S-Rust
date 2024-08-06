@@ -514,7 +514,7 @@
                 <span class="kw">let </span>start_time = SystemTime::now();
                 {
                     <span class="kw">let </span><span class="kw-2">mut </span>drift_val_inner = drift_val_clone.lock().unwrap();
-                    <span class="kw-2">*</span>drift_val_inner = (<span class="kw-2">*</span>drift_val_inner + <span class="number">0.15</span>) % <span class="number">360.0</span>;
+                    <span class="kw-2">*</span>drift_val_inner += <span class="number">0.015</span>;
                 }
                 <span class="kw">let </span>lock_adjusted_time = SystemTime::now().duration_since(start_time).unwrap();
                 sleep(lock_adjusted_time).<span class="kw">await
