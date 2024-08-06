@@ -5,11 +5,11 @@ use crate::{
     act_nest,
     missions::{
         action::{
-            ActionChain, ActionConcurrent, ActionConditional, ActionDataConditional,
-            ActionSequence, ActionWhile, TupleSecond,
+            ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
+            TupleSecond,
         },
         basic::DelayAction,
-        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal, ToVec},
+        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
         movement::{
             AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, OffsetToPose,
             ReplaceX, SetX, SetY, SideMult, Stability2Adjust, Stability2Movement, Stability2Pos,

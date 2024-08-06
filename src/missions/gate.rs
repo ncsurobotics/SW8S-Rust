@@ -4,14 +4,10 @@ use tokio_serial::SerialStream;
 use crate::{
     act_nest,
     missions::{
-        action::{ActionConcurrentSplit, ActionDataConditional, ActionSelect},
+        action::{ActionConcurrentSplit, ActionDataConditional},
         basic::descend_depth_and_go_forward,
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
-        meb::WaitArm,
-        movement::{
-            AdjustType, ClampX, FlipX, ReplaceX, SetSideBlue, SetSideRed, SetY, Stability1Adjust,
-            Stability1Movement, Stability1Pos,
-        },
+        movement::{AdjustType, ClampX, FlipX, InvertX, ReplaceX, SetSideBlue, SetSideRed, SetY},
         vision::{MidPoint, OffsetClass},
     },
     vision::{
@@ -29,7 +25,7 @@ use super::{
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::{descend_and_go_forward, DelayAction},
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, InOrderFail, OutputType},
+    extra::{CountFalse, CountTrue, OutputType},
     movement::{
         AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
         Stability2Pos, ZeroMovement,
@@ -180,7 +176,7 @@ pub fn adjust_logic<
                                 ExtractPosition::new(),
                                 MidPoint::new(),
                                 OffsetToPose::default(),
-                                LinearYawFromX::<Stability2Adjust>::default(),
+                                InvertX::default(),
                                 ClampX::new(0.3),
                                 SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
                                 ReplaceX::new(),
