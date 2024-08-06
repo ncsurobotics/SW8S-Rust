@@ -1,10 +1,15 @@
 use core::fmt::Debug;
-use std::{ops::Deref, sync::Arc, time::Duration};
+use std::{
+    ops::Deref,
+    sync::{Arc, Mutex, OnceLock},
+    time::{Duration, SystemTime},
+};
 
 use anyhow::{anyhow, bail, Result};
 use tokio::{
     io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, WriteHalf},
     net::TcpStream,
+    spawn,
     sync::Mutex,
     time::{sleep, timeout},
 };
@@ -24,6 +29,33 @@ pub enum SensorStatuses {
     ImuNr,
     DepthNr,
     AllGood,
+}
+
+static STAB_2_DRIFT: OnceLock<Arc<Mutex<f32>>> = OnceLock::new();
+fn stab_2_drift() -> f32 {
+    let drift_val = STAB_2_DRIFT.get_or_init(|| {
+        let drift_val = Arc::new(Mutex::new(0.0));
+
+        let drift_val_clone = drift_val.clone();
+        spawn(async move {
+            let sleep_dur = Duration::from_secs(1);
+
+            sleep(sleep_dur);
+            loop {
+                let start_time = SystemTime::now();
+                {
+                    let mut drift_val_inner = drift_val_clone.lock().unwrap();
+                    *drift_val_inner = (*drift_val_inner + 0.15) % 360.0;
+                }
+                let lock_adjusted_time = SystemTime::now().duration_since(start_time).unwrap();
+                sleep(lock_adjusted_time).await
+            }
+        });
+
+        drift_val
+    });
+
+    drift_val.lock().unwrap().clone()
 }
 
 #[derive(Debug)]
@@ -284,9 +316,16 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         let mut message = Vec::with_capacity(32 * 8);
         message.extend(SASSIST_2);
 
-        [x, y, target_pitch, target_roll, target_yaw, target_depth]
-            .iter()
-            .for_each(|val| message.extend(val.to_le_bytes()));
+        [
+            x,
+            y,
+            target_pitch,
+            target_roll,
+            (target_yaw + stab_2_drift()),
+            target_depth,
+        ]
+        .iter()
+        .for_each(|val| message.extend(val.to_le_bytes()));
 
         self.write_out_basic(message).await
     }

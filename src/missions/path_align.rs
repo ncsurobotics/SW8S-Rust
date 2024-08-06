@@ -46,7 +46,6 @@ pub fn path_align<
                     ToVec::new(),
                     ExtractPosition::new(),
                     MidPoint::new(),
-                    //NoOp::new(),
                     OffsetToPose::default(),
                     LinearYawFromX::<Stability2Adjust>::default(),
                     Stability2Movement::new(

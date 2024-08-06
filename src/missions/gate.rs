@@ -7,7 +7,9 @@ use crate::{
         action::{ActionConcurrentSplit, ActionDataConditional},
         basic::descend_depth_and_go_forward,
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
-        movement::{AdjustType, ClampX, FlipX, InvertX, ReplaceX, SetSideBlue, SetSideRed, SetY},
+        movement::{
+            AdjustType, ClampX, FlipX, InvertX, MultiplyX, ReplaceX, SetSideBlue, SetSideRed, SetY,
+        },
         vision::{MidPoint, OffsetClass},
     },
     vision::{
@@ -126,7 +128,6 @@ pub fn adjust_logic<
             ActionDataConditional::new(
                 act_nest!(
                     wrap_action(ActionConcurrent::new, FirstValid::new),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
                 ),
@@ -138,7 +139,7 @@ pub fn adjust_logic<
                         ExtractPosition::new(),
                         MidPoint::new(),
                         OffsetToPose::default(),
-                        LinearYawFromX::<Stability2Adjust>::default(),
+                        //LinearYawFromX::<Stability2Adjust>::default(),
                         ClampX::new(0.4),
                         SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.02)),
                         FlipX::default(),
@@ -159,7 +160,7 @@ pub fn adjust_logic<
                             ExtractPosition::new(),
                             MidPoint::new(),
                             OffsetToPose::default(),
-                            LinearYawFromX::<Stability2Adjust>::default(),
+                            //LinearYawFromX::<Stability2Adjust>::default(),
                             ClampX::new(0.2),
                             SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
                             ReplaceX::new(),
@@ -177,7 +178,10 @@ pub fn adjust_logic<
                                 MidPoint::new(),
                                 OffsetToPose::default(),
                                 InvertX::default(),
-                                ClampX::new(0.3),
+                                MultiplyX::new(2.0),
+                                LinearYawFromX::<Stability2Adjust>::default(),
+                                MultiplyX::new(5.0),
+                                ClampX::new(0.6),
                                 SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
                                 ReplaceX::new(),
                             ),
