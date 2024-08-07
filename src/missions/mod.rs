@@ -13,4 +13,5 @@ pub mod meb;
 pub mod movement;
 pub mod octagon;
 pub mod path_align;
+pub mod spin;
 pub mod vision;

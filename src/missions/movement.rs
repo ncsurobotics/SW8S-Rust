@@ -2262,3 +2262,95 @@ impl ActionExec<Stability2Adjust> for InvertX<&Stability2Adjust> {
         pose
     }
 }
+
+#[derive(Debug)]
+pub struct GlobalMovement<'a, T> {
+    context: &'a T,
+    pose: GlobalPos,
+}
+
+impl<T> Action for GlobalMovement<'_, T> {}
+
+impl<'a, T> GlobalMovement<'a, T> {
+    pub const fn new(context: &'a T, pose: GlobalPos) -> Self {
+        Self { context, pose }
+    }
+
+    pub fn uninitialized(context: &'a T) -> Self {
+        Self {
+            context,
+            pose: GlobalPos::default(),
+        }
+    }
+}
+
+impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
+    for GlobalMovement<'a, T>
+{
+    async fn execute(&mut self) -> Result<()> {
+        self.pose.exec(self.context.get_control_board()).await
+    }
+}
+
+impl<'a, T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<()> for GlobalMovement<'a, T> {
+    async fn execute(&mut self) {
+        let _ = self.pose.exec(self.context.get_control_board()).await;
+    }
+}
+
+/// Stores the command to send to stability assist 2
+///
+/// If target_yaw is None, it is set to the current yaw on first execution
+#[derive(Debug, Clone)]
+pub struct GlobalPos {
+    x: f32,
+    y: f32,
+    z: f32,
+    pitch_speed: f32,
+    roll_speed: f32,
+    yaw_speed: f32,
+}
+
+impl GlobalPos {
+    pub const fn new(
+        x: f32,
+        y: f32,
+        z: f32,
+        pitch_speed: f32,
+        roll_speed: f32,
+        yaw_speed: f32,
+    ) -> Self {
+        Self {
+            x,
+            y,
+            z,
+            pitch_speed,
+            roll_speed,
+            yaw_speed,
+        }
+    }
+
+    /// Executes the position in stability assist
+    pub async fn exec(&mut self, board: &ControlBoard<WriteHalf<SerialStream>>) -> Result<()> {
+        board
+            .global_speed_set(
+                self.x,
+                self.y,
+                self.z,
+                self.pitch_speed,
+                self.roll_speed,
+                self.yaw_speed,
+            )
+            .await
+    }
+
+    pub const fn const_default() -> Self {
+        Self::new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    }
+}
+
+impl Default for GlobalPos {
+    fn default() -> Self {
+        Self::const_default()
+    }
+}

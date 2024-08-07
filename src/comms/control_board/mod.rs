@@ -302,6 +302,27 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         self.write_out_basic(message).await
     }
 
+    pub async fn global_speed_set(
+        &self,
+        x: f32,
+        y: f32,
+        z: f32,
+        pitch_speed: f32,
+        roll_speed: f32,
+        yaw_speed: f32,
+    ) -> Result<()> {
+        const GLOBAL_SET: [u8; 6] = *b"GLOBAL";
+        // Oversized to avoid reallocations
+        let mut message = Vec::with_capacity(32 * 8);
+        message.extend(GLOBAL_SET);
+
+        [x, y, z, pitch_speed, roll_speed, yaw_speed]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+
+        self.write_out_basic(message).await
+    }
+
     pub async fn stability_2_speed_set(
         &self,
         x: f32,

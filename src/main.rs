@@ -22,6 +22,7 @@ use sw8s_rust_lib::{
         meb::WaitArm,
         octagon::look_up_octagon,
         path_align::path_align,
+        spin::spin,
         vision::PIPELINE_KILL,
     },
     video_source::appsink::Camera,
@@ -414,6 +415,10 @@ async fn run_mission(mission: &str) -> Result<()> {
         }
         "buoy_align" => {
             let _ = buoy_align(static_context().await).execute().await;
+            Ok(())
+        }
+        "spin" => {
+            let _ = spin(static_context().await).execute().await;
             Ok(())
         }
         // Just stall out forever

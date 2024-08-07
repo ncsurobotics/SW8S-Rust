@@ -87,7 +87,7 @@ pub fn buoy_align<
                                 MidPoint::new(),
                                 OffsetToPose::<Offset2D<f64>>::default(),
                                 ReplaceX::new(),
-                                LinearYawFromX::<Stability2Adjust>::new(4.0),
+                                LinearYawFromX::<Stability2Adjust>::new(7.0),
                                 MultiplyX::new(0.5),
                                 ClampX::<Stability2Adjust>::new(0.15),
                                 StripY::<Stability2Adjust>::default(),
