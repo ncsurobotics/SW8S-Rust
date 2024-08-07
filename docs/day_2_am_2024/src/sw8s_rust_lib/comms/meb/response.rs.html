@@ -237,6 +237,9 @@
 <a href="#237" id="237">237</a>
 <a href="#238" id="238">238</a>
 <a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::sync::{
     mpsc::{channel, Sender, TryRecvError},
     Arc,
@@ -263,6 +266,7 @@
 <span class="kw">const </span>TARM: [u8; <span class="number">4</span>] = <span class="kw-2">*</span><span class="string">b"TARM"</span>;
 <span class="kw">const </span>VSYS: [u8; <span class="number">4</span>] = <span class="kw-2">*</span><span class="string">b"VSYS"</span>;
 <span class="kw">const </span>SDOWN: [u8; <span class="number">5</span>] = <span class="kw-2">*</span><span class="string">b"SDOWN"</span>;
+<span class="kw">const </span>ACK: [u8; <span class="number">3</span>] = <span class="kw-2">*</span><span class="string">b"ACK"</span>;
 
 <span class="attr">#[derive(Debug, Getters)]
 </span><span class="kw">pub struct </span>Statuses {
@@ -381,6 +385,8 @@
                     <span class="kw-2">*</span>vsys.write().<span class="kw">await </span>= <span class="prelude-val">Some</span>(message_body[<span class="number">4</span>..].try_into().unwrap());
                 } <span class="kw">else if </span>message_body.get(<span class="number">0</span>..<span class="number">4</span>) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>SDOWN) {
                     <span class="kw-2">*</span>sdown.write().<span class="kw">await </span>= <span class="prelude-val">Some</span>(message_body[<span class="number">4</span>]);
+                } <span class="kw">else if </span>message_body.get(<span class="number">0</span>..<span class="number">3</span>) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>ACK) {
+                    <span class="macro">eprintln!</span>(<span class="string">"ACK currently not handled"</span>);
                 } <span class="kw">else </span>{
                     <span class="macro">write_stream_mutexed!</span>(err_stream, <span class="macro">format!</span>(<span class="string">"Unknown MEB message (id: {id}) {:?}\n"</span>, payload));
                 }
