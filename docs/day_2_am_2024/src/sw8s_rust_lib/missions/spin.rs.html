@@ -107,6 +107,17 @@
 <a href="#107" id="107">107</a>
 <a href="#108" id="108">108</a>
 <a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>anyhow::bail;
@@ -146,14 +157,22 @@
 &gt;(
     context: <span class="kw-2">&amp;</span>Con,
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
-    <span class="kw">const </span>DEPTH: f32 = <span class="number">1.25</span>;
+    <span class="kw">const </span>DEPTH: f32 = -<span class="number">0.75</span>;
     <span class="kw">const </span>Z_TARGET: f32 = <span class="number">0.0</span>;
-    <span class="kw">const </span>FORWARD_SPEED: f32 = <span class="number">0.0</span>;
+    <span class="kw">const </span>FORWARD_SPEED: f32 = <span class="number">1.0</span>;
     <span class="kw">const </span>SPIN_SPEED: f32 = <span class="number">1.0</span>;
 
     <span class="macro">act_nest!</span>(
         ActionSequence::new,
         WaitArm::new(context),
+        ActionChain::new(
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(<span class="number">0.0</span>, FORWARD_SPEED, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, <span class="number">0.0</span>),
+            ),
+            OutputType::&lt;()&gt;::new(),
+        ),
+        DelayAction::new(<span class="number">3.0</span>),
         ZeroMovement::new(context, DEPTH),
         DelayAction::new(<span class="number">4.0</span>),
         ActionWhile::new(TupleSecond::new(ActionConcurrent::new(
@@ -168,8 +187,9 @@
                 ),
                 ActionChain::new(AlwaysFalse::new(), OutputType::&lt;anyhow::Result&lt;()&gt;&gt;::new(),),
             ),
-            SpinCounter::new(<span class="number">4</span>, context)
+            SpinCounter::new(<span class="number">3</span>, context)
         ))),
+        ZeroMovement::new(context, DEPTH),
         OutputType::&lt;()&gt;::new(),
     )
 }
@@ -203,9 +223,11 @@
             <span class="kw">if </span><span class="self">self</span>.half_loops % <span class="number">2 </span>== <span class="number">0 </span>{
                 <span class="kw">if </span><span class="kw-2">*</span>angles.roll() &gt; <span class="number">180.0 </span>|| <span class="kw-2">*</span>angles.roll() &lt; <span class="number">0.0 </span>{
                     <span class="self">self</span>.half_loops += <span class="number">1</span>;
+                    <span class="macro">println!</span>(<span class="string">"Loop count: {}"</span>, <span class="self">self</span>.half_loops);
                 }
             } <span class="kw">else if </span><span class="kw-2">*</span>angles.roll() &lt; <span class="number">180.0 </span>&amp;&amp; <span class="kw-2">*</span>angles.roll() &gt; <span class="number">0.0 </span>{
                 <span class="self">self</span>.half_loops += <span class="number">1</span>;
+                <span class="macro">println!</span>(<span class="string">"Loop count: {}"</span>, <span class="self">self</span>.half_loops);
             }
         }
 
