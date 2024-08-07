@@ -42,7 +42,7 @@ pub fn buoy_align<
     const Y_SPEED: f32 = 0.2;
     const DEPTH: f32 = -1.0;
     const SPIN_DEPTH: f32 = -1.25;
-    const FALSE_COUNT: u32 = 9;
+    const FALSE_COUNT: u32 = 7;
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
@@ -90,12 +90,12 @@ pub fn buoy_align<
                                 LinearYawFromX::<Stability2Adjust>::new(7.0),
                                 MultiplyX::new(0.5),
                                 ClampX::<Stability2Adjust>::new(0.15),
-                                StripY::<Stability2Adjust>::default(),
+                                SetY::<Stability2Adjust>::new(AdjustType::Replace(Y_SPEED)),
                             ),
                             act_nest!(
                                 ActionSequence::new,
                                 Terminal::new(),
-                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.1)),
+                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.0)),
                                 SetX::<Stability2Adjust>::new(AdjustType::Replace(0.1)),
                             )
                         ),

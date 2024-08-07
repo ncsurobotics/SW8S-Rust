@@ -154,23 +154,22 @@ async fn shutdown_handler() -> UnboundedSender<i32> {
     let (shutdown_tx, mut shutdown_rx) = mpsc::unbounded_channel::<i32>();
     tokio::spawn(async move {
         // Wait for shutdown signal
-        let exit_status =
-            tokio::select! {_ = signal::ctrl_c() => { 1 }, Some(x) = shutdown_rx.recv() => { x }};
+        let exit_status = tokio::select! {_ = signal::ctrl_c() => {
+        eprintln!("CTRL-C RECV");
+        1 }, Some(x) = shutdown_rx.recv() => {
+            eprintln!("SHUTDOWN SIGNAL RECV");
+            x }};
 
         let status = control_board().await.sensor_status_query().await;
 
         match status.unwrap() {
             SensorStatuses::ImuNr => {
-                println!("imu not ready");
-                exit(1);
+                eprintln!("imu not ready");
             }
             SensorStatuses::DepthNr => {
-                println!("depth not ready");
-                exit(1);
+                eprintln!("depth not ready");
             }
-            _ => {
-                println!("all good");
-            }
+            _ => {}
         }
 
         // Stop motors
