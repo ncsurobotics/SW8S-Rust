@@ -165,7 +165,7 @@
  * Inherit this trait if you have a MEB
  */
 </span><span class="kw">pub trait </span>GetMainElectronicsBoard: Send + Sync {
-    <span class="kw">fn </span>get_main_electronics_board(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>MainElectronicsBoard;
+    <span class="kw">fn </span>get_main_electronics_board(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>MainElectronicsBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;;
 }
 
 <span class="doccomment">/**
@@ -201,7 +201,7 @@ pub trait GetConfig {
 
 <span class="kw">pub struct </span>FullActionContext&lt;<span class="lifetime">'a</span>, T: AsyncWriteExt + Unpin + Send&gt; {
     control_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ControlBoard&lt;T&gt;,
-    main_electronics_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>MainElectronicsBoard,
+    main_electronics_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>MainElectronicsBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;,
     front_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
     bottom_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
     desired_buoy_target: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>RwLock&lt;Target&gt;,
@@ -210,7 +210,7 @@ pub trait GetConfig {
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: AsyncWriteExt + Unpin + Send&gt; FullActionContext&lt;<span class="lifetime">'a</span>, T&gt; {
     <span class="kw">pub const fn </span>new(
         control_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ControlBoard&lt;T&gt;,
-        main_electronics_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>MainElectronicsBoard,
+        main_electronics_board: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>MainElectronicsBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;,
         front_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
         bottom_cam: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Camera,
         desired_buoy_target: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>RwLock&lt;Target&gt;,
@@ -232,7 +232,7 @@ pub trait GetConfig {
 }
 
 <span class="kw">impl </span>GetMainElectronicsBoard <span class="kw">for </span>FullActionContext&lt;<span class="lifetime">'_</span>, WriteHalf&lt;SerialStream&gt;&gt; {
-    <span class="kw">fn </span>get_main_electronics_board(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>MainElectronicsBoard {
+    <span class="kw">fn </span>get_main_electronics_board(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>MainElectronicsBoard&lt;WriteHalf&lt;SerialStream&gt;&gt; {
         <span class="self">self</span>.main_electronics_board
     }
 }
@@ -264,7 +264,7 @@ pub trait GetConfig {
 }
 
 <span class="kw">impl </span>GetMainElectronicsBoard <span class="kw">for </span>EmptyActionContext {
-    <span class="kw">fn </span>get_main_electronics_board(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>MainElectronicsBoard {
+    <span class="kw">fn </span>get_main_electronics_board(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>MainElectronicsBoard&lt;WriteHalf&lt;SerialStream&gt;&gt; {
         <span class="macro">todo!</span>()
     }
 }

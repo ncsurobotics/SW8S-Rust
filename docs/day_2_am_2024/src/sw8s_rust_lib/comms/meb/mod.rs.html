@@ -60,8 +60,36 @@
 <a href="#60" id="60">60</a>
 <a href="#61" id="61">61</a>
 <a href="#62" id="62">62</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
-<span class="kw">use </span>tokio::io::AsyncReadExt;
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::sync::{Arc, Mutex};
+
+<span class="kw">use </span>anyhow::Result;
+<span class="kw">use </span>futures::io::ReadHalf;
+<span class="kw">use </span>tokio::io::{AsyncReadExt, AsyncWriteExt, WriteHalf};
 <span class="kw">use </span>tokio_serial::{DataBits, Parity, SerialStream, StopBits};
 
 <span class="kw">use </span><span class="self">self</span>::response::Statuses;
@@ -69,21 +97,24 @@
 <span class="kw">pub mod </span>response;
 
 <span class="attr">#[derive(Debug)]
-</span><span class="kw">pub struct </span>MainElectronicsBoard {
+</span><span class="kw">pub struct </span>MainElectronicsBoard&lt;C&gt; {
+    comm_out: Arc&lt;Mutex&lt;C&gt;&gt;,
     statuses: Statuses,
 }
 
-<span class="kw">impl </span>MainElectronicsBoard {
-    <span class="kw">pub async fn </span>new&lt;T&gt;(read_connection: T) -&gt; <span class="self">Self
+<span class="kw">impl</span>&lt;C&gt; MainElectronicsBoard&lt;C&gt; {
+    <span class="kw">pub async fn </span>new&lt;T&gt;(read_connection: T, write_connection: C) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span>T: <span class="lifetime">'static </span>+ AsyncReadExt + Unpin + Send,
+        C: <span class="lifetime">'static </span>+ AsyncWriteExt + Unpin + Send,
     {
         <span class="self">Self </span>{
+            comm_out: Arc::new(Mutex::new(write_connection)),
             statuses: Statuses::new(read_connection).<span class="kw">await</span>,
         }
     }
 
-    <span class="kw">pub async fn </span>serial(port_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">pub async fn </span>serial(port_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;MainElectronicsBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; {
         <span class="kw">const </span>BAUD_RATE: u32 = <span class="number">57600</span>;
         <span class="kw">const </span>DATA_BITS: DataBits = DataBits::Eight;
         <span class="kw">const </span>PARITY: Parity = Parity::None;
@@ -93,11 +124,12 @@
             .data_bits(DATA_BITS)
             .parity(PARITY)
             .stop_bits(STOP_BITS);
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>::new(SerialStream::open(<span class="kw-2">&amp;</span>port_builder)<span class="question-mark">?</span>).<span class="kw">await</span>)
+        <span class="kw">let </span>(read, write) = tokio::io::split(SerialStream::open(<span class="kw-2">&amp;</span>port_builder)<span class="question-mark">?</span>);
+        <span class="prelude-val">Ok</span>(MainElectronicsBoard::&lt;WriteHalf&lt;SerialStream&gt;&gt;::new(read, write).<span class="kw">await</span>)
     }
 }
 
-<span class="kw">impl </span>MainElectronicsBoard {
+<span class="kw">impl</span>&lt;C&gt; MainElectronicsBoard&lt;C&gt; {
     <span class="kw">pub async fn </span>temperature(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;f32&gt; {
         (<span class="kw-2">*</span><span class="self">self</span>.statuses.temp().read().<span class="kw">await</span>).map(f32::from_le_bytes)
     }
@@ -120,6 +152,24 @@
 
     <span class="kw">pub async fn </span>shutdown_cause(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u8&gt; {
         <span class="kw-2">*</span><span class="self">self</span>.statuses.shutdown().read().<span class="kw">await
+    </span>}
+}
+
+<span class="attr">#[derive(Debug, Copy, Clone)]
+</span><span class="kw">pub enum </span>MebCmd {
+    T1Trig = <span class="number">0x3</span>,
+    T2Trig = <span class="number">0x4</span>,
+    D1Trig = <span class="number">0x1</span>,
+    D2Trig = <span class="number">0x2</span>,
+    Reset = <span class="number">0x0</span>,
+}
+
+<span class="kw">impl</span>&lt;C: AsyncWriteExt + Unpin&gt; MainElectronicsBoard&lt;C&gt; {
+    <span class="attr">#[allow(clippy::await_holding_lock)]
+    </span><span class="kw">pub async fn </span>send_msg(<span class="kw-2">&amp;</span><span class="self">self</span>, cmd: MebCmd) -&gt; std::io::Result&lt;()&gt; {
+        <span class="kw">let </span>formatted_cmd: [u8; <span class="number">4</span>] = [<span class="string">b'M'</span>, <span class="string">b'S'</span>, <span class="string">b'B'</span>, cmd <span class="kw">as </span>u8];
+        <span class="kw">let </span><span class="kw-2">mut </span>comm_out = <span class="self">self</span>.comm_out.lock().unwrap();
+        comm_out.write_all(<span class="kw-2">&amp;</span>formatted_cmd).<span class="kw">await
     </span>}
 }
 </code></pre></div></section></main></body></html>

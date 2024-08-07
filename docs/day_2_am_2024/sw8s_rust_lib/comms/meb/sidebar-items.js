@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["response"],"struct":["MainElectronicsBoard"]};
+window.SIDEBAR_ITEMS = {"enum":["MebCmd"],"mod":["response"],"struct":["MainElectronicsBoard"]};
