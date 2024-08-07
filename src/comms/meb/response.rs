@@ -145,7 +145,6 @@ impl Statuses {
                     *sdown.write().await = Some(message_body[4]);
                 } else if message_body.get(0..3) == Some(&ACK) {
                     eprintln!("ACK currently not handled");
-                }
                 } else {
                     write_stream_mutexed!(err_stream, format!("Unknown MEB message (id: {id}) {:?}\n", payload));
                 }
