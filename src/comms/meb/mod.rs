@@ -1,29 +1,35 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use anyhow::Result;
 use futures::io::ReadHalf;
-use tokio::io::{AsyncReadExt, AsyncWriteExt, WriteHalf};
+use tokio::{
+    io::{AsyncReadExt, AsyncWrite, AsyncWriteExt, WriteHalf},
+    sync::Mutex,
+};
 use tokio_serial::{DataBits, Parity, SerialStream, StopBits};
 
 use self::response::Statuses;
 
+use super::auv_control_board::{AUVControlBoard, MessageId};
+
 pub mod response;
 
 #[derive(Debug)]
-pub struct MainElectronicsBoard<C> {
-    comm_out: Arc<Mutex<C>>,
-    statuses: Statuses,
+pub struct MainElectronicsBoard<C: AsyncWrite + Unpin> {
+    board: AUVControlBoard<C, Statuses>,
 }
 
-impl<C> MainElectronicsBoard<C> {
+impl<C: AsyncWrite + Unpin> MainElectronicsBoard<C> {
     pub async fn new<T>(read_connection: T, write_connection: C) -> Self
     where
         T: 'static + AsyncReadExt + Unpin + Send,
-        C: 'static + AsyncWriteExt + Unpin + Send,
     {
         Self {
-            comm_out: Arc::new(Mutex::new(write_connection)),
-            statuses: Statuses::new(read_connection).await,
+            board: AUVControlBoard::new(
+                Arc::new(Mutex::new(write_connection)),
+                Statuses::new(read_connection).await,
+                MessageId::default(),
+            ),
         }
     }
 
@@ -42,29 +48,29 @@ impl<C> MainElectronicsBoard<C> {
     }
 }
 
-impl<C> MainElectronicsBoard<C> {
+impl<C: AsyncWrite + Unpin> MainElectronicsBoard<C> {
     pub async fn temperature(&self) -> Option<f32> {
-        (*self.statuses.temp().read().await).map(f32::from_le_bytes)
+        (*self.board.responses().temp().read().await).map(f32::from_le_bytes)
     }
 
     pub async fn humidity(&self) -> Option<f32> {
-        (*self.statuses.humid().read().await).map(f32::from_le_bytes)
+        (*self.board.responses().humid().read().await).map(f32::from_le_bytes)
     }
 
     pub async fn leak(&self) -> Option<bool> {
-        *self.statuses.leak().read().await
+        *self.board.responses().leak().read().await
     }
 
     pub async fn thruster_arm(&self) -> Option<bool> {
-        *self.statuses.thruster_arm().read().await
+        *self.board.responses().thruster_arm().read().await
     }
 
     pub async fn system_voltage(&self) -> Option<f32> {
-        (*self.statuses.system_voltage().read().await).map(f32::from_le_bytes)
+        (*self.board.responses().system_voltage().read().await).map(f32::from_le_bytes)
     }
 
     pub async fn shutdown_cause(&self) -> Option<u8> {
-        *self.statuses.shutdown().read().await
+        *self.board.responses().shutdown().read().await
     }
 }
 
@@ -78,10 +84,8 @@ pub enum MebCmd {
 }
 
 impl<C: AsyncWriteExt + Unpin> MainElectronicsBoard<C> {
-    #[allow(clippy::await_holding_lock)]
-    pub async fn send_msg(&self, cmd: MebCmd) -> std::io::Result<()> {
+    pub async fn send_msg(&self, cmd: MebCmd) -> anyhow::Result<()> {
         let formatted_cmd: [u8; 4] = [b'M', b'S', b'B', cmd as u8];
-        let mut comm_out = self.comm_out.lock().unwrap();
-        comm_out.write_all(&formatted_cmd).await
+        self.board.write_out_basic(formatted_cmd.to_vec()).await
     }
 }

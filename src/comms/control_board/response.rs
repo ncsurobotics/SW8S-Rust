@@ -34,7 +34,7 @@ const DEBUG: [u8; 5] = *b"DEBUG";
 #[allow(dead_code)]
 const DBGDAT: [u8; 6] = *b"DBGDAT";
 
-type KeyedAcknowledges = HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>;
+pub type KeyedAcknowledges = HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>;
 
 #[derive(Debug, Getters)]
 pub struct ResponseMap {
@@ -47,7 +47,7 @@ pub struct ResponseMap {
 
 // Completely arbitrary
 const DEFAULT_BUF_LEN: usize = 512;
-const MAP_POLL_SLEEP: Duration = Duration::from_millis(5);
+pub const MAP_POLL_SLEEP: Duration = Duration::from_millis(5);
 
 impl ResponseMap {
     pub async fn new<T>(read_connection: T) -> Self
