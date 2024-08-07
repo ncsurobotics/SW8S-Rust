@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Converts image transformation maps from one representation to another."><title>convert_maps in opencv::imgproc - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0 (051478957 2024-07-21)" data-channel="1.80.0" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../opencv/index.html">opencv</a><span class="version">0.92.0</span></h2></div><div class="sidebar-elems"><h2><a href="index.html">In opencv::imgproc</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Function <a href="../index.html">opencv</a>::<wbr><a href="index.html">imgproc</a>::<wbr><a class="fn" href="#">convert_maps</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-9ed740593cbedea6/out/opencv/imgproc.rs.html#5031-5041">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub fn convert_maps(
+    map1: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    map2: &amp;impl <a class="trait" href="../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    dstmap1: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    dstmap2: &amp;mut impl <a class="trait" href="../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    dstmap1type: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.i32.html">i32</a>,
+    nninterpolation: <a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.bool.html">bool</a>,
+) -&gt; <a class="type" href="../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.0/std/primitive.unit.html">()</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Converts image transformation maps from one representation to another.</p>
+<p>The function converts a pair of maps for remap from one representation to another. The following
+options ( (map1.type(), map2.type()) <img src="https://latex.codecogs.com/png.latex?%5Crightarrow" alt="inline formula" /> (dstmap1.type(), dstmap2.type()) ) are
+supported:</p>
+<ul>
+<li>
+<p><img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7B%28CV%5F32FC1%2C%20CV%5F32FC1%29%7D%20%5Crightarrow%20%5Ctexttt%7B%28CV%5F16SC2%2C%20CV%5F16UC1%29%7D" alt="inline formula" />. This is the
+most frequently used conversion operation, in which the original floating-point maps (see remap )
+are converted to a more compact and much faster fixed-point representation. The first output array
+contains the rounded coordinates and the second array (created only when nninterpolation=false )
+contains indices in the interpolation tables.</p>
+</li>
+<li>
+<p><img src="https://latex.codecogs.com/png.latex?%5Ctexttt%7B%28CV%5F32FC2%29%7D%20%5Crightarrow%20%5Ctexttt%7B%28CV%5F16SC2%2C%20CV%5F16UC1%29%7D" alt="inline formula" />. The same as above but
+the original maps are stored in one 2-channel matrix.</p>
+</li>
+<li>
+<p>Reverse conversion. Obviously, the reconstructed floating-point maps will not be exactly the same
+as the originals.</p>
+</li>
+</ul>
+<h3 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h3>
+<ul>
+<li>map1: The first input map of type CV_16SC2, CV_32FC1, or CV_32FC2 .</li>
+<li>map2: The second input map of type CV_16UC1, CV_32FC1, or none (empty matrix),
+respectively.</li>
+<li>dstmap1: The first output map that has the type dstmap1type and the same size as src .</li>
+<li>dstmap2: The second output map.</li>
+<li>dstmap1type: Type of the first output map that should be CV_16SC2, CV_32FC1, or
+CV_32FC2 .</li>
+<li>nninterpolation: Flag indicating whether the fixed-point maps are used for the
+nearest-neighbor or for a more complex interpolation.</li>
+</ul>
+<h3 id="see-also"><a class="doc-anchor" href="#see-also">§</a>See also</h3>
+<p>remap, undistort, initUndistortRectifyMap</p>
+<h3 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h3>
+<ul>
+<li>nninterpolation: false</li>
+</ul>
+</div></details></section></div></main></body></html>
