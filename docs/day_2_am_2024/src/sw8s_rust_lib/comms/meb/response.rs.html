@@ -240,13 +240,52 @@
 <a href="#240" id="240">240</a>
 <a href="#241" id="241">241</a>
 <a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::sync::{
     mpsc::{channel, Sender, TryRecvError},
     Arc,
 };
 
 <span class="kw">use crate</span>::{
-    comms::auv_control_board::{response::get_messages, util::crc_itt16_false_bitmath},
+    comms::{
+        auv_control_board::{
+            response::get_messages,
+            util::{crc_itt16_false_bitmath, AcknowledgeErr},
+            GetAck,
+        },
+        control_board::response::{KeyedAcknowledges, MAP_POLL_SLEEP},
+    },
     write_stream_mutexed,
 };
 
@@ -256,6 +295,7 @@
 <span class="kw">use </span>tokio::{
     io::{stderr, AsyncReadExt, AsyncWriteExt},
     sync::{Mutex, RwLock},
+    time::sleep,
 };
 
 <span class="kw">type </span>Lock&lt;T&gt; = Arc&lt;RwLock&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt;&gt;;
@@ -277,6 +317,7 @@
     tarm_count: Arc&lt;Mutex&lt;Vec&lt;bool&gt;&gt;&gt;,
     system_voltage: Lock&lt;[u8; <span class="number">4</span>]&gt;,
     shutdown: Lock&lt;u8&gt;,
+    ack_map: Arc&lt;Mutex&lt;KeyedAcknowledges&gt;&gt;,
     _tx: Sender&lt;()&gt;,
 }
 
@@ -295,6 +336,7 @@
         <span class="kw">let </span>tarm_count: Arc&lt;Mutex&lt;Vec&lt;bool&gt;&gt;&gt; = Arc::new(Mutex::new(<span class="macro">vec!</span>[<span class="bool-val">false</span>; <span class="number">24</span>]));
         <span class="kw">let </span>system_voltage: Lock&lt;<span class="kw">_</span>&gt; = Arc::default();
         <span class="kw">let </span>shutdown: Lock&lt;<span class="kw">_</span>&gt; = Arc::default();
+        <span class="kw">let </span>ack_map: Arc&lt;Mutex&lt;KeyedAcknowledges&gt;&gt; = Arc::default();
         <span class="kw">let </span>(_tx, rx) = channel::&lt;()&gt;(); <span class="comment">// Signals struct destruction to thread
                                          //
         </span><span class="kw">let </span>temp_clone = temp.clone();
@@ -304,6 +346,7 @@
         <span class="kw">let </span>tarm_count_clone = tarm_count.clone();
         <span class="kw">let </span>system_voltage_clone = system_voltage.clone();
         <span class="kw">let </span>shutdown_clone = shutdown.clone();
+        <span class="kw">let </span>ack_map_clone = ack_map.clone();
 
         tokio::spawn(<span class="kw">async move </span>{
             <span class="kw">let </span><span class="kw-2">mut </span>buffer = Vec::with_capacity(DEFAULT_BUF_LEN);
@@ -320,6 +363,7 @@
                     <span class="kw-2">&amp;</span>tarm_count_clone,
                     <span class="kw-2">&amp;</span>system_voltage_clone,
                     <span class="kw-2">&amp;</span>shutdown_clone,
+                    <span class="kw-2">&amp;</span>ack_map_clone,
                     <span class="kw-2">&amp;mut </span>stderr(),
                 )
                 .<span class="kw">await</span>;
@@ -334,6 +378,7 @@
             tarm_count,
             system_voltage,
             shutdown,
+            ack_map,
             _tx,
         }
     }
@@ -351,6 +396,7 @@
         tarm_count: <span class="kw-2">&amp;</span>Arc&lt;Mutex&lt;Vec&lt;bool&gt;&gt;&gt;,
         vsys: <span class="kw-2">&amp;</span>RwLock&lt;<span class="prelude-ty">Option</span>&lt;[u8; <span class="number">4</span>]&gt;&gt;,
         sdown: <span class="kw-2">&amp;</span>RwLock&lt;<span class="prelude-ty">Option</span>&lt;u8&gt;&gt;,
+        ack_map: <span class="kw-2">&amp;</span>Mutex&lt;KeyedAcknowledges&gt;,
         err_stream: <span class="kw-2">&amp;mut </span>U,
     ) <span class="kw">where
         </span>T: AsyncReadExt + Unpin + Send,
@@ -386,7 +432,14 @@
                 } <span class="kw">else if </span>message_body.get(<span class="number">0</span>..<span class="number">4</span>) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>SDOWN) {
                     <span class="kw-2">*</span>sdown.write().<span class="kw">await </span>= <span class="prelude-val">Some</span>(message_body[<span class="number">4</span>]);
                 } <span class="kw">else if </span>message_body.get(<span class="number">0</span>..<span class="number">3</span>) == <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>ACK) {
-                    <span class="macro">eprintln!</span>(<span class="string">"ACK currently not handled"</span>);
+                    <span class="kw">let </span>id = u16::from_be_bytes(message_body[<span class="number">3</span>..=<span class="number">4</span>].try_into().unwrap());
+                    <span class="kw">let </span>error_code: u8 = message_body[<span class="number">5</span>];
+                    <span class="kw">let </span>val = <span class="kw">if </span>error_code == <span class="number">0 </span>{
+                        <span class="prelude-val">Ok</span>(message_body[<span class="number">6</span>..].to_vec())
+                    } <span class="kw">else </span>{
+                        <span class="prelude-val">Err</span>(AcknowledgeErr::from(error_code))
+                    };
+                    ack_map.lock().<span class="kw">await</span>.insert(id, val);
                 } <span class="kw">else </span>{
                     <span class="macro">write_stream_mutexed!</span>(err_stream, <span class="macro">format!</span>(<span class="string">"Unknown MEB message (id: {id}) {:?}\n"</span>, payload));
                 }
@@ -415,6 +468,17 @@
             <span class="prelude-val">Some</span>(<span class="kw-2">*</span>locked_tarm_count.first().unwrap())
         } <span class="kw">else </span>{
             <span class="prelude-val">None
+        </span>}
+    }
+}
+
+<span class="kw">impl </span>GetAck <span class="kw">for </span>Statuses {
+    <span class="kw">async fn </span>get_ack(<span class="kw-2">&amp;</span><span class="self">self</span>, id: u16) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u8&gt;, AcknowledgeErr&gt; {
+        <span class="kw">loop </span>{
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(x) = <span class="self">self</span>.ack_map.lock().<span class="kw">await</span>.remove(<span class="kw-2">&amp;</span>id) {
+                <span class="kw">return </span>x;
+            }
+            sleep(MAP_POLL_SLEEP).<span class="kw">await</span>; <span class="comment">// Allow for new data from serial
         </span>}
     }
 }

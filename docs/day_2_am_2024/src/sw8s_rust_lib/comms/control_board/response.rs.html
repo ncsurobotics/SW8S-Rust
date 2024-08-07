@@ -212,7 +212,7 @@
 <span class="attr">#[allow(dead_code)]
 </span><span class="kw">const </span>DBGDAT: [u8; <span class="number">6</span>] = <span class="kw-2">*</span><span class="string">b"DBGDAT"</span>;
 
-<span class="kw">type </span>KeyedAcknowledges = HashMap&lt;u16, <span class="prelude-ty">Result</span>&lt;Vec&lt;u8&gt;, AcknowledgeErr&gt;&gt;;
+<span class="kw">pub type </span>KeyedAcknowledges = HashMap&lt;u16, <span class="prelude-ty">Result</span>&lt;Vec&lt;u8&gt;, AcknowledgeErr&gt;&gt;;
 
 <span class="attr">#[derive(Debug, Getters)]
 </span><span class="kw">pub struct </span>ResponseMap {
@@ -225,7 +225,7 @@
 
 <span class="comment">// Completely arbitrary
 </span><span class="kw">const </span>DEFAULT_BUF_LEN: usize = <span class="number">512</span>;
-<span class="kw">const </span>MAP_POLL_SLEEP: Duration = Duration::from_millis(<span class="number">5</span>);
+<span class="kw">pub const </span>MAP_POLL_SLEEP: Duration = Duration::from_millis(<span class="number">5</span>);
 
 <span class="kw">impl </span>ResponseMap {
     <span class="kw">pub async fn </span>new&lt;T&gt;(read_connection: T) -&gt; <span class="self">Self
