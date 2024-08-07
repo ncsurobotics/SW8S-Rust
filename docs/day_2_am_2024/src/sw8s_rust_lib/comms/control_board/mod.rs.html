@@ -484,6 +484,9 @@
 <a href="#484" id="484">484</a>
 <a href="#485" id="485">485</a>
 <a href="#486" id="486">486</a>
+<a href="#487" id="487">487</a>
+<a href="#488" id="488">488</a>
+<a href="#489" id="489">489</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>std::{
     ops::Deref,
@@ -539,6 +542,8 @@
 
     <span class="kw-2">*</span>drift_val.lock().unwrap()
 }
+
+<span class="kw">pub static </span>LAST_YAW: std::sync::Mutex&lt;<span class="prelude-ty">Option</span>&lt;f32&gt;&gt; = std::sync::Mutex::new(<span class="prelude-val">None</span>);
 
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>ControlBoard&lt;T&gt;
@@ -830,6 +835,7 @@
         .iter()
         .for_each(|val| message.extend(val.to_le_bytes()));
 
+        <span class="kw-2">*</span>LAST_YAW.lock().unwrap() = <span class="prelude-val">Some</span>(target_yaw);
         <span class="self">self</span>.write_out_basic(message).<span class="kw">await
     </span>}
 

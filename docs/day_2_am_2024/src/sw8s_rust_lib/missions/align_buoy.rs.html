@@ -200,6 +200,9 @@
 <a href="#200" id="200">200</a>
 <a href="#201" id="201">201</a>
 <a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
@@ -213,6 +216,7 @@
         basic::DelayAction,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
         fire_torpedo::FireTorpedo,
+        meb::WaitArm,
         movement::{
             AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, OffsetToPose,
             ReplaceX, SetX, SetY, SideMult, Stability2Adjust, Stability2Movement, Stability2Pos,
@@ -331,7 +335,8 @@
     <span class="kw">const </span>Y_SPEED: f32 = <span class="number">0.2</span>;
     <span class="kw">const </span>DEPTH: f32 = -<span class="number">1.25</span>;
     <span class="kw">const </span>SPIN_DEPTH: f32 = -<span class="number">1.25</span>;
-    <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">3</span>;
+    <span class="kw">const </span>TRUE_COUNT: u32 = <span class="number">0</span>;
+    <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">0</span>;
 
     <span class="kw">const </span>ALIGN_X_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>ALIGN_Y_SPEED: f32 = <span class="number">0.0</span>;
@@ -339,6 +344,7 @@
 
     <span class="macro">act_nest!</span>(
         ActionSequence::new,
+        WaitArm::new(context),
         Descend::new(context, -<span class="number">1.0</span>),
         DelayAction::new(<span class="number">2.0</span>),
         ActionWhile::new(ActionSequence::new(
@@ -355,7 +361,7 @@
                 ActionChain::new,
                 Vision::&lt;Con, BuoyModel&lt;OnnxModel&gt;, f64&gt;::new(context, BuoyModel::default()),
                 IsSome::default(),
-                CountTrue::new(<span class="number">1</span>)
+                CountTrue::new(TRUE_COUNT)
             )
         )),
         ActionWhile::new(<span class="macro">act_nest!</span>(
