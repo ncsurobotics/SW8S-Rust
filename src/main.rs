@@ -12,7 +12,7 @@ use sw8s_rust_lib::{
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
-        align_buoy::buoy_align,
+        align_buoy::{buoy_align, buoy_align_shot},
         basic::descend_and_go_forward,
         circle_buoy::{
             buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
@@ -424,7 +424,8 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "torpedo" | "fire_torpedo" => {
-            FireTorpedo::new(static_context().await).execute().await;
+            let _ = buoy_align_shot(static_context().await).execute().await;
+            //FireTorpedo::new(static_context().await).execute().await;
             Ok(())
         }
         // Just stall out forever

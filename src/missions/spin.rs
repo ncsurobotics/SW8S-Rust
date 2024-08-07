@@ -13,6 +13,7 @@ use crate::{
         },
         basic::DelayAction,
         extra::{AlwaysFalse, CountTrue, NoOp, OutputType, Terminal, ToVec},
+        meb::WaitArm,
         movement::{
             AdjustMovementAngle, GlobalMovement, GlobalPos, LinearYawFromX, OffsetToPose,
             Stability2Adjust, Stability2Movement, Stability2Pos, ZeroMovement,
@@ -36,22 +37,23 @@ pub fn spin<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    const DEPTH: f32 = 0.5;
+    const DEPTH: f32 = 1.25;
     const Z_TARGET: f32 = 0.0;
     const FORWARD_SPEED: f32 = 0.0;
     const SPIN_SPEED: f32 = 1.0;
 
     act_nest!(
         ActionSequence::new,
+        WaitArm::new(context),
         ZeroMovement::new(context, DEPTH),
-        DelayAction::new(1.0),
+        DelayAction::new(4.0),
         ActionWhile::new(TupleSecond::new(ActionConcurrent::new(
             act_nest!(
                 ActionSequence::new,
                 ActionChain::new(
                     GlobalMovement::new(
                         context,
-                        GlobalPos::new(0.0, FORWARD_SPEED, Z_TARGET, SPIN_SPEED, 0.0, 0.0),
+                        GlobalPos::new(0.0, FORWARD_SPEED, Z_TARGET, 0.0, SPIN_SPEED, 0.0),
                     ),
                     OutputType::<()>::new(),
                 ),
@@ -90,10 +92,10 @@ impl<T: GetControlBoard<U> + Send + Sync, U: AsyncWriteExt + Unpin + Send + Sync
         let cntrl_board = self.control_board.get_control_board();
         if let Some(angles) = cntrl_board.responses().get_angles().await {
             if self.half_loops % 2 == 0 {
-                if angles.roll().abs() > 180.0 {
+                if *angles.roll() > 180.0 || *angles.roll() < 0.0 {
                     self.half_loops += 1;
                 }
-            } else if angles.roll().abs() < 180.0 {
+            } else if *angles.roll() < 180.0 && *angles.roll() > 0.0 {
                 self.half_loops += 1;
             }
         }

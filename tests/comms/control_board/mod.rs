@@ -190,3 +190,30 @@ pub async fn tcp_move_sassist_2() {
     sleep(Duration::from_secs(10)).await;
     todo!();
 }
+
+#[ignore = "requires a UI, is long"]
+#[tokio::test]
+pub async fn tcp_spin_global() {
+    const LOCALHOST: &str = "127.0.0.1";
+    const SIM_PORT: &str = "5012";
+    const SIM_DUMMY_PORT: &str = "5011";
+
+    let godot = GODOT.lock().await;
+    open_sim(godot.to_string()).await.unwrap();
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+
+    while timeout(
+        Duration::from_secs(1),
+        control_board.global_speed_set(0.0, 0.0, 0.0, 0.0, 1.0, 0.0),
+    )
+    .await
+    .is_err()
+    {
+        println!("Global timeout");
+    }
+
+    // Will be broken until get IMU data read
+    sleep(Duration::from_secs(10)).await;
+}

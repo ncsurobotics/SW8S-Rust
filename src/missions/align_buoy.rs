@@ -10,6 +10,7 @@ use crate::{
         },
         basic::DelayAction,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
+        fire_torpedo::FireTorpedo,
         movement::{
             AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, OffsetToPose,
             ReplaceX, SetX, SetY, SideMult, Stability2Adjust, Stability2Movement, Stability2Pos,
@@ -40,9 +41,9 @@ pub fn buoy_align<
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
     const Y_SPEED: f32 = 0.2;
-    const DEPTH: f32 = -1.0;
+    const DEPTH: f32 = -1.25;
     const SPIN_DEPTH: f32 = -1.25;
-    const FALSE_COUNT: u32 = 7;
+    const FALSE_COUNT: u32 = 3;
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
@@ -60,7 +61,7 @@ pub fn buoy_align<
                 ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(ALIGN_X_SPEED, ALIGN_Y_SPEED, 0.0, 0.0, None, SPIN_DEPTH)
+                    Stability2Pos::new(-ALIGN_X_SPEED, ALIGN_Y_SPEED, 0.0, 0.0, None, SPIN_DEPTH)
                 ),
                 OutputType::<()>::new(),
             ),
@@ -111,6 +112,91 @@ pub fn buoy_align<
             )),
         ),),
         ZeroMovement::new(context, DEPTH),
+        OutputType::<()>::new()
+    )
+}
+
+pub fn buoy_align_shot<
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat
+        + Unpin,
+>(
+    context: &'static Con,
+) -> impl ActionExec<()> + '_ {
+    const Y_SPEED: f32 = 0.2;
+    const DEPTH: f32 = -1.25;
+    const SPIN_DEPTH: f32 = -1.25;
+    const FALSE_COUNT: u32 = 3;
+
+    const ALIGN_X_SPEED: f32 = 0.0;
+    const ALIGN_Y_SPEED: f32 = 0.0;
+    const ALIGN_YAW_SPEED: f32 = -12.0;
+
+    act_nest!(
+        ActionSequence::new,
+        Descend::new(context, -1.0),
+        DelayAction::new(2.0),
+        ActionWhile::new(ActionSequence::new(
+            act_nest!(
+                ActionChain::new,
+                ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(-ALIGN_X_SPEED, ALIGN_Y_SPEED, 0.0, 0.0, None, SPIN_DEPTH)
+                ),
+                OutputType::<()>::new(),
+            ),
+            act_nest!(
+                ActionChain::new,
+                Vision::<Con, BuoyModel<OnnxModel>, f64>::new(context, BuoyModel::default()),
+                IsSome::default(),
+                CountTrue::new(1)
+            )
+        )),
+        ActionWhile::new(act_nest!(
+            ActionChain::new,
+            Vision::<Con, BuoyModel<OnnxModel>, f64>::new(context, BuoyModel::default()),
+            TupleSecond::<_, bool>::new(ActionConcurrent::new(
+                ActionSequence::new(
+                    act_nest!(
+                        ActionChain::new,
+                        ActionDataConditional::new(
+                            DetectTarget::new(Target::Buoy),
+                            act_nest!(
+                                ActionChain::new,
+                                Norm::new(BuoyModel::default()),
+                                ExtractPosition::new(),
+                                MidPoint::new(),
+                                OffsetToPose::<Offset2D<f64>>::default(),
+                                ReplaceX::new(),
+                                LinearYawFromX::<Stability2Adjust>::new(7.0),
+                                MultiplyX::new(0.5),
+                                ClampX::<Stability2Adjust>::new(0.15),
+                                SetY::<Stability2Adjust>::new(AdjustType::Replace(Y_SPEED)),
+                            ),
+                            act_nest!(
+                                ActionSequence::new,
+                                Terminal::new(),
+                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.0)),
+                                SetX::<Stability2Adjust>::new(AdjustType::Replace(0.1)),
+                            )
+                        ),
+                        Stability2Movement::new(
+                            context,
+                            Stability2Pos::new(0.0, Y_SPEED, 0.0, 0.0, None, DEPTH)
+                        ),
+                        OutputType::<()>::new(),
+                    ),
+                    AlwaysTrue::new()
+                ),
+                ActionChain::new(IsSome::default(), CountFalse::new(FALSE_COUNT))
+            )),
+        ),),
+        ZeroMovement::new(context, DEPTH),
+        FireTorpedo::new(context),
         OutputType::<()>::new()
     )
 }
