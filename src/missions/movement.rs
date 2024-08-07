@@ -1,4 +1,5 @@
 use crate::comms::control_board::ControlBoard;
+use crate::comms::control_board::LAST_YAW;
 use crate::vision::DrawRect2d;
 use crate::vision::Offset2D;
 use crate::vision::RelPos;
@@ -530,14 +531,21 @@ impl Stability2Pos {
         const SLEEP_LEN: Duration = Duration::from_millis(100);
 
         // Intializes yaw to current value
+        #[allow(clippy::await_holding_lock)]
         if self.target_yaw.is_none() {
-            // Repeats until an angle measurement exists
-            loop {
-                if let Some(angles) = board.responses().get_angles().await {
-                    self.target_yaw = Some(*angles.yaw());
-                    break;
+            let last_yaw = LAST_YAW.lock().unwrap();
+            if let Some(last_yaw) = *last_yaw {
+                self.target_yaw = Some(last_yaw);
+            } else {
+                drop(last_yaw);
+                // Repeats until an angle measurement exists
+                loop {
+                    if let Some(angles) = board.responses().get_angles().await {
+                        self.target_yaw = Some(*angles.yaw());
+                        break;
+                    }
+                    sleep(SLEEP_LEN).await;
                 }
-                sleep(SLEEP_LEN).await;
             }
         }
 

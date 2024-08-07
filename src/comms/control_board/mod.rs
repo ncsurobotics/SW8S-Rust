@@ -54,6 +54,8 @@ fn stab_2_drift() -> f32 {
     *drift_val.lock().unwrap()
 }
 
+pub static LAST_YAW: std::sync::Mutex<Option<f32>> = std::sync::Mutex::new(None);
+
 #[derive(Debug)]
 pub struct ControlBoard<T>
 where
@@ -344,6 +346,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         .iter()
         .for_each(|val| message.extend(val.to_le_bytes()));
 
+        *LAST_YAW.lock().unwrap() = Some(target_yaw);
         self.write_out_basic(message).await
     }
 

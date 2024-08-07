@@ -11,6 +11,7 @@ use crate::{
         basic::DelayAction,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
         fire_torpedo::FireTorpedo,
+        meb::WaitArm,
         movement::{
             AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, OffsetToPose,
             ReplaceX, SetX, SetY, SideMult, Stability2Adjust, Stability2Movement, Stability2Pos,
@@ -129,7 +130,8 @@ pub fn buoy_align_shot<
     const Y_SPEED: f32 = 0.2;
     const DEPTH: f32 = -1.25;
     const SPIN_DEPTH: f32 = -1.25;
-    const FALSE_COUNT: u32 = 3;
+    const TRUE_COUNT: u32 = 0;
+    const FALSE_COUNT: u32 = 0;
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
@@ -137,6 +139,7 @@ pub fn buoy_align_shot<
 
     act_nest!(
         ActionSequence::new,
+        WaitArm::new(context),
         Descend::new(context, -1.0),
         DelayAction::new(2.0),
         ActionWhile::new(ActionSequence::new(
@@ -153,7 +156,7 @@ pub fn buoy_align_shot<
                 ActionChain::new,
                 Vision::<Con, BuoyModel<OnnxModel>, f64>::new(context, BuoyModel::default()),
                 IsSome::default(),
-                CountTrue::new(1)
+                CountTrue::new(TRUE_COUNT)
             )
         )),
         ActionWhile::new(act_nest!(
