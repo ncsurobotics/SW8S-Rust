@@ -37,14 +37,22 @@ pub fn spin<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    const DEPTH: f32 = 1.25;
+    const DEPTH: f32 = -0.75;
     const Z_TARGET: f32 = 0.0;
-    const FORWARD_SPEED: f32 = 0.0;
+    const FORWARD_SPEED: f32 = 1.0;
     const SPIN_SPEED: f32 = 1.0;
 
     act_nest!(
         ActionSequence::new,
         WaitArm::new(context),
+        ActionChain::new(
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(0.0, FORWARD_SPEED, 0.0, 0.0, None, 0.0),
+            ),
+            OutputType::<()>::new(),
+        ),
+        DelayAction::new(3.0),
         ZeroMovement::new(context, DEPTH),
         DelayAction::new(4.0),
         ActionWhile::new(TupleSecond::new(ActionConcurrent::new(
@@ -59,8 +67,9 @@ pub fn spin<
                 ),
                 ActionChain::new(AlwaysFalse::new(), OutputType::<anyhow::Result<()>>::new(),),
             ),
-            SpinCounter::new(4, context)
+            SpinCounter::new(3, context)
         ))),
+        ZeroMovement::new(context, DEPTH),
         OutputType::<()>::new(),
     )
 }
@@ -94,9 +103,11 @@ impl<T: GetControlBoard<U> + Send + Sync, U: AsyncWriteExt + Unpin + Send + Sync
             if self.half_loops % 2 == 0 {
                 if *angles.roll() > 180.0 || *angles.roll() < 0.0 {
                     self.half_loops += 1;
+                    println!("Loop count: {}", self.half_loops);
                 }
             } else if *angles.roll() < 180.0 && *angles.roll() > 0.0 {
                 self.half_loops += 1;
+                println!("Loop count: {}", self.half_loops);
             }
         }
 
