@@ -38,24 +38,20 @@ fn stab_2_drift() -> f32 {
 
         let drift_val_clone = drift_val.clone();
         spawn(async move {
-            let sleep_dur = Duration::from_secs(1);
-
-            sleep(sleep_dur).await;
+            sleep(Duration::from_secs(5)).await;
             loop {
-                let start_time = SystemTime::now();
                 {
                     let mut drift_val_inner = drift_val_clone.lock().unwrap();
                     *drift_val_inner += 0.015;
                 }
-                let lock_adjusted_time = SystemTime::now().duration_since(start_time).unwrap();
-                sleep(lock_adjusted_time).await
+                sleep(Duration::from_secs(1)).await
             }
         });
 
         drift_val
     });
 
-    drift_val.lock().unwrap().clone()
+    *drift_val.lock().unwrap()
 }
 
 #[derive(Debug)]

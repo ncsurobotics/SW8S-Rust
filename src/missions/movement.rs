@@ -112,6 +112,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
         while cur_angles.is_none() {
             cur_angles = cntrl_board.responses().get_angles().await;
         }
+        println!("YAW BEFORE STRAIGHT SET: {}", cur_angles.unwrap().yaw());
 
         cntrl_board
             .stability_2_speed_set(
