@@ -18,6 +18,7 @@ use sw8s_rust_lib::{
             buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
         },
         example::initial_descent,
+        fire_torpedo::FireTorpedo,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         meb::WaitArm,
         octagon::look_up_octagon,
@@ -52,13 +53,15 @@ async fn control_board() -> &'static ControlBoard<WriteHalf<SerialStream>> {
         .await
 }
 
-static MEB_CELL: OnceCell<MainElectronicsBoard> = OnceCell::const_new();
-async fn meb() -> &'static MainElectronicsBoard {
+static MEB_CELL: OnceCell<MainElectronicsBoard<WriteHalf<SerialStream>>> = OnceCell::const_new();
+async fn meb() -> &'static MainElectronicsBoard<WriteHalf<SerialStream>> {
     MEB_CELL
         .get_or_init(|| async {
-            MainElectronicsBoard::serial(&Configuration::default().meb_path)
-                .await
-                .unwrap()
+            MainElectronicsBoard::<WriteHalf<SerialStream>>::serial(
+                &Configuration::default().meb_path,
+            )
+            .await
+            .unwrap()
         })
         .await
 }
@@ -418,6 +421,10 @@ async fn run_mission(mission: &str) -> Result<()> {
         }
         "spin" => {
             let _ = spin(static_context().await).execute().await;
+            Ok(())
+        }
+        "torpedo" | "fire_torpedo" => {
+            FireTorpedo::new(static_context().await).execute().await;
             Ok(())
         }
         // Just stall out forever

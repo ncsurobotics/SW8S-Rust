@@ -21,7 +21,7 @@ pub trait GetControlBoard<T: AsyncWriteExt + Unpin>: Send + Sync {
  * Inherit this trait if you have a MEB
  */
 pub trait GetMainElectronicsBoard: Send + Sync {
-    fn get_main_electronics_board(&self) -> &MainElectronicsBoard;
+    fn get_main_electronics_board(&self) -> &MainElectronicsBoard<WriteHalf<SerialStream>>;
 }
 
 /**
@@ -57,7 +57,7 @@ impl Unpin for EmptyActionContext {
 
 pub struct FullActionContext<'a, T: AsyncWriteExt + Unpin + Send> {
     control_board: &'a ControlBoard<T>,
-    main_electronics_board: &'a MainElectronicsBoard,
+    main_electronics_board: &'a MainElectronicsBoard<WriteHalf<SerialStream>>,
     front_cam: &'a Camera,
     bottom_cam: &'a Camera,
     desired_buoy_target: &'a RwLock<Target>,
@@ -66,7 +66,7 @@ pub struct FullActionContext<'a, T: AsyncWriteExt + Unpin + Send> {
 impl<'a, T: AsyncWriteExt + Unpin + Send> FullActionContext<'a, T> {
     pub const fn new(
         control_board: &'a ControlBoard<T>,
-        main_electronics_board: &'a MainElectronicsBoard,
+        main_electronics_board: &'a MainElectronicsBoard<WriteHalf<SerialStream>>,
         front_cam: &'a Camera,
         bottom_cam: &'a Camera,
         desired_buoy_target: &'a RwLock<Target>,
@@ -88,7 +88,7 @@ impl GetControlBoard<WriteHalf<SerialStream>> for FullActionContext<'_, WriteHal
 }
 
 impl GetMainElectronicsBoard for FullActionContext<'_, WriteHalf<SerialStream>> {
-    fn get_main_electronics_board(&self) -> &MainElectronicsBoard {
+    fn get_main_electronics_board(&self) -> &MainElectronicsBoard<WriteHalf<SerialStream>> {
         self.main_electronics_board
     }
 }
@@ -120,7 +120,7 @@ impl GetControlBoard<WriteHalf<SerialStream>> for EmptyActionContext {
 }
 
 impl GetMainElectronicsBoard for EmptyActionContext {
-    fn get_main_electronics_board(&self) -> &MainElectronicsBoard {
+    fn get_main_electronics_board(&self) -> &MainElectronicsBoard<WriteHalf<SerialStream>> {
         todo!()
     }
 }

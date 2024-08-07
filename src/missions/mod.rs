@@ -7,6 +7,7 @@ pub mod circle_buoy;
 pub mod comms;
 pub mod example;
 pub mod extra;
+pub mod fire_torpedo;
 pub mod gate;
 pub mod graph;
 pub mod meb;
