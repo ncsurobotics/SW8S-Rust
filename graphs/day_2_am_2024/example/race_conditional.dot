@@ -1,0 +1,25 @@
+digraph G {
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	"d1385b20-395d-4ce5-a316-738828d2c9ea" [shape = diamond];
+	subgraph "cluster_18bc19d7-8cf5-4de1-93ec-02e3285499ad" {
+		style = dashed;
+		color = red;
+		style = dashed;
+		color = red;
+		"9868970b-b141-4b24-91d7-4d7dad2c5fa9" -> "5ed6622f-e327-40e7-9747-2d291f7fa883";
+		"9868970b-b141-4b24-91d7-4d7dad2c5fa9" -> "6b50839c-c423-4a81-8bbe-8db3c325160b";
+		"5ed6622f-e327-40e7-9747-2d291f7fa883" -> "f0c75527-2cb1-476d-a047-242f7e79a82f";
+		"6b50839c-c423-4a81-8bbe-8db3c325160b" -> "f0c75527-2cb1-476d-a047-242f7e79a82f";
+		"9868970b-b141-4b24-91d7-4d7dad2c5fa9" [label = "Race", shape = box, fontcolor = red, style = dashed];
+		"f0c75527-2cb1-476d-a047-242f7e79a82f" [label = "Resolve", shape = box, fontcolor = red, style = dashed];
+		"5ed6622f-e327-40e7-9747-2d291f7fa883" [label = "UnwrapAction", margin = 0];
+		"6b50839c-c423-4a81-8bbe-8db3c325160b" [label = "DelayAction", margin = 0];
+	}
+	
+	"d1385b20-395d-4ce5-a316-738828d2c9ea" -> "f2c984c9-f6d0-43f4-afcc-0e6690e2f8bf" [label = "True"];
+	"d1385b20-395d-4ce5-a316-738828d2c9ea" -> "9868970b-b141-4b24-91d7-4d7dad2c5fa9" [label = "False"];
+	"f2c984c9-f6d0-43f4-afcc-0e6690e2f8bf" [label = "WaitArm", margin = 0];
+	"d1385b20-395d-4ce5-a316-738828d2c9ea" [label = "AlwaysTrue", margin = 0];
+}
