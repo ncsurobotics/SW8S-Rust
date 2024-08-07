@@ -24,6 +24,7 @@ const LEAK: [u8; 4] = *b"LEAK";
 const TARM: [u8; 4] = *b"TARM";
 const VSYS: [u8; 4] = *b"VSYS";
 const SDOWN: [u8; 5] = *b"SDOWN";
+const ACK: [u8; 3] = *b"ACK";
 
 #[derive(Debug, Getters)]
 pub struct Statuses {
@@ -142,6 +143,9 @@ impl Statuses {
                     *vsys.write().await = Some(message_body[4..].try_into().unwrap());
                 } else if message_body.get(0..4) == Some(&SDOWN) {
                     *sdown.write().await = Some(message_body[4]);
+                } else if message_body.get(0..3) == Some(&ACK) {
+                    eprintln!("ACK currently not handled");
+                }
                 } else {
                     write_stream_mutexed!(err_stream, format!("Unknown MEB message (id: {id}) {:?}\n", payload));
                 }
