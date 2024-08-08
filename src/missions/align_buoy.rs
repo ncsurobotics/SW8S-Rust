@@ -153,7 +153,7 @@ pub fn buoy_align_shot<
                 ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(-ALIGN_X_SPEED, ALIGN_Y_SPEED, 0.0, 0.0, None, SPIN_DEPTH)
+                    Stability2Pos::new(-ALIGN_X_SPEED, ALIGN_Y_SPEED, 0.0, 0.0, None, DEPTH)
                 ),
                 OutputType::<()>::new(),
             ),
