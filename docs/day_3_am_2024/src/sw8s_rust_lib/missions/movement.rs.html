@@ -2386,6 +2386,8 @@
 <a href="#2386" id="2386">2386</a>
 <a href="#2387" id="2387">2387</a>
 <a href="#2388" id="2388">2388</a>
+<a href="#2389" id="2389">2389</a>
+<a href="#2390" id="2390">2390</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::comms::control_board::LAST_YAW;
 <span class="kw">use </span><span class="kw">crate</span>::vision::DrawRect2d;
@@ -4503,6 +4505,7 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionExec&lt;T&gt; <span class="kw">for </span>SetSideRed&lt;T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; T {
+        <span class="macro">println!</span>(<span class="string">"SETTING SIDE TO RED"</span>);
         <span class="kw-2">*</span>SIDE.lock().unwrap() = Side::Red;
         <span class="self">self</span>.value.clone()
     }
@@ -4537,6 +4540,7 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionExec&lt;T&gt; <span class="kw">for </span>SetSideBlue&lt;T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; T {
+        <span class="macro">println!</span>(<span class="string">"SETTING SIDE TO BLUE"</span>);
         <span class="kw-2">*</span>SIDE.lock().unwrap() = Side::Blue;
         <span class="self">self</span>.value.clone()
     }
