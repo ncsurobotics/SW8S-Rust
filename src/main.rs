@@ -425,7 +425,10 @@ async fn run_mission(mission: &str) -> Result<()> {
         }
         "torpedo" | "fire_torpedo" => {
             let _ = buoy_align_shot(static_context().await).execute().await;
-            //FireTorpedo::new(static_context().await).execute().await;
+            Ok(())
+        }
+        "torpedo_only" => {
+            FireTorpedo::new(static_context().await).execute().await;
             Ok(())
         }
         // Just stall out forever

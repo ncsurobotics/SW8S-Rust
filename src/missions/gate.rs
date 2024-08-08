@@ -131,7 +131,6 @@ pub fn adjust_logic<
                     wrap_action(ActionConcurrent::new, FirstValid::new),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
                 ),
                 act_nest!(

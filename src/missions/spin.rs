@@ -37,22 +37,22 @@ pub fn spin<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    const DEPTH: f32 = -0.75;
+    const GATE_DEPTH: f32 = -1.5;
+    const DEPTH: f32 = -1.5;
     const Z_TARGET: f32 = 0.0;
     const FORWARD_SPEED: f32 = 1.0;
     const SPIN_SPEED: f32 = 1.0;
 
     act_nest!(
         ActionSequence::new,
-        WaitArm::new(context),
         ActionChain::new(
             Stability2Movement::new(
                 context,
-                Stability2Pos::new(0.0, FORWARD_SPEED, 0.0, 0.0, None, 0.0),
+                Stability2Pos::new(0.0, FORWARD_SPEED, 0.0, 0.0, None, GATE_DEPTH),
             ),
             OutputType::<()>::new(),
         ),
-        DelayAction::new(3.0),
+        DelayAction::new(6.0),
         ZeroMovement::new(context, DEPTH),
         DelayAction::new(4.0),
         ActionWhile::new(TupleSecond::new(ActionConcurrent::new(
@@ -61,13 +61,13 @@ pub fn spin<
                 ActionChain::new(
                     GlobalMovement::new(
                         context,
-                        GlobalPos::new(0.0, FORWARD_SPEED, Z_TARGET, 0.0, SPIN_SPEED, 0.0),
+                        GlobalPos::new(0.0, 0.0, Z_TARGET, 0.0, SPIN_SPEED, 0.0),
                     ),
                     OutputType::<()>::new(),
                 ),
                 ActionChain::new(AlwaysFalse::new(), OutputType::<anyhow::Result<()>>::new(),),
             ),
-            SpinCounter::new(3, context)
+            SpinCounter::new(4, context)
         ))),
         ZeroMovement::new(context, DEPTH),
         OutputType::<()>::new(),
@@ -105,7 +105,7 @@ impl<T: GetControlBoard<U> + Send + Sync, U: AsyncWriteExt + Unpin + Send + Sync
                     self.half_loops += 1;
                     println!("Loop count: {}", self.half_loops);
                 }
-            } else if *angles.roll() < 180.0 && *angles.roll() > 0.0 {
+            } else if *angles.roll() < 220.0 && *angles.roll() > 0.0 {
                 self.half_loops += 1;
                 println!("Loop count: {}", self.half_loops);
             }
