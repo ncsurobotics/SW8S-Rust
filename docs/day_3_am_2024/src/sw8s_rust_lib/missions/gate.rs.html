@@ -215,8 +215,6 @@
 <a href="#215" id="215">215</a>
 <a href="#216" id="216">216</a>
 <a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
-<a href="#219" id="219">219</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
@@ -372,8 +370,8 @@
                             ExtractPosition::new(),
                             MidPoint::new(),
                             OffsetToPose::default(),
-                            LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
-                            ClampX::new(<span class="number">0.4</span>),
+                            LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">3.0</span>),
+                            ClampX::new(<span class="number">0.3</span>),
                             SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(<span class="number">0.02</span>)),
                             FlipX::default(),
                         ),
@@ -388,9 +386,7 @@
                                 ExtractPosition::new(),
                                 MidPoint::new(),
                                 OffsetToPose::default(),
-                                InvertX::default(),
-                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(-<span class="number">7.0</span>),
-                                MultiplyX::new(<span class="number">10.0</span>),
+                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">7.0</span>),
                                 ClampX::new(<span class="number">0.6</span>),
                                 SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.2</span>)),
                                 ReplaceX::new(),

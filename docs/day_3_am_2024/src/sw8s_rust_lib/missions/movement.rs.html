@@ -2373,6 +2373,19 @@
 <a href="#2373" id="2373">2373</a>
 <a href="#2374" id="2374">2374</a>
 <a href="#2375" id="2375">2375</a>
+<a href="#2376" id="2376">2376</a>
+<a href="#2377" id="2377">2377</a>
+<a href="#2378" id="2378">2378</a>
+<a href="#2379" id="2379">2379</a>
+<a href="#2380" id="2380">2380</a>
+<a href="#2381" id="2381">2381</a>
+<a href="#2382" id="2382">2382</a>
+<a href="#2383" id="2383">2383</a>
+<a href="#2384" id="2384">2384</a>
+<a href="#2385" id="2385">2385</a>
+<a href="#2386" id="2386">2386</a>
+<a href="#2387" id="2387">2387</a>
+<a href="#2388" id="2388">2388</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::comms::control_board::LAST_YAW;
 <span class="kw">use </span><span class="kw">crate</span>::vision::DrawRect2d;
@@ -2435,9 +2448,22 @@
 <span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>Descend&lt;<span class="lifetime">'_</span>, T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="macro">println!</span>(<span class="string">"DESCEND"</span>);
-        <span class="self">self</span>.context
-            .get_control_board()
-            .stability_2_speed_set_initial_yaw(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="self">self</span>.target_depth)
+
+        <span class="kw">let </span>cntrl = <span class="self">self</span>.context.get_control_board();
+
+        <span class="kw">let </span><span class="kw-2">mut </span>cur_yaw;
+
+        <span class="kw">loop </span>{
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(angle) = cntrl.responses().get_angles().<span class="kw">await </span>{
+                cur_yaw = <span class="kw-2">*</span>angle.yaw();
+                <span class="kw">break</span>;
+            } <span class="kw">else </span>{
+                cntrl.bno055_periodic_read(<span class="bool-val">true</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+            }
+        }
+
+        cntrl
+            .stability_2_speed_set(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, cur_yaw, <span class="self">self</span>.target_depth)
             .<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="macro">println!</span>(<span class="string">"GOT SPEED SET"</span>);
         <span class="prelude-val">Ok</span>(())

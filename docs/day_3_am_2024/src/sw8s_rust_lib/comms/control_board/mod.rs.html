@@ -985,7 +985,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>message: Vec&lt;<span class="kw">_</span>&gt; = RESET.into();
         message.extend_from_slice(<span class="kw-2">&amp;</span>[<span class="number">0x0D</span>, <span class="number">0x1E</span>]);
 
-        <span class="self">self</span>.write_out_basic(message).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="self">self</span>.write_out_no_response(message).<span class="kw">await</span><span class="question-mark">?</span>;
         sleep(Duration::from_secs(<span class="number">2</span>)).<span class="kw">await</span>; <span class="comment">// Reset time
         </span><span class="prelude-val">Ok</span>(())
     }

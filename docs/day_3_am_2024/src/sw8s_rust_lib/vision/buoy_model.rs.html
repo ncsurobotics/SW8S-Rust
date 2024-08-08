@@ -137,9 +137,38 @@
 <a href="#137" id="137">137</a>
 <a href="#138" id="138">138</a>
 <a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::Result;
 <span class="kw">use </span>derive_getters::Getters;
-<span class="kw">use </span>opencv::{core::Size, prelude::Mat};
+<span class="kw">use </span>opencv::{core::Rect2d, core::Size, prelude::Mat};
 
 <span class="kw">use </span><span class="kw">crate</span>::load_onnx;
 
@@ -149,7 +178,11 @@
 };
 
 <span class="kw">use </span>core::hash::Hash;
-<span class="kw">use </span>std::{error::Error, fmt::Display};
+<span class="kw">use </span>std::{
+    cmp::{Ord, Ordering},
+    error::Error,
+    fmt::Display,
+};
 
 <span class="attr">#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 </span><span class="kw">pub enum </span>Target {
@@ -223,7 +256,19 @@
     <span class="kw">type </span>Target = Target;
 
     <span class="kw">fn </span>detect_yolo_v5(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat) -&gt; Vec&lt;YoloDetection&gt; {
-        <span class="self">self</span>.model.detect_yolo_v5(image, <span class="self">self</span>.threshold)
+        <span class="kw">let </span>bounding_box_size = |b: <span class="kw-2">&amp;</span>Rect2d| -&gt; f64 { b.width * b.height };
+
+        <span class="kw">let </span><span class="kw-2">mut </span>detection = <span class="self">self</span>.model.detect_yolo_v5(image, <span class="self">self</span>.threshold);
+        detection.sort_unstable_by(|lhs, rhs| {
+            std::cmp::PartialOrd::partial_cmp(
+                <span class="kw-2">&amp;</span>bounding_box_size(lhs.bounding_box()),
+                <span class="kw-2">&amp;</span>bounding_box_size(rhs.bounding_box()),
+            )
+            .unwrap_or(Ordering::Equal)
+        });
+        <span class="macro">println!</span>(<span class="string">"Detection MIN buoy: {:#?}"</span>, detection.first());
+        <span class="macro">println!</span>(<span class="string">"Detection MAX buoy: {:#?}"</span>, detection.last());
+        detection.into_iter().rev().take(<span class="number">1</span>).collect()
     }
 
     <span class="kw">fn </span>model_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Size {
@@ -257,7 +302,20 @@ impl BuoyModel&lt;OnnxModel&gt; {
     <span class="kw">type </span>PostProcessArgs = &lt;OnnxModel <span class="kw">as </span>VisionModel&gt;::PostProcessArgs;
 
     <span class="kw">fn </span>detect_yolo_v5(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat, threshold: f64) -&gt; Vec&lt;YoloDetection&gt; {
-        <span class="self">self</span>.model.detect_yolo_v5(image, threshold)
+        <span class="kw">let </span>bounding_box_size = |b: <span class="kw-2">&amp;</span>Rect2d| -&gt; f64 { b.width * b.height };
+        <span class="macro">println!</span>(<span class="string">"CALLED BUOY DETECT"</span>);
+
+        <span class="kw">let </span><span class="kw-2">mut </span>detection = <span class="self">self</span>.model.detect_yolo_v5(image, threshold);
+        detection.sort_unstable_by(|lhs, rhs| {
+            std::cmp::PartialOrd::partial_cmp(
+                <span class="kw-2">&amp;</span>bounding_box_size(lhs.bounding_box()),
+                <span class="kw-2">&amp;</span>bounding_box_size(rhs.bounding_box()),
+            )
+            .unwrap_or(Ordering::Equal)
+        });
+        <span class="macro">println!</span>(<span class="string">"Detection MIN buoy: {:#?}"</span>, detection.first());
+        <span class="macro">println!</span>(<span class="string">"Detection MAX buoy: {:#?}"</span>, detection.last());
+        detection.into_iter().rev().take(<span class="number">1</span>).collect()
     }
     <span class="kw">fn </span>forward(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat) -&gt; <span class="self">Self</span>::ModelOutput {
         <span class="self">self</span>.model.forward(image)

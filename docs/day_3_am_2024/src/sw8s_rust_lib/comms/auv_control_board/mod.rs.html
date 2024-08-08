@@ -119,6 +119,12 @@
 <a href="#119" id="119">119</a>
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>std::sync::Arc;
 
@@ -238,6 +244,12 @@
         <span class="self">self</span>.comm_out.lock().<span class="kw">await</span>.write_all(<span class="kw-2">&amp;</span>message).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="comment">// Spec guarantees empty response
         </span><span class="prelude-val">Ok</span>(<span class="self">self</span>.responses.get_ack(id).<span class="kw">await</span><span class="question-mark">?</span>)
+    }
+
+    <span class="kw">pub async fn </span>write_out_no_response(<span class="kw-2">&amp;</span><span class="self">self</span>, message_body: Vec&lt;u8&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>(<span class="kw">_</span>, message) = <span class="self">self</span>.add_metadata(<span class="kw-2">&amp;</span>message_body).<span class="kw">await</span>;
+        <span class="self">self</span>.comm_out.lock().<span class="kw">await</span>.write_all(<span class="kw-2">&amp;</span>message).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(())
     }
 }
 </code></pre></div></section></main></body></html>
