@@ -205,13 +205,25 @@
 <a href="#205" id="205">205</a>
 <a href="#206" id="206">206</a>
 <a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
 <span class="kw">use crate</span>::{
     act_nest,
     missions::{
-        action::{ActionConcurrentSplit, ActionDataConditional},
+        action::{ActionConcurrentSplit, ActionConditional, ActionDataConditional},
         basic::descend_depth_and_go_forward,
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
         movement::{
@@ -333,58 +345,70 @@
     ActionWhile::new(ActionChain::new(
         VisionNorm::&lt;Con, GatePoles&lt;OnnxModel&gt;, f64&gt;::new(context, GatePoles::default()),
         ActionChain::new(
-            ActionDataConditional::new(
-                <span class="macro">act_nest!</span>(
-                    wrap_action(ActionConcurrent::new, FirstValid::new),
+            TupleSecond::new(ActionConcurrent::new(
+                ActionDataConditional::new(
                     DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Blue),
-                    DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Middle),
-                    DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Red),
-                ),
-                <span class="macro">act_nest!</span>(
-                    ActionConcurrent::new,
-                    <span class="macro">act_nest!</span>(
-                        ActionChain::new,
-                        OffsetClass::new(Target::Middle, Offset2D::&lt;f64&gt;::new(-<span class="number">0.1</span>, <span class="number">0.0</span>)),
-                        ExtractPosition::new(),
-                        MidPoint::new(),
-                        OffsetToPose::default(),
-                        LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
-                        ClampX::new(<span class="number">0.4</span>),
-                        SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(<span class="number">0.02</span>)),
-                        FlipX::default(),
-                        SetSideBlue::new(),
+                    ActionSequence::new(SetSideBlue::new(), Terminal::new()),
+                    ActionDataConditional::new(
+                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Red),
+                        ActionSequence::new(SetSideRed::new(), Terminal::new()),
+                        Terminal::new(),
                     ),
-                    AlwaysTrue::new(),
                 ),
                 ActionDataConditional::new(
-                    DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Pole),
+                    <span class="macro">act_nest!</span>(
+                        wrap_action(ActionConcurrent::new, FirstValid::new),
+                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Blue),
+                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(
+                            Target::Middle
+                        ),
+                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Red),
+                    ),
                     <span class="macro">act_nest!</span>(
                         ActionConcurrent::new,
                         <span class="macro">act_nest!</span>(
                             ActionChain::new,
+                            OffsetClass::new(Target::Middle, Offset2D::&lt;f64&gt;::new(-<span class="number">0.1</span>, <span class="number">0.0</span>)),
                             ExtractPosition::new(),
                             MidPoint::new(),
                             OffsetToPose::default(),
-                            InvertX::default(),
-                            LinearYawFromX::&lt;Stability2Adjust&gt;::new(-<span class="number">7.0</span>),
-                            MultiplyX::new(<span class="number">10.0</span>),
-                            ClampX::new(<span class="number">0.6</span>),
-                            SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.2</span>)),
-                            ReplaceX::new(),
+                            LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
+                            ClampX::new(<span class="number">0.4</span>),
+                            SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(<span class="number">0.02</span>)),
+                            FlipX::default(),
                         ),
                         AlwaysTrue::new(),
                     ),
-                    ActionConcurrent::new(
+                    ActionDataConditional::new(
+                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Pole),
                         <span class="macro">act_nest!</span>(
-                            ActionSequence::new,
-                            Terminal::new(),
-                            SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.4</span>)),
-                            SetX::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.0</span>)),
+                            ActionConcurrent::new,
+                            <span class="macro">act_nest!</span>(
+                                ActionChain::new,
+                                ExtractPosition::new(),
+                                MidPoint::new(),
+                                OffsetToPose::default(),
+                                InvertX::default(),
+                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(-<span class="number">7.0</span>),
+                                MultiplyX::new(<span class="number">10.0</span>),
+                                ClampX::new(<span class="number">0.6</span>),
+                                SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.2</span>)),
+                                ReplaceX::new(),
+                            ),
+                            AlwaysTrue::new(),
                         ),
-                        AlwaysFalse::new(),
+                        ActionConcurrent::new(
+                            <span class="macro">act_nest!</span>(
+                                ActionSequence::new,
+                                Terminal::new(),
+                                SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.4</span>)),
+                                SetX::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.0</span>)),
+                            ),
+                            AlwaysFalse::new(),
+                        ),
                     ),
                 ),
-            ),
+            )),
             TupleSecond::new(ActionConcurrentSplit::new(
                 <span class="macro">act_nest!</span>(
                     ActionChain::new,

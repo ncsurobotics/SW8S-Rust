@@ -178,6 +178,9 @@
 <a href="#178" id="178">178</a>
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     act_nest,
     missions::{
@@ -186,8 +189,9 @@
         extra::{AlwaysTrue, CountTrue, OutputType, ToVec, Transform},
         movement::{
             aggressive_yaw_from_x, AdjustType, CautiousConstantX, ConstYaw, Descend, FlatX,
-            LinearYawFromX, MinYaw, OffsetToPose, Stability1Adjust, Stability1Movement,
-            Stability1Pos, Stability2Adjust, Stability2Movement, Stability2Pos, StripY,
+            LinearYawFromX, MinYaw, OffsetToPose, SetX, SideMult, Stability1Adjust,
+            Stability1Movement, Stability1Pos, Stability2Adjust, Stability2Movement, Stability2Pos,
+            StripY,
         },
         vision::{Average, DetectTarget, ExtractPosition, VisionNorm},
     },
@@ -345,9 +349,11 @@
             <span class="macro">act_nest!</span>(
                 ActionChain::new,
                 ConstYaw::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(BUOY_YAW_SPEED)),
+                SetX::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(BUOY_X_SPEED)),
+                SideMult::new(),
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH)
+                    Stability2Pos::new(<span class="number">0.0</span>, BUOY_Y_SPEED, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH)
                 ),
                 OutputType::&lt;()&gt;::new()
             ),

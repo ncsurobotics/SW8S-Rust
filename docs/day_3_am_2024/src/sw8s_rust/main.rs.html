@@ -454,10 +454,6 @@
 <a href="#454" id="454">454</a>
 <a href="#455" id="455">455</a>
 <a href="#456" id="456">456</a>
-<a href="#457" id="457">457</a>
-<a href="#458" id="458">458</a>
-<a href="#459" id="459">459</a>
-<a href="#460" id="460">460</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -477,6 +473,7 @@
         circle_buoy::{
             buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
         },
+        coinflip::coinflip,
         example::initial_descent,
         fire_torpedo::FireTorpedo,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
@@ -883,6 +880,10 @@
             FireTorpedo::new(static_context().<span class="kw">await</span>).execute().<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }
+        <span class="string">"coinflip" </span>=&gt; {
+            <span class="kw">let _ </span>= coinflip(static_context().<span class="kw">await</span>).execute().<span class="kw">await</span>;
+            <span class="prelude-val">Ok</span>(())
+        }
         <span class="comment">// Just stall out forever
         </span><span class="string">"forever" </span>| <span class="string">"infinite" </span>=&gt; <span class="kw">loop </span>{
             <span class="kw">while </span>control_board().<span class="kw">await</span>.raw_speed_set([<span class="number">0.0</span>; <span class="number">8</span>]).<span class="kw">await</span>.is_err() {}
@@ -895,16 +896,7 @@
                 Path::new(<span class="string">"/tmp/front_feed.mp4"</span>),
             )
             .unwrap();
-
-            <span class="comment">/*
-            Camera::jetson_new(
-                &amp;Configuration::default().bottom_cam,
-                "bottom",
-                Path::new("/tmp/bottom_feed.mp4"),
-            )
-            .unwrap();
-            */
-            </span><span class="prelude-val">Ok</span>(())
+            <span class="prelude-val">Ok</span>(())
         }
         x =&gt; <span class="macro">bail!</span>(<span class="string">"Invalid argument: [{x}]"</span>),
     };

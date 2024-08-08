@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["action","action_context","align_buoy","basic","buoy_hit","circle_buoy","comms","example","extra","fire_torpedo","gate","graph","meb","movement","octagon","path_align","spin","vision"]};
+window.SIDEBAR_ITEMS = {"mod":["action","action_context","align_buoy","basic","buoy_hit","circle_buoy","coinflip","comms","example","extra","fire_torpedo","gate","graph","meb","movement","octagon","path_align","spin","vision"]};

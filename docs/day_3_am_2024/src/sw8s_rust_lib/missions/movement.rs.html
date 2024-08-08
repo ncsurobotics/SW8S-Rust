@@ -2362,6 +2362,17 @@
 <a href="#2362" id="2362">2362</a>
 <a href="#2363" id="2363">2363</a>
 <a href="#2364" id="2364">2364</a>
+<a href="#2365" id="2365">2365</a>
+<a href="#2366" id="2366">2366</a>
+<a href="#2367" id="2367">2367</a>
+<a href="#2368" id="2368">2368</a>
+<a href="#2369" id="2369">2369</a>
+<a href="#2370" id="2370">2370</a>
+<a href="#2371" id="2371">2371</a>
+<a href="#2372" id="2372">2372</a>
+<a href="#2373" id="2373">2373</a>
+<a href="#2374" id="2374">2374</a>
+<a href="#2375" id="2375">2375</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::comms::control_board::LAST_YAW;
 <span class="kw">use </span><span class="kw">crate</span>::vision::DrawRect2d;
@@ -4563,12 +4574,17 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="kw">let </span><span class="kw-2">mut </span>inner = <span class="self">self</span>.inner.clone();
 
+        <span class="kw">let </span>is_blue = <span class="kw-2">*</span>SIDE.lock().unwrap() == Side::Blue;
+
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = inner.x {
             <span class="kw">let </span>x = <span class="kw">match </span>x {
                 AdjustType::Adjust(x) =&gt; x,
                 AdjustType::Replace(x) =&gt; x,
             };
-            <span class="kw-2">*</span>x = -<span class="kw-2">*</span>x;
+
+            <span class="kw">if </span>is_blue {
+                <span class="kw-2">*</span>x = -<span class="kw-2">*</span>x;
+            }
         };
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>yaw) = inner.target_yaw {
@@ -4576,7 +4592,9 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
                 AdjustType::Adjust(yaw) =&gt; yaw,
                 AdjustType::Replace(yaw) =&gt; yaw,
             };
-            <span class="kw-2">*</span>yaw = -<span class="kw-2">*</span>yaw;
+            <span class="kw">if </span>is_blue {
+                <span class="kw-2">*</span>yaw = -<span class="kw-2">*</span>yaw;
+            }
         };
 
         inner
@@ -4612,18 +4630,21 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>InvertX&lt;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
+        <span class="macro">println!</span>(<span class="string">"Invert input: {:#?}"</span>, <span class="self">self</span>.pose.x);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = <span class="self">self</span>.pose.x {
             <span class="kw-2">*</span>x = <span class="kw">match </span><span class="kw-2">*</span>x {
                 AdjustType::Adjust(x) =&gt; AdjustType::Adjust(x.signum() * (<span class="number">1.0 </span>- x.abs())),
                 AdjustType::Replace(x) =&gt; AdjustType::Replace(x.signum() * (<span class="number">1.0 </span>- x.abs())),
             };
         }
+        <span class="macro">println!</span>(<span class="string">"Invert output: {:#?}"</span>, <span class="self">self</span>.pose.x);
         <span class="self">self</span>.pose.clone()
     }
 }
 
 <span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>InvertX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
+        <span class="macro">println!</span>(<span class="string">"Invert input: {:#?}"</span>, <span class="self">self</span>.pose.x);
         <span class="kw">let </span><span class="kw-2">mut </span>pose = <span class="self">self</span>.pose.clone();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = pose.x {
             <span class="kw-2">*</span>x = <span class="kw">match </span><span class="kw-2">*</span>x {
@@ -4631,6 +4652,7 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
                 AdjustType::Replace(x) =&gt; AdjustType::Replace(x.signum() * (<span class="number">1.0 </span>- x.abs())),
             };
         }
+        <span class="macro">println!</span>(<span class="string">"Invert output: {:#?}"</span>, <span class="self">self</span>.pose.x);
         pose
     }
 }
