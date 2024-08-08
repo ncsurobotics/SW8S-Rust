@@ -2115,6 +2115,7 @@ impl<T: Sync + Send + Clone> ActionMod<T> for SetSideRed<T> {
 
 impl<T: Send + Sync + Clone> ActionExec<T> for SetSideRed<T> {
     async fn execute(&mut self) -> T {
+        println!("SETTING SIDE TO RED");
         *SIDE.lock().unwrap() = Side::Red;
         self.value.clone()
     }
@@ -2149,6 +2150,7 @@ impl<T: Sync + Send + Clone> ActionMod<T> for SetSideBlue<T> {
 
 impl<T: Send + Sync + Clone> ActionExec<T> for SetSideBlue<T> {
     async fn execute(&mut self) -> T {
+        println!("SETTING SIDE TO BLUE");
         *SIDE.lock().unwrap() = Side::Blue;
         self.value.clone()
     }
