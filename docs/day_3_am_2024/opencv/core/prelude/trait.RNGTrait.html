@@ -1,0 +1,267 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Mutable methods for core::RNG"><title>RNGTrait in opencv::core::prelude - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../opencv/index.html">opencv</a><span class="version">0.92.0</span></h2></div><h2 class="location"><a href="#">RNGTrait</a></h2><div class="sidebar-elems"><section><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.as_raw_mut_RNG">as_raw_mut_RNG</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.apply">apply</a></li><li><a href="#method.apply_range">apply_range</a></li><li><a href="#method.fill">fill</a></li><li><a href="#method.fill_def">fill_def</a></li><li><a href="#method.gaussian">gaussian</a></li><li><a href="#method.next">next</a></li><li><a href="#method.set_state">set_state</a></li><li><a href="#method.to_f32">to_f32</a></li><li><a href="#method.to_f64">to_f64</a></li><li><a href="#method.to_i16">to_i16</a></li><li><a href="#method.to_i32">to_i32</a></li><li><a href="#method.to_i8">to_i8</a></li><li><a href="#method.to_u16">to_u16</a></li><li><a href="#method.to_u32">to_u32</a></li><li><a href="#method.to_u8">to_u8</a></li><li><a href="#method.uniform">uniform</a></li><li><a href="#method.uniform_f32">uniform_f32</a></li><li><a href="#method.uniform_f64">uniform_f64</a></li></ul><h3><a href="#object-safety">Object Safety</a></h3><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In opencv::core::prelude</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="../../index.html">opencv</a>::<wbr><a href="../index.html">core</a>::<wbr><a href="index.html">prelude</a>::<wbr><a class="trait" href="#">RNGTrait</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22753-23150">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait RNGTrait: <a class="trait" href="../../opencv/hub/core/trait.RNGTraitConst.html" title="trait opencv::opencv::hub::core::RNGTraitConst">RNGTraitConst</a> {
+<details class="toggle type-contents-toggle"><summary class="hideme"><span>Show 19 methods</span></summary>    // Required method
+    fn <a href="#tymethod.as_raw_mut_RNG" class="fn">as_raw_mut_RNG</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.pointer.html">*mut </a><a class="enum" href="../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a>;
+
+    // Provided methods
+    fn <a href="#method.set_state" class="fn">set_state</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u64.html">u64</a>) { ... }
+<span class="item-spacer"></span>    fn <a href="#method.next" class="fn">next</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u32.html">u32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.to_u8" class="fn">to_u8</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u8.html">u8</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.to_i8" class="fn">to_i8</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i8.html">i8</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.to_u16" class="fn">to_u16</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u16.html">u16</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.to_i16" class="fn">to_i16</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i16.html">i16</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.to_u32" class="fn">to_u32</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u32.html">u32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.to_i32" class="fn">to_i32</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.to_f32" class="fn">to_f32</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f32.html">f32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.to_f64" class="fn">to_f64</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.apply" class="fn">apply</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u32.html">u32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.apply_range" class="fn">apply_range</a>(&amp;mut self, n: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u32.html">u32</a>) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u32.html">u32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.uniform" class="fn">uniform</a>(&amp;mut self, a: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>, b: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.uniform_f32" class="fn">uniform_f32</a>(&amp;mut self, a: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f32.html">f32</a>, b: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f32.html">f32</a>) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f32.html">f32</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.uniform_f64" class="fn">uniform_f64</a>(&amp;mut self, a: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>, b: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.fill" class="fn">fill</a>(
+        &amp;mut self,
+        mat: &amp;mut impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputOutputArray.html" title="trait opencv::manual::core::input_output_array::ToInputOutputArray">ToInputOutputArray</a>,
+        dist_type: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>,
+        a: &amp;impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+        b: &amp;impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+        saturate_range: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.bool.html">bool</a>,
+    ) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.fill_def" class="fn">fill_def</a>(
+        &amp;mut self,
+        mat: &amp;mut impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputOutputArray.html" title="trait opencv::manual::core::input_output_array::ToInputOutputArray">ToInputOutputArray</a>,
+        dist_type: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>,
+        a: &amp;impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+        b: &amp;impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    ) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.unit.html">()</a>&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.gaussian" class="fn">gaussian</a>(&amp;mut self, sigma: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>&gt; { ... }
+</details>}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Mutable methods for <a href="../../opencv/hub/core/struct.RNG.html" title="struct opencv::opencv::hub::core::RNG">core::RNG</a></p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><section id="tymethod.as_raw_mut_RNG" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22754">source</a><h4 class="code-header">fn <a href="#tymethod.as_raw_mut_RNG" class="fn">as_raw_mut_RNG</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.pointer.html">*mut </a><a class="enum" href="../../mod_prelude_sys/enum.c_void.html" title="enum opencv::mod_prelude_sys::c_void">c_void</a></h4></section></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><section id="method.set_state" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22757-22760">source</a><h4 class="code-header">fn <a href="#method.set_state" class="fn">set_state</a>(&amp;mut self, val: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u64.html">u64</a>)</h4></section><details class="toggle method-toggle" open><summary><section id="method.next" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22765-22771">source</a><h4 class="code-header">fn <a href="#method.next" class="fn">next</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u32.html">u32</a>&gt;</h4></section></summary><div class="docblock"><p>The method updates the state using the MWC algorithm and returns the
+next 32-bit random number.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.to_u8" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22779-22785">source</a><h4 class="code-header">fn <a href="#method.to_u8" class="fn">to_u8</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u8.html">u8</a>&gt;</h4></section></summary><div class="docblock"><p>Each of the methods updates the state using the MWC algorithm and
+returns the next random number of the specified type. In case of integer
+types, the returned number is from the available value range for the
+specified type. In case of floating-point types, the returned value is
+from [0,1) range.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.to_i8" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22789-22795">source</a><h4 class="code-header">fn <a href="#method.to_i8" class="fn">to_i8</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i8.html">i8</a>&gt;</h4></section></summary><div class="docblock"><p>This is an overloaded member function, provided for convenience. It differs from the above function only in what argument(s) it accepts.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.to_u16" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22799-22805">source</a><h4 class="code-header">fn <a href="#method.to_u16" class="fn">to_u16</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u16.html">u16</a>&gt;</h4></section></summary><div class="docblock"><p>This is an overloaded member function, provided for convenience. It differs from the above function only in what argument(s) it accepts.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.to_i16" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22809-22815">source</a><h4 class="code-header">fn <a href="#method.to_i16" class="fn">to_i16</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i16.html">i16</a>&gt;</h4></section></summary><div class="docblock"><p>This is an overloaded member function, provided for convenience. It differs from the above function only in what argument(s) it accepts.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.to_u32" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22819-22825">source</a><h4 class="code-header">fn <a href="#method.to_u32" class="fn">to_u32</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u32.html">u32</a>&gt;</h4></section></summary><div class="docblock"><p>This is an overloaded member function, provided for convenience. It differs from the above function only in what argument(s) it accepts.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.to_i32" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22829-22835">source</a><h4 class="code-header">fn <a href="#method.to_i32" class="fn">to_i32</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>&gt;</h4></section></summary><div class="docblock"><p>This is an overloaded member function, provided for convenience. It differs from the above function only in what argument(s) it accepts.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.to_f32" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22839-22845">source</a><h4 class="code-header">fn <a href="#method.to_f32" class="fn">to_f32</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f32.html">f32</a>&gt;</h4></section></summary><div class="docblock"><p>This is an overloaded member function, provided for convenience. It differs from the above function only in what argument(s) it accepts.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.to_f64" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22849-22855">source</a><h4 class="code-header">fn <a href="#method.to_f64" class="fn">to_f64</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>&gt;</h4></section></summary><div class="docblock"><p>This is an overloaded member function, provided for convenience. It differs from the above function only in what argument(s) it accepts.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.apply" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22864-22870">source</a><h4 class="code-header">fn <a href="#method.apply" class="fn">apply</a>(&amp;mut self) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u32.html">u32</a>&gt;</h4></section></summary><div class="docblock"><p>returns a random integer sampled uniformly from [0, N).</p>
+<p>The methods transform the state using the MWC algorithm and return the
+next random number. The first form is equivalent to RNG::next . The
+second form returns the random number modulo N , which means that the
+result is in the range [0, N) .</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.apply_range" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22884-22890">source</a><h4 class="code-header">fn <a href="#method.apply_range" class="fn">apply_range</a>(&amp;mut self, n: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u32.html">u32</a>) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.u32.html">u32</a>&gt;</h4></section></summary><div class="docblock"><p>returns a random integer sampled uniformly from [0, N).</p>
+<p>The methods transform the state using the MWC algorithm and return the
+next random number. The first form is equivalent to RNG::next . The
+second form returns the random number modulo N , which means that the
+result is in the range [0, N) .</p>
+<h6 id="overloaded-parameters"><a class="doc-anchor" href="#overloaded-parameters">§</a>Overloaded parameters</h6><h6 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h6>
+<ul>
+<li>N: upper non-inclusive boundary of the returned random number.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.uniform" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22930-22936">source</a><h4 class="code-header">fn <a href="#method.uniform" class="fn">uniform</a>(&amp;mut self, a: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>, b: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>&gt;</h4></section></summary><div class="docblock"><p>returns uniformly distributed integer random number from [a,b) range</p>
+<p>The methods transform the state using the MWC algorithm and return the
+next uniformly-distributed random number of the specified type, deduced
+from the input parameter type, from the range [a, b) . There is a nuance
+illustrated by the following sample:</p>
+<div class="example-wrap"><pre class="language-C++"><code>RNG rng;
+ 
+// always produces 0
+double a = rng.uniform(0, 1);
+ 
+// produces double from [0, 1)
+double a1 = rng.uniform((double)0, (double)1);
+ 
+// produces float from [0, 1)
+float b = rng.uniform(0.f, 1.f);
+ 
+// produces double from [0, 1)
+double c = rng.uniform(0., 1.);
+ 
+// may cause compiler error because of ambiguity:
+//  RNG::uniform(0, (int)0.999999)? or RNG::uniform((double)0, 0.99999)?
+double d = rng.uniform(0, 0.999999);
+</code></pre></div>
+<p>The compiler does not take into account the type of the variable to
+which you assign the result of RNG::uniform . The only thing that
+matters to the compiler is the type of a and b parameters. So, if you
+want a floating-point random number, but the range boundaries are
+integer numbers, either put dots in the end, if they are constants, or
+use explicit type cast operators, as in the a1 initialization above.</p>
+<h6 id="parameters-1"><a class="doc-anchor" href="#parameters-1">§</a>Parameters</h6>
+<ul>
+<li>a: lower inclusive boundary of the returned random number.</li>
+<li>b: upper non-inclusive boundary of the returned random number.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.uniform_f32" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#22978-22984">source</a><h4 class="code-header">fn <a href="#method.uniform_f32" class="fn">uniform_f32</a>(&amp;mut self, a: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f32.html">f32</a>, b: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f32.html">f32</a>) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f32.html">f32</a>&gt;</h4></section></summary><div class="docblock"><p>returns uniformly distributed integer random number from [a,b) range</p>
+<p>The methods transform the state using the MWC algorithm and return the
+next uniformly-distributed random number of the specified type, deduced
+from the input parameter type, from the range [a, b) . There is a nuance
+illustrated by the following sample:</p>
+<div class="example-wrap"><pre class="language-C++"><code>RNG rng;
+ 
+// always produces 0
+double a = rng.uniform(0, 1);
+ 
+// produces double from [0, 1)
+double a1 = rng.uniform((double)0, (double)1);
+ 
+// produces float from [0, 1)
+float b = rng.uniform(0.f, 1.f);
+ 
+// produces double from [0, 1)
+double c = rng.uniform(0., 1.);
+ 
+// may cause compiler error because of ambiguity:
+//  RNG::uniform(0, (int)0.999999)? or RNG::uniform((double)0, 0.99999)?
+double d = rng.uniform(0, 0.999999);
+</code></pre></div>
+<p>The compiler does not take into account the type of the variable to
+which you assign the result of RNG::uniform . The only thing that
+matters to the compiler is the type of a and b parameters. So, if you
+want a floating-point random number, but the range boundaries are
+integer numbers, either put dots in the end, if they are constants, or
+use explicit type cast operators, as in the a1 initialization above.</p>
+<h6 id="parameters-2"><a class="doc-anchor" href="#parameters-2">§</a>Parameters</h6>
+<ul>
+<li>a: lower inclusive boundary of the returned random number.</li>
+<li>b: upper non-inclusive boundary of the returned random number.</li>
+</ul>
+<h6 id="overloaded-parameters-1"><a class="doc-anchor" href="#overloaded-parameters-1">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.uniform_f64" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#23026-23032">source</a><h4 class="code-header">fn <a href="#method.uniform_f64" class="fn">uniform_f64</a>(&amp;mut self, a: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>, b: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>&gt;</h4></section></summary><div class="docblock"><p>returns uniformly distributed integer random number from [a,b) range</p>
+<p>The methods transform the state using the MWC algorithm and return the
+next uniformly-distributed random number of the specified type, deduced
+from the input parameter type, from the range [a, b) . There is a nuance
+illustrated by the following sample:</p>
+<div class="example-wrap"><pre class="language-C++"><code>RNG rng;
+ 
+// always produces 0
+double a = rng.uniform(0, 1);
+ 
+// produces double from [0, 1)
+double a1 = rng.uniform((double)0, (double)1);
+ 
+// produces float from [0, 1)
+float b = rng.uniform(0.f, 1.f);
+ 
+// produces double from [0, 1)
+double c = rng.uniform(0., 1.);
+ 
+// may cause compiler error because of ambiguity:
+//  RNG::uniform(0, (int)0.999999)? or RNG::uniform((double)0, 0.99999)?
+double d = rng.uniform(0, 0.999999);
+</code></pre></div>
+<p>The compiler does not take into account the type of the variable to
+which you assign the result of RNG::uniform . The only thing that
+matters to the compiler is the type of a and b parameters. So, if you
+want a floating-point random number, but the range boundaries are
+integer numbers, either put dots in the end, if they are constants, or
+use explicit type cast operators, as in the a1 initialization above.</p>
+<h6 id="parameters-3"><a class="doc-anchor" href="#parameters-3">§</a>Parameters</h6>
+<ul>
+<li>a: lower inclusive boundary of the returned random number.</li>
+<li>b: upper non-inclusive boundary of the returned random number.</li>
+</ul>
+<h6 id="overloaded-parameters-2"><a class="doc-anchor" href="#overloaded-parameters-2">§</a>Overloaded parameters</h6></div></details><details class="toggle method-toggle" open><summary><section id="method.fill" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#23072-23081">source</a><h4 class="code-header">fn <a href="#method.fill" class="fn">fill</a>(
+    &amp;mut self,
+    mat: &amp;mut impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputOutputArray.html" title="trait opencv::manual::core::input_output_array::ToInputOutputArray">ToInputOutputArray</a>,
+    dist_type: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>,
+    a: &amp;impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    b: &amp;impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    saturate_range: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.bool.html">bool</a>,
+) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Fills arrays with random numbers.</p>
+<h6 id="parameters-4"><a class="doc-anchor" href="#parameters-4">§</a>Parameters</h6>
+<ul>
+<li>mat: 2D or N-dimensional matrix; currently matrices with more than
+4 channels are not supported by the methods, use Mat::reshape as a
+possible workaround.</li>
+<li>distType: distribution type, RNG::UNIFORM or RNG::NORMAL.</li>
+<li>a: first distribution parameter; in case of the uniform
+distribution, this is an inclusive lower boundary, in case of the normal
+distribution, this is a mean value.</li>
+<li>b: second distribution parameter; in case of the uniform
+distribution, this is a non-inclusive upper boundary, in case of the
+normal distribution, this is a standard deviation (diagonal of the
+standard deviation matrix or the full standard deviation matrix).</li>
+<li>saturateRange: pre-saturation flag; for uniform distribution only;
+if true, the method will first convert a and b to the acceptable value
+range (according to the mat datatype) and then will generate uniformly
+distributed random numbers within the range [saturate(a), saturate(b)),
+if saturateRange=false, the method will generate uniformly distributed
+random numbers in the original range [a, b) and then will saturate them,
+it means, for example, that
+<tt>theRNG().fill(mat_8u, RNG::UNIFORM, -DBL_MAX, DBL_MAX)</tt> will likely
+produce array mostly filled with 0’s and 255’s, since the range (0, 255)
+is significantly smaller than [-DBL_MAX, DBL_MAX).</li>
+</ul>
+<p>Each of the methods fills the matrix with the random values from the
+specified distribution. As the new numbers are generated, the RNG state
+is updated accordingly. In case of multiple-channel images, every
+channel is filled independently, which means that RNG cannot generate
+samples from the multi-dimensional Gaussian distribution with
+non-diagonal covariance matrix directly. To do that, the method
+generates samples from multi-dimensional standard Gaussian distribution
+with zero mean and identity covariation matrix, and then transforms them
+using transform to get samples from the specified Gaussian distribution.</p>
+<h6 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h6>
+<ul>
+<li>saturate_range: false</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.fill_def" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#23122-23131">source</a><h4 class="code-header">fn <a href="#method.fill_def" class="fn">fill_def</a>(
+    &amp;mut self,
+    mat: &amp;mut impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputOutputArray.html" title="trait opencv::manual::core::input_output_array::ToInputOutputArray">ToInputOutputArray</a>,
+    dist_type: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>,
+    a: &amp;impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    b: &amp;impl <a class="trait" href="../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.unit.html">()</a>&gt;</h4></section></summary><div class="docblock"><p>Fills arrays with random numbers.</p>
+<h6 id="parameters-5"><a class="doc-anchor" href="#parameters-5">§</a>Parameters</h6>
+<ul>
+<li>mat: 2D or N-dimensional matrix; currently matrices with more than
+4 channels are not supported by the methods, use Mat::reshape as a
+possible workaround.</li>
+<li>distType: distribution type, RNG::UNIFORM or RNG::NORMAL.</li>
+<li>a: first distribution parameter; in case of the uniform
+distribution, this is an inclusive lower boundary, in case of the normal
+distribution, this is a mean value.</li>
+<li>b: second distribution parameter; in case of the uniform
+distribution, this is a non-inclusive upper boundary, in case of the
+normal distribution, this is a standard deviation (diagonal of the
+standard deviation matrix or the full standard deviation matrix).</li>
+<li>saturateRange: pre-saturation flag; for uniform distribution only;
+if true, the method will first convert a and b to the acceptable value
+range (according to the mat datatype) and then will generate uniformly
+distributed random numbers within the range [saturate(a), saturate(b)),
+if saturateRange=false, the method will generate uniformly distributed
+random numbers in the original range [a, b) and then will saturate them,
+it means, for example, that
+<tt>theRNG().fill(mat_8u, RNG::UNIFORM, -DBL_MAX, DBL_MAX)</tt> will likely
+produce array mostly filled with 0’s and 255’s, since the range (0, 255)
+is significantly smaller than [-DBL_MAX, DBL_MAX).</li>
+</ul>
+<p>Each of the methods fills the matrix with the random values from the
+specified distribution. As the new numbers are generated, the RNG state
+is updated accordingly. In case of multiple-channel images, every
+channel is filled independently, which means that RNG cannot generate
+samples from the multi-dimensional Gaussian distribution with
+non-diagonal covariance matrix directly. To do that, the method
+generates samples from multi-dimensional standard Gaussian distribution
+with zero mean and identity covariation matrix, and then transforms them
+using transform to get samples from the specified Gaussian distribution.</p>
+<h6 id="note"><a class="doc-anchor" href="#note">§</a>Note</h6>
+<p>This alternative version of <a href="../../opencv/hub/core/trait.RNGTrait.html#method.fill" title="method opencv::opencv::hub::core::RNGTrait::fill">RNGTrait::fill</a> function uses the following default values for its arguments:</p>
+<ul>
+<li>saturate_range: false</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.gaussian" class="method"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#23142-23148">source</a><h4 class="code-header">fn <a href="#method.gaussian" class="fn">gaussian</a>(&amp;mut self, sigma: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>) -&gt; <a class="type" href="../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.f64.html">f64</a>&gt;</h4></section></summary><div class="docblock"><p>Returns the next random number sampled from the Gaussian distribution</p>
+<h6 id="parameters-6"><a class="doc-anchor" href="#parameters-6">§</a>Parameters</h6>
+<ul>
+<li>sigma: standard deviation of the distribution.</li>
+</ul>
+<p>The method transforms the state using the MWC algorithm and returns the
+next random number from the Gaussian distribution N(0,sigma) . That is,
+the mean value of the returned random numbers is zero and the standard
+deviation is the specified sigma .</p>
+</div></details></div><h2 id="object-safety" class="section-header">Object Safety<a href="#object-safety" class="anchor">§</a></h2><div class="object-safety-info">This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.80.1/reference/items/traits.html#object-safety">object safe</a>.</div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-RNGTrait-for-BoxedRefMut%3C'_,+RNG%3E" class="impl"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#23186">source</a><a href="#impl-RNGTrait-for-BoxedRefMut%3C'_,+RNG%3E" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="../../opencv/hub/core/trait.RNGTrait.html" title="trait opencv::opencv::hub::core::RNGTrait">RNGTrait</a> for <a class="struct" href="../../boxed_ref/struct.BoxedRefMut.html" title="struct opencv::boxed_ref::BoxedRefMut">BoxedRefMut</a>&lt;'_, <a class="struct" href="../../opencv/hub/core/struct.RNG.html" title="struct opencv::opencv::hub::core::RNG">RNG</a>&gt;</h3></section><section id="impl-RNGTrait-for-RNG" class="impl"><a class="src rightside" href="../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-6b1964012251cd72/out/opencv/core.rs.html#23182-23184">source</a><a href="#impl-RNGTrait-for-RNG" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="../../opencv/hub/core/trait.RNGTrait.html" title="trait opencv::opencv::hub::core::RNGTrait">RNGTrait</a> for <a class="struct" href="../../opencv/hub/core/struct.RNG.html" title="struct opencv::opencv::hub::core::RNG">RNG</a></h3></section></div><script src="../../../trait.impl/opencv/opencv/hub/core/trait.RNGTrait.js" async></script></section></div></main></body></html>
