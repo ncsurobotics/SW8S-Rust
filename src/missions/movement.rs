@@ -2250,12 +2250,12 @@ impl Default for InvertX<Stability2Adjust> {
 impl<T: Sync + Send + Clone> ActionMod<T> for InvertX<T> {
     fn modify(&mut self, input: &T) {
         self.pose = input.clone();
-        println!("Invert input: {:#?}", self.pose.x);
     }
 }
 
 impl ActionExec<Stability2Adjust> for InvertX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
+        println!("Invert input: {:#?}", self.pose.x);
         if let Some(ref mut x) = self.pose.x {
             *x = match *x {
                 AdjustType::Adjust(x) => AdjustType::Adjust(x.signum() * (1.0 - x.abs())),
@@ -2269,6 +2269,7 @@ impl ActionExec<Stability2Adjust> for InvertX<Stability2Adjust> {
 
 impl ActionExec<Stability2Adjust> for InvertX<&Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
+        println!("Invert input: {:#?}", self.pose.x);
         let mut pose = self.pose.clone();
         if let Some(ref mut x) = pose.x {
             *x = match *x {

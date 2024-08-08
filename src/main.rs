@@ -17,6 +17,7 @@ use sw8s_rust_lib::{
         circle_buoy::{
             buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
         },
+        coinflip::coinflip,
         example::initial_descent,
         fire_torpedo::FireTorpedo,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
@@ -423,6 +424,10 @@ async fn run_mission(mission: &str) -> Result<()> {
             FireTorpedo::new(static_context().await).execute().await;
             Ok(())
         }
+        "coinflip" => {
+            let _ = coinflip(static_context().await).execute().await;
+            Ok(())
+        }
         // Just stall out forever
         "forever" | "infinite" => loop {
             while control_board().await.raw_speed_set([0.0; 8]).await.is_err() {}
@@ -435,15 +440,6 @@ async fn run_mission(mission: &str) -> Result<()> {
                 Path::new("/tmp/front_feed.mp4"),
             )
             .unwrap();
-
-            /*
-            Camera::jetson_new(
-                &Configuration::default().bottom_cam,
-                "bottom",
-                Path::new("/tmp/bottom_feed.mp4"),
-            )
-            .unwrap();
-            */
             Ok(())
         }
         x => bail!("Invalid argument: [{x}]"),
