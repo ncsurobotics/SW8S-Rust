@@ -217,7 +217,7 @@
         <span class="kw">let </span>cntrl_board = <span class="self">self</span>.control_board.get_control_board();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(angles) = cntrl_board.responses().get_angles().<span class="kw">await </span>{
             <span class="kw">if </span><span class="self">self</span>.half_loops % <span class="number">2 </span>== <span class="number">0 </span>{
-                <span class="kw">if </span><span class="kw-2">*</span>angles.roll() &gt; <span class="number">180.0 </span>|| <span class="kw-2">*</span>angles.roll() &lt; <span class="number">0.0 </span>{
+                <span class="kw">if </span><span class="kw-2">*</span>angles.roll() &gt; <span class="number">180.0 </span>|| (<span class="kw-2">*</span>angles.roll() &lt; <span class="number">0.0 </span>&amp;&amp; <span class="kw-2">*</span>angles.roll() &gt; -<span class="number">150.0</span>) {
                     <span class="self">self</span>.half_loops += <span class="number">1</span>;
                     <span class="macro">println!</span>(<span class="string">"Loop count: {}"</span>, <span class="self">self</span>.half_loops);
                 }

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["look_up_octagon","stub"]};
+window.SIDEBAR_ITEMS = {"fn":["octagon"]};
