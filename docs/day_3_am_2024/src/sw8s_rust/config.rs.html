@@ -67,6 +67,8 @@
 <a href="#67" id="67">67</a>
 <a href="#68" id="68">68</a>
 <a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
     fs::read_to_string,
     fs::write,
@@ -78,6 +80,7 @@
 <span class="attr">#[derive(Debug, Serialize, Deserialize)]
 </span><span class="kw">pub struct </span>ConfigFile {
     <span class="kw">pub </span>control_board_path: String,
+    <span class="kw">pub </span>control_board_backup_path: String,
     <span class="kw">pub </span>meb_path: String,
     <span class="kw">pub </span>front_cam: String,
     <span class="kw">pub </span>bottom_cam: String,
@@ -88,6 +91,7 @@
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             control_board_path: <span class="string">"/dev/ttyACM0"</span>.to_string(),
+            control_board_backup_path: <span class="string">"/dev/ttyACM3"</span>.to_string(),
             meb_path: <span class="string">"/dev/ttyACM2"</span>.to_string(),
             front_cam: <span class="string">"/dev/video1"</span>.to_string(),
             bottom_cam: <span class="string">"/dev/video0"</span>.to_string(),

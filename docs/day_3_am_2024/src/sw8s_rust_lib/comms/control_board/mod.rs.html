@@ -487,6 +487,17 @@
 <a href="#487" id="487">487</a>
 <a href="#488" id="488">488</a>
 <a href="#489" id="489">489</a>
+<a href="#490" id="490">490</a>
+<a href="#491" id="491">491</a>
+<a href="#492" id="492">492</a>
+<a href="#493" id="493">493</a>
+<a href="#494" id="494">494</a>
+<a href="#495" id="495">495</a>
+<a href="#496" id="496">496</a>
+<a href="#497" id="497">497</a>
+<a href="#498" id="498">498</a>
+<a href="#499" id="499">499</a>
+<a href="#500" id="500">500</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>std::{
     ops::Deref,
@@ -966,6 +977,17 @@
         } <span class="kw">else </span>{
             <span class="kw">return </span><span class="prelude-val">Ok</span>(SensorStatuses::AllGood);
         }
+    }
+
+    <span class="kw">pub async fn </span>reset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">const </span>RESET: [u8; <span class="number">5</span>] = <span class="kw-2">*</span><span class="string">b"RESET"</span>;
+
+        <span class="kw">let </span><span class="kw-2">mut </span>message: Vec&lt;<span class="kw">_</span>&gt; = RESET.into();
+        message.extend_from_slice(<span class="kw-2">&amp;</span>[<span class="number">0x0D</span>, <span class="number">0x1E</span>]);
+
+        <span class="self">self</span>.write_out_basic(message).<span class="kw">await</span><span class="question-mark">?</span>;
+        sleep(Duration::from_secs(<span class="number">2</span>)).<span class="kw">await</span>; <span class="comment">// Reset time
+        </span><span class="prelude-val">Ok</span>(())
     }
 
     <span class="kw">pub async fn </span>watchdog_status(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;bool&gt; {
