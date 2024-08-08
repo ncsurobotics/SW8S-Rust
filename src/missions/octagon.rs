@@ -33,6 +33,24 @@ use super::{
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
 };
 
+pub fn octagon_path_model() -> Path {
+    Path::new(
+        (Yuv {
+            y: 0,
+            u: 127,
+            v: 127,
+        })..=(Yuv {
+            y: 255,
+            u: 255,
+            v: 255,
+        }),
+        20.0..=800.0,
+        4,
+        Size::from((400, 300)),
+        3,
+    )
+}
+
 pub fn octagon<
     Con: Send
         + Sync
@@ -55,24 +73,6 @@ pub fn octagon<
     const X_CLAMP: f32 = 0.3;
 
     const FALSE_COUNT: u32 = 3;
-
-    let path_model = || {
-        Path::new(
-            (Yuv {
-                y: 0,
-                u: 127,
-                v: 127,
-            })..=(Yuv {
-                y: 255,
-                u: 255,
-                v: 255,
-            }),
-            20.0..=800.0,
-            4,
-            Size::from((400, 300)),
-            3,
-        )
-    };
 
     act_nest!(
         ActionSequence::new,
@@ -104,14 +104,14 @@ pub fn octagon<
             ),
             act_nest!(
                 ActionChain::new,
-                Vision::<Con, Path, f64>::new(context, path_model()),
+                Vision::<Con, Path, f64>::new(context, octagon_path_model()),
                 IsSome::default(),
                 CountTrue::new(1)
             )
         )),
         ActionWhile::new(act_nest!(
             ActionChain::new,
-            Vision::<Con, Path, f64>::new(context, path_model()),
+            Vision::<Con, Path, f64>::new(context, octagon_path_model()),
             TupleSecond::<_, bool>::new(ActionConcurrent::new(
                 ActionSequence::new(
                     act_nest!(
@@ -149,4 +149,24 @@ pub fn octagon<
         ZeroMovement::new(context, DEPTH),
         OutputType::<()>::new()
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use opencv::{core::Vector, imgcodecs::imwrite};
+
+    use crate::vision::VisualDetector;
+
+    use super::*;
+
+    #[test]
+    fn distance_detect() {
+        let model = octagon_path_model();
+        model.detect(image);
+        imwrite(
+            "../tests/vision/output/distance_detect.png",
+            &model.image(),
+            &Vector::new(),
+        );
+    }
 }
