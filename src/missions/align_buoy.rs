@@ -127,9 +127,9 @@ pub fn buoy_align_shot<
 >(
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
-    const Y_SPEED: f32 = 0.2;
-    const DEPTH: f32 = -1.25;
-    const SPIN_DEPTH: f32 = -1.25;
+    const Y_SPEED: f32 = 0.0;
+    const DEPTH: f32 = -1.0;
+    const SPIN_DEPTH: f32 = -1.0;
     const TRUE_COUNT: u32 = 0;
     const FALSE_COUNT: u32 = 0;
 
@@ -139,9 +139,6 @@ pub fn buoy_align_shot<
 
     act_nest!(
         ActionSequence::new,
-        WaitArm::new(context),
-        Descend::new(context, -1.0),
-        DelayAction::new(2.0),
         ActionWhile::new(ActionSequence::new(
             act_nest!(
                 ActionChain::new,
@@ -184,7 +181,7 @@ pub fn buoy_align_shot<
                                 ActionSequence::new,
                                 Terminal::new(),
                                 SetY::<Stability2Adjust>::new(AdjustType::Replace(0.0)),
-                                SetX::<Stability2Adjust>::new(AdjustType::Replace(0.1)),
+                                SetX::<Stability2Adjust>::new(AdjustType::Replace(0.0)),
                             )
                         ),
                         Stability2Movement::new(
@@ -200,6 +197,13 @@ pub fn buoy_align_shot<
         ),),
         ZeroMovement::new(context, DEPTH),
         FireTorpedo::new(context),
+        ActionChain::new(
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(0.0, Y_SPEED, 90.0, 0.0, None, DEPTH)
+            ),
+            OutputType::<()>::new(),
+        ),
         OutputType::<()>::new()
     )
 }

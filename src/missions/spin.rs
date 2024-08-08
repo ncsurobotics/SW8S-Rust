@@ -53,8 +53,6 @@ pub fn spin<
             OutputType::<()>::new(),
         ),
         DelayAction::new(6.0),
-        ZeroMovement::new(context, DEPTH),
-        DelayAction::new(4.0),
         ActionWhile::new(TupleSecond::new(ActionConcurrent::new(
             act_nest!(
                 ActionSequence::new,
