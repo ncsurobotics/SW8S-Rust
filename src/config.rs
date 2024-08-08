@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigFile {
     pub control_board_path: String,
+    pub control_board_backup_path: String,
     pub meb_path: String,
     pub front_cam: String,
     pub bottom_cam: String,
@@ -19,6 +20,7 @@ impl Default for ConfigFile {
     fn default() -> Self {
         Self {
             control_board_path: "/dev/ttyACM0".to_string(),
+            control_board_backup_path: "/dev/ttyACM3".to_string(),
             meb_path: "/dev/ttyACM2".to_string(),
             front_cam: "/dev/video1".to_string(),
             bottom_cam: "/dev/video0".to_string(),

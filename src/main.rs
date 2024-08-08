@@ -47,9 +47,21 @@ static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<SerialStream>>> = Onc
 async fn control_board() -> &'static ControlBoard<WriteHalf<SerialStream>> {
     CONTROL_BOARD_CELL
         .get_or_init(|| async {
-            ControlBoard::serial(&Configuration::default().control_board_path)
-                .await
-                .unwrap()
+            let board = ControlBoard::serial(&Configuration::default().control_board_path).await;
+            match board {
+                Ok(x) => x,
+                Err(e) => {
+                    eprintln!("Error initializing control board: {:#?}", e);
+                    let backup_board =
+                        ControlBoard::serial(&Configuration::default().control_board_backup_path)
+                            .await
+                            .unwrap();
+                    backup_board.reset().await.unwrap();
+                    ControlBoard::serial(&Configuration::default().control_board_path)
+                        .await
+                        .unwrap()
+                }
+            }
         })
         .await
 }

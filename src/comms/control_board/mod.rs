@@ -479,6 +479,17 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         }
     }
 
+    pub async fn reset(&self) -> Result<()> {
+        const RESET: [u8; 5] = *b"RESET";
+
+        let mut message: Vec<_> = RESET.into();
+        message.extend_from_slice(&[0x0D, 0x1E]);
+
+        self.write_out_basic(message).await?;
+        sleep(Duration::from_secs(2)).await; // Reset time
+        Ok(())
+    }
+
     pub async fn watchdog_status(&self) -> Option<bool> {
         *self.responses().watchdog_status().read().await
     }
