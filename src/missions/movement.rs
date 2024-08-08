@@ -60,9 +60,22 @@ impl<T> ActionMod<f32> for Descend<'_, T> {
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Descend<'_, T> {
     async fn execute(&mut self) -> Result<()> {
         println!("DESCEND");
-        self.context
-            .get_control_board()
-            .stability_2_speed_set_initial_yaw(0.0, 0.0, 0.0, 0.0, self.target_depth)
+
+        let cntrl = self.context.get_control_board();
+
+        let mut cur_yaw;
+
+        loop {
+            if let Some(angle) = cntrl.responses().get_angles().await {
+                cur_yaw = *angle.yaw();
+                break;
+            } else {
+                cntrl.bno055_periodic_read(true).await?;
+            }
+        }
+
+        cntrl
+            .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, cur_yaw, self.target_depth)
             .await?;
         println!("GOT SPEED SET");
         Ok(())

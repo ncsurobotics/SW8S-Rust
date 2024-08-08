@@ -1,6 +1,6 @@
 use anyhow::Result;
 use derive_getters::Getters;
-use opencv::{core::Size, prelude::Mat};
+use opencv::{core::Rect2d, core::Size, prelude::Mat};
 
 use crate::load_onnx;
 
@@ -10,7 +10,11 @@ use super::{
 };
 
 use core::hash::Hash;
-use std::{error::Error, fmt::Display};
+use std::{
+    cmp::{Ord, Ordering},
+    error::Error,
+    fmt::Display,
+};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
@@ -84,7 +88,19 @@ impl YoloProcessor for BuoyModel<OnnxModel> {
     type Target = Target;
 
     fn detect_yolo_v5(&mut self, image: &Mat) -> Vec<YoloDetection> {
-        self.model.detect_yolo_v5(image, self.threshold)
+        let bounding_box_size = |b: &Rect2d| -> f64 { b.width * b.height };
+
+        let mut detection = self.model.detect_yolo_v5(image, self.threshold);
+        detection.sort_unstable_by(|lhs, rhs| {
+            std::cmp::PartialOrd::partial_cmp(
+                &bounding_box_size(lhs.bounding_box()),
+                &bounding_box_size(rhs.bounding_box()),
+            )
+            .unwrap_or(Ordering::Equal)
+        });
+        println!("Detection MIN buoy: {:#?}", detection.first());
+        println!("Detection MAX buoy: {:#?}", detection.last());
+        detection.into_iter().rev().take(1).collect()
     }
 
     fn model_size(&self) -> Size {
@@ -118,7 +134,20 @@ impl VisionModel for BuoyModel<OnnxModel> {
     type PostProcessArgs = <OnnxModel as VisionModel>::PostProcessArgs;
 
     fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection> {
-        self.model.detect_yolo_v5(image, threshold)
+        let bounding_box_size = |b: &Rect2d| -> f64 { b.width * b.height };
+        println!("CALLED BUOY DETECT");
+
+        let mut detection = self.model.detect_yolo_v5(image, threshold);
+        detection.sort_unstable_by(|lhs, rhs| {
+            std::cmp::PartialOrd::partial_cmp(
+                &bounding_box_size(lhs.bounding_box()),
+                &bounding_box_size(rhs.bounding_box()),
+            )
+            .unwrap_or(Ordering::Equal)
+        });
+        println!("Detection MIN buoy: {:#?}", detection.first());
+        println!("Detection MAX buoy: {:#?}", detection.last());
+        detection.into_iter().rev().take(1).collect()
     }
     fn forward(&mut self, image: &Mat) -> Self::ModelOutput {
         self.model.forward(image)

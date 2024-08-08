@@ -130,7 +130,7 @@ pub fn buoy_align_shot<
     const FALSE_COUNT: u32 = 3;
 
     const BACKUP_Y_SPEED: f32 = -1.0;
-    const BACKUP_TIME: f32 = 2.0;
+    const BACKUP_TIME: f32 = 4.0;
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;

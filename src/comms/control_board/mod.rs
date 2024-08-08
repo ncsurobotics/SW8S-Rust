@@ -485,7 +485,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         let mut message: Vec<_> = RESET.into();
         message.extend_from_slice(&[0x0D, 0x1E]);
 
-        self.write_out_basic(message).await?;
+        self.write_out_no_response(message).await?;
         sleep(Duration::from_secs(2)).await; // Reset time
         Ok(())
     }
