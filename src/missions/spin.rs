@@ -99,7 +99,7 @@ impl<T: GetControlBoard<U> + Send + Sync, U: AsyncWriteExt + Unpin + Send + Sync
         let cntrl_board = self.control_board.get_control_board();
         if let Some(angles) = cntrl_board.responses().get_angles().await {
             if self.half_loops % 2 == 0 {
-                if *angles.roll() > 180.0 || *angles.roll() < 0.0 {
+                if *angles.roll() > 180.0 || (*angles.roll() < 0.0 && *angles.roll() > -150.0) {
                     self.half_loops += 1;
                     println!("Loop count: {}", self.half_loops);
                 }

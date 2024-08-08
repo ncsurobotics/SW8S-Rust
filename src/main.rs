@@ -21,7 +21,7 @@ use sw8s_rust_lib::{
         fire_torpedo::FireTorpedo,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         meb::WaitArm,
-        octagon::look_up_octagon,
+        octagon::octagon,
         path_align::path_align,
         spin::spin,
         vision::PIPELINE_KILL,
@@ -379,16 +379,8 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
-        "look_up_octagon" => {
-            let _ = look_up_octagon(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
+        "octagon" => {
+            let _ = octagon(static_context().await).execute().await;
             Ok(())
         }
         "buoy_circle" => {
