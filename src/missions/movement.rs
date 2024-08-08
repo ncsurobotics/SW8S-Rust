@@ -2199,12 +2199,17 @@ impl ActionExec<Stability2Adjust> for SideMult {
     async fn execute(&mut self) -> Stability2Adjust {
         let mut inner = self.inner.clone();
 
+        let is_blue = *SIDE.lock().unwrap() == Side::Blue;
+
         if let Some(ref mut x) = inner.x {
             let x = match x {
                 AdjustType::Adjust(x) => x,
                 AdjustType::Replace(x) => x,
             };
-            *x = -*x;
+
+            if is_blue {
+                *x = -*x;
+            }
         };
 
         if let Some(ref mut yaw) = inner.target_yaw {
@@ -2212,7 +2217,9 @@ impl ActionExec<Stability2Adjust> for SideMult {
                 AdjustType::Adjust(yaw) => yaw,
                 AdjustType::Replace(yaw) => yaw,
             };
-            *yaw = -*yaw;
+            if is_blue {
+                *yaw = -*yaw;
+            }
         };
 
         inner
@@ -2243,6 +2250,7 @@ impl Default for InvertX<Stability2Adjust> {
 impl<T: Sync + Send + Clone> ActionMod<T> for InvertX<T> {
     fn modify(&mut self, input: &T) {
         self.pose = input.clone();
+        println!("Invert input: {:#?}", self.pose.x);
     }
 }
 
@@ -2254,6 +2262,7 @@ impl ActionExec<Stability2Adjust> for InvertX<Stability2Adjust> {
                 AdjustType::Replace(x) => AdjustType::Replace(x.signum() * (1.0 - x.abs())),
             };
         }
+        println!("Invert output: {:#?}", self.pose.x);
         self.pose.clone()
     }
 }
@@ -2267,6 +2276,7 @@ impl ActionExec<Stability2Adjust> for InvertX<&Stability2Adjust> {
                 AdjustType::Replace(x) => AdjustType::Replace(x.signum() * (1.0 - x.abs())),
             };
         }
+        println!("Invert output: {:#?}", self.pose.x);
         pose
     }
 }

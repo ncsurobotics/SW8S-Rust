@@ -6,8 +6,9 @@ use crate::{
         extra::{AlwaysTrue, CountTrue, OutputType, ToVec, Transform},
         movement::{
             aggressive_yaw_from_x, AdjustType, CautiousConstantX, ConstYaw, Descend, FlatX,
-            LinearYawFromX, MinYaw, OffsetToPose, Stability1Adjust, Stability1Movement,
-            Stability1Pos, Stability2Adjust, Stability2Movement, Stability2Pos, StripY,
+            LinearYawFromX, MinYaw, OffsetToPose, SetX, SideMult, Stability1Adjust,
+            Stability1Movement, Stability1Pos, Stability2Adjust, Stability2Movement, Stability2Pos,
+            StripY,
         },
         vision::{Average, DetectTarget, ExtractPosition, VisionNorm},
     },
@@ -165,9 +166,11 @@ pub fn buoy_circle_sequence_blind<
             act_nest!(
                 ActionChain::new,
                 ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(BUOY_YAW_SPEED)),
+                SetX::<Stability2Adjust>::new(AdjustType::Replace(BUOY_X_SPEED)),
+                SideMult::new(),
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(BUOY_X_SPEED, BUOY_Y_SPEED, 0.0, 0.0, None, DEPTH)
+                    Stability2Pos::new(0.0, BUOY_Y_SPEED, 0.0, 0.0, None, DEPTH)
                 ),
                 OutputType::<()>::new()
             ),
