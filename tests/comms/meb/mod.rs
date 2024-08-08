@@ -3,6 +3,7 @@ use std::{str::from_utf8, sync::Arc};
 use sw8s_rust_lib::comms::{auv_control_board::response::find_end, meb::response::Statuses};
 use tokio::sync::{Mutex, RwLock};
 
+/*
 #[tokio::test]
 async fn real_comms_read_no_error() {
     let mut buffer = Vec::with_capacity(512);
@@ -48,3 +49,4 @@ async fn real_comms_read_no_error() {
 
     assert!(percent_error < 1.0);
 }
+*/

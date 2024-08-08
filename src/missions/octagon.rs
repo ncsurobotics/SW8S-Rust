@@ -153,7 +153,12 @@ pub fn octagon<
 
 #[cfg(test)]
 mod tests {
-    use opencv::{core::Vector, imgcodecs::imwrite};
+    use std::fs::create_dir_all;
+
+    use opencv::{
+        core::Vector,
+        imgcodecs::{imread, imwrite, IMREAD_COLOR},
+    };
 
     use crate::vision::VisualDetector;
 
@@ -161,12 +166,27 @@ mod tests {
 
     #[test]
     fn distance_detect() {
-        let model = octagon_path_model();
-        model.detect(image);
+        let mut model = octagon_path_model();
+        let image = imread(
+            "tests/vision/resources/new_octagon_images/distance.png",
+            IMREAD_COLOR,
+        )
+        .unwrap();
+
+        let output: Vec<_> = <Path as VisualDetector<f64>>::detect(&mut model, &image)
+            .unwrap()
+            .into_iter()
+            .filter(|x| *x.class())
+            .collect();
+        println!("{:#?}", output);
+        assert_eq!(output.len(), 0);
+
+        create_dir_all("tests/vision/output/octagon_images").unwrap();
         imwrite(
-            "../tests/vision/output/distance_detect.png",
+            "tests/vision/output/octagon_images/distance_detect.png",
             &model.image(),
-            &Vector::new(),
-        );
+            &Vector::default(),
+        )
+        .unwrap();
     }
 }
