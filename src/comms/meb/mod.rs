@@ -74,18 +74,58 @@ impl<C: AsyncWrite + Unpin> MainElectronicsBoard<C> {
     }
 }
 
+
+
 #[derive(Debug, Copy, Clone)]
-pub enum MebCmd {
+pub enum MsbTaskId {
     T1Trig = 0x3,
     T2Trig = 0x4,
     D1Trig = 0x1,
     D2Trig = 0x2,
-    Reset = 0x0,
+    Reset  = 0x0,
 }
+
+#[derive(Debug, Copy, Clone)]
+pub enum MebCmd {
+    Msb(MsbTaskId),
+    Led{Index: char, R: u8, G: u8, B: u8},
+    Led{Index: char, Color: LedColorHex},
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct LedColorHex {
+    r: u8,
+    g: u8,
+    b: u8,
+}
+
+pub const COLOR_BLK: LedColorHex = LedColorHex{r: 0x00, g: 0x00, b: 0x00};
+pub const COLOR_WHT: LedColorHex = LedColorHex{r: 0xFF, g: 0xFF, b: 0xFF};
+pub const COLOR_RED: LedColorHex = LedColorHex{r: 0xFF, g: 0x00, b: 0x00};
+pub const COLOR_YLW: LedColorHex = LedColorHex{r: 0xF0, g: 0x80, b: 0x00};
+pub const COLOR_GRN: LedColorHex = LedColorHex{r: 0x00, g: 0xFF, b: 0x00};
+pub const COLOR_BLU: LedColorHex = LedColorHex{r: 0x00, g: 0x00, b: 0xFF};
+pub const COLOR_MAG: LedColorHex = LedColorHex{r: 0xFF, g: 0x00, b: 0x5E};
+
 
 impl<C: AsyncWriteExt + Unpin> MainElectronicsBoard<C> {
     pub async fn send_msg(&self, cmd: MebCmd) -> anyhow::Result<()> {
-        let formatted_cmd: [u8; 4] = [b'M', b'S', b'B', cmd as u8];
+        let formatted_cmd = match MebCmd {
+            Self::Msb(MsbTaskId) => {
+                let formatted_cmd: [u8; 4] = [b'M', b'S', b'B', MsbTaskId as u8];
+            }
+            Self::Led{
+                Index,
+                R,
+                G,
+                B,
+            } => {
+                let formatted_cmd: [u8; 7] = [b'L', b'E', b'D', Index as u8, R, G, B];
+            }
+            Self::Led{Index, Color} => {
+                let formatted_cmd: [u8; 7] = [b'L', b'E', b'D', Index as u8, Color.r, Color.g, Color.b];
+            }
+        };
         self.board.write_out_basic(formatted_cmd.to_vec()).await
     }
 }
