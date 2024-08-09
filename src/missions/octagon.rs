@@ -66,7 +66,7 @@ pub fn octagon<
     const FULL_SPEED_PITCH: f32 = -45.0;
     const DEPTH: f32 = -0.5;
 
-    const INIT_X: f32 = -1.0;
+    const INIT_X: f32 = 1.0;
     const INIT_Y: f32 = 0.0;
     const INIT_TIME: f32 = 3.0;
 

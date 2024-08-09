@@ -47,7 +47,7 @@ pub fn buoy_align<
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = -12.0;
+    const ALIGN_YAW_SPEED: f32 = 12.0;
 
     act_nest!(
         ActionSequence::new,
@@ -124,13 +124,13 @@ pub fn buoy_align_shot<
 >(
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
-    const Y_SPEED: f32 = 0.4;
+    const Y_SPEED: f32 = 0.2;
     const DEPTH: f32 = -1.0;
     const TRUE_COUNT: u32 = 3;
     const FALSE_COUNT: u32 = 3;
 
     const BACKUP_Y_SPEED: f32 = -1.0;
-    const BACKUP_TIME: f32 = 4.0;
+    const BACKUP_TIME: f32 = 2.0;
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
@@ -138,6 +138,8 @@ pub fn buoy_align_shot<
 
     act_nest!(
         ActionSequence::new,
+        Descend::new(context, DEPTH),
+        DelayAction::new(3.0),
         act_nest!(
             ActionChain::new,
             Stability2Movement::new(
@@ -147,6 +149,7 @@ pub fn buoy_align_shot<
             OutputType::<()>::new(),
         ),
         DelayAction::new(BACKUP_TIME),
+        DelayAction::new(4.0),
         ActionWhile::new(ActionSequence::new(
             act_nest!(
                 ActionChain::new,
@@ -180,7 +183,7 @@ pub fn buoy_align_shot<
                                 MidPoint::new(),
                                 OffsetToPose::<Offset2D<f64>>::default(),
                                 ReplaceX::new(),
-                                LinearYawFromX::<Stability2Adjust>::new(7.0),
+                                LinearYawFromX::<Stability2Adjust>::new(3.0),
                                 MultiplyX::new(0.5),
                                 ClampX::<Stability2Adjust>::new(0.15),
                                 SetY::<Stability2Adjust>::new(AdjustType::Replace(Y_SPEED)),
