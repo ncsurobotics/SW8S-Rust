@@ -260,6 +260,20 @@ impl VisualDetector<f64> for Path {
                 let length_2 = pca_output.pca_vector().get(length_idx + 1).unwrap();
 
                 println!("Testing for valid...");
+                println!("\tself.width_bounds = {:?}", self.width_bounds);
+                println!("\tself.width = {:?}", width);
+                println!(
+                    "\tcontained_width = {:?}",
+                    self.width_bounds.contains(&width)
+                );
+                println!();
+                println!("\tYUV range = {:?}", self.color_bounds);
+                println!("\tYUV val = {:?}", Yuv::from(&val));
+                println!(
+                    "\tcontained_color = {:?}",
+                    Yuv::from(&val).in_range(&self.color_bounds)
+                );
+                println!();
 
                 let valid = self.width_bounds.contains(&width)
                     && Yuv::from(&val).in_range(&self.color_bounds);

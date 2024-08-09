@@ -59,6 +59,7 @@ cc = { version = "1.0.99", optional = true }
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
 criterion = { version = "0.5.1", features = ["async_tokio"] } # Benchmarking
+rayon = "1.10.0"
 
 [profile.bench]
 debug = true

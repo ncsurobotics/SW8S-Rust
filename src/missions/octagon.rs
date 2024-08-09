@@ -44,7 +44,7 @@ pub fn octagon_path_model() -> Path {
             u: 255,
             v: 255,
         }),
-        20.0..=800.0,
+        5.0..=800.0,
         4,
         Size::from((400, 300)),
         3,
@@ -64,7 +64,7 @@ pub fn octagon<
     const FULL_SPEED_Y: f32 = 1.0;
     const FULL_SPEED_X: f32 = 0.0;
     const FULL_SPEED_PITCH: f32 = -45.0;
-    const DEPTH: f32 = -0.5;
+    const DEPTH: f32 = -0.75;
 
     const INIT_X: f32 = 1.0;
     const INIT_Y: f32 = 0.0;
@@ -153,14 +153,15 @@ pub fn octagon<
 
 #[cfg(test)]
 mod tests {
-    use std::fs::create_dir_all;
+    use std::{env::current_dir, fs::create_dir_all};
 
     use opencv::{
         core::Vector,
         imgcodecs::{imread, imwrite, IMREAD_COLOR},
     };
+    use rayon::iter::{ParallelBridge, ParallelIterator};
 
-    use crate::vision::VisualDetector;
+    use crate::vision::{Draw, VisualDetection, VisualDetector};
 
     use super::*;
 
@@ -188,5 +189,83 @@ mod tests {
             &Vector::default(),
         )
         .unwrap();
+    }
+
+    #[test]
+    fn close_detect() {
+        let mut model = octagon_path_model();
+        let image = imread(
+            "tests/vision/resources/new_octagon_images/close.png",
+            IMREAD_COLOR,
+        )
+        .unwrap();
+
+        let output: Vec<_> = <Path as VisualDetector<f64>>::detect(&mut model, &image)
+            .unwrap()
+            .into_iter()
+            .filter(|x| *x.class())
+            .collect();
+        println!("{:#?}", output);
+
+        assert_eq!(output.len(), 1);
+
+        let mut shrunk_image = model.image().clone();
+        output.iter().for_each(|result| {
+            <VisualDetection<_, _> as Draw>::draw(result, &mut shrunk_image).unwrap()
+        });
+
+        create_dir_all("tests/vision/output/octagon_images").unwrap();
+        imwrite(
+            "tests/vision/output/octagon_images/close_detect.png",
+            &shrunk_image,
+            &Vector::default(),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn full_video_detects() {
+        const ENTERS_VISION: usize = 0;
+        const LEAVES_VISION: usize = 0;
+
+        std::fs::read_dir("tests/vision/resources/new_octagon_images/roll_pics")
+            .unwrap()
+            .enumerate()
+            .par_bridge()
+            .for_each(|(idx, f)| {
+                let mut model = octagon_path_model();
+                let image = imread(f.unwrap().path().to_str().unwrap(), IMREAD_COLOR).unwrap();
+
+                let output: Vec<_> = <Path as VisualDetector<f64>>::detect(&mut model, &image)
+                    .unwrap()
+                    .into_iter()
+                    .filter(|x| *x.class())
+                    .collect();
+                println!("{:#?}", output);
+
+                /*
+                if idx > ENTERS_VISION && idx < LEAVES_VISION {
+                    assert!(!output.is_empty());
+                } else {
+                    assert_eq!(output.len(), 0);
+                }
+                */
+
+                let mut shrunk_image = model.image().clone();
+                output.iter().for_each(|result| {
+                    <VisualDetection<_, _> as Draw>::draw(result, &mut shrunk_image).unwrap()
+                });
+
+                create_dir_all("tests/vision/output/octagon_images/roll_pics").unwrap();
+                imwrite(
+                    &format!(
+                        "tests/vision/output/octagon_images/roll_pics/{:#03}.png",
+                        idx
+                    ),
+                    &shrunk_image,
+                    &Vector::default(),
+                )
+                .unwrap();
+            })
     }
 }

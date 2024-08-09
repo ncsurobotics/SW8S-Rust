@@ -98,12 +98,15 @@ impl<T: GetControlBoard<U> + Send + Sync, U: AsyncWriteExt + Unpin + Send + Sync
     async fn execute(&mut self) -> anyhow::Result<()> {
         let cntrl_board = self.control_board.get_control_board();
         if let Some(angles) = cntrl_board.responses().get_angles().await {
+            let roll = *angles.roll();
             if self.half_loops % 2 == 0 {
-                if *angles.roll() > 180.0 || (*angles.roll() < 0.0 && *angles.roll() > -150.0) {
+                if roll > 180.0 || (roll < -20.0 && roll > -150.0) {
+                    println!("Roll at 0 trigger: {}", roll);
                     self.half_loops += 1;
                     println!("Loop count: {}", self.half_loops);
                 }
-            } else if *angles.roll() < 220.0 && *angles.roll() > 0.0 {
+            } else if roll < 220.0 && roll > 0.0 {
+                println!("Roll at 1 trigger: {}", roll);
                 self.half_loops += 1;
                 println!("Loop count: {}", self.half_loops);
             }

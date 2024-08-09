@@ -208,14 +208,6 @@ pub fn buoy_align_shot<
         ),),
         ZeroMovement::new(context, DEPTH),
         FireTorpedo::new(context),
-        ActionChain::new(
-            Stability2Movement::new(
-                context,
-                Stability2Pos::new(0.0, Y_SPEED, 45.0, 0.0, None, DEPTH)
-            ),
-            OutputType::<()>::new(),
-        ),
-        DelayAction::new(3.0),
         OutputType::<()>::new()
     )
 }
