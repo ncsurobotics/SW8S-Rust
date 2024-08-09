@@ -213,6 +213,26 @@
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
 <a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
@@ -341,6 +361,7 @@
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
     <span class="kw">const </span>Y_SPEED: f32 = <span class="number">0.2</span>;
     <span class="kw">const </span>DEPTH: f32 = -<span class="number">0.9</span>;
+    <span class="kw">const </span>SHOT_DEPTH: f32 = -<span class="number">0.3</span>;
     <span class="kw">const </span>TRUE_COUNT: u32 = <span class="number">3</span>;
     <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">5</span>;
 
@@ -422,7 +443,26 @@
                 ActionChain::new(IsSome::default(), CountFalse::new(FALSE_COUNT))
             )),
         ),),
-        ZeroMovement::new(context, DEPTH),
+        <span class="macro">act_nest!</span>(
+            ActionChain::new,
+            ConstYaw::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(-<span class="number">0.2</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH)
+            ),
+            OutputType::&lt;()&gt;::new(),
+        ),
+        DelayAction::new(<span class="number">0.5</span>),
+        <span class="macro">act_nest!</span>(
+            ActionChain::new,
+            ConstYaw::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">45.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, SHOT_DEPTH)
+            ),
+            OutputType::&lt;()&gt;::new(),
+        ),
+        DelayAction::new(<span class="number">1.0</span>),
         FireTorpedo::new(context),
         DelayAction::new(<span class="number">3.0</span>),
         OutputType::&lt;()&gt;::new()
