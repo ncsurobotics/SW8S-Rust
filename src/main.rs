@@ -20,6 +20,7 @@ use sw8s_rust_lib::{
         coinflip::coinflip,
         example::initial_descent,
         fire_torpedo::FireTorpedo,
+        reset_torpedo::ResetTorpedo,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         meb::WaitArm,
         octagon::octagon,
@@ -195,6 +196,9 @@ async fn shutdown_handler() -> UnboundedSender<i32> {
                 .await
                 .unwrap();
         };
+
+        // Reset Torpedo
+        ResetTorpedo::new(static_context().await).execute().await;
 
         // If shutdown is unexpected, immediately exit nonzero
         if exit_status != 0 {
