@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["boxed","opencv_type"],"trait":["Boxed"]};

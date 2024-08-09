@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["atomic_cell","consume","seq_lock"],"struct":["AtomicCell"],"trait":["AtomicConsume"]};
