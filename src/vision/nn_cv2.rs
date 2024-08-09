@@ -63,7 +63,7 @@ where
     }
 }
 
-pub trait VisionModel: Debug + Sync + Send {
+pub trait VisionModel: Debug + Sync + Send + Clone {
     type PostProcessArgs;
     type ModelOutput;
 

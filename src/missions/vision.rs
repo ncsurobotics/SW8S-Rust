@@ -907,8 +907,10 @@ impl<T, U> SizeUnder<T, U> {
 
 impl<T, U> Action for SizeUnder<T, U> {}
 
-impl<T: Send + Sync> ActionExec<Result<()>> for SizeUnder<T, DrawRect2d> {
-    async fn execute(&mut self) -> Result<()> {
+impl<T: Send + Sync + Clone> ActionExec<Option<Vec<VisualDetection<T, DrawRect2d>>>>
+    for SizeUnder<T, DrawRect2d>
+{
+    async fn execute(&mut self) -> Option<Vec<VisualDetection<T, DrawRect2d>>> {
         let mut area = self
             .values
             .iter()
@@ -923,9 +925,9 @@ impl<T: Send + Sync> ActionExec<Result<()>> for SizeUnder<T, DrawRect2d> {
 
         println!("Area: {}", area);
         if area < self.size {
-            Ok(())
+            Some(self.values.clone())
         } else {
-            bail!("")
+            None
         }
     }
 }

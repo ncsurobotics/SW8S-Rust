@@ -5,11 +5,11 @@ use crate::{
     act_nest,
     missions::{
         action::{
-            ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
-            TupleSecond,
+            ActionChain, ActionConcurrent, ActionConditional, ActionDataConditional,
+            ActionSequence, ActionWhile, TupleSecond,
         },
         basic::DelayAction,
-        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
+        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal, ToVec},
         fire_torpedo::FireTorpedo,
         meb::WaitArm,
         movement::{
@@ -17,7 +17,7 @@ use crate::{
             ReplaceX, SetX, SetY, SideMult, Stability2Adjust, Stability2Movement, Stability2Pos,
             StraightMovement, StripY, ZeroMovement,
         },
-        vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},
+        vision::{DetectTarget, ExtractPosition, MidPoint, Norm, SizeUnder, Vision},
     },
     vision::{
         buoy_model::{BuoyModel, Target},
@@ -27,7 +27,7 @@ use crate::{
 };
 
 use super::{
-    action::ActionExec,
+    action::{Action, ActionExec, ActionMod},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
 };
 
@@ -42,12 +42,18 @@ pub fn buoy_align<
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
     const Y_SPEED: f32 = 0.2;
+    const Y_SPEED_FAST: f32 = 0.8;
     const DEPTH: f32 = -1.0;
     const FALSE_COUNT: u32 = 5;
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
     const ALIGN_YAW_SPEED: f32 = -8.0;
+
+    const FAST_DISTANCE: f64 = 9_000.0;
+    const CORRECT_YAW_SPEED: f32 = 7.0;
+    const CORRECT_X_MULTIPLY: f32 = 0.5;
+    const CORRECT_X_CLAMP: f32 = 0.15;
 
     act_nest!(
         ActionSequence::new,
@@ -83,17 +89,34 @@ pub fn buoy_align<
                         ActionChain::new,
                         ActionDataConditional::new(
                             DetectTarget::new(Target::Buoy),
-                            act_nest!(
-                                ActionChain::new,
-                                Norm::new(BuoyModel::default()),
-                                ExtractPosition::new(),
-                                MidPoint::new(),
-                                OffsetToPose::<Offset2D<f64>>::default(),
-                                ReplaceX::new(),
-                                LinearYawFromX::<Stability2Adjust>::new(7.0),
-                                MultiplyX::new(0.5),
-                                ClampX::<Stability2Adjust>::new(0.15),
-                                SetY::<Stability2Adjust>::new(AdjustType::Replace(Y_SPEED)),
+                            ActionDataConditional::new(
+                                SizeUnder::new(FAST_DISTANCE),
+                                act_nest!(
+                                    ActionChain::new,
+                                    Norm::new(BuoyModel::default()),
+                                    ExtractPosition::new(),
+                                    MidPoint::new(),
+                                    OffsetToPose::<Offset2D<f64>>::default(),
+                                    ReplaceX::new(),
+                                    LinearYawFromX::<Stability2Adjust>::new(CORRECT_YAW_SPEED),
+                                    MultiplyX::new(CORRECT_X_MULTIPLY),
+                                    ClampX::<Stability2Adjust>::new(CORRECT_X_CLAMP),
+                                    SetY::<Stability2Adjust>::new(AdjustType::Replace(
+                                        Y_SPEED_FAST
+                                    )),
+                                ),
+                                act_nest!(
+                                    ActionChain::new,
+                                    Norm::new(BuoyModel::default()),
+                                    ExtractPosition::new(),
+                                    MidPoint::new(),
+                                    OffsetToPose::<Offset2D<f64>>::default(),
+                                    ReplaceX::new(),
+                                    LinearYawFromX::<Stability2Adjust>::new(CORRECT_YAW_SPEED),
+                                    MultiplyX::new(CORRECT_X_MULTIPLY),
+                                    ClampX::<Stability2Adjust>::new(CORRECT_X_CLAMP),
+                                    SetY::<Stability2Adjust>::new(AdjustType::Replace(Y_SPEED)),
+                                )
                             ),
                             act_nest!(
                                 ActionSequence::new,
