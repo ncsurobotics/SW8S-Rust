@@ -166,7 +166,7 @@
 <span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>opencv::{core::Rect2d, core::Size, prelude::Mat};
 
-<span class="kw">use </span><span class="kw">crate</span>::load_onnx;
+<span class="kw">use crate</span>::{load_onnx, logln};
 
 <span class="kw">use super</span>::{
     nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
@@ -258,8 +258,8 @@
             )
             .unwrap_or(Ordering::Equal)
         });
-        <span class="macro">println!</span>(<span class="string">"Detection MIN buoy: {:#?}"</span>, detection.first());
-        <span class="macro">println!</span>(<span class="string">"Detection MAX buoy: {:#?}"</span>, detection.last());
+        <span class="macro">logln!</span>(<span class="string">"Detection MIN buoy: {:#?}"</span>, detection.first());
+        <span class="macro">logln!</span>(<span class="string">"Detection MAX buoy: {:#?}"</span>, detection.last());
         detection.into_iter().rev().take(<span class="number">1</span>).collect()
     }
 
@@ -295,7 +295,7 @@ impl BuoyModel&lt;OnnxModel&gt; {
 
     <span class="kw">fn </span>detect_yolo_v5(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat, threshold: f64) -&gt; Vec&lt;YoloDetection&gt; {
         <span class="kw">let </span>bounding_box_size = |b: <span class="kw-2">&amp;</span>Rect2d| -&gt; f64 { b.width * b.height };
-        <span class="macro">println!</span>(<span class="string">"CALLED BUOY DETECT"</span>);
+        <span class="macro">logln!</span>(<span class="string">"CALLED BUOY DETECT"</span>);
 
         <span class="kw">let </span><span class="kw-2">mut </span>detection = <span class="self">self</span>.model.detect_yolo_v5(image, threshold);
         detection.sort_unstable_by(|lhs, rhs| {
@@ -305,8 +305,8 @@ impl BuoyModel&lt;OnnxModel&gt; {
             )
             .unwrap_or(Ordering::Equal)
         });
-        <span class="macro">println!</span>(<span class="string">"Detection MIN buoy: {:#?}"</span>, detection.first());
-        <span class="macro">println!</span>(<span class="string">"Detection MAX buoy: {:#?}"</span>, detection.last());
+        <span class="macro">logln!</span>(<span class="string">"Detection MIN buoy: {:#?}"</span>, detection.first());
+        <span class="macro">logln!</span>(<span class="string">"Detection MAX buoy: {:#?}"</span>, detection.last());
         detection.into_iter().rev().take(<span class="number">1</span>).collect()
     }
     <span class="kw">fn </span>forward(<span class="kw-2">&amp;mut </span><span class="self">self</span>, image: <span class="kw-2">&amp;</span>Mat) -&gt; <span class="self">Self</span>::ModelOutput {

@@ -282,6 +282,9 @@
 <a href="#282" id="282">282</a>
 <a href="#283" id="283">283</a>
 <a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>opencv::core::Size;
 <span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
@@ -458,7 +461,10 @@
     };
     <span class="kw">use </span>rayon::iter::{ParallelBridge, ParallelIterator};
 
-    <span class="kw">use </span><span class="kw">crate</span>::vision::{Draw, VisualDetection, VisualDetector};
+    <span class="kw">use crate</span>::{
+        logln,
+        vision::{Draw, VisualDetection, VisualDetector},
+    };
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
@@ -476,7 +482,7 @@
             .into_iter()
             .filter(|x| <span class="kw-2">*</span>x.class())
             .collect();
-        <span class="macro">println!</span>(<span class="string">"{:#?}"</span>, output);
+        <span class="macro">logln!</span>(<span class="string">"{:#?}"</span>, output);
         <span class="macro">assert_eq!</span>(output.len(), <span class="number">0</span>);
 
         create_dir_all(<span class="string">"tests/vision/output/octagon_images"</span>).unwrap();
@@ -502,7 +508,7 @@
             .into_iter()
             .filter(|x| <span class="kw-2">*</span>x.class())
             .collect();
-        <span class="macro">println!</span>(<span class="string">"{:#?}"</span>, output);
+        <span class="macro">logln!</span>(<span class="string">"{:#?}"</span>, output);
 
         <span class="macro">assert_eq!</span>(output.len(), <span class="number">1</span>);
 
@@ -538,7 +544,7 @@
                     .into_iter()
                     .filter(|x| <span class="kw-2">*</span>x.class())
                     .collect();
-                <span class="macro">println!</span>(<span class="string">"{:#?}"</span>, output);
+                <span class="macro">logln!</span>(<span class="string">"{:#?}"</span>, output);
 
                 <span class="comment">/*
                 if idx &gt; ENTERS_VISION &amp;&amp; idx &lt; LEAVES_VISION {

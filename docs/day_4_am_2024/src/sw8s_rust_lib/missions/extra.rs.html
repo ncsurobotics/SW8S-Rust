@@ -613,11 +613,15 @@
 <a href="#613" id="613">613</a>
 <a href="#614" id="614">614</a>
 <a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Debug;
 <span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>anyhow::{anyhow, bail};
 <span class="kw">use </span>uuid::Uuid;
+
+<span class="kw">use </span><span class="kw">crate</span>::logln;
 
 <span class="kw">use super</span>::{
     action::{Action, ActionExec, ActionMod},
@@ -872,7 +876,7 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
-        <span class="macro">println!</span>(<span class="string">"Update true count: {}"</span>, <span class="self">self</span>.count);
+        <span class="macro">logln!</span>(<span class="string">"Update true count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
@@ -886,7 +890,7 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
-        <span class="macro">println!</span>(<span class="string">"Update true count: {}"</span>, <span class="self">self</span>.count);
+        <span class="macro">logln!</span>(<span class="string">"Update true count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
@@ -900,13 +904,13 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
-        <span class="macro">println!</span>(<span class="string">"Update true count: {}"</span>, <span class="self">self</span>.count);
+        <span class="macro">logln!</span>(<span class="string">"Update true count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
 <span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>CountTrue {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;()&gt; {
-        <span class="macro">println!</span>(<span class="string">"Check true count: {} ? {}"</span>, <span class="self">self</span>.count, <span class="self">self</span>.target);
+        <span class="macro">logln!</span>(<span class="string">"Check true count: {} ? {}"</span>, <span class="self">self</span>.count, <span class="self">self</span>.target);
         <span class="kw">if </span><span class="self">self</span>.count &lt; <span class="self">self</span>.target {
             <span class="prelude-val">Ok</span>(())
         } <span class="kw">else </span>{
@@ -951,7 +955,7 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
-        <span class="macro">println!</span>(<span class="string">"Update false count: {}"</span>, <span class="self">self</span>.count);
+        <span class="macro">logln!</span>(<span class="string">"Update false count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
@@ -965,7 +969,7 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
-        <span class="macro">println!</span>(<span class="string">"Update false count: {}"</span>, <span class="self">self</span>.count);
+        <span class="macro">logln!</span>(<span class="string">"Update false count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
@@ -979,13 +983,13 @@
         } <span class="kw">else </span>{
             <span class="self">self</span>.count = <span class="number">0</span>;
         }
-        <span class="macro">println!</span>(<span class="string">"Update false count: {}"</span>, <span class="self">self</span>.count);
+        <span class="macro">logln!</span>(<span class="string">"Update false count: {}"</span>, <span class="self">self</span>.count);
     }
 }
 
 <span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; <span class="kw">for </span>CountFalse {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;()&gt; {
-        <span class="macro">println!</span>(<span class="string">"Check false count: {} ? {}"</span>, <span class="self">self</span>.count, <span class="self">self</span>.target);
+        <span class="macro">logln!</span>(<span class="string">"Check false count: {} ? {}"</span>, <span class="self">self</span>.count, <span class="self">self</span>.target);
         <span class="kw">if </span><span class="self">self</span>.count &lt; <span class="self">self</span>.target {
             <span class="prelude-val">Ok</span>(())
         } <span class="kw">else </span>{
@@ -1153,7 +1157,7 @@
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;U&gt;) {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(input) = input {
             <span class="self">self</span>.value = input.clone().into_iter().collect();
-            <span class="macro">println!</span>(<span class="string">"VECTOR: {:#?}"</span>, <span class="self">self</span>.value);
+            <span class="macro">logln!</span>(<span class="string">"VECTOR: {:#?}"</span>, <span class="self">self</span>.value);
         } <span class="kw">else </span>{
             <span class="self">self</span>.value = <span class="macro">vec!</span>[];
         }
@@ -1204,7 +1208,7 @@
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;U&gt;) {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(input) = input {
             <span class="self">self</span>.value = input.clone().into_iter().collect();
-            <span class="macro">println!</span>(<span class="string">"VECTOR: {:#?}"</span>, <span class="self">self</span>.value);
+            <span class="macro">logln!</span>(<span class="string">"VECTOR: {:#?}"</span>, <span class="self">self</span>.value);
         } <span class="kw">else </span>{
             <span class="self">self</span>.value = <span class="macro">vec!</span>[];
         }

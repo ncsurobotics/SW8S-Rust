@@ -2399,8 +2399,10 @@
 <a href="#2399" id="2399">2399</a>
 <a href="#2400" id="2400">2400</a>
 <a href="#2401" id="2401">2401</a>
+<a href="#2402" id="2402">2402</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::comms::control_board::LAST_YAW;
+<span class="kw">use </span><span class="kw">crate</span>::logln;
 <span class="kw">use </span><span class="kw">crate</span>::vision::DrawRect2d;
 <span class="kw">use </span><span class="kw">crate</span>::vision::Offset2D;
 <span class="kw">use </span><span class="kw">crate</span>::vision::RelPos;
@@ -2460,7 +2462,7 @@
 
 <span class="kw">impl</span>&lt;T: GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>Descend&lt;<span class="lifetime">'_</span>, T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="macro">println!</span>(<span class="string">"DESCEND"</span>);
+        <span class="macro">logln!</span>(<span class="string">"DESCEND"</span>);
         <span class="kw">const </span>SLEEP_LEN: Duration = Duration::from_millis(<span class="number">100</span>);
 
         <span class="kw">let </span>cntrl = <span class="self">self</span>.context.get_control_board();
@@ -2489,7 +2491,7 @@
         cntrl
             .stability_2_speed_set(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, cur_yaw, <span class="self">self</span>.target_depth)
             .<span class="kw">await</span><span class="question-mark">?</span>;
-        <span class="macro">println!</span>(<span class="string">"GOT SPEED SET"</span>);
+        <span class="macro">logln!</span>(<span class="string">"GOT SPEED SET"</span>);
         <span class="prelude-val">Ok</span>(())
     }
 }
@@ -2607,7 +2609,7 @@
 {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span><span class="prelude-ty">Result</span>&lt;V&gt;) {
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(input) = input {
-            <span class="macro">println!</span>(<span class="string">"Modify value: {:#?}"</span>, input);
+            <span class="macro">logln!</span>(<span class="string">"Modify value: {:#?}"</span>, input);
             <span class="kw">if </span>!input.offset().x().is_nan() || !input.offset().y().is_nan() {
                 <span class="self">self</span>.x = <span class="kw-2">*</span>input.offset().x() <span class="kw">as </span>f32;
             } <span class="kw">else </span>{
@@ -2661,7 +2663,7 @@ where
 {
     fn modify(&amp;mut self, input: &amp;Result&lt;V&gt;) {
         if let Ok(input) = input {
-            println!("Modify value: {:#?}", input);
+            logln!("Modify value: {:#?}", input);
             if !input.offset().x().is_nan() &amp;&amp; !input.offset().y().is_nan() {
                 self.x = *input.offset().x() as f32;
                 self.yaw = *input.offset_angle().angle() as f32;
@@ -2686,7 +2688,7 @@ where
         <span class="kw">const </span>ANGLE_DIFF: f32 = <span class="number">20.0</span>;
 
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(input) = input {
-            <span class="macro">println!</span>(<span class="string">"Modify value: {:#?}"</span>, input);
+            <span class="macro">logln!</span>(<span class="string">"Modify value: {:#?}"</span>, input);
             <span class="kw">if </span>!input.offset().x().is_nan() &amp;&amp; !input.offset().y().is_nan() {
                 <span class="self">self</span>.x = <span class="kw-2">*</span>input.offset().x() <span class="kw">as </span>f32;
                 <span class="self">self</span>.yaw_adjust += <span class="kw">if </span><span class="self">self</span>.x.abs() &gt; MIN_TO_CHANGE_ANGLE {
@@ -2694,7 +2696,7 @@ where
                 } <span class="kw">else </span>{
                     <span class="number">0.0
                 </span>};
-                <span class="macro">println!</span>(<span class="string">"YAW ADJUST: {}"</span>, <span class="self">self</span>.yaw_adjust);
+                <span class="macro">logln!</span>(<span class="string">"YAW ADJUST: {}"</span>, <span class="self">self</span>.yaw_adjust);
             } <span class="kw">else </span>{
                 <span class="self">self</span>.x = <span class="number">0.0</span>;
             }
@@ -2713,7 +2715,7 @@ where
 
         <span class="kw">let </span>yaw = <span class="kw">if let </span><span class="prelude-val">Some</span>(angles) = <span class="self">self</span>.context.get_control_board().get_initial_angles().<span class="kw">await
         </span>{
-            <span class="macro">println!</span>(<span class="string">"Initial Yaw: {}"</span>, angles.yaw());
+            <span class="macro">logln!</span>(<span class="string">"Initial Yaw: {}"</span>, angles.yaw());
             <span class="kw">let </span><span class="kw-2">mut </span>inner_yaw = angles.yaw() + <span class="self">self</span>.yaw_adjust;
             <span class="kw">if </span>inner_yaw.abs() &gt; <span class="number">180.0 </span>{
                 <span class="kw">let </span>sign = inner_yaw / inner_yaw.abs();
@@ -2723,7 +2725,7 @@ where
         } <span class="kw">else </span>{
             <span class="number">0.0
         </span>};
-        <span class="macro">println!</span>(
+        <span class="macro">logln!</span>(
             <span class="string">"Current Yaw: {:#?}"</span>,
             <span class="self">self</span>.context
                 .get_control_board()
@@ -2732,14 +2734,14 @@ where
                 .<span class="kw">await
                 </span>.map(|angles| <span class="kw-2">*</span>angles.yaw())
         );
-        <span class="macro">println!</span>(<span class="string">"Adjusted Yaw: {}"</span>, yaw);
+        <span class="macro">logln!</span>(<span class="string">"Adjusted Yaw: {}"</span>, yaw);
 
-        <span class="macro">println!</span>(<span class="string">"Prior x: {}"</span>, <span class="self">self</span>.x);
+        <span class="macro">logln!</span>(<span class="string">"Prior x: {}"</span>, <span class="self">self</span>.x);
         <span class="kw">let </span><span class="kw-2">mut </span>x = <span class="self">self</span>.x.signum() * <span class="self">self</span>.x.abs().pow(ADJUST_VAL);
         <span class="kw">if </span>x.abs() &lt; MIN_X {
             x = <span class="number">0.0</span>;
         }
-        <span class="macro">println!</span>(<span class="string">"Setting x to {x}"</span>);
+        <span class="macro">logln!</span>(<span class="string">"Setting x to {x}"</span>);
 
         <span class="self">self</span>.context
             .get_control_board()
@@ -2782,7 +2784,7 @@ where
 {
     <span class="kw">fn </span>modify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, input: <span class="kw-2">&amp;</span><span class="prelude-ty">Result</span>&lt;V&gt;) {
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(input) = input {
-            <span class="macro">println!</span>(<span class="string">"Modify value: {:#?}"</span>, input);
+            <span class="macro">logln!</span>(<span class="string">"Modify value: {:#?}"</span>, input);
             <span class="kw">if </span>!input.offset().x().is_nan() &amp;&amp; !input.offset().y().is_nan() {
                 <span class="self">self</span>.x = <span class="kw-2">*</span>input.offset().x() <span class="kw">as </span>f32;
                 <span class="self">self</span>.y = <span class="kw-2">*</span>input.offset().y() <span class="kw">as </span>f32;
@@ -2974,7 +2976,7 @@ where
             }
         }
 
-        <span class="comment">//println!("Stability 2 speed set: {:#?}", self);
+        <span class="comment">//logln!("Stability 2 speed set: {:#?}", self);
 
         </span>board
             .stability_2_speed_set(
@@ -3018,8 +3020,8 @@ where
     /// The x and y fields are bounded to [-1, 1].
     /// The pitch, roll, yaw, depth fields wrap around 360 degrees.
     </span><span class="kw">pub fn </span>adjust(<span class="kw-2">&amp;mut </span><span class="self">self</span>, adjuster: <span class="kw-2">&amp;</span>Stability2Adjust) -&gt; <span class="kw-2">&amp;</span><span class="self">Self </span>{
-        <span class="comment">//println!("Stability 2 pre-adjust: {:#?}", self);
-        //println!("Adjuster: {:#?}", adjuster);
+        <span class="comment">//logln!("Stability 2 pre-adjust: {:#?}", self);
+        //logln!("Adjuster: {:#?}", adjuster);
 
         </span><span class="self">self</span>.x = <span class="self">Self</span>::set_speed(<span class="self">self</span>.x, adjuster.x().clone());
         <span class="self">self</span>.y = <span class="self">Self</span>::set_speed(<span class="self">self</span>.y, adjuster.y().clone());
@@ -3037,7 +3039,7 @@ where
             <span class="prelude-val">None
         </span>};
 
-        <span class="macro">println!</span>(<span class="string">"Stability 2 post-adjust: {:#?}"</span>, <span class="self">self</span>);
+        <span class="macro">logln!</span>(<span class="string">"Stability 2 post-adjust: {:#?}"</span>, <span class="self">self</span>);
         <span class="self">self
     </span>}
 
@@ -3259,28 +3261,28 @@ where
 
 <span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>FlipYaw&lt;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
-        <span class="macro">println!</span>(<span class="string">"YAW BEFORE: {:?}"</span>, <span class="self">self</span>.pose.target_yaw);
+        <span class="macro">logln!</span>(<span class="string">"YAW BEFORE: {:?}"</span>, <span class="self">self</span>.pose.target_yaw);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>yaw) = <span class="self">self</span>.pose.target_yaw {
             <span class="kw">match </span>yaw {
                 AdjustType::Adjust(<span class="kw-2">ref mut </span>y) =&gt; <span class="kw-2">*</span>y = -<span class="kw-2">*</span>y,
                 AdjustType::Replace(<span class="kw-2">ref mut </span>y) =&gt; <span class="kw-2">*</span>y = -<span class="kw-2">*</span>y,
             }
         };
-        <span class="macro">println!</span>(<span class="string">"YAW AFTER: {:?}"</span>, <span class="self">self</span>.pose.target_yaw);
+        <span class="macro">logln!</span>(<span class="string">"YAW AFTER: {:?}"</span>, <span class="self">self</span>.pose.target_yaw);
         <span class="self">self</span>.pose.clone()
     }
 }
 
 <span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>FlipYaw&lt;Stability1Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability1Adjust {
-        <span class="macro">println!</span>(<span class="string">"YAW BEFORE: {:?}"</span>, <span class="self">self</span>.pose.yaw_speed);
+        <span class="macro">logln!</span>(<span class="string">"YAW BEFORE: {:?}"</span>, <span class="self">self</span>.pose.yaw_speed);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>yaw) = <span class="self">self</span>.pose.yaw_speed {
             <span class="kw">match </span>yaw {
                 AdjustType::Adjust(<span class="kw-2">ref mut </span>y) =&gt; <span class="kw-2">*</span>y = -<span class="kw-2">*</span>y,
                 AdjustType::Replace(<span class="kw-2">ref mut </span>y) =&gt; <span class="kw-2">*</span>y = -<span class="kw-2">*</span>y,
             }
         };
-        <span class="macro">println!</span>(<span class="string">"YAW AFTER: {:?}"</span>, <span class="self">self</span>.pose.yaw_speed);
+        <span class="macro">logln!</span>(<span class="string">"YAW AFTER: {:?}"</span>, <span class="self">self</span>.pose.yaw_speed);
         <span class="self">self</span>.pose.clone()
     }
 }
@@ -3901,7 +3903,7 @@ impl ClampX&lt;&amp;Stability2Adjust&gt; {
 
     <span class="doccomment">/// Executes the position in stability assist
     </span><span class="kw">pub async fn </span>exec(<span class="kw-2">&amp;mut </span><span class="self">self</span>, board: <span class="kw-2">&amp;</span>ControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="macro">println!</span>(<span class="string">"Stability 1 speed set: {:#?}"</span>, <span class="self">self</span>);
+        <span class="macro">logln!</span>(<span class="string">"Stability 1 speed set: {:#?}"</span>, <span class="self">self</span>);
 
         board
             .stability_1_speed_set(
@@ -3945,8 +3947,8 @@ impl ClampX&lt;&amp;Stability2Adjust&gt; {
     /// The x and y fields are bounded to [-1, 1].
     /// The pitch, roll, yaw, depth fields wrap around 360 degrees.
     </span><span class="kw">pub fn </span>adjust(<span class="kw-2">&amp;mut </span><span class="self">self</span>, adjuster: <span class="kw-2">&amp;</span>Stability1Adjust) -&gt; <span class="kw-2">&amp;</span><span class="self">Self </span>{
-        <span class="macro">println!</span>(<span class="string">"Stability 2 pre-adjust: {:#?}"</span>, <span class="self">self</span>);
-        <span class="macro">println!</span>(<span class="string">"Adjuster: {:#?}"</span>, adjuster);
+        <span class="macro">logln!</span>(<span class="string">"Stability 2 pre-adjust: {:#?}"</span>, <span class="self">self</span>);
+        <span class="macro">logln!</span>(<span class="string">"Adjuster: {:#?}"</span>, adjuster);
 
         <span class="self">self</span>.x = <span class="self">Self</span>::set_speed(<span class="self">self</span>.x, adjuster.x().clone());
         <span class="self">self</span>.y = <span class="self">Self</span>::set_speed(<span class="self">self</span>.y, adjuster.y().clone());
@@ -3959,7 +3961,7 @@ impl ClampX&lt;&amp;Stability2Adjust&gt; {
         //self.yaw_speed = Self::set_speed(self.yaw_speed, adjuster.yaw_speed().clone());
         </span><span class="self">self</span>.yaw_speed = <span class="self">Self</span>::set_rot(<span class="self">self</span>.yaw_speed, adjuster.yaw_speed().clone());
 
-        <span class="macro">println!</span>(<span class="string">"Stability 1 post-adjust: {:#?}"</span>, <span class="self">self</span>);
+        <span class="macro">logln!</span>(<span class="string">"Stability 1 post-adjust: {:#?}"</span>, <span class="self">self</span>);
         <span class="self">self
     </span>}
 
@@ -4073,7 +4075,7 @@ impl ClampX&lt;&amp;Stability2Adjust&gt; {
 <span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>FlatX&lt;<span class="kw-2">&amp;</span>Stability1Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability1Adjust {
         <span class="kw">let </span><span class="kw-2">mut </span>pose = <span class="self">self</span>.pose.clone();
-        <span class="macro">println!</span>(<span class="string">"Before transform: {:#?}"</span>, pose);
+        <span class="macro">logln!</span>(<span class="string">"Before transform: {:#?}"</span>, pose);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(AdjustType::Replace(val)) = <span class="self">self</span>.pose.x {
             pose.x = <span class="kw">if </span>val.is_zero() {
                 <span class="prelude-val">Some</span>(AdjustType::Replace(<span class="number">0.0</span>))
@@ -4087,7 +4089,7 @@ impl ClampX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="kw">impl </span>ActionExec&lt;Stability1Adjust&gt; <span class="kw">for </span>FlatX&lt;Stability1Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability1Adjust {
-        <span class="macro">println!</span>(<span class="string">"Before transform: {:#?}"</span>, <span class="self">self</span>.pose);
+        <span class="macro">logln!</span>(<span class="string">"Before transform: {:#?}"</span>, <span class="self">self</span>.pose);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(AdjustType::Replace(val)) = <span class="self">self</span>.pose.x {
             <span class="self">self</span>.pose.x = <span class="kw">if </span>val.is_zero() {
                 <span class="prelude-val">Some</span>(AdjustType::Replace(<span class="number">0.0</span>))
@@ -4255,12 +4257,12 @@ impl ClampX&lt;&amp;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(AdjustType::Adjust(<span class="kw-2">ref mut </span>x)) = <span class="self">self</span>.pose.target_yaw {
             <span class="kw">if </span>x.is_zero() {
-                <span class="macro">println!</span>(<span class="string">"ZERO, SETTING MIN SPEED"</span>);
+                <span class="macro">logln!</span>(<span class="string">"ZERO, SETTING MIN SPEED"</span>);
                 <span class="kw-2">*</span>x = <span class="self">self</span>.speed;
             }
         };
         <span class="kw">if </span><span class="self">self</span>.pose.target_yaw.is_none() {
-            <span class="macro">println!</span>(<span class="string">"NONE, SETTING MIN SPEED"</span>);
+            <span class="macro">logln!</span>(<span class="string">"NONE, SETTING MIN SPEED"</span>);
             <span class="self">self</span>.pose.target_yaw = <span class="prelude-val">Some</span>(AdjustType::Adjust(<span class="self">self</span>.speed));
             <span class="self">self</span>.pose.y = <span class="prelude-val">Some</span>(AdjustType::Replace(<span class="number">0.0</span>));
         } <span class="kw">else </span>{
@@ -4527,7 +4529,7 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionExec&lt;T&gt; <span class="kw">for </span>SetSideRed&lt;T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; T {
-        <span class="macro">println!</span>(<span class="string">"SETTING SIDE TO RED"</span>);
+        <span class="macro">logln!</span>(<span class="string">"SETTING SIDE TO RED"</span>);
         <span class="kw-2">*</span>SIDE.lock().unwrap() = Side::Red;
         <span class="self">self</span>.value.clone()
     }
@@ -4562,7 +4564,7 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionExec&lt;T&gt; <span class="kw">for </span>SetSideBlue&lt;T&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; T {
-        <span class="macro">println!</span>(<span class="string">"SETTING SIDE TO BLUE"</span>);
+        <span class="macro">logln!</span>(<span class="string">"SETTING SIDE TO BLUE"</span>);
         <span class="kw-2">*</span>SIDE.lock().unwrap() = Side::Blue;
         <span class="self">self</span>.value.clone()
     }
@@ -4682,21 +4684,21 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>InvertX&lt;Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
-        <span class="macro">println!</span>(<span class="string">"Invert input: {:#?}"</span>, <span class="self">self</span>.pose.x);
+        <span class="macro">logln!</span>(<span class="string">"Invert input: {:#?}"</span>, <span class="self">self</span>.pose.x);
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = <span class="self">self</span>.pose.x {
             <span class="kw-2">*</span>x = <span class="kw">match </span><span class="kw-2">*</span>x {
                 AdjustType::Adjust(x) =&gt; AdjustType::Adjust(x.signum() * (<span class="number">1.0 </span>- x.abs())),
                 AdjustType::Replace(x) =&gt; AdjustType::Replace(x.signum() * (<span class="number">1.0 </span>- x.abs())),
             };
         }
-        <span class="macro">println!</span>(<span class="string">"Invert output: {:#?}"</span>, <span class="self">self</span>.pose.x);
+        <span class="macro">logln!</span>(<span class="string">"Invert output: {:#?}"</span>, <span class="self">self</span>.pose.x);
         <span class="self">self</span>.pose.clone()
     }
 }
 
 <span class="kw">impl </span>ActionExec&lt;Stability2Adjust&gt; <span class="kw">for </span>InvertX&lt;<span class="kw-2">&amp;</span>Stability2Adjust&gt; {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Stability2Adjust {
-        <span class="macro">println!</span>(<span class="string">"Invert input: {:#?}"</span>, <span class="self">self</span>.pose.x);
+        <span class="macro">logln!</span>(<span class="string">"Invert input: {:#?}"</span>, <span class="self">self</span>.pose.x);
         <span class="kw">let </span><span class="kw-2">mut </span>pose = <span class="self">self</span>.pose.clone();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>x) = pose.x {
             <span class="kw-2">*</span>x = <span class="kw">match </span><span class="kw-2">*</span>x {
@@ -4704,7 +4706,7 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
                 AdjustType::Replace(x) =&gt; AdjustType::Replace(x.signum() * (<span class="number">1.0 </span>- x.abs())),
             };
         }
-        <span class="macro">println!</span>(<span class="string">"Invert output: {:#?}"</span>, <span class="self">self</span>.pose.x);
+        <span class="macro">logln!</span>(<span class="string">"Invert output: {:#?}"</span>, <span class="self">self</span>.pose.x);
         pose
     }
 }

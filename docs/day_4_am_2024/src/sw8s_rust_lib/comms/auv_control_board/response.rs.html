@@ -241,6 +241,7 @@
 <a href="#241" id="241">241</a>
 <a href="#242" id="242">242</a>
 <a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bytes::BufMut;
 <span class="kw">use </span>tokio::io::AsyncReadExt;
 
@@ -252,6 +253,7 @@
 };
 
 <span class="kw">use </span><span class="kw">super</span>::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
+<span class="kw">use </span><span class="kw">crate</span>::logln;
 
 <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
 </span><span class="kw">static </span>LOG_TIMESTAMP: OnceCell&lt;String&gt; = OnceCell::const_new();
@@ -278,7 +280,7 @@
     {
         <span class="prelude-val">Some</span>((<span class="number">0</span>, <span class="kw">_</span>)) =&gt; <span class="prelude-val">Some</span>(end_idx), <span class="comment">// Expected condition
         </span><span class="prelude-val">None </span>=&gt; {
-            <span class="macro">eprintln!</span>(
+            <span class="macro">logln!</span>(
                 <span class="string">"Buffer has end byte but no start byte, discarding {:?}"</span>,
                 <span class="kw-2">&amp;</span>buffer[<span class="number">0</span>..=end_idx]
             );
@@ -287,14 +289,14 @@
         </span>}
         <span class="prelude-val">Some</span>((start_idx, <span class="kw">_</span>)) =&gt; {
             <span class="kw">if </span>buffer[start_idx - <span class="number">1</span>] == ESCAPE_BYTE {
-                <span class="macro">eprintln!</span>(
+                <span class="macro">logln!</span>(
                     <span class="string">"First start byte in buffer was escaped, discarding {:?}"</span>,
                     <span class="kw-2">&amp;</span>buffer[<span class="number">0</span>..=start_idx]
                 );
                 buffer.drain(<span class="number">0</span>..=start_idx);
                 <span class="prelude-val">None
             </span>} <span class="kw">else </span>{
-                <span class="macro">eprintln!</span>(
+                <span class="macro">logln!</span>(
                     <span class="string">"Buffer does not begin with start byte, discarding {:?}"</span>,
                     <span class="kw-2">&amp;</span>buffer[<span class="number">0</span>..start_idx]
                 );
@@ -392,7 +394,7 @@
 
         file.flush().<span class="kw">await</span>.unwrap();
     } <span class="kw">else </span>{
-        <span class="macro">eprintln!</span>(<span class="string">"ERROR OPENING FILE IN LOGGING"</span>);
+        <span class="macro">logln!</span>(<span class="string">"ERROR OPENING FILE IN LOGGING"</span>);
     }
 }
 

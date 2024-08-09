@@ -470,6 +470,7 @@
 <a href="#470" id="470">470</a>
 <a href="#471" id="471">471</a>
 <a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::path::Path;
@@ -481,6 +482,7 @@
         control_board::{ControlBoard, SensorStatuses},
         meb::MainElectronicsBoard,
     },
+    logln,
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
@@ -524,7 +526,7 @@
             <span class="kw">match </span>board {
                 <span class="prelude-val">Ok</span>(x) =&gt; x,
                 <span class="prelude-val">Err</span>(e) =&gt; {
-                    <span class="macro">eprintln!</span>(<span class="string">"Error initializing control board: {:#?}"</span>, e);
+                    <span class="macro">logln!</span>(<span class="string">"Error initializing control board: {:#?}"</span>, e);
                     <span class="kw">let </span>backup_board =
                         ControlBoard::serial(<span class="kw-2">&amp;</span>Configuration::default().control_board_backup_path)
                             .<span class="kw">await
@@ -644,19 +646,19 @@
     tokio::spawn(<span class="kw">async move </span>{
         <span class="comment">// Wait for shutdown signal
         </span><span class="kw">let </span>exit_status = <span class="macro">tokio::select!</span> {<span class="kw">_ </span>= signal::ctrl_c() =&gt; {
-        <span class="macro">eprintln!</span>(<span class="string">"CTRL-C RECV"</span>);
+        <span class="macro">logln!</span>(<span class="string">"CTRL-C RECV"</span>);
         <span class="number">1 </span>}, <span class="prelude-val">Some</span>(x) = shutdown_rx.recv() =&gt; {
-            <span class="macro">eprintln!</span>(<span class="string">"SHUTDOWN SIGNAL RECV"</span>);
+            <span class="macro">logln!</span>(<span class="string">"SHUTDOWN SIGNAL RECV"</span>);
             x }};
 
         <span class="kw">let </span>status = control_board().<span class="kw">await</span>.sensor_status_query().<span class="kw">await</span>;
 
         <span class="kw">match </span>status.unwrap() {
             SensorStatuses::ImuNr =&gt; {
-                <span class="macro">eprintln!</span>(<span class="string">"imu not ready"</span>);
+                <span class="macro">logln!</span>(<span class="string">"imu not ready"</span>);
             }
             SensorStatuses::DepthNr =&gt; {
-                <span class="macro">eprintln!</span>(<span class="string">"depth not ready"</span>);
+                <span class="macro">logln!</span>(<span class="string">"depth not ready"</span>);
             }
             <span class="kw">_ </span>=&gt; {}
         }
@@ -693,32 +695,32 @@
                 .<span class="kw">await
                 </span>.unwrap();
             sleep(Duration::from_millis(<span class="number">1000</span>)).<span class="kw">await</span>;
-            <span class="macro">println!</span>(<span class="string">"1"</span>);
+            <span class="macro">logln!</span>(<span class="string">"1"</span>);
             control_board
                 .raw_speed_set([<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>])
                 .<span class="kw">await
                 </span>.unwrap();
             sleep(Duration::from_millis(<span class="number">1000</span>)).<span class="kw">await</span>;
-            <span class="macro">println!</span>(<span class="string">"2"</span>);
+            <span class="macro">logln!</span>(<span class="string">"2"</span>);
             control_board
                 .raw_speed_set([<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">1.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>])
                 .<span class="kw">await
                 </span>.unwrap();
             sleep(Duration::from_millis(<span class="number">1000</span>)).<span class="kw">await</span>;
-            <span class="macro">println!</span>(<span class="string">"3"</span>);
+            <span class="macro">logln!</span>(<span class="string">"3"</span>);
             control_board
                 .raw_speed_set([<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>])
                 .<span class="kw">await
                 </span>.unwrap();
-            <span class="macro">println!</span>(<span class="string">"4"</span>);
+            <span class="macro">logln!</span>(<span class="string">"4"</span>);
             <span class="prelude-val">Ok</span>(())
         }
         <span class="string">"depth_test" </span>| <span class="string">"depth-test" </span>=&gt; {
             <span class="kw">let </span>_control_board = control_board().<span class="kw">await</span>;
-            <span class="macro">println!</span>(<span class="string">"Init ctrl"</span>);
+            <span class="macro">logln!</span>(<span class="string">"Init ctrl"</span>);
             sleep(Duration::from_millis(<span class="number">1000</span>)).<span class="kw">await</span>;
-            <span class="macro">println!</span>(<span class="string">"End sleep"</span>);
-            <span class="macro">println!</span>(<span class="string">"Starting depth hold..."</span>);
+            <span class="macro">logln!</span>(<span class="string">"End sleep"</span>);
+            <span class="macro">logln!</span>(<span class="string">"Starting depth hold..."</span>);
             <span class="kw">loop </span>{
                 <span class="kw">if let </span><span class="prelude-val">Ok</span>(ret) = timeout(
                     Duration::from_secs(<span class="number">1</span>),
@@ -733,11 +735,11 @@
                 }
             }
             sleep(Duration::from_secs(<span class="number">5</span>)).<span class="kw">await</span>;
-            <span class="macro">println!</span>(<span class="string">"Finished depth hold"</span>);
+            <span class="macro">logln!</span>(<span class="string">"Finished depth hold"</span>);
             <span class="prelude-val">Ok</span>(())
         }
         <span class="string">"travel_test" </span>| <span class="string">"travel-test" </span>=&gt; {
-            <span class="macro">println!</span>(<span class="string">"Starting travel..."</span>);
+            <span class="macro">logln!</span>(<span class="string">"Starting travel..."</span>);
             <span class="kw">loop </span>{
                 <span class="kw">if let </span><span class="prelude-val">Ok</span>(ret) = timeout(
                     Duration::from_secs(<span class="number">1</span>),
@@ -752,11 +754,11 @@
                 }
             }
             sleep(Duration::from_secs(<span class="number">10</span>)).<span class="kw">await</span>;
-            <span class="macro">println!</span>(<span class="string">"Finished travel"</span>);
+            <span class="macro">logln!</span>(<span class="string">"Finished travel"</span>);
             <span class="prelude-val">Ok</span>(())
         }
         <span class="string">"surface_" </span>| <span class="string">"surface-test" </span>=&gt; {
-            <span class="macro">println!</span>(<span class="string">"Starting travel..."</span>);
+            <span class="macro">logln!</span>(<span class="string">"Starting travel..."</span>);
             <span class="kw">loop </span>{
                 <span class="kw">if let </span><span class="prelude-val">Ok</span>(ret) = timeout(
                     Duration::from_secs(<span class="number">1</span>),
@@ -771,7 +773,7 @@
                 }
             }
             sleep(Duration::from_secs(<span class="number">10</span>)).<span class="kw">await</span>;
-            <span class="macro">println!</span>(<span class="string">"Finished travel"</span>);
+            <span class="macro">logln!</span>(<span class="string">"Finished travel"</span>);
             <span class="prelude-val">Ok</span>(())
         }
         <span class="string">"descend" </span>| <span class="string">"forward" </span>=&gt; {
@@ -824,10 +826,10 @@
         }
         <span class="string">"start_cam" </span>=&gt; {
             <span class="comment">// This has not been tested
-            </span><span class="macro">println!</span>(<span class="string">"Opening camera"</span>);
+            </span><span class="macro">logln!</span>(<span class="string">"Opening camera"</span>);
             front_cam().<span class="kw">await</span>;
             bottom_cam().<span class="kw">await</span>;
-            <span class="macro">println!</span>(<span class="string">"Opened camera"</span>);
+            <span class="macro">logln!</span>(<span class="string">"Opened camera"</span>);
             <span class="prelude-val">Ok</span>(())
         }
         <span class="string">"path_align" </span>=&gt; {

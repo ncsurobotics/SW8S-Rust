@@ -122,6 +122,8 @@
 <a href="#122" id="122">122</a>
 <a href="#123" id="123">123</a>
 <a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{anyhow, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>opencv::prelude::Mat;
 <span class="kw">use </span>opencv::videoio::VideoCapture;
@@ -132,6 +134,8 @@
 <span class="kw">use </span>std::sync::Arc;
 <span class="kw">use </span>std::thread::spawn;
 <span class="kw">use </span>tokio::sync::Mutex;
+
+<span class="kw">use </span><span class="kw">crate</span>::logln;
 
 <span class="kw">use </span><span class="kw">super</span>::MatSource;
 
@@ -175,7 +179,7 @@
         <span class="kw">let </span>frame_copy = frame.clone();
 
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
-        </span><span class="macro">println!</span>(<span class="string">"Capture string: {capture_string}"</span>);
+        </span><span class="macro">logln!</span>(<span class="string">"Capture string: {capture_string}"</span>);
         spawn(<span class="kw">move </span>|| {
             <span class="kw">let </span><span class="kw-2">mut </span>capture =
                 VideoCapture::from_file(<span class="kw-2">&amp;</span>capture_string, VideoCaptureAPIs::CAP_GSTREAMER <span class="kw">as </span>i32)
@@ -243,7 +247,7 @@
         .unwrap()
         .get_mat()
         .<span class="kw">await</span>;
-        <span class="macro">println!</span>(<span class="string">"{:?}"</span>, output);
+        <span class="macro">logln!</span>(<span class="string">"{:?}"</span>, output);
     }
 }
 </code></pre></div></section></main></body></html>
