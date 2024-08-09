@@ -57,25 +57,19 @@
 <a href="#57" id="57">57</a>
 <a href="#58" id="58">58</a>
 <a href="#59" id="59">59</a>
-<a href="#60" id="60">60</a>
-<a href="#61" id="61">61</a>
-<a href="#62" id="62">62</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
 <span class="kw">use crate</span>::{
     act_nest,
     missions::{
-        action::{
-            ActionChain, ActionConcurrent, ActionConditional, ActionDataConditional,
-            ActionSequence, TupleSecond,
-        },
-        extra::{CountTrue, NoOp, OutputType, Terminal, ToVec},
+        action::{ActionChain, ActionConcurrent, ActionSequence, TupleSecond},
+        extra::{CountTrue, OutputType, Terminal, ToVec},
         movement::{
-            AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust,
-            Stability2Movement, Stability2Pos, ZeroMovement,
+            LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement, Stability2Pos,
+            ZeroMovement,
         },
-        vision::{ExtractPosition, MidPoint, VisionNormBottom, VisionNormOffsetBottom},
+        vision::{ExtractPosition, MidPoint, VisionNormBottom},
     },
     vision::path::Path,
 };

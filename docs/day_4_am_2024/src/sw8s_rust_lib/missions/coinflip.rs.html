@@ -56,61 +56,23 @@
 <a href="#56" id="56">56</a>
 <a href="#57" id="57">57</a>
 <a href="#58" id="58">58</a>
-<a href="#59" id="59">59</a>
-<a href="#60" id="60">60</a>
-<a href="#61" id="61">61</a>
-<a href="#62" id="62">62</a>
-<a href="#63" id="63">63</a>
-<a href="#64" id="64">64</a>
-<a href="#65" id="65">65</a>
-<a href="#66" id="66">66</a>
-<a href="#67" id="67">67</a>
-<a href="#68" id="68">68</a>
-<a href="#69" id="69">69</a>
-<a href="#70" id="70">70</a>
-<a href="#71" id="71">71</a>
-<a href="#72" id="72">72</a>
-<a href="#73" id="73">73</a>
-<a href="#74" id="74">74</a>
-<a href="#75" id="75">75</a>
-<a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
 <span class="kw">use crate</span>::{
     act_nest,
-    missions::{
-        action::{ActionConcurrentSplit, ActionConditional, ActionDataConditional, ActionUntil},
-        basic::descend_depth_and_go_forward,
-        extra::{AlwaysFalse, AlwaysTrue, Terminal},
-        movement::{
-            AdjustType, ClampX, ConstYaw, Descend, FlipX, InvertX, MultiplyX, ReplaceX,
-            SetSideBlue, SetSideRed, SetX, SetY,
-        },
-        vision::{MidPoint, OffsetClass},
-    },
-    vision::{
-        gate_poles::{GatePoles, Target},
-        nn_cv2::{OnnxModel, YoloClass},
-        Offset2D,
-    },
+    missions::movement::{AdjustType, ConstYaw, Descend},
+    vision::{gate_poles::GatePoles, nn_cv2::OnnxModel},
 };
 
 <span class="kw">use super</span>::{
-    action::{
-        wrap_action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence,
-        ActionWhile, FirstValid, TupleSecond,
-    },
+    action::{ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile},
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
-    basic::{descend_and_go_forward, DelayAction},
+    basic::DelayAction,
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, OutputType},
-    movement::{
-        AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
-        Stability2Pos, ZeroMovement,
-    },
-    vision::{DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
+    extra::{CountTrue, OutputType},
+    movement::{Stability2Adjust, Stability2Movement, Stability2Pos},
+    vision::VisionNorm,
 };
 
 <span class="kw">pub fn </span>coinflip&lt;
