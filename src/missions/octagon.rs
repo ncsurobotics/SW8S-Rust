@@ -70,6 +70,8 @@ pub fn octagon<
     const INIT_Y: f32 = 0.0;
     const INIT_TIME: f32 = 3.0;
 
+    const BLIND_TIME: f32 = 3.0;
+
     const X_CLAMP: f32 = 0.3;
 
     const FALSE_COUNT: u32 = 3;
@@ -86,6 +88,22 @@ pub fn octagon<
             OutputType::<()>::new(),
         ),
         DelayAction::new(INIT_TIME),
+        act_nest!(
+            ActionChain::new,
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(
+                    FULL_SPEED_X,
+                    FULL_SPEED_Y,
+                    FULL_SPEED_PITCH,
+                    0.0,
+                    None,
+                    DEPTH
+                )
+            ),
+            OutputType::<()>::new(),
+        ),
+        DelayAction::new(BLIND_TIME),
         ActionWhile::new(ActionSequence::new(
             act_nest!(
                 ActionChain::new,
