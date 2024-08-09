@@ -86,27 +86,29 @@ pub enum MsbTaskId {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub enum MebCmd {
-    Msb(MsbTaskId),
-    Led{Index: char, R: u8, G: u8, B: u8},
-    Led{Index: char, Color: LedColorHex},
-}
-
-#[derive(Debug, Copy, Clone)]
 pub struct LedColorHex {
     r: u8,
     g: u8,
     b: u8,
 }
 
-pub const COLOR_BLK: LedColorHex = LedColorHex{r: 0x00, g: 0x00, b: 0x00};
-pub const COLOR_WHT: LedColorHex = LedColorHex{r: 0xFF, g: 0xFF, b: 0xFF};
-pub const COLOR_RED: LedColorHex = LedColorHex{r: 0xFF, g: 0x00, b: 0x00};
-pub const COLOR_YLW: LedColorHex = LedColorHex{r: 0xF0, g: 0x80, b: 0x00};
-pub const COLOR_GRN: LedColorHex = LedColorHex{r: 0x00, g: 0xFF, b: 0x00};
-pub const COLOR_BLU: LedColorHex = LedColorHex{r: 0x00, g: 0x00, b: 0xFF};
-pub const COLOR_MAG: LedColorHex = LedColorHex{r: 0xFF, g: 0x00, b: 0x5E};
+#[derive(Debug, Copy, Clone)]
+pub enum LedColorName {
+    Black   = LedColorHex{r: 0x00, g: 0x00, b: 0x00},
+    White   = LedColorHex{r: 0xFF, g: 0xFF, b: 0xFF},
+    Red     = LedColorHex{r: 0xFF, g: 0x00, b: 0x00},
+    Yellow  = LedColorHex{r: 0xF0, g: 0x80, b: 0x00},
+    Green   = LedColorHex{r: 0x00, g: 0xFF, b: 0x00},
+    Blue    = LedColorHex{r: 0x00, g: 0x00, b: 0xFF},
+    Magenta = LedColorHex{r: 0xFF, g: 0x00, b: 0x5E},
+}
 
+#[derive(Debug, Copy, Clone)]
+pub enum MebCmd {
+    Msb(MsbTaskId),
+    Led{Index: char, R: u8, G: u8, B: u8},
+    Led{Index: char, Color: LedColorName},
+}
 
 impl<C: AsyncWriteExt + Unpin> MainElectronicsBoard<C> {
     pub async fn send_msg(&self, cmd: MebCmd) -> anyhow::Result<()> {
