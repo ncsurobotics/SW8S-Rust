@@ -264,6 +264,8 @@
 <a href="#264" id="264">264</a>
 <a href="#265" id="265">265</a>
 <a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
@@ -419,7 +421,6 @@
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
     <span class="kw">const </span>Y_SPEED: f32 = <span class="number">0.2</span>;
     <span class="kw">const </span>DEPTH: f32 = -<span class="number">0.9</span>;
-    <span class="kw">const </span>SHOT_DEPTH: f32 = -<span class="number">0.3</span>;
     <span class="kw">const </span>TRUE_COUNT: u32 = <span class="number">3</span>;
     <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">5</span>;
 
@@ -429,6 +430,9 @@
     <span class="kw">const </span>ALIGN_X_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>ALIGN_Y_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = -<span class="number">6.0</span>;
+
+    <span class="kw">const </span>SHOT_DEPTH: f32 = -<span class="number">0.3</span>;
+    <span class="kw">const </span>SHOT_ANGLE: f32 = <span class="number">22.5</span>;
 
     <span class="macro">act_nest!</span>(
         ActionSequence::new,
@@ -520,7 +524,7 @@
             ConstYaw::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
             Stability2Movement::new(
                 context,
-                Stability2Pos::new(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">45.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, SHOT_DEPTH)
+                Stability2Pos::new(<span class="number">0.0</span>, <span class="number">0.0</span>, SHOT_ANGLE, <span class="number">0.0</span>, <span class="prelude-val">None</span>, SHOT_DEPTH)
             ),
             OutputType::&lt;()&gt;::new(),
         ),
