@@ -47,11 +47,15 @@ pub fn buoy_align<
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = 8.0;
+    const ALIGN_YAW_SPEED: f32 = -8.0;
 
     act_nest!(
         ActionSequence::new,
-        Descend::new(context, -1.5),
+        act_nest!(
+            ActionChain::new,
+            Stability2Movement::new(context, Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)),
+            OutputType::<()>::new(),
+        ),
         DelayAction::new(2.0),
         ActionWhile::new(ActionSequence::new(
             act_nest!(
@@ -139,7 +143,11 @@ pub fn buoy_align_shot<
 
     act_nest!(
         ActionSequence::new,
-        Descend::new(context, DEPTH),
+        act_nest!(
+            ActionChain::new,
+            Stability2Movement::new(context, Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)),
+            OutputType::<()>::new(),
+        ),
         DelayAction::new(4.0),
         act_nest!(
             ActionChain::new,

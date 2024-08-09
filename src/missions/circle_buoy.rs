@@ -159,7 +159,10 @@ pub fn buoy_circle_sequence_blind<
 
     act_nest!(
         ActionSequence::new,
-        Descend::new(context, DEPTH),
+        ActionChain::new(
+            Stability2Movement::new(context, Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)),
+            OutputType::<()>::new()
+        ),
         DelayAction::new(DESCEND_WAIT_DURATION),
         ActionWhile::new(act_nest!(
             ActionSequence::new,
