@@ -269,6 +269,24 @@
 <a href="#269" id="269">269</a>
 <a href="#270" id="270">270</a>
 <a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>opencv::core::Size;
 <span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
@@ -341,6 +359,8 @@
     <span class="kw">const </span>INIT_Y: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>INIT_TIME: f32 = <span class="number">3.0</span>;
 
+    <span class="kw">const </span>BLIND_TIME: f32 = <span class="number">3.0</span>;
+
     <span class="kw">const </span>X_CLAMP: f32 = <span class="number">0.3</span>;
 
     <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">3</span>;
@@ -357,6 +377,22 @@
             OutputType::&lt;()&gt;::new(),
         ),
         DelayAction::new(INIT_TIME),
+        <span class="macro">act_nest!</span>(
+            ActionChain::new,
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(
+                    FULL_SPEED_X,
+                    FULL_SPEED_Y,
+                    FULL_SPEED_PITCH,
+                    <span class="number">0.0</span>,
+                    <span class="prelude-val">None</span>,
+                    DEPTH
+                )
+            ),
+            OutputType::&lt;()&gt;::new(),
+        ),
+        DelayAction::new(BLIND_TIME),
         ActionWhile::new(ActionSequence::new(
             <span class="macro">act_nest!</span>(
                 ActionChain::new,
