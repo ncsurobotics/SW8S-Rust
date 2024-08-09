@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/missions/octagon.rs`."><title>octagon.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="sw8s_rust_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0 (051478957 2024-07-21)" data-channel="1.80.0" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/missions/octagon.rs`."><title>octagon.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="sw8s_rust_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -58,64 +58,328 @@
 <a href="#58" id="58">58</a>
 <a href="#59" id="59">59</a>
 <a href="#60" id="60">60</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>opencv::core::Size;
+<span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
-<span class="kw">use crate</span>::{act_nest, vision::path::Path};
-
-<span class="kw">use super</span>::{
-    action::{ActionExec, ActionSequence},
-    action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
-    basic::DelayAction,
-    example::initial_descent,
-    extra::NoOp,
-    movement::{Stability2Movement, Stability2Pos},
-    vision::VisionNorm,
+<span class="kw">use crate</span>::{
+    act_nest,
+    missions::{
+        action::{
+            ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
+            TupleSecond,
+        },
+        basic::DelayAction,
+        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
+        fire_torpedo::FireTorpedo,
+        meb::WaitArm,
+        movement::{
+            AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, OffsetToPose,
+            ReplaceX, SetX, SetY, SideMult, Stability2Adjust, Stability2Movement, Stability2Pos,
+            StraightMovement, StripY, ZeroMovement,
+        },
+        vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},
+    },
+    vision::{
+        buoy_model::{BuoyModel, Target},
+        nn_cv2::OnnxModel,
+        path::{Path, Yuv},
+        Offset2D,
+    },
 };
 
-<span class="doccomment">/// Looks up at octagon
-</span><span class="kw">pub fn </span>look_up_octagon&lt;
-    Con: Send + Sync + GetMainElectronicsBoard + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;,
-&gt;(
-    context: <span class="kw-2">&amp;</span>Con,
-) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
-    <span class="kw">const </span>DEPTH: f32 = -<span class="number">2.5</span>;
+<span class="kw">use super</span>::{
+    action::ActionExec,
+    action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
+};
 
-    ActionSequence::&lt;(), <span class="kw">_</span>, <span class="kw">_</span>&gt;::new(
-        <span class="macro">act_nest!</span>(
-            ActionSequence::&lt;(), <span class="kw">_</span>, <span class="kw">_</span>&gt;::new,
-            initial_descent(context),
-            Stability2Movement::new(
-                context,
-                Stability2Pos::new(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">90.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH),
-            ),
-            DelayAction::new(<span class="number">5.0</span>),
-            Stability2Movement::new(
-                context,
-                Stability2Pos::new(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">180.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH),
-            ),
-            DelayAction::new(<span class="number">5.0</span>),
-            Stability2Movement::new(
-                context,
-                Stability2Pos::new(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">180.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH),
-            ),
-        ),
-        DelayAction::new(<span class="number">30.0</span>),
+<span class="kw">pub fn </span>octagon_path_model() -&gt; Path {
+    Path::new(
+        (Yuv {
+            y: <span class="number">0</span>,
+            u: <span class="number">127</span>,
+            v: <span class="number">127</span>,
+        })..=(Yuv {
+            y: <span class="number">255</span>,
+            u: <span class="number">255</span>,
+            v: <span class="number">255</span>,
+        }),
+        <span class="number">20.0</span>..=<span class="number">800.0</span>,
+        <span class="number">4</span>,
+        Size::from((<span class="number">400</span>, <span class="number">300</span>)),
+        <span class="number">3</span>,
     )
 }
 
-<span class="kw">pub fn </span>stub&lt;
+<span class="kw">pub fn </span>octagon&lt;
     Con: Send
         + Sync
-        + GetMainElectronicsBoard
         + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;
-        + GetFrontCamMat,
+        + GetMainElectronicsBoard
+        + GetFrontCamMat
+        + Unpin,
 &gt;(
-    context: <span class="kw-2">&amp;</span>Con,
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>Con,
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
-    ActionSequence::new(
-        VisionNorm::&lt;Con, Path, f64&gt;::new(context, Path::default()),
-        NoOp::new(),
+    <span class="kw">const </span>FULL_SPEED_Y: f32 = <span class="number">1.0</span>;
+    <span class="kw">const </span>FULL_SPEED_X: f32 = <span class="number">0.0</span>;
+    <span class="kw">const </span>FULL_SPEED_PITCH: f32 = -<span class="number">45.0</span>;
+    <span class="kw">const </span>DEPTH: f32 = -<span class="number">0.5</span>;
+
+    <span class="kw">const </span>INIT_X: f32 = <span class="number">1.0</span>;
+    <span class="kw">const </span>INIT_Y: f32 = <span class="number">0.0</span>;
+    <span class="kw">const </span>INIT_TIME: f32 = <span class="number">3.0</span>;
+
+    <span class="kw">const </span>X_CLAMP: f32 = <span class="number">0.3</span>;
+
+    <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">3</span>;
+
+    <span class="macro">act_nest!</span>(
+        ActionSequence::new,
+        Descend::new(context, DEPTH),
+        DelayAction::new(<span class="number">2.0</span>),
+        ActionChain::new(
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(INIT_X, INIT_Y, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH)
+            ),
+            OutputType::&lt;()&gt;::new(),
+        ),
+        DelayAction::new(INIT_TIME),
+        ActionWhile::new(ActionSequence::new(
+            <span class="macro">act_nest!</span>(
+                ActionChain::new,
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(
+                        FULL_SPEED_X,
+                        FULL_SPEED_Y,
+                        FULL_SPEED_PITCH,
+                        <span class="number">0.0</span>,
+                        <span class="prelude-val">None</span>,
+                        DEPTH
+                    )
+                ),
+                OutputType::&lt;()&gt;::new(),
+            ),
+            <span class="macro">act_nest!</span>(
+                ActionChain::new,
+                Vision::&lt;Con, Path, f64&gt;::new(context, octagon_path_model()),
+                IsSome::default(),
+                CountTrue::new(<span class="number">1</span>)
+            )
+        )),
+        ActionWhile::new(<span class="macro">act_nest!</span>(
+            ActionChain::new,
+            Vision::&lt;Con, Path, f64&gt;::new(context, octagon_path_model()),
+            TupleSecond::&lt;<span class="kw">_</span>, bool&gt;::new(ActionConcurrent::new(
+                ActionSequence::new(
+                    <span class="macro">act_nest!</span>(
+                        ActionChain::new,
+                        ActionDataConditional::new(
+                            DetectTarget::new(<span class="bool-val">true</span>),
+                            <span class="macro">act_nest!</span>(
+                                ActionChain::new,
+                                Norm::new(Path::default()),
+                                ExtractPosition::new(),
+                                MidPoint::new(),
+                                OffsetToPose::&lt;Offset2D&lt;f64&gt;&gt;::default(),
+                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">7.0</span>),
+                                MultiplyX::new(<span class="number">0.5</span>),
+                                ClampX::&lt;Stability2Adjust&gt;::new(X_CLAMP),
+                            ),
+                            <span class="macro">act_nest!</span>(
+                                ActionSequence::new,
+                                Terminal::new(),
+                                SetX::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(FULL_SPEED_X)),
+                            )
+                        ),
+                        StripY::&lt;Stability2Adjust&gt;::new(),
+                        Stability2Movement::new(
+                            context,
+                            Stability2Pos::new(FULL_SPEED_X, FULL_SPEED_Y, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, DEPTH)
+                        ),
+                        OutputType::&lt;()&gt;::new(),
+                    ),
+                    AlwaysTrue::new()
+                ),
+                ActionChain::new(IsSome::default(), CountFalse::new(FALSE_COUNT))
+            )),
+        ),),
+        ZeroMovement::new(context, DEPTH),
+        OutputType::&lt;()&gt;::new()
     )
+}
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>std::fs::create_dir_all;
+
+    <span class="kw">use </span>opencv::{
+        core::Vector,
+        imgcodecs::{imread, imwrite, IMREAD_COLOR},
+    };
+
+    <span class="kw">use </span><span class="kw">crate</span>::vision::VisualDetector;
+
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>distance_detect() {
+        <span class="kw">let </span><span class="kw-2">mut </span>model = octagon_path_model();
+        <span class="kw">let </span>image = imread(
+            <span class="string">"tests/vision/resources/new_octagon_images/distance.png"</span>,
+            IMREAD_COLOR,
+        )
+        .unwrap();
+
+        <span class="kw">let </span>output: Vec&lt;<span class="kw">_</span>&gt; = &lt;Path <span class="kw">as </span>VisualDetector&lt;f64&gt;&gt;::detect(<span class="kw-2">&amp;mut </span>model, <span class="kw-2">&amp;</span>image)
+            .unwrap()
+            .into_iter()
+            .filter(|x| <span class="kw-2">*</span>x.class())
+            .collect();
+        <span class="macro">println!</span>(<span class="string">"{:#?}"</span>, output);
+        <span class="macro">assert_eq!</span>(output.len(), <span class="number">0</span>);
+
+        create_dir_all(<span class="string">"tests/vision/output/octagon_images"</span>).unwrap();
+        imwrite(
+            <span class="string">"tests/vision/output/octagon_images/distance_detect.png"</span>,
+            <span class="kw-2">&amp;</span>model.image(),
+            <span class="kw-2">&amp;</span>Vector::default(),
+        )
+        .unwrap();
+    }
 }
 </code></pre></div></section></main></body></html>

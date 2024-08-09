@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/missions/gate.rs`."><title>gate.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="sw8s_rust_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.0 (051478957 2024-07-21)" data-channel="1.80.0" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/missions/gate.rs`."><title>gate.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="sw8s_rust_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -215,105 +215,18 @@
 <a href="#215" id="215">215</a>
 <a href="#216" id="216">216</a>
 <a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
-<a href="#219" id="219">219</a>
-<a href="#220" id="220">220</a>
-<a href="#221" id="221">221</a>
-<a href="#222" id="222">222</a>
-<a href="#223" id="223">223</a>
-<a href="#224" id="224">224</a>
-<a href="#225" id="225">225</a>
-<a href="#226" id="226">226</a>
-<a href="#227" id="227">227</a>
-<a href="#228" id="228">228</a>
-<a href="#229" id="229">229</a>
-<a href="#230" id="230">230</a>
-<a href="#231" id="231">231</a>
-<a href="#232" id="232">232</a>
-<a href="#233" id="233">233</a>
-<a href="#234" id="234">234</a>
-<a href="#235" id="235">235</a>
-<a href="#236" id="236">236</a>
-<a href="#237" id="237">237</a>
-<a href="#238" id="238">238</a>
-<a href="#239" id="239">239</a>
-<a href="#240" id="240">240</a>
-<a href="#241" id="241">241</a>
-<a href="#242" id="242">242</a>
-<a href="#243" id="243">243</a>
-<a href="#244" id="244">244</a>
-<a href="#245" id="245">245</a>
-<a href="#246" id="246">246</a>
-<a href="#247" id="247">247</a>
-<a href="#248" id="248">248</a>
-<a href="#249" id="249">249</a>
-<a href="#250" id="250">250</a>
-<a href="#251" id="251">251</a>
-<a href="#252" id="252">252</a>
-<a href="#253" id="253">253</a>
-<a href="#254" id="254">254</a>
-<a href="#255" id="255">255</a>
-<a href="#256" id="256">256</a>
-<a href="#257" id="257">257</a>
-<a href="#258" id="258">258</a>
-<a href="#259" id="259">259</a>
-<a href="#260" id="260">260</a>
-<a href="#261" id="261">261</a>
-<a href="#262" id="262">262</a>
-<a href="#263" id="263">263</a>
-<a href="#264" id="264">264</a>
-<a href="#265" id="265">265</a>
-<a href="#266" id="266">266</a>
-<a href="#267" id="267">267</a>
-<a href="#268" id="268">268</a>
-<a href="#269" id="269">269</a>
-<a href="#270" id="270">270</a>
-<a href="#271" id="271">271</a>
-<a href="#272" id="272">272</a>
-<a href="#273" id="273">273</a>
-<a href="#274" id="274">274</a>
-<a href="#275" id="275">275</a>
-<a href="#276" id="276">276</a>
-<a href="#277" id="277">277</a>
-<a href="#278" id="278">278</a>
-<a href="#279" id="279">279</a>
-<a href="#280" id="280">280</a>
-<a href="#281" id="281">281</a>
-<a href="#282" id="282">282</a>
-<a href="#283" id="283">283</a>
-<a href="#284" id="284">284</a>
-<a href="#285" id="285">285</a>
-<a href="#286" id="286">286</a>
-<a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
 <span class="kw">use crate</span>::{
     act_nest,
     missions::{
-        action::{ActionConcurrentSplit, ActionDataConditional, ActionSelect},
+        action::{ActionConcurrentSplit, ActionConditional, ActionDataConditional},
         basic::descend_depth_and_go_forward,
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
-        meb::WaitArm,
         movement::{
-            AdjustType, ClampX, FlipX, ReplaceX, SetSideBlue, SetSideRed, SetY, Stability1Adjust,
-            Stability1Movement, Stability1Pos,
+            AdjustType, ClampX, FlipX, InvertX, MultiplyX, ReplaceX, SetSideBlue, SetSideRed, SetX,
+            SetY,
         },
         vision::{MidPoint, OffsetClass},
     },
@@ -332,7 +245,7 @@
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::{descend_and_go_forward, DelayAction},
     comms::StartBno055,
-    extra::{CountFalse, CountTrue, InOrderFail, OutputType},
+    extra::{CountFalse, CountTrue, OutputType},
     movement::{
         AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
         Stability2Pos, ZeroMovement,
@@ -389,18 +302,16 @@
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;anyhow::Result&lt;()&gt;&gt; + <span class="lifetime">'_ </span>{
     <span class="kw">const </span>TIMEOUT: f32 = <span class="number">30.0</span>;
 
-    <span class="kw">let </span>first_depth: f32 = -<span class="number">0.75</span>;
     <span class="kw">let </span>depth: f32 = -<span class="number">1.25</span>;
 
     ActionSequence::new(
         ActionConcurrent::new(
-            descend_depth_and_go_forward(context, first_depth),
+            descend_depth_and_go_forward(context, depth),
             StartBno055::new(context),
         ),
         <span class="macro">act_nest!</span>(
             ActionSequence::new,
-            adjust_logic(context, first_depth, CountTrue::new(<span class="number">4</span>)),
-            adjust_logic_timeout(context, depth, TIMEOUT, CountFalse::new(<span class="number">4</span>)),
+            adjust_logic(context, depth, CountTrue::new(<span class="number">4</span>)),
             ActionChain::new(
                 Stability2Movement::new(
                     context,
@@ -432,58 +343,68 @@
     ActionWhile::new(ActionChain::new(
         VisionNorm::&lt;Con, GatePoles&lt;OnnxModel&gt;, f64&gt;::new(context, GatePoles::default()),
         ActionChain::new(
-            ActionDataConditional::new(
-                <span class="macro">act_nest!</span>(
-                    wrap_action(ActionConcurrent::new, FirstValid::new),
-                    DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Gate),
+            TupleSecond::new(ActionConcurrent::new(
+                ActionDataConditional::new(
                     DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Blue),
-                    DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Middle),
-                ),
-                <span class="macro">act_nest!</span>(
-                    ActionConcurrent::new,
-                    <span class="macro">act_nest!</span>(
-                        ActionChain::new,
-                        OffsetClass::new(Target::Middle, Offset2D::&lt;f64&gt;::new(-<span class="number">0.1</span>, <span class="number">0.0</span>)),
-                        ExtractPosition::new(),
-                        MidPoint::new(),
-                        OffsetToPose::default(),
-                        LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
-                        ClampX::new(<span class="number">0.4</span>),
-                        SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(<span class="number">0.02</span>)),
-                        FlipX::default(),
-                        SetSideBlue::new(),
+                    ActionSequence::new(SetSideBlue::new(), Terminal::new()),
+                    ActionDataConditional::new(
+                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Red),
+                        ActionSequence::new(SetSideRed::new(), Terminal::new()),
+                        Terminal::new(),
                     ),
-                    AlwaysTrue::new(),
                 ),
                 ActionDataConditional::new(
-                    FirstValid::new(ActionConcurrent::new(
-                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Pole),
+                    <span class="macro">act_nest!</span>(
+                        wrap_action(ActionConcurrent::new, FirstValid::new),
+                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Blue),
+                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(
+                            Target::Middle
+                        ),
                         DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Red),
-                    )),
+                    ),
                     <span class="macro">act_nest!</span>(
                         ActionConcurrent::new,
                         <span class="macro">act_nest!</span>(
                             ActionChain::new,
+                            OffsetClass::new(Target::Middle, Offset2D::&lt;f64&gt;::new(-<span class="number">0.1</span>, <span class="number">0.0</span>)),
                             ExtractPosition::new(),
                             MidPoint::new(),
                             OffsetToPose::default(),
-                            LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
+                            LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">5.0</span>),
                             ClampX::new(<span class="number">0.2</span>),
-                            SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.2</span>)),
-                            ReplaceX::new(),
-                            SetSideRed::new(),
+                            SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(<span class="number">0.02</span>)),
+                            FlipX::default(),
                         ),
                         AlwaysTrue::new(),
                     ),
-                    ActionConcurrent::new(
-                        ActionSequence::new(
-                            Terminal::new(),
-                            SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.4</span>)),
+                    ActionDataConditional::new(
+                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Pole),
+                        <span class="macro">act_nest!</span>(
+                            ActionConcurrent::new,
+                            <span class="macro">act_nest!</span>(
+                                ActionChain::new,
+                                ExtractPosition::new(),
+                                MidPoint::new(),
+                                OffsetToPose::default(),
+                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">7.0</span>),
+                                <span class="comment">//ClampX::new(0.8),
+                                </span>SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.2</span>)),
+                                ReplaceX::new(),
+                            ),
+                            AlwaysTrue::new(),
                         ),
-                        AlwaysFalse::new(),
+                        ActionConcurrent::new(
+                            <span class="macro">act_nest!</span>(
+                                ActionSequence::new,
+                                Terminal::new(),
+                                SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.4</span>)),
+                                SetX::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.0</span>)),
+                            ),
+                            AlwaysFalse::new(),
+                        ),
                     ),
                 ),
-            ),
+            )),
             TupleSecond::new(ActionConcurrentSplit::new(
                 <span class="macro">act_nest!</span>(
                     ActionChain::new,
@@ -497,99 +418,6 @@
             )),
         ),
     ))
-}
-
-<span class="kw">pub fn </span>adjust_logic_timeout&lt;
-    <span class="lifetime">'a</span>,
-    Con: Send
-        + Sync
-        + GetControlBoard&lt;WriteHalf&lt;SerialStream&gt;&gt;
-        + GetMainElectronicsBoard
-        + GetFrontCamMat,
-    X: <span class="lifetime">'a </span>+ ActionMod&lt;bool&gt; + ActionExec&lt;anyhow::Result&lt;()&gt;&gt;,
-&gt;(
-    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>Con,
-    depth: f32,
-    timeout: f32,
-    end_condition: X,
-) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'a </span>{
-    <span class="kw">const </span>GATE_TRAVERSAL_SPEED: f32 = <span class="number">0.2</span>;
-
-    ActionSelect::new(
-        ActionWhile::new(ActionChain::new(
-            VisionNorm::&lt;Con, GatePoles&lt;OnnxModel&gt;, f64&gt;::new(context, GatePoles::default()),
-            ActionChain::new(
-                ActionDataConditional::new(
-                    <span class="macro">act_nest!</span>(
-                        wrap_action(ActionConcurrent::new, FirstValid::new),
-                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Gate),
-                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Blue),
-                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(
-                            Target::Middle
-                        ),
-                    ),
-                    ActionConcurrent::new(
-                        <span class="macro">act_nest!</span>(
-                            ActionChain::new,
-                            OffsetClass::new(Target::Middle, Offset2D::&lt;f64&gt;::new(-<span class="number">0.1</span>, <span class="number">0.0</span>)),
-                            ExtractPosition::new(),
-                            MidPoint::new(),
-                            OffsetToPose::default(),
-                            LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
-                            ClampX::new(<span class="number">0.4</span>),
-                            SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(<span class="number">0.02</span>)),
-                            FlipX::default(),
-                            SetSideBlue::new(),
-                        ),
-                        AlwaysTrue::new(),
-                    ),
-                    ActionDataConditional::new(
-                        FirstValid::new(ActionConcurrent::new(
-                            DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(
-                                Target::Pole,
-                            ),
-                            DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(
-                                Target::Red,
-                            ),
-                        )),
-                        ActionConcurrent::new(
-                            <span class="macro">act_nest!</span>(
-                                ActionChain::new,
-                                ExtractPosition::new(),
-                                MidPoint::new(),
-                                OffsetToPose::default(),
-                                LinearYawFromX::&lt;Stability2Adjust&gt;::default(),
-                                ClampX::new(<span class="number">0.2</span>),
-                                SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.2</span>)),
-                                ReplaceX::new(),
-                                SetSideRed::new(),
-                            ),
-                            AlwaysTrue::new(),
-                        ),
-                        ActionConcurrent::new(
-                            ActionSequence::new(
-                                Terminal::new(),
-                                SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.0</span>)),
-                            ),
-                            AlwaysFalse::new(),
-                        ),
-                    ),
-                ),
-                TupleSecond::new(ActionConcurrentSplit::new(
-                    <span class="macro">act_nest!</span>(
-                        ActionChain::new,
-                        Stability2Movement::new(
-                            context,
-                            Stability2Pos::new(<span class="number">0.0</span>, GATE_TRAVERSAL_SPEED, <span class="number">30.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, depth),
-                        ),
-                        OutputType::&lt;()&gt;::new(),
-                    ),
-                    end_condition,
-                )),
-            ),
-        )),
-        DelayAction::new(timeout),
-    )
 }
 
 <span class="kw">pub fn </span>gate_run_testing&lt;
