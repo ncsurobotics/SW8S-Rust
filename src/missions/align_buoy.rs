@@ -153,7 +153,6 @@ pub fn buoy_align_shot<
 ) -> impl ActionExec<()> + '_ {
     const Y_SPEED: f32 = 0.2;
     const DEPTH: f32 = -0.9;
-    const SHOT_DEPTH: f32 = -0.3;
     const TRUE_COUNT: u32 = 3;
     const FALSE_COUNT: u32 = 5;
 
@@ -163,6 +162,9 @@ pub fn buoy_align_shot<
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
     const ALIGN_YAW_SPEED: f32 = -6.0;
+
+    const SHOT_DEPTH: f32 = -0.3;
+    const SHOT_ANGLE: f32 = 22.5;
 
     act_nest!(
         ActionSequence::new,
@@ -254,7 +256,7 @@ pub fn buoy_align_shot<
             ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
             Stability2Movement::new(
                 context,
-                Stability2Pos::new(0.0, 0.0, 45.0, 0.0, None, SHOT_DEPTH)
+                Stability2Pos::new(0.0, 0.0, SHOT_ANGLE, 0.0, None, SHOT_DEPTH)
             ),
             OutputType::<()>::new(),
         ),
