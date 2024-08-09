@@ -126,6 +126,7 @@ pub fn buoy_align_shot<
 ) -> impl ActionExec<()> + '_ {
     const Y_SPEED: f32 = 0.2;
     const DEPTH: f32 = -0.9;
+    const SHOT_DEPTH: f32 = -0.3;
     const TRUE_COUNT: u32 = 3;
     const FALSE_COUNT: u32 = 5;
 
@@ -207,7 +208,26 @@ pub fn buoy_align_shot<
                 ActionChain::new(IsSome::default(), CountFalse::new(FALSE_COUNT))
             )),
         ),),
-        ZeroMovement::new(context, DEPTH),
+        act_nest!(
+            ActionChain::new,
+            ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(-0.2, 0.0, 0.0, 0.0, None, DEPTH)
+            ),
+            OutputType::<()>::new(),
+        ),
+        DelayAction::new(0.5),
+        act_nest!(
+            ActionChain::new,
+            ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(0.0, 0.0, 45.0, 0.0, None, SHOT_DEPTH)
+            ),
+            OutputType::<()>::new(),
+        ),
+        DelayAction::new(1.0),
         FireTorpedo::new(context),
         DelayAction::new(3.0),
         OutputType::<()>::new()
