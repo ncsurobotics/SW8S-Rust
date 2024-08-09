@@ -221,12 +221,12 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(angles) = cntrl_board.responses().get_angles().<span class="kw">await </span>{
             <span class="kw">let </span>roll = <span class="kw-2">*</span>angles.roll();
             <span class="kw">if </span><span class="self">self</span>.half_loops % <span class="number">2 </span>== <span class="number">0 </span>{
-                <span class="kw">if </span>roll &gt; <span class="number">180.0 </span>|| (roll &lt; -<span class="number">20.0 </span>&amp;&amp; roll &gt; -<span class="number">150.0</span>) {
+                <span class="kw">if </span>roll &lt; -<span class="number">20.0 </span>&amp;&amp; roll &gt; -<span class="number">150.0 </span>{
                     <span class="macro">println!</span>(<span class="string">"Roll at 0 trigger: {}"</span>, roll);
                     <span class="self">self</span>.half_loops += <span class="number">1</span>;
                     <span class="macro">println!</span>(<span class="string">"Loop count: {}"</span>, <span class="self">self</span>.half_loops);
                 }
-            } <span class="kw">else if </span>roll &lt; <span class="number">220.0 </span>&amp;&amp; roll &gt; <span class="number">0.0 </span>{
+            } <span class="kw">else if </span>roll &lt; <span class="number">160.0 </span>&amp;&amp; roll &gt; <span class="number">0.0 </span>{
                 <span class="macro">println!</span>(<span class="string">"Roll at 1 trigger: {}"</span>, roll);
                 <span class="self">self</span>.half_loops += <span class="number">1</span>;
                 <span class="macro">println!</span>(<span class="string">"Loop count: {}"</span>, <span class="self">self</span>.half_loops);
