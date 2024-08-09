@@ -5,17 +5,15 @@ use crate::{
     act_nest,
     missions::{
         action::{
-            ActionChain, ActionConcurrent, ActionConditional, ActionDataConditional,
-            ActionSequence, ActionWhile, TupleSecond,
+            ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
+            TupleSecond,
         },
         basic::DelayAction,
-        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal, ToVec},
+        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
         fire_torpedo::FireTorpedo,
-        meb::WaitArm,
         movement::{
-            AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, OffsetToPose,
-            ReplaceX, SetX, SetY, SideMult, Stability2Adjust, Stability2Movement, Stability2Pos,
-            StraightMovement, StripY, ZeroMovement,
+            AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, OffsetToPose, ReplaceX, SetX,
+            SetY, Stability2Adjust, Stability2Movement, Stability2Pos, ZeroMovement,
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, Norm, SizeUnder, Vision},
     },
@@ -27,7 +25,7 @@ use crate::{
 };
 
 use super::{
-    action::{Action, ActionExec, ActionMod},
+    action::ActionExec,
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
 };
 

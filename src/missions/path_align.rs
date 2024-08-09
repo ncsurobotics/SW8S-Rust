@@ -4,16 +4,13 @@ use tokio_serial::SerialStream;
 use crate::{
     act_nest,
     missions::{
-        action::{
-            ActionChain, ActionConcurrent, ActionConditional, ActionDataConditional,
-            ActionSequence, TupleSecond,
-        },
-        extra::{CountTrue, NoOp, OutputType, Terminal, ToVec},
+        action::{ActionChain, ActionConcurrent, ActionSequence, TupleSecond},
+        extra::{CountTrue, OutputType, Terminal, ToVec},
         movement::{
-            AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust,
-            Stability2Movement, Stability2Pos, ZeroMovement,
+            LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement, Stability2Pos,
+            ZeroMovement,
         },
-        vision::{ExtractPosition, MidPoint, VisionNormBottom, VisionNormOffsetBottom},
+        vision::{ExtractPosition, MidPoint, VisionNormBottom},
     },
     vision::path::Path,
 };

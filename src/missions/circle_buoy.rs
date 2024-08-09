@@ -5,10 +5,9 @@ use crate::{
         basic::descend_and_go_forward,
         extra::{AlwaysTrue, CountTrue, OutputType, ToVec, Transform},
         movement::{
-            aggressive_yaw_from_x, AdjustType, CautiousConstantX, ConstYaw, Descend, FlatX,
-            LinearYawFromX, MinYaw, OffsetToPose, SetX, SideMult, Stability1Adjust,
-            Stability1Movement, Stability1Pos, Stability2Adjust, Stability2Movement, Stability2Pos,
-            StripY,
+            aggressive_yaw_from_x, AdjustType, CautiousConstantX, ConstYaw, FlatX, LinearYawFromX,
+            MinYaw, OffsetToPose, SetX, SideMult, Stability1Adjust, Stability1Movement,
+            Stability1Pos, Stability2Adjust, Stability2Movement, Stability2Pos, StripY,
         },
         vision::{Average, DetectTarget, ExtractPosition, VisionNorm},
     },

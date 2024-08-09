@@ -10,11 +10,7 @@ use super::{
 };
 
 use core::hash::Hash;
-use std::{
-    cmp::{Ord, Ordering},
-    error::Error,
-    fmt::Display,
-};
+use std::{cmp::Ordering, error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {

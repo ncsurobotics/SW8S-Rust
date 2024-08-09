@@ -64,7 +64,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Des
 
         let cntrl = self.context.get_control_board();
 
-        let mut cur_yaw;
+        let cur_yaw;
 
         // Intializes yaw to current value
         #[allow(clippy::await_holding_lock)]

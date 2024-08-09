@@ -4,12 +4,11 @@ use tokio_serial::SerialStream;
 use crate::{
     act_nest,
     missions::{
-        action::{ActionConcurrentSplit, ActionConditional, ActionDataConditional},
+        action::{ActionConcurrentSplit, ActionDataConditional},
         basic::descend_depth_and_go_forward,
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
         movement::{
-            AdjustType, ClampX, FlipX, InvertX, MultiplyX, ReplaceX, SetSideBlue, SetSideRed, SetX,
-            SetY,
+            AdjustType, ClampX, FlipX, InvertX, ReplaceX, SetSideBlue, SetSideRed, SetX, SetY,
         },
         vision::{MidPoint, OffsetClass},
     },

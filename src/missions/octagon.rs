@@ -11,18 +11,13 @@ use crate::{
         },
         basic::DelayAction,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
-        fire_torpedo::FireTorpedo,
-        meb::WaitArm,
         movement::{
-            AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, OffsetToPose,
-            ReplaceX, SetX, SetY, SideMult, Stability2Adjust, Stability2Movement, Stability2Pos,
-            StraightMovement, StripY, ZeroMovement,
+            AdjustType, ClampX, Descend, LinearYawFromX, MultiplyX, OffsetToPose, SetX,
+            Stability2Adjust, Stability2Movement, Stability2Pos, StripY, ZeroMovement,
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},
     },
     vision::{
-        buoy_model::{BuoyModel, Target},
-        nn_cv2::OnnxModel,
         path::{Path, Yuv},
         Offset2D,
     },
@@ -171,7 +166,7 @@ pub fn octagon<
 
 #[cfg(test)]
 mod tests {
-    use std::{env::current_dir, fs::create_dir_all};
+    use std::fs::create_dir_all;
 
     use opencv::{
         core::Vector,

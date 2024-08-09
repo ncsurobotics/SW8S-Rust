@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use futures::io::ReadHalf;
 use tokio::{
     io::{AsyncReadExt, AsyncWrite, AsyncWriteExt, WriteHalf},
     sync::Mutex,

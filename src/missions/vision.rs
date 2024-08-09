@@ -9,7 +9,7 @@ use super::graph::DotString;
 use crate::vision::nn_cv2::VisionModel;
 use crate::vision::{Draw, DrawRect2d, Offset2D, RelPos, VisualDetection, VisualDetector};
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, Result};
 use num_traits::{Float, FromPrimitive, Num};
 use opencv::core::Mat;
 use uuid::Uuid;

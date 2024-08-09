@@ -2,7 +2,7 @@ use core::fmt::Debug;
 use std::{
     ops::Deref,
     sync::{Arc, OnceLock},
-    time::{Duration, SystemTime},
+    time::Duration,
 };
 
 use anyhow::{anyhow, bail, Result};
