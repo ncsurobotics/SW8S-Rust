@@ -1,5 +1,6 @@
 use crate::comms::control_board::ControlBoard;
 use crate::comms::control_board::LAST_YAW;
+use crate::logln;
 use crate::vision::DrawRect2d;
 use crate::vision::Offset2D;
 use crate::vision::RelPos;
@@ -59,7 +60,7 @@ impl<T> ActionMod<f32> for Descend<'_, T> {
 
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Descend<'_, T> {
     async fn execute(&mut self) -> Result<()> {
-        println!("DESCEND");
+        logln!("DESCEND");
         const SLEEP_LEN: Duration = Duration::from_millis(100);
 
         let cntrl = self.context.get_control_board();
@@ -88,7 +89,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Des
         cntrl
             .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, cur_yaw, self.target_depth)
             .await?;
-        println!("GOT SPEED SET");
+        logln!("GOT SPEED SET");
         Ok(())
     }
 }
@@ -206,7 +207,7 @@ where
 {
     fn modify(&mut self, input: &Result<V>) {
         if let Ok(input) = input {
-            println!("Modify value: {:#?}", input);
+            logln!("Modify value: {:#?}", input);
             if !input.offset().x().is_nan() || !input.offset().y().is_nan() {
                 self.x = *input.offset().x() as f32;
             } else {
@@ -260,7 +261,7 @@ where
 {
     fn modify(&mut self, input: &Result<V>) {
         if let Ok(input) = input {
-            println!("Modify value: {:#?}", input);
+            logln!("Modify value: {:#?}", input);
             if !input.offset().x().is_nan() && !input.offset().y().is_nan() {
                 self.x = *input.offset().x() as f32;
                 self.yaw = *input.offset_angle().angle() as f32;
@@ -285,7 +286,7 @@ where
         const ANGLE_DIFF: f32 = 20.0;
 
         if let Ok(input) = input {
-            println!("Modify value: {:#?}", input);
+            logln!("Modify value: {:#?}", input);
             if !input.offset().x().is_nan() && !input.offset().y().is_nan() {
                 self.x = *input.offset().x() as f32;
                 self.yaw_adjust += if self.x.abs() > MIN_TO_CHANGE_ANGLE {
@@ -293,7 +294,7 @@ where
                 } else {
                     0.0
                 };
-                println!("YAW ADJUST: {}", self.yaw_adjust);
+                logln!("YAW ADJUST: {}", self.yaw_adjust);
             } else {
                 self.x = 0.0;
             }
@@ -312,7 +313,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
 
         let yaw = if let Some(angles) = self.context.get_control_board().get_initial_angles().await
         {
-            println!("Initial Yaw: {}", angles.yaw());
+            logln!("Initial Yaw: {}", angles.yaw());
             let mut inner_yaw = angles.yaw() + self.yaw_adjust;
             if inner_yaw.abs() > 180.0 {
                 let sign = inner_yaw / inner_yaw.abs();
@@ -322,7 +323,7 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
         } else {
             0.0
         };
-        println!(
+        logln!(
             "Current Yaw: {:#?}",
             self.context
                 .get_control_board()
@@ -331,14 +332,14 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
                 .await
                 .map(|angles| *angles.yaw())
         );
-        println!("Adjusted Yaw: {}", yaw);
+        logln!("Adjusted Yaw: {}", yaw);
 
-        println!("Prior x: {}", self.x);
+        logln!("Prior x: {}", self.x);
         let mut x = self.x.signum() * self.x.abs().pow(ADJUST_VAL);
         if x.abs() < MIN_X {
             x = 0.0;
         }
-        println!("Setting x to {x}");
+        logln!("Setting x to {x}");
 
         self.context
             .get_control_board()
@@ -381,7 +382,7 @@ where
 {
     fn modify(&mut self, input: &Result<V>) {
         if let Ok(input) = input {
-            println!("Modify value: {:#?}", input);
+            logln!("Modify value: {:#?}", input);
             if !input.offset().x().is_nan() && !input.offset().y().is_nan() {
                 self.x = *input.offset().x() as f32;
                 self.y = *input.offset().y() as f32;
@@ -573,7 +574,7 @@ impl Stability2Pos {
             }
         }
 
-        //println!("Stability 2 speed set: {:#?}", self);
+        //logln!("Stability 2 speed set: {:#?}", self);
 
         board
             .stability_2_speed_set(
@@ -617,8 +618,8 @@ impl Stability2Pos {
     /// The x and y fields are bounded to [-1, 1].
     /// The pitch, roll, yaw, depth fields wrap around 360 degrees.
     pub fn adjust(&mut self, adjuster: &Stability2Adjust) -> &Self {
-        //println!("Stability 2 pre-adjust: {:#?}", self);
-        //println!("Adjuster: {:#?}", adjuster);
+        //logln!("Stability 2 pre-adjust: {:#?}", self);
+        //logln!("Adjuster: {:#?}", adjuster);
 
         self.x = Self::set_speed(self.x, adjuster.x().clone());
         self.y = Self::set_speed(self.y, adjuster.y().clone());
@@ -636,7 +637,7 @@ impl Stability2Pos {
             None
         };
 
-        println!("Stability 2 post-adjust: {:#?}", self);
+        logln!("Stability 2 post-adjust: {:#?}", self);
         self
     }
 
@@ -858,28 +859,28 @@ impl<T: Sync + Send + Clone> ActionMod<T> for FlipYaw<T> {
 
 impl ActionExec<Stability2Adjust> for FlipYaw<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
-        println!("YAW BEFORE: {:?}", self.pose.target_yaw);
+        logln!("YAW BEFORE: {:?}", self.pose.target_yaw);
         if let Some(ref mut yaw) = self.pose.target_yaw {
             match yaw {
                 AdjustType::Adjust(ref mut y) => *y = -*y,
                 AdjustType::Replace(ref mut y) => *y = -*y,
             }
         };
-        println!("YAW AFTER: {:?}", self.pose.target_yaw);
+        logln!("YAW AFTER: {:?}", self.pose.target_yaw);
         self.pose.clone()
     }
 }
 
 impl ActionExec<Stability1Adjust> for FlipYaw<Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
-        println!("YAW BEFORE: {:?}", self.pose.yaw_speed);
+        logln!("YAW BEFORE: {:?}", self.pose.yaw_speed);
         if let Some(ref mut yaw) = self.pose.yaw_speed {
             match yaw {
                 AdjustType::Adjust(ref mut y) => *y = -*y,
                 AdjustType::Replace(ref mut y) => *y = -*y,
             }
         };
-        println!("YAW AFTER: {:?}", self.pose.yaw_speed);
+        logln!("YAW AFTER: {:?}", self.pose.yaw_speed);
         self.pose.clone()
     }
 }
@@ -1500,7 +1501,7 @@ impl Stability1Pos {
 
     /// Executes the position in stability assist
     pub async fn exec(&mut self, board: &ControlBoard<WriteHalf<SerialStream>>) -> Result<()> {
-        println!("Stability 1 speed set: {:#?}", self);
+        logln!("Stability 1 speed set: {:#?}", self);
 
         board
             .stability_1_speed_set(
@@ -1544,8 +1545,8 @@ impl Stability1Pos {
     /// The x and y fields are bounded to [-1, 1].
     /// The pitch, roll, yaw, depth fields wrap around 360 degrees.
     pub fn adjust(&mut self, adjuster: &Stability1Adjust) -> &Self {
-        println!("Stability 2 pre-adjust: {:#?}", self);
-        println!("Adjuster: {:#?}", adjuster);
+        logln!("Stability 2 pre-adjust: {:#?}", self);
+        logln!("Adjuster: {:#?}", adjuster);
 
         self.x = Self::set_speed(self.x, adjuster.x().clone());
         self.y = Self::set_speed(self.y, adjuster.y().clone());
@@ -1558,7 +1559,7 @@ impl Stability1Pos {
         //self.yaw_speed = Self::set_speed(self.yaw_speed, adjuster.yaw_speed().clone());
         self.yaw_speed = Self::set_rot(self.yaw_speed, adjuster.yaw_speed().clone());
 
-        println!("Stability 1 post-adjust: {:#?}", self);
+        logln!("Stability 1 post-adjust: {:#?}", self);
         self
     }
 
@@ -1672,7 +1673,7 @@ impl FlatX<&Stability1Adjust> {
 impl ActionExec<Stability1Adjust> for FlatX<&Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
         let mut pose = self.pose.clone();
-        println!("Before transform: {:#?}", pose);
+        logln!("Before transform: {:#?}", pose);
         if let Some(AdjustType::Replace(val)) = self.pose.x {
             pose.x = if val.is_zero() {
                 Some(AdjustType::Replace(0.0))
@@ -1686,7 +1687,7 @@ impl ActionExec<Stability1Adjust> for FlatX<&Stability1Adjust> {
 
 impl ActionExec<Stability1Adjust> for FlatX<Stability1Adjust> {
     async fn execute(&mut self) -> Stability1Adjust {
-        println!("Before transform: {:#?}", self.pose);
+        logln!("Before transform: {:#?}", self.pose);
         if let Some(AdjustType::Replace(val)) = self.pose.x {
             self.pose.x = if val.is_zero() {
                 Some(AdjustType::Replace(0.0))
@@ -1854,12 +1855,12 @@ impl ActionExec<Stability2Adjust> for MinYaw<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
         if let Some(AdjustType::Adjust(ref mut x)) = self.pose.target_yaw {
             if x.is_zero() {
-                println!("ZERO, SETTING MIN SPEED");
+                logln!("ZERO, SETTING MIN SPEED");
                 *x = self.speed;
             }
         };
         if self.pose.target_yaw.is_none() {
-            println!("NONE, SETTING MIN SPEED");
+            logln!("NONE, SETTING MIN SPEED");
             self.pose.target_yaw = Some(AdjustType::Adjust(self.speed));
             self.pose.y = Some(AdjustType::Replace(0.0));
         } else {
@@ -2126,7 +2127,7 @@ impl<T: Sync + Send + Clone> ActionMod<T> for SetSideRed<T> {
 
 impl<T: Send + Sync + Clone> ActionExec<T> for SetSideRed<T> {
     async fn execute(&mut self) -> T {
-        println!("SETTING SIDE TO RED");
+        logln!("SETTING SIDE TO RED");
         *SIDE.lock().unwrap() = Side::Red;
         self.value.clone()
     }
@@ -2161,7 +2162,7 @@ impl<T: Sync + Send + Clone> ActionMod<T> for SetSideBlue<T> {
 
 impl<T: Send + Sync + Clone> ActionExec<T> for SetSideBlue<T> {
     async fn execute(&mut self) -> T {
-        println!("SETTING SIDE TO BLUE");
+        logln!("SETTING SIDE TO BLUE");
         *SIDE.lock().unwrap() = Side::Blue;
         self.value.clone()
     }
@@ -2281,21 +2282,21 @@ impl<T: Sync + Send + Clone> ActionMod<T> for InvertX<T> {
 
 impl ActionExec<Stability2Adjust> for InvertX<Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
-        println!("Invert input: {:#?}", self.pose.x);
+        logln!("Invert input: {:#?}", self.pose.x);
         if let Some(ref mut x) = self.pose.x {
             *x = match *x {
                 AdjustType::Adjust(x) => AdjustType::Adjust(x.signum() * (1.0 - x.abs())),
                 AdjustType::Replace(x) => AdjustType::Replace(x.signum() * (1.0 - x.abs())),
             };
         }
-        println!("Invert output: {:#?}", self.pose.x);
+        logln!("Invert output: {:#?}", self.pose.x);
         self.pose.clone()
     }
 }
 
 impl ActionExec<Stability2Adjust> for InvertX<&Stability2Adjust> {
     async fn execute(&mut self) -> Stability2Adjust {
-        println!("Invert input: {:#?}", self.pose.x);
+        logln!("Invert input: {:#?}", self.pose.x);
         let mut pose = self.pose.clone();
         if let Some(ref mut x) = pose.x {
             *x = match *x {
@@ -2303,7 +2304,7 @@ impl ActionExec<Stability2Adjust> for InvertX<&Stability2Adjust> {
                 AdjustType::Replace(x) => AdjustType::Replace(x.signum() * (1.0 - x.abs())),
             };
         }
-        println!("Invert output: {:#?}", self.pose.x);
+        logln!("Invert output: {:#?}", self.pose.x);
         pose
     }
 }

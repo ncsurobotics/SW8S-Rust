@@ -21,6 +21,7 @@ use self::{
 };
 
 use super::auv_control_board::{AUVControlBoard, MessageId};
+use crate::logln;
 
 pub mod response;
 pub mod util;
@@ -116,7 +117,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
                 .await)
                     .is_err()
                 {
-                    eprintln!("Watchdog ACK timed out.");
+                    logln!("Watchdog ACK timed out.");
                 }
 
                 sleep(Duration::from_millis(200)).await;

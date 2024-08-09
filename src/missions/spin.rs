@@ -5,7 +5,7 @@ use tokio::io::{AsyncWriteExt, WriteHalf};
 use tokio_serial::SerialStream;
 
 use crate::{
-    act_nest,
+    act_nest, logln,
     missions::{
         action::{ActionChain, ActionConcurrent, ActionSequence, ActionWhile, TupleSecond},
         basic::DelayAction,
@@ -92,14 +92,14 @@ impl<T: GetControlBoard<U> + Send + Sync, U: AsyncWriteExt + Unpin + Send + Sync
             let roll = *angles.roll();
             if self.half_loops % 2 == 0 {
                 if roll < -20.0 && roll > -150.0 {
-                    println!("Roll at 0 trigger: {}", roll);
+                    logln!("Roll at 0 trigger: {}", roll);
                     self.half_loops += 1;
-                    println!("Loop count: {}", self.half_loops);
+                    logln!("Loop count: {}", self.half_loops);
                 }
             } else if roll < 160.0 && roll > 0.0 {
-                println!("Roll at 1 trigger: {}", roll);
+                logln!("Roll at 1 trigger: {}", roll);
                 self.half_loops += 1;
-                println!("Loop count: {}", self.half_loops);
+                logln!("Loop count: {}", self.half_loops);
             }
         }
 

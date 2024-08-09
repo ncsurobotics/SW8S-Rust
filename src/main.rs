@@ -9,6 +9,7 @@ use sw8s_rust_lib::{
         control_board::{ControlBoard, SensorStatuses},
         meb::MainElectronicsBoard,
     },
+    logln,
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
@@ -52,7 +53,7 @@ async fn control_board() -> &'static ControlBoard<WriteHalf<SerialStream>> {
             match board {
                 Ok(x) => x,
                 Err(e) => {
-                    eprintln!("Error initializing control board: {:#?}", e);
+                    logln!("Error initializing control board: {:#?}", e);
                     let backup_board =
                         ControlBoard::serial(&Configuration::default().control_board_backup_path)
                             .await
@@ -172,19 +173,19 @@ async fn shutdown_handler() -> UnboundedSender<i32> {
     tokio::spawn(async move {
         // Wait for shutdown signal
         let exit_status = tokio::select! {_ = signal::ctrl_c() => {
-        eprintln!("CTRL-C RECV");
+        logln!("CTRL-C RECV");
         1 }, Some(x) = shutdown_rx.recv() => {
-            eprintln!("SHUTDOWN SIGNAL RECV");
+            logln!("SHUTDOWN SIGNAL RECV");
             x }};
 
         let status = control_board().await.sensor_status_query().await;
 
         match status.unwrap() {
             SensorStatuses::ImuNr => {
-                eprintln!("imu not ready");
+                logln!("imu not ready");
             }
             SensorStatuses::DepthNr => {
-                eprintln!("depth not ready");
+                logln!("depth not ready");
             }
             _ => {}
         }
@@ -221,32 +222,32 @@ async fn run_mission(mission: &str) -> Result<()> {
                 .await
                 .unwrap();
             sleep(Duration::from_millis(1000)).await;
-            println!("1");
+            logln!("1");
             control_board
                 .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0])
                 .await
                 .unwrap();
             sleep(Duration::from_millis(1000)).await;
-            println!("2");
+            logln!("2");
             control_board
                 .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
                 .await
                 .unwrap();
             sleep(Duration::from_millis(1000)).await;
-            println!("3");
+            logln!("3");
             control_board
                 .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
                 .await
                 .unwrap();
-            println!("4");
+            logln!("4");
             Ok(())
         }
         "depth_test" | "depth-test" => {
             let _control_board = control_board().await;
-            println!("Init ctrl");
+            logln!("Init ctrl");
             sleep(Duration::from_millis(1000)).await;
-            println!("End sleep");
-            println!("Starting depth hold...");
+            logln!("End sleep");
+            logln!("Starting depth hold...");
             loop {
                 if let Ok(ret) = timeout(
                     Duration::from_secs(1),
@@ -261,11 +262,11 @@ async fn run_mission(mission: &str) -> Result<()> {
                 }
             }
             sleep(Duration::from_secs(5)).await;
-            println!("Finished depth hold");
+            logln!("Finished depth hold");
             Ok(())
         }
         "travel_test" | "travel-test" => {
-            println!("Starting travel...");
+            logln!("Starting travel...");
             loop {
                 if let Ok(ret) = timeout(
                     Duration::from_secs(1),
@@ -280,11 +281,11 @@ async fn run_mission(mission: &str) -> Result<()> {
                 }
             }
             sleep(Duration::from_secs(10)).await;
-            println!("Finished travel");
+            logln!("Finished travel");
             Ok(())
         }
         "surface_" | "surface-test" => {
-            println!("Starting travel...");
+            logln!("Starting travel...");
             loop {
                 if let Ok(ret) = timeout(
                     Duration::from_secs(1),
@@ -299,7 +300,7 @@ async fn run_mission(mission: &str) -> Result<()> {
                 }
             }
             sleep(Duration::from_secs(10)).await;
-            println!("Finished travel");
+            logln!("Finished travel");
             Ok(())
         }
         "descend" | "forward" => {
@@ -352,10 +353,10 @@ async fn run_mission(mission: &str) -> Result<()> {
         }
         "start_cam" => {
             // This has not been tested
-            println!("Opening camera");
+            logln!("Opening camera");
             front_cam().await;
             bottom_cam().await;
-            println!("Opened camera");
+            logln!("Opened camera");
             Ok(())
         }
         "path_align" => {

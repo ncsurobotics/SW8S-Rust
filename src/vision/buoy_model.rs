@@ -2,7 +2,7 @@ use anyhow::Result;
 use derive_getters::Getters;
 use opencv::{core::Rect2d, core::Size, prelude::Mat};
 
-use crate::load_onnx;
+use crate::{load_onnx, logln};
 
 use super::{
     nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
@@ -94,8 +94,8 @@ impl YoloProcessor for BuoyModel<OnnxModel> {
             )
             .unwrap_or(Ordering::Equal)
         });
-        println!("Detection MIN buoy: {:#?}", detection.first());
-        println!("Detection MAX buoy: {:#?}", detection.last());
+        logln!("Detection MIN buoy: {:#?}", detection.first());
+        logln!("Detection MAX buoy: {:#?}", detection.last());
         detection.into_iter().rev().take(1).collect()
     }
 
@@ -131,7 +131,7 @@ impl VisionModel for BuoyModel<OnnxModel> {
 
     fn detect_yolo_v5(&mut self, image: &Mat, threshold: f64) -> Vec<YoloDetection> {
         let bounding_box_size = |b: &Rect2d| -> f64 { b.width * b.height };
-        println!("CALLED BUOY DETECT");
+        logln!("CALLED BUOY DETECT");
 
         let mut detection = self.model.detect_yolo_v5(image, threshold);
         detection.sort_unstable_by(|lhs, rhs| {
@@ -141,8 +141,8 @@ impl VisionModel for BuoyModel<OnnxModel> {
             )
             .unwrap_or(Ordering::Equal)
         });
-        println!("Detection MIN buoy: {:#?}", detection.first());
-        println!("Detection MAX buoy: {:#?}", detection.last());
+        logln!("Detection MIN buoy: {:#?}", detection.first());
+        logln!("Detection MAX buoy: {:#?}", detection.last());
         detection.into_iter().rev().take(1).collect()
     }
     fn forward(&mut self, image: &Mat) -> Self::ModelOutput {

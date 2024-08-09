@@ -7,6 +7,8 @@ use opencv::{
     prelude::Mat,
 };
 
+use crate::logln;
+
 use super::{Angle2D, Draw, RelPosAngle, VisualDetection};
 
 #[derive(Debug, Clone, Getters)]
@@ -63,7 +65,7 @@ impl Mul<&Mat> for PosVector {
 impl Draw for VisualDetection<bool, PosVector> {
     fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
         let color = if self.class {
-            println!("Drawing true: {:#?}", self.position());
+            logln!("Drawing true: {:#?}", self.position());
             Scalar::from((0.0, 255.0, 0.0))
         } else {
             Scalar::from((0.0, 0.0, 255.0))

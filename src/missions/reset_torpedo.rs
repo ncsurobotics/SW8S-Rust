@@ -1,7 +1,10 @@
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
-use crate::comms::meb::{MainElectronicsBoard, MebCmd};
+use crate::{
+    comms::meb::{MainElectronicsBoard, MebCmd},
+    logln,
+};
 
 use super::{
     action::{Action, ActionExec},
@@ -25,8 +28,8 @@ impl<T: GetMainElectronicsBoard> ActionExec<()> for ResetTorpedo<'_, T> {
     async fn execute<'a>(&'a mut self) {
         let send_cmd = |meb: &'a MainElectronicsBoard<WriteHalf<SerialStream>>, cmd| async move {
             match meb.send_msg(cmd).await {
-                Ok(()) => println!("{:#?} success", cmd),
-                Err(e) => eprintln!("{:#?} failure: {:#?}", cmd, e),
+                Ok(()) => logln!("{:#?} success", cmd),
+                Err(e) => logln!("{:#?} failure: {:#?}", cmd, e),
             };
         };
 

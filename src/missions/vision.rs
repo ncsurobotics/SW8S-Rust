@@ -6,6 +6,7 @@ use std::{iter::Sum, marker::PhantomData};
 use super::action::{Action, ActionExec, ActionMod};
 use super::action_context::GetBottomCamMat;
 use super::graph::DotString;
+use crate::logln;
 use crate::vision::nn_cv2::VisionModel;
 use crate::vision::{Draw, DrawRect2d, Offset2D, RelPos, VisualDetection, VisualDetector};
 
@@ -58,14 +59,14 @@ where
     async fn execute(&mut self) -> Result<Offset2D<V>> {
         #[cfg(feature = "logging")]
         {
-            println!("Running detection...");
+            logln!("Running detection...");
         }
 
         #[allow(unused_mut)]
         let mut mat = self.context.get_front_camera_mat().await.clone();
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
-        println!("Detect attempt: {}", detections.is_ok());
+        logln!("Detect attempt: {}", detections.is_ok());
         let detections = detections?;
         #[cfg(feature = "logging")]
         {
@@ -76,7 +77,7 @@ where
                 );
                 x.draw(&mut mat).unwrap()
             });
-            println!("Number of detects: {}", detections.len());
+            logln!("Number of detects: {}", detections.len());
             let _ = create_dir_all("/tmp/detect");
             imwrite(
                 &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
@@ -137,14 +138,14 @@ where
     async fn execute(&mut self) -> Result<Offset2D<V>> {
         #[cfg(feature = "logging")]
         {
-            println!("Running detection...");
+            logln!("Running detection...");
         }
 
         #[allow(unused_mut)]
         let mut mat = self.context.get_bottom_camera_mat().await.clone();
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
-        println!("Detect attempt: {}", detections.is_ok());
+        logln!("Detect attempt: {}", detections.is_ok());
         let detections = detections?;
         #[cfg(feature = "logging")]
         {
@@ -155,7 +156,7 @@ where
                 );
                 x.draw(&mut mat).unwrap()
             });
-            println!("Number of detects: {}", detections.len());
+            logln!("Number of detects: {}", detections.len());
             let _ = create_dir_all("/tmp/detect");
             imwrite(
                 &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
@@ -219,14 +220,14 @@ where
     async fn execute(&mut self) -> Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>> {
         #[cfg(feature = "logging")]
         {
-            println!("Running detection...");
+            logln!("Running detection...");
         }
 
         #[allow(unused_mut)]
         let mut mat = self.context.get_front_camera_mat().await.clone();
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
-        println!("Detect attempt: {:#?}", detections);
+        logln!("Detect attempt: {:#?}", detections);
         let detections = detections?;
         #[cfg(feature = "logging")]
         {
@@ -295,14 +296,14 @@ where
     async fn execute(&mut self) -> Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>> {
         #[cfg(feature = "logging")]
         {
-            println!("Running detection...");
+            logln!("Running detection...");
         }
 
         #[allow(unused_mut)]
         let mut mat = self.context.get_bottom_camera_mat().await.clone();
         let detections = self.model.detect(&mat);
         #[cfg(feature = "logging")]
-        println!("Detect attempt: {:#?}", detections);
+        logln!("Detect attempt: {:#?}", detections);
         let detections = detections?;
         #[cfg(feature = "logging")]
         {
@@ -416,7 +417,7 @@ where
     async fn execute(&mut self) -> Result<Vec<VisualDetection<U::ClassEnum, U::Position>>> {
         #[cfg(feature = "logging")]
         {
-            println!("Running detection...");
+            logln!("Running detection...");
         }
 
         #[allow(unused_mut)]
@@ -492,14 +493,14 @@ where
 
         #[cfg(feature = "logging")]
         {
-            println!("Running detection...");
+            logln!("Running detection...");
         }
 
         let detections = pipeline.get_single().await;
 
         #[cfg(feature = "logging")]
         {
-            println!("Pipeline detections: {:#?}", detections);
+            logln!("Pipeline detections: {:#?}", detections);
         }
 
         Ok(detections
@@ -569,7 +570,7 @@ impl<
                 .cloned()
                 .collect();
             if !passing_vals.is_empty() {
-                println!("Passing this: {:#?}", passing_vals);
+                logln!("Passing this: {:#?}", passing_vals);
                 Some(passing_vals)
             } else {
                 None
@@ -708,7 +709,7 @@ impl ActionExec<Option<Offset2D<f64>>> for MidPoint<Offset2D<f64>> {
                 .unwrap();
 
             let val = Some(Offset2D::new((max_x + min_x) / 2.0, (max_y + min_y) / 2.0));
-            println!("Processed this: {:#?}", val);
+            logln!("Processed this: {:#?}", val);
             val
         }
     }
@@ -923,7 +924,7 @@ impl<T: Send + Sync + Clone> ActionExec<Option<Vec<VisualDetection<T, DrawRect2d
             area = 0.0;
         };
 
-        println!("Area: {}", area);
+        logln!("Area: {}", area);
         if area < self.size {
             Some(self.values.clone())
         } else {

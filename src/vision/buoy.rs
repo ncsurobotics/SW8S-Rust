@@ -117,7 +117,10 @@ mod tests {
         imgcodecs::{imread, imwrite, IMREAD_COLOR},
     };
 
-    use crate::vision::{Draw, VisualDetector};
+    use crate::{
+        logln,
+        vision::{Draw, VisualDetector},
+    };
     use assert_approx_eq::assert_approx_eq;
 
     use super::*;
@@ -132,7 +135,7 @@ mod tests {
             .iter()
             .for_each(|result| result.draw(&mut image).unwrap());
 
-        println!("Detections: {:#?}", detect_unique);
+        logln!("Detections: {:#?}", detect_unique);
         imwrite(
             "tests/vision/output/buoy_images/1.jpeg",
             &image,

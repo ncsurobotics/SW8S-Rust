@@ -174,7 +174,10 @@ mod tests {
     };
     use rayon::iter::{ParallelBridge, ParallelIterator};
 
-    use crate::vision::{Draw, VisualDetection, VisualDetector};
+    use crate::{
+        logln,
+        vision::{Draw, VisualDetection, VisualDetector},
+    };
 
     use super::*;
 
@@ -192,7 +195,7 @@ mod tests {
             .into_iter()
             .filter(|x| *x.class())
             .collect();
-        println!("{:#?}", output);
+        logln!("{:#?}", output);
         assert_eq!(output.len(), 0);
 
         create_dir_all("tests/vision/output/octagon_images").unwrap();
@@ -218,7 +221,7 @@ mod tests {
             .into_iter()
             .filter(|x| *x.class())
             .collect();
-        println!("{:#?}", output);
+        logln!("{:#?}", output);
 
         assert_eq!(output.len(), 1);
 
@@ -254,7 +257,7 @@ mod tests {
                     .into_iter()
                     .filter(|x| *x.class())
                     .collect();
-                println!("{:#?}", output);
+                logln!("{:#?}", output);
 
                 /*
                 if idx > ENTERS_VISION && idx < LEAVES_VISION {

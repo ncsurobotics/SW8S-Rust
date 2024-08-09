@@ -9,6 +9,8 @@ use std::sync::Arc;
 use std::thread::spawn;
 use tokio::sync::Mutex;
 
+use crate::logln;
+
 use super::MatSource;
 
 #[derive(Debug)]
@@ -51,7 +53,7 @@ impl Camera {
         let frame_copy = frame.clone();
 
         #[cfg(feature = "logging")]
-        println!("Capture string: {capture_string}");
+        logln!("Capture string: {capture_string}");
         spawn(move || {
             let mut capture =
                 VideoCapture::from_file(&capture_string, VideoCaptureAPIs::CAP_GSTREAMER as i32)
@@ -119,6 +121,6 @@ mod tests {
         .unwrap()
         .get_mat()
         .await;
-        println!("{:?}", output);
+        logln!("{:?}", output);
     }
 }

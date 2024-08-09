@@ -1,3 +1,5 @@
+use crate::logln;
+
 use super::{
     action::{Action, ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
@@ -20,9 +22,9 @@ impl Action for DelayAction {}
 
 impl ActionExec<()> for DelayAction {
     async fn execute(&mut self) {
-        println!("BEGIN sleep for {} seconds", self.delay);
+        logln!("BEGIN sleep for {} seconds", self.delay);
         sleep(Duration::from_secs_f32(self.delay)).await;
-        println!("END sleep for {} seconds", self.delay);
+        logln!("END sleep for {} seconds", self.delay);
     }
 }
 

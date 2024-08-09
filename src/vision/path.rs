@@ -151,21 +151,21 @@ impl VisualDetector<i32> for Path {
                 let length = pca_output.pca_value().get(length_idx).unwrap();
                 let length_2 = pca_output.pca_vector().get(length_idx + 1).unwrap();
 
-                println!("Testing for valid...");
-                println!("\tself.width_bounds = {:?}", self.width_bounds);
-                println!("\tself.width = {:?}", width);
-                println!(
+                logln!("Testing for valid...");
+                logln!("\tself.width_bounds = {:?}", self.width_bounds);
+                logln!("\tself.width = {:?}", width);
+                logln!(
                     "\tcontained_width = {:?}",
                     self.width_bounds.contains(&width)
                 );
-                println!();
-                println!("\tYUV range = {:?}", self.color_bounds);
-                println!("\tYUV val = {:?}", Yuv::from(&val));
-                println!(
+                logln!();
+                logln!("\tYUV range = {:?}", self.color_bounds);
+                logln!("\tYUV val = {:?}", Yuv::from(&val));
+                logln!(
                     "\tcontained_color = {:?}",
                     Yuv::from(&val).in_range(&self.color_bounds)
                 );
-                println!();
+                logln!();
 
                 let valid = self.width_bounds.contains(&width)
                     && Yuv::from(&val).in_range(&self.color_bounds);
@@ -259,36 +259,36 @@ impl VisualDetector<f64> for Path {
                 let length = pca_output.pca_value().get(length_idx).unwrap();
                 let length_2 = pca_output.pca_vector().get(length_idx + 1).unwrap();
 
-                println!("Testing for valid...");
-                println!("\tself.width_bounds = {:?}", self.width_bounds);
-                println!("\tself.width = {:?}", width);
-                println!(
+                logln!("Testing for valid...");
+                logln!("\tself.width_bounds = {:?}", self.width_bounds);
+                logln!("\tself.width = {:?}", width);
+                logln!(
                     "\tcontained_width = {:?}",
                     self.width_bounds.contains(&width)
                 );
-                println!();
-                println!("\tYUV range = {:?}", self.color_bounds);
-                println!("\tYUV val = {:?}", Yuv::from(&val));
-                println!(
+                logln!();
+                logln!("\tYUV range = {:?}", self.color_bounds);
+                logln!("\tYUV val = {:?}", Yuv::from(&val));
+                logln!(
                     "\tcontained_color = {:?}",
                     Yuv::from(&val).in_range(&self.color_bounds)
                 );
-                println!();
+                logln!();
 
                 let valid = self.width_bounds.contains(&width)
                     && Yuv::from(&val).in_range(&self.color_bounds);
 
                 if valid {
-                    println!("\tself.width_bounds = {:?}", self.width_bounds);
-                    println!("\tself.width = {:?}", width);
-                    println!(
+                    logln!("\tself.width_bounds = {:?}", self.width_bounds);
+                    logln!("\tself.width = {:?}", width);
+                    logln!(
                         "\tcontained_width = {:?}",
                         self.width_bounds.contains(&width)
                     );
-                    println!();
-                    println!("\tYUV range = {:?}", self.color_bounds);
-                    println!("\tYUV val = {:?}", Yuv::from(&val));
-                    println!(
+                    logln!();
+                    logln!("\tYUV range = {:?}", self.color_bounds);
+                    logln!("\tYUV val = {:?}", Yuv::from(&val));
+                    logln!(
                         "\tcontained_color = {:?}",
                         Yuv::from(&val).in_range(&self.color_bounds)
                     );
@@ -341,7 +341,7 @@ mod tests {
         imgcodecs::{imread, imwrite, IMREAD_COLOR},
     };
 
-    use crate::vision::Draw;
+    use crate::{logln, vision::Draw};
 
     use super::*;
 
@@ -356,7 +356,7 @@ mod tests {
             <VisualDetection<_, _> as Draw>::draw(result, &mut shrunk_image).unwrap()
         });
 
-        println!("Detections: {:#?}", detections);
+        logln!("Detections: {:#?}", detections);
 
         create_dir_all("tests/vision/output/path_images").unwrap();
         imwrite(

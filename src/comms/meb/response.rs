@@ -12,7 +12,7 @@ use crate::{
         },
         control_board::response::{KeyedAcknowledges, MAP_POLL_SLEEP},
     },
-    write_stream_mutexed,
+    logln, write_stream_mutexed,
 };
 
 use derive_getters::Getters;
@@ -130,7 +130,7 @@ impl Statuses {
     {
         let err_stream = &Mutex::new(err_stream);
         stream::iter(get_messages(buffer, serial_conn, #[cfg(feature = "logging")] "meb_in").await).for_each_concurrent(None, |message| async move {
-            if message.len() < 4 { println!("Message len < 4: {:?}", message); return; };
+            if message.len() < 4 { logln!("Message len < 4: {:?}", message); return; };
 
             let id = u16::from_be_bytes(message[0..2].try_into().unwrap());
             let message_body = &message[2..(message.len() - 2)];

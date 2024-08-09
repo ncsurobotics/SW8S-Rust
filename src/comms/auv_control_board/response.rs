@@ -9,6 +9,7 @@ use tokio::{
 };
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
+use crate::logln;
 
 #[cfg(feature = "logging")]
 static LOG_TIMESTAMP: OnceCell<String> = OnceCell::const_new();
@@ -35,7 +36,7 @@ pub fn check_start(buffer: &mut Vec<u8>, end_idx: usize) -> Option<usize> {
     {
         Some((0, _)) => Some(end_idx), // Expected condition
         None => {
-            eprintln!(
+            logln!(
                 "Buffer has end byte but no start byte, discarding {:?}",
                 &buffer[0..=end_idx]
             );
@@ -44,14 +45,14 @@ pub fn check_start(buffer: &mut Vec<u8>, end_idx: usize) -> Option<usize> {
         }
         Some((start_idx, _)) => {
             if buffer[start_idx - 1] == ESCAPE_BYTE {
-                eprintln!(
+                logln!(
                     "First start byte in buffer was escaped, discarding {:?}",
                     &buffer[0..=start_idx]
                 );
                 buffer.drain(0..=start_idx);
                 None
             } else {
-                eprintln!(
+                logln!(
                     "Buffer does not begin with start byte, discarding {:?}",
                     &buffer[0..start_idx]
                 );
@@ -149,7 +150,7 @@ pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_fi
 
         file.flush().await.unwrap();
     } else {
-        eprintln!("ERROR OPENING FILE IN LOGGING");
+        logln!("ERROR OPENING FILE IN LOGGING");
     }
 }
 

@@ -4,6 +4,8 @@ use std::marker::PhantomData;
 use anyhow::{anyhow, bail};
 use uuid::Uuid;
 
+use crate::logln;
+
 use super::{
     action::{Action, ActionExec, ActionMod},
     graph::{stripped_fn, stripped_type, DotString},
@@ -257,7 +259,7 @@ impl<T: Send + Sync> ActionMod<anyhow::Result<T>> for CountTrue {
         } else {
             self.count = 0;
         }
-        println!("Update true count: {}", self.count);
+        logln!("Update true count: {}", self.count);
     }
 }
 
@@ -271,7 +273,7 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountTrue {
         } else {
             self.count = 0;
         }
-        println!("Update true count: {}", self.count);
+        logln!("Update true count: {}", self.count);
     }
 }
 
@@ -285,13 +287,13 @@ impl ActionMod<bool> for CountTrue {
         } else {
             self.count = 0;
         }
-        println!("Update true count: {}", self.count);
+        logln!("Update true count: {}", self.count);
     }
 }
 
 impl ActionExec<anyhow::Result<()>> for CountTrue {
     async fn execute(&mut self) -> anyhow::Result<()> {
-        println!("Check true count: {} ? {}", self.count, self.target);
+        logln!("Check true count: {} ? {}", self.count, self.target);
         if self.count < self.target {
             Ok(())
         } else {
@@ -336,7 +338,7 @@ impl<T: Send + Sync> ActionMod<anyhow::Result<T>> for CountFalse {
         } else {
             self.count = 0;
         }
-        println!("Update false count: {}", self.count);
+        logln!("Update false count: {}", self.count);
     }
 }
 
@@ -350,7 +352,7 @@ impl<T: Send + Sync> ActionMod<Option<T>> for CountFalse {
         } else {
             self.count = 0;
         }
-        println!("Update false count: {}", self.count);
+        logln!("Update false count: {}", self.count);
     }
 }
 
@@ -364,13 +366,13 @@ impl ActionMod<bool> for CountFalse {
         } else {
             self.count = 0;
         }
-        println!("Update false count: {}", self.count);
+        logln!("Update false count: {}", self.count);
     }
 }
 
 impl ActionExec<anyhow::Result<()>> for CountFalse {
     async fn execute(&mut self) -> anyhow::Result<()> {
-        println!("Check false count: {} ? {}", self.count, self.target);
+        logln!("Check false count: {} ? {}", self.count, self.target);
         if self.count < self.target {
             Ok(())
         } else {
@@ -538,7 +540,7 @@ impl<T: Send + Sync + Debug, U: IntoIterator<Item = T> + Send + Sync + Clone> Ac
     fn modify(&mut self, input: &Option<U>) {
         if let Some(input) = input {
             self.value = input.clone().into_iter().collect();
-            println!("VECTOR: {:#?}", self.value);
+            logln!("VECTOR: {:#?}", self.value);
         } else {
             self.value = vec![];
         }
@@ -589,7 +591,7 @@ impl<T: Send + Sync + Debug, U: IntoIterator<Item = T> + Send + Sync + Clone> Ac
     fn modify(&mut self, input: &Option<U>) {
         if let Some(input) = input {
             self.value = input.clone().into_iter().collect();
-            println!("VECTOR: {:#?}", self.value);
+            logln!("VECTOR: {:#?}", self.value);
         } else {
             self.value = vec![];
         }
