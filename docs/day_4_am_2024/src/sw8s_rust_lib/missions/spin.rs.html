@@ -116,6 +116,9 @@
 <a href="#116" id="116">116</a>
 <a href="#117" id="117">117</a>
 <a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::marker::PhantomData;
 
 <span class="kw">use </span>anyhow::bail;
@@ -216,12 +219,15 @@
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; anyhow::Result&lt;()&gt; {
         <span class="kw">let </span>cntrl_board = <span class="self">self</span>.control_board.get_control_board();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(angles) = cntrl_board.responses().get_angles().<span class="kw">await </span>{
+            <span class="kw">let </span>roll = <span class="kw-2">*</span>angles.roll();
             <span class="kw">if </span><span class="self">self</span>.half_loops % <span class="number">2 </span>== <span class="number">0 </span>{
-                <span class="kw">if </span><span class="kw-2">*</span>angles.roll() &gt; <span class="number">180.0 </span>|| (<span class="kw-2">*</span>angles.roll() &lt; <span class="number">0.0 </span>&amp;&amp; <span class="kw-2">*</span>angles.roll() &gt; -<span class="number">150.0</span>) {
+                <span class="kw">if </span>roll &gt; <span class="number">180.0 </span>|| (roll &lt; -<span class="number">20.0 </span>&amp;&amp; roll &gt; -<span class="number">150.0</span>) {
+                    <span class="macro">println!</span>(<span class="string">"Roll at 0 trigger: {}"</span>, roll);
                     <span class="self">self</span>.half_loops += <span class="number">1</span>;
                     <span class="macro">println!</span>(<span class="string">"Loop count: {}"</span>, <span class="self">self</span>.half_loops);
                 }
-            } <span class="kw">else if </span><span class="kw-2">*</span>angles.roll() &lt; <span class="number">220.0 </span>&amp;&amp; <span class="kw-2">*</span>angles.roll() &gt; <span class="number">0.0 </span>{
+            } <span class="kw">else if </span>roll &lt; <span class="number">220.0 </span>&amp;&amp; roll &gt; <span class="number">0.0 </span>{
+                <span class="macro">println!</span>(<span class="string">"Roll at 1 trigger: {}"</span>, roll);
                 <span class="self">self</span>.half_loops += <span class="number">1</span>;
                 <span class="macro">println!</span>(<span class="string">"Loop count: {}"</span>, <span class="self">self</span>.half_loops);
             }
