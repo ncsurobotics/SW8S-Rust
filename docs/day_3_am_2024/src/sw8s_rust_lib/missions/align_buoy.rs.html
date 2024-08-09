@@ -216,6 +216,9 @@
 <a href="#216" id="216">216</a>
 <a href="#217" id="217">217</a>
 <a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
@@ -265,7 +268,7 @@
 
     <span class="kw">const </span>ALIGN_X_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>ALIGN_Y_SPEED: f32 = <span class="number">0.0</span>;
-    <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = -<span class="number">12.0</span>;
+    <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = <span class="number">12.0</span>;
 
     <span class="macro">act_nest!</span>(
         ActionSequence::new,
@@ -342,13 +345,13 @@
 &gt;(
     context: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>Con,
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
-    <span class="kw">const </span>Y_SPEED: f32 = <span class="number">0.4</span>;
+    <span class="kw">const </span>Y_SPEED: f32 = <span class="number">0.2</span>;
     <span class="kw">const </span>DEPTH: f32 = -<span class="number">1.0</span>;
     <span class="kw">const </span>TRUE_COUNT: u32 = <span class="number">3</span>;
     <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">3</span>;
 
     <span class="kw">const </span>BACKUP_Y_SPEED: f32 = -<span class="number">1.0</span>;
-    <span class="kw">const </span>BACKUP_TIME: f32 = <span class="number">4.0</span>;
+    <span class="kw">const </span>BACKUP_TIME: f32 = <span class="number">2.0</span>;
 
     <span class="kw">const </span>ALIGN_X_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>ALIGN_Y_SPEED: f32 = <span class="number">0.0</span>;
@@ -356,6 +359,8 @@
 
     <span class="macro">act_nest!</span>(
         ActionSequence::new,
+        Descend::new(context, DEPTH),
+        DelayAction::new(<span class="number">3.0</span>),
         <span class="macro">act_nest!</span>(
             ActionChain::new,
             Stability2Movement::new(
@@ -365,6 +370,7 @@
             OutputType::&lt;()&gt;::new(),
         ),
         DelayAction::new(BACKUP_TIME),
+        DelayAction::new(<span class="number">4.0</span>),
         ActionWhile::new(ActionSequence::new(
             <span class="macro">act_nest!</span>(
                 ActionChain::new,
@@ -398,7 +404,7 @@
                                 MidPoint::new(),
                                 OffsetToPose::&lt;Offset2D&lt;f64&gt;&gt;::default(),
                                 ReplaceX::new(),
-                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">7.0</span>),
+                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">3.0</span>),
                                 MultiplyX::new(<span class="number">0.5</span>),
                                 ClampX::&lt;Stability2Adjust&gt;::new(<span class="number">0.15</span>),
                                 SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(Y_SPEED)),
