@@ -2089,7 +2089,7 @@ pub enum Side {
     Blue,
 }
 
-static SIDE: Mutex<Side> = Mutex::new(Side::Red);
+static SIDE: Mutex<Side> = Mutex::new(Side::Blue);
 
 #[derive(Debug)]
 pub struct SetSideRed<T> {
