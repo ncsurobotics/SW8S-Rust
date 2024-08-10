@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["buoy_align","buoy_align_shot"]};
