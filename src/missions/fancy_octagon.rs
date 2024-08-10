@@ -11,11 +11,11 @@ use crate::{
         },
         basic::DelayAction,
         extra::{
-            AlwaysBetterFalse, AlwaysBetterTrue, AlwaysFalse, AlwaysTrue, CountFalse, CountTrue,
-            IsSome, OutputType, Terminal, ToVec,
+            AlwaysBetterFalse, AlwaysBetterTrue, AlwaysTrue, CountFalse, CountTrue, OutputType,
+            Terminal, ToVec,
         },
         movement::{
-            AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, NoAdjust, OffsetToPose, SetX,
+            AdjustType, ClampX, ConstYaw, LinearYawFromX, NoAdjust, OffsetToPose, SetX,
             Stability2Adjust, Stability2Movement, Stability2Pos, StripY, ZeroMovement,
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},

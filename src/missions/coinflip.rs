@@ -4,17 +4,10 @@ use tokio_serial::SerialStream;
 use crate::{
     act_nest,
     missions::{
-        action::{wrap_action, FirstValid},
         meb::WaitArm,
-        movement::{AdjustType, ConstYaw, Descend},
-        vision::DetectTarget,
+        movement::{AdjustType, ConstYaw},
     },
-    vision::{
-        buoy::Target,
-        gate_poles::GatePoles,
-        nn_cv2::{OnnxModel, YoloClass},
-        Offset2D,
-    },
+    vision::{gate_poles::GatePoles, nn_cv2::OnnxModel},
 };
 
 use super::{

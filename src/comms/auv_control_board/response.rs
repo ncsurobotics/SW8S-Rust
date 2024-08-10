@@ -2,17 +2,11 @@ use bytes::BufMut;
 use tokio::io::AsyncReadExt;
 
 #[cfg(feature = "logging")]
-use tokio::{
-    fs::OpenOptions,
-    io::AsyncWriteExt,
-    sync::{Mutex, OnceCell},
-};
+use tokio::{fs::OpenOptions, io::AsyncWriteExt, sync::Mutex};
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 use crate::logln;
 
-#[cfg(feature = "logging")]
-static LOG_TIMESTAMP: OnceCell<String> = OnceCell::const_new();
 #[cfg(feature = "logging")]
 static LOG_NAMES: Mutex<Vec<String>> = Mutex::const_new(Vec::new());
 
@@ -156,9 +150,9 @@ pub async fn write_log(messages: &[Vec<u8>], #[cfg(feature = "logging")] dump_fi
 
 #[cfg(feature = "logging")]
 pub async fn fmt_filename_time(dump_file: &str) -> String {
-    let formatted_time = LOG_TIMESTAMP
-        .get_or_init(|| async { chrono::Local::now().format("%Y-%m-%d_%H:%M:%S").to_string() })
-        .await;
+    use crate::TIMESTAMP;
+
+    let formatted_time = &*TIMESTAMP;
 
     let mut names = LOG_NAMES.lock().await;
     if !names.iter().any(|n| n == dump_file) {

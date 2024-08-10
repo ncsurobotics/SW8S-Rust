@@ -1,5 +1,4 @@
 use anyhow::{bail, Result};
-use chrono::Local;
 use config::Configuration;
 use std::env::temp_dir;
 
@@ -32,6 +31,7 @@ use sw8s_rust_lib::{
     },
     video_source::appsink::Camera,
     vision::buoy::Target,
+    TIMESTAMP,
 };
 use tokio::{
     io::WriteHalf,
@@ -89,7 +89,7 @@ async fn front_cam() -> &'static Camera {
             Camera::jetson_new(
                 &Configuration::default().front_cam,
                 "front",
-                &temp_dir().join(Local::now().format("cams_%Y-%m-%d_%H:%M:%S").to_string()),
+                &temp_dir().join("cams_".to_string() + &TIMESTAMP),
             )
             .unwrap()
         })
@@ -103,7 +103,7 @@ async fn bottom_cam() -> &'static Camera {
             Camera::jetson_new(
                 &Configuration::default().bottom_cam,
                 "bottom",
-                &temp_dir().join(Local::now().format("cams_%Y-%m-%d_%H:%M:%S").to_string()),
+                &temp_dir().join("cams_".to_string() + &TIMESTAMP),
             )
             .unwrap()
         })
@@ -458,7 +458,7 @@ async fn run_mission(mission: &str) -> Result<()> {
             Camera::jetson_new(
                 &Configuration::default().bottom_cam,
                 "front",
-                &temp_dir().join(Local::now().format("cams_%Y-%m-%d_%H:%M:%S").to_string()),
+                &temp_dir().join("cams_".to_string() + &TIMESTAMP),
             )
             .unwrap();
             Ok(())

@@ -11,11 +11,11 @@ use crate::{
         },
         basic::DelayAction,
         extra::{
-            AlwaysBetterFalse, AlwaysBetterTrue, AlwaysFalse, AlwaysTrue, CountFalse, CountTrue,
-            IsSome, OutputType, Terminal, ToVec,
+            AlwaysBetterFalse, AlwaysBetterTrue, AlwaysTrue, CountFalse, CountTrue, OutputType,
+            Terminal, ToVec,
         },
         movement::{
-            AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, NoAdjust, OffsetToPose, SetX,
+            AdjustType, ClampX, ConstYaw, LinearYawFromX, NoAdjust, OffsetToPose, SetX,
             Stability2Adjust, Stability2Movement, Stability2Pos, StripY, ZeroMovement,
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},
@@ -24,6 +24,7 @@ use crate::{
         path::{Path, Yuv},
         Offset2D,
     },
+    POOL_YAW_SIGN,
 };
 
 use super::{
@@ -75,7 +76,7 @@ pub fn octagon<
     const FALSE_COUNT: u32 = 3;
     const ADJUST_COUNT: u32 = 2;
 
-    const OCTAGON_SPIN: f32 = 60.0;
+    const OCTAGON_SPIN: f32 = 60.0 * POOL_YAW_SIGN;
 
     const MISSION_END_TIME: f32 = INIT_TIME + BLIND_TIME + 16.0;
 
