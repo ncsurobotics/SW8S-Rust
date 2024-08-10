@@ -296,7 +296,7 @@
         basic::DelayAction,
         comms::StartBno055,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
-        fire_torpedo::FireTorpedo,
+        fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
         movement::{
             AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, OffsetToPose, ReplaceX, SetX,
             SetY, Stability2Adjust, Stability2Movement, Stability2Pos, ZeroMovement,
@@ -334,7 +334,7 @@
 
     <span class="kw">const </span>ALIGN_X_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>ALIGN_Y_SPEED: f32 = <span class="number">0.0</span>;
-    <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = <span class="number">4.0</span>;
+    <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = -<span class="number">4.0</span>;
 
     <span class="kw">const </span>FAST_DISTANCE: f64 = <span class="number">3_000.0</span>;
     <span class="kw">const </span>CORRECT_YAW_SPEED: f32 = <span class="number">3.0</span>;
@@ -448,7 +448,7 @@
 
     <span class="kw">const </span>ALIGN_X_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>ALIGN_Y_SPEED: f32 = <span class="number">0.0</span>;
-    <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = <span class="number">3.0</span>;
+    <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = -<span class="number">3.0</span>;
 
     <span class="kw">const </span>SHOT_DEPTH: f32 = -<span class="number">0.6</span>;
     <span class="kw">const </span>SHOT_ANGLE: f32 = <span class="number">22.5</span>;
@@ -552,7 +552,7 @@
             OutputType::&lt;()&gt;::new(),
         ),
         DelayAction::new(<span class="number">1.0</span>),
-        FireTorpedo::new(context),
+        FireRightTorpedo::new(context),
         <span class="macro">act_nest!</span>(
             ActionChain::new,
             ConstYaw::&lt;Stability2Adjust&gt;::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
@@ -563,7 +563,7 @@
             OutputType::&lt;()&gt;::new(),
         ),
         DelayAction::new(<span class="number">1.0</span>),
-        FireTorpedo::new(context),
+        FireLeftTorpedo::new(context),
         DelayAction::new(<span class="number">3.0</span>),
         OutputType::&lt;()&gt;::new()
     )

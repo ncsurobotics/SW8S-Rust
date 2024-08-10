@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["FireTorpedo"]};
+window.SIDEBAR_ITEMS = {"struct":["FireLeftTorpedo","FireRightTorpedo"]};
