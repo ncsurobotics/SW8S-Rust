@@ -11,7 +11,7 @@ use crate::{
         basic::DelayAction,
         comms::StartBno055,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
-        fire_torpedo::FireTorpedo,
+        fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
         movement::{
             AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, OffsetToPose, ReplaceX, SetX,
             SetY, Stability2Adjust, Stability2Movement, Stability2Pos, ZeroMovement,
@@ -267,7 +267,7 @@ pub fn buoy_align_shot<
             OutputType::<()>::new(),
         ),
         DelayAction::new(1.0),
-        FireTorpedo::new(context),
+        FireRightTorpedo::new(context),
         act_nest!(
             ActionChain::new,
             ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
@@ -278,7 +278,7 @@ pub fn buoy_align_shot<
             OutputType::<()>::new(),
         ),
         DelayAction::new(1.0),
-        FireTorpedo::new(context),
+        FireLeftTorpedo::new(context),
         DelayAction::new(3.0),
         OutputType::<()>::new()
     )
