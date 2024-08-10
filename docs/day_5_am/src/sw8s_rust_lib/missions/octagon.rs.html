@@ -489,7 +489,7 @@
 
     <span class="kw">const </span>OCTAGON_SPIN: f32 = <span class="number">60.0 </span>* POOL_YAW_SIGN;
 
-    <span class="kw">const </span>MISSION_END_TIME: f32 = INIT_TIME + BLIND_TIME + <span class="number">16.0</span>;
+    <span class="kw">const </span>MISSION_END_TIME: f32 = ((INIT_TIME + BLIND_TIME) * <span class="number">2.0</span>) + <span class="number">13.0</span>;
 
     RaceAction::new(
         <span class="macro">act_nest!</span>(

@@ -4655,7 +4655,7 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
                 AdjustType::Replace(x) =&gt; x,
             };
 
-            <span class="kw">if </span>is_blue {
+            <span class="kw">if </span>!is_blue {
                 <span class="kw-2">*</span>x = -<span class="kw-2">*</span>x;
             }
         };
@@ -4665,7 +4665,7 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
                 AdjustType::Adjust(yaw) =&gt; yaw,
                 AdjustType::Replace(yaw) =&gt; yaw,
             };
-            <span class="kw">if </span>is_blue {
+            <span class="kw">if </span>!is_blue {
                 <span class="kw-2">*</span>yaw = -<span class="kw-2">*</span>yaw;
             }
         };

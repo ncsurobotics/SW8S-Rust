@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["octagon","octagon_path_model"]};
+window.SIDEBAR_ITEMS = {"fn":["fancy_octagon","octagon_path_model"]};

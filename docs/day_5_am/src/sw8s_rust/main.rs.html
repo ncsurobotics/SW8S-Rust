@@ -475,6 +475,11 @@
 <a href="#475" id="475">475</a>
 <a href="#476" id="476">476</a>
 <a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::env::temp_dir;
@@ -497,6 +502,7 @@
         },
         coinflip::coinflip,
         example::initial_descent,
+        fancy_octagon::fancy_octagon,
         fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         meb::WaitArm,
@@ -877,6 +883,10 @@
         }
         <span class="string">"octagon" </span>=&gt; {
             <span class="kw">let _ </span>= octagon(static_context().<span class="kw">await</span>).execute().<span class="kw">await</span>;
+            <span class="prelude-val">Ok</span>(())
+        }
+        <span class="string">"fancy_octagon" </span>=&gt; {
+            <span class="kw">let _ </span>= fancy_octagon(static_context().<span class="kw">await</span>).execute().<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }
         <span class="string">"buoy_circle" </span>=&gt; {
