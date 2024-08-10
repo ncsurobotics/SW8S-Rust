@@ -1002,7 +1002,16 @@
 <a href="#1002" id="1002">1002</a>
 <a href="#1003" id="1003">1003</a>
 <a href="#1004" id="1004">1004</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::{Debug, Display};
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
+<a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::cmp::Ordering;
+<span class="kw">use </span>std::fmt::{Debug, Display};
 <span class="kw">use </span>std::ops::{Add, Div, Mul};
 <span class="kw">use </span>std::sync::RwLock;
 <span class="kw">use </span>std::{iter::Sum, marker::PhantomData};
@@ -1016,7 +1025,7 @@
 
 <span class="kw">use </span>anyhow::{anyhow, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>num_traits::{Float, FromPrimitive, Num};
-<span class="kw">use </span>opencv::core::Mat;
+<span class="kw">use </span>opencv::core::{Mat, Rect2d};
 <span class="kw">use </span>uuid::Uuid;
 
 <span class="kw">use </span><span class="kw">crate</span>::missions::action_context::GetFrontCamMat;
@@ -1966,10 +1975,17 @@ where
     <span class="kw">for </span>SizeUnder&lt;T, DrawRect2d&gt;
 {
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;T, DrawRect2d&gt;&gt;&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>area = <span class="self">self
-            </span>.values
+        <span class="kw">let </span>bounding_box_size = |b: <span class="kw-2">&amp;</span>Rect2d| -&gt; f64 { b.width * b.height };
+
+        <span class="kw">let </span><span class="kw-2">mut </span>poses: Vec&lt;<span class="kw">_</span>&gt; = <span class="self">self</span>.values.iter().map(|v| v.position().clone()).collect();
+        poses.sort_unstable_by(|lhs, rhs| {
+            std::cmp::PartialOrd::partial_cmp(<span class="kw-2">&amp;</span>bounding_box_size(lhs), <span class="kw-2">&amp;</span>bounding_box_size(rhs))
+                .unwrap_or(Ordering::Equal)
+        });
+
+        <span class="kw">let </span><span class="kw-2">mut </span>area = poses
             .last()
-            .map(|val| val.position().width * val.position().height)
+            .map(|val| val.width * val.height)
             .unwrap_or(<span class="number">0.0</span>);
 
         <span class="comment">// IEEE, my enemy
@@ -1977,8 +1993,8 @@ where
             area = <span class="number">0.0</span>;
         };
 
-        <span class="macro">logln!</span>(<span class="string">"Area: {}"</span>, area);
-        <span class="kw">if </span>(!<span class="self">self</span>.lock) || (area &lt; <span class="self">self</span>.size) {
+        <span class="macro">logln!</span>(<span class="string">"Limit check area: {}"</span>, area);
+        <span class="kw">if </span>(!<span class="self">self</span>.lock) &amp;&amp; (area &lt; <span class="self">self</span>.size) {
             <span class="prelude-val">Some</span>(<span class="self">self</span>.values.clone())
         } <span class="kw">else </span>{
             <span class="self">self</span>.lock = <span class="bool-val">true</span>;
