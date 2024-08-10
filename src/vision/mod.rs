@@ -23,6 +23,7 @@ pub mod nn_cv2;
 pub mod path;
 pub mod pca;
 pub mod yolo_model;
+pub mod octagon;
 
 pub trait Draw {
     /// Draws self on top of `canvas`
