@@ -1,0 +1,38 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Compares a template against overlapped image regions."><title>match_template in opencv::opencv::hub::imgproc - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="opencv" data-themes="" data-resource-suffix="" data-rustdoc-version="1.80.1 (3f5fd8dd4 2024-08-06)" data-channel="1.80.1" data-search-js="search-d52510db62a78183.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../../opencv/index.html">opencv</a><span class="version">0.92.2</span></h2></div><div class="sidebar-elems"><h2><a href="index.html">In opencv::opencv::hub::imgproc</a></h2></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Function <a href="../../../index.html">opencv</a>::<wbr><a href="../../index.html">opencv</a>::<wbr><a href="../index.html">hub</a>::<wbr><a href="index.html">imgproc</a>::<wbr><a class="fn" href="#">match_template</a><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><span class="out-of-band"><a class="src" href="../../../../src/opencv/home/runner/work/SW8S-Rust/SW8S-Rust/target/debug/build/opencv-a11dba362b599094/out/opencv/imgproc.rs.html#8962-8972">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub fn match_template(
+    image: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    templ: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+    result: &amp;mut impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToOutputArray.html" title="trait opencv::manual::core::input_output_array::ToOutputArray">ToOutputArray</a>,
+    method: <a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.i32.html">i32</a>,
+    mask: &amp;impl <a class="trait" href="../../../manual/core/input_output_array/trait.ToInputArray.html" title="trait opencv::manual::core::input_output_array::ToInputArray">ToInputArray</a>,
+) -&gt; <a class="type" href="../../../error/type.Result.html" title="type opencv::error::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.80.1/std/primitive.unit.html">()</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Compares a template against overlapped image regions.</p>
+<p>The function slides through image , compares the overlapped patches of size <img src="https://latex.codecogs.com/png.latex?w%20%5Ctimes%20h" alt="inline formula" /> against
+templ using the specified method and stores the comparison results in result . [template_match_modes]
+describes the formulae for the available comparison methods ( <img src="https://latex.codecogs.com/png.latex?I" alt="inline formula" /> denotes image, <img src="https://latex.codecogs.com/png.latex?T" alt="inline formula" />
+template, <img src="https://latex.codecogs.com/png.latex?R" alt="inline formula" /> result, <img src="https://latex.codecogs.com/png.latex?M" alt="inline formula" /> the optional mask ). The summation is done over template and/or
+the image patch: <img src="https://latex.codecogs.com/png.latex?x%27%20%3D%200%2E%2E%2Ew%2D1%2C%20y%27%20%3D%200%2E%2E%2Eh%2D1" alt="inline formula" /></p>
+<p>After the function finishes the comparison, the best matches can be found as global minimums (when
+<a href="constant.TM_SQDIFF.html" title="constant opencv::opencv::hub::imgproc::TM_SQDIFF">TM_SQDIFF</a> was used) or maximums (when <a href="constant.TM_CCORR.html" title="constant opencv::opencv::hub::imgproc::TM_CCORR">TM_CCORR</a> or <a href="constant.TM_CCOEFF.html" title="constant opencv::opencv::hub::imgproc::TM_CCOEFF">TM_CCOEFF</a> was used) using the
+[min_max_loc] function. In case of a color image, template summation in the numerator and each sum in
+the denominator is done over all of the channels and separate mean values are used for each channel.
+That is, the function can take a color template and a color image. The result will still be a
+single-channel image, which is easier to analyze.</p>
+<h3 id="parameters"><a class="doc-anchor" href="#parameters">§</a>Parameters</h3>
+<ul>
+<li>image: Image where the search is running. It must be 8-bit or 32-bit floating-point.</li>
+<li>templ: Searched template. It must be not greater than the source image and have the same
+data type.</li>
+<li>result: Map of comparison results. It must be single-channel 32-bit floating-point. If image
+is <img src="https://latex.codecogs.com/png.latex?W%20%5Ctimes%20H" alt="inline formula" /> and templ is <img src="https://latex.codecogs.com/png.latex?w%20%5Ctimes%20h" alt="inline formula" /> , then result is <img src="https://latex.codecogs.com/png.latex?%28W%2Dw%2B1%29%20%5Ctimes%20%28H%2Dh%2B1%29" alt="inline formula" /> .</li>
+<li>method: Parameter specifying the comparison method, see [template_match_modes]</li>
+<li>mask: Optional mask. It must have the same size as templ. It must either have the same number
+of channels as template or only one channel, which is then used for all template and
+image channels. If the data type is #CV_8U, the mask is interpreted as a binary mask,
+meaning only elements where mask is nonzero are used and are kept unchanged independent
+of the actual mask value (weight equals 1). For data tpye #CV_32F, the mask values are
+used as weights. The exact formulas are documented in #TemplateMatchModes.</li>
+</ul>
+<h3 id="c-default-parameters"><a class="doc-anchor" href="#c-default-parameters">§</a>C++ default parameters</h3>
+<ul>
+<li>mask: noArray()</li>
+</ul>
+</div></details></section></div></main></body></html>

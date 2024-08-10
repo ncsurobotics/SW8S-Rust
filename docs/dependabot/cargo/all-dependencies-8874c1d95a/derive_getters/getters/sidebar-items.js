@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Action","ReturnKind"],"struct":["Doc","Field","NamedStruct","Work"]};
