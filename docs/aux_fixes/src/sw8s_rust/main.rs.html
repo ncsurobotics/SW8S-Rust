@@ -471,9 +471,11 @@
 <a href="#471" id="471">471</a>
 <a href="#472" id="472">472</a>
 <a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>chrono::Local;
 <span class="kw">use </span>config::Configuration;
-<span class="kw">use </span>std::path::Path;
+<span class="kw">use </span>std::{env::temp_dir, path::Path};
 
 <span class="kw">use </span>std::env;
 <span class="kw">use </span>std::process::exit;
@@ -561,7 +563,7 @@
             Camera::jetson_new(
                 <span class="kw-2">&amp;</span>Configuration::default().front_cam,
                 <span class="string">"front"</span>,
-                Path::new(<span class="string">"/tmp/front_feed.mp4"</span>),
+                <span class="kw-2">&amp;</span>temp_dir().join(Local::now().format(<span class="string">"cams_%Y-%m-%d_%H:%M:%S"</span>).to_string()),
             )
             .unwrap()
         })
@@ -575,7 +577,7 @@
             Camera::jetson_new(
                 <span class="kw-2">&amp;</span>Configuration::default().bottom_cam,
                 <span class="string">"bottom"</span>,
-                Path::new(<span class="string">"/tmp/bottom_feed.mp4"</span>),
+                <span class="kw-2">&amp;</span>temp_dir().join(Local::now().format(<span class="string">"cams_%Y-%m-%d_%H:%M:%S"</span>).to_string()),
             )
             .unwrap()
         })
@@ -927,7 +929,7 @@
             Camera::jetson_new(
                 <span class="kw-2">&amp;</span>Configuration::default().bottom_cam,
                 <span class="string">"front"</span>,
-                Path::new(<span class="string">"/tmp/front_feed.mp4"</span>),
+                <span class="kw-2">&amp;</span>temp_dir().join(Local::now().format(<span class="string">"cams_%Y-%m-%d_%H:%M:%S"</span>).to_string()),
             )
             .unwrap();
             <span class="prelude-val">Ok</span>(())

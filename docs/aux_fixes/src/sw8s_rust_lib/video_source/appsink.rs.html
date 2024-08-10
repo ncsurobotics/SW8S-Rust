@@ -173,7 +173,7 @@
                     .ok_or(<span class="macro">anyhow!</span>(<span class="string">"filesink_dir is not a string"</span>))<span class="question-mark">?
                 </span>+ <span class="string">"/"
                 </span>+ camera_name
-                + <span class="string">"\" "</span>;
+                + <span class="string">".mp4\" "</span>;
 
         <span class="kw">let </span>frame: Arc&lt;Mutex&lt;<span class="prelude-ty">Option</span>&lt;Mat&gt;&gt;&gt; = Arc::default();
         <span class="kw">let </span>frame_copy = frame.clone();
