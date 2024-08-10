@@ -31,13 +31,13 @@ use super::{
 pub fn octagon_path_model() -> Path {
     Path::new(
         (Yuv {
-            y: 0,
+            y: 64,
             u: 127,
             v: 127,
         })..=(Yuv {
             y: 255,
-            u: 255,
-            v: 255,
+            u: 224,
+            v: 224,
         }),
         5.0..=800.0,
         4,
