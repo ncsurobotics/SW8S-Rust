@@ -162,7 +162,7 @@ pub fn fancy_octagon<
                                 Stability2Pos::new(
                                     FULL_SPEED_X,
                                     FULL_SPEED_Y,
-                                    0.0,
+                                    FULL_SPEED_PITCH,
                                     0.0,
                                     None,
                                     DEPTH
@@ -185,7 +185,7 @@ pub fn fancy_octagon<
                                 Stability2Pos::new(
                                     FULL_SPEED_X,
                                     FULL_SPEED_Y,
-                                    0.0,
+                                    FULL_SPEED_PITCH,
                                     0.0,
                                     None,
                                     DEPTH

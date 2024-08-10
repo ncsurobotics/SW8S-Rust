@@ -78,7 +78,7 @@ pub fn octagon<
 
     const OCTAGON_SPIN: f32 = 80.0 * POOL_YAW_SIGN;
 
-    const MISSION_END_TIME: f32 = INIT_TIME + BLIND_TIME + 22.0;
+    const MISSION_END_TIME: f32 = ((INIT_TIME + BLIND_TIME) * 2) + 13.0;
 
     RaceAction::new(
         act_nest!(
