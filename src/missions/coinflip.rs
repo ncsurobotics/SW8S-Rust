@@ -32,7 +32,7 @@ pub fn coinflip<
     const DEPTH: f32 = -1.25;
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = -6.0;
+    const ALIGN_YAW_SPEED: f32 = 3.0;
 
     act_nest!(
         ActionSequence::new,
