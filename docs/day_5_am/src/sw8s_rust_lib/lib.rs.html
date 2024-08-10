@@ -48,7 +48,7 @@
     <span class="kw">let _ </span>= create_dir(<span class="string">"console"</span>);
     Mutex::new(
         File::create(
-            <span class="kw-2">&amp;</span>(<span class="string">"console"</span>.to_string()
+            <span class="kw-2">&amp;</span>(<span class="string">"console/"</span>.to_string()
                 + <span class="kw-2">&amp;</span>Local::now().format(<span class="string">"%Y-%m-%d_%H:%M:%S"</span>).to_string()
                 + <span class="string">".txt"</span>),
         )

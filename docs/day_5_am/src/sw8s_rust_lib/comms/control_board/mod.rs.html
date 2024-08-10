@@ -981,7 +981,7 @@
         }
     }
 
-    <span class="kw">pub async fn </span>reset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">pub async fn </span>reset(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">const </span>RESET: [u8; <span class="number">5</span>] = <span class="kw-2">*</span><span class="string">b"RESET"</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>message: Vec&lt;<span class="kw">_</span>&gt; = RESET.into();
