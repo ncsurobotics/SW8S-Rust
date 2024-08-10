@@ -281,6 +281,8 @@
 <a href="#281" id="281">281</a>
 <a href="#282" id="282">282</a>
 <a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
@@ -299,7 +301,9 @@
             AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, OffsetToPose, ReplaceX, SetX,
             SetY, Stability2Adjust, Stability2Movement, Stability2Pos, ZeroMovement,
         },
-        vision::{DetectTarget, ExtractPosition, MidPoint, Norm, SizeUnder, Vision},
+        vision::{
+            DetectTarget, ExtractPosition, MidPoint, Norm, SizeUnder, Vision, VisionSizeLock,
+        },
     },
     vision::{
         buoy_model::{BuoyModel, Target},
@@ -330,9 +334,9 @@
 
     <span class="kw">const </span>ALIGN_X_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>ALIGN_Y_SPEED: f32 = <span class="number">0.0</span>;
-    <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = <span class="number">8.0</span>;
+    <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = <span class="number">4.0</span>;
 
-    <span class="kw">const </span>FAST_DISTANCE: f64 = <span class="number">5_000.0</span>;
+    <span class="kw">const </span>FAST_DISTANCE: f64 = <span class="number">3_000.0</span>;
     <span class="kw">const </span>CORRECT_YAW_SPEED: f32 = <span class="number">3.0</span>;
     <span class="kw">const </span>CORRECT_X_MULTIPLY: f32 = <span class="number">0.5</span>;
     <span class="kw">const </span>CORRECT_X_CLAMP: f32 = <span class="number">0.15</span>;
@@ -436,7 +440,7 @@
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
     <span class="kw">const </span>Y_SPEED: f32 = <span class="number">0.2</span>;
     <span class="kw">const </span>DEPTH: f32 = -<span class="number">0.9</span>;
-    <span class="kw">const </span>TRUE_COUNT: u32 = <span class="number">3</span>;
+    <span class="kw">const </span>TRUE_COUNT: u32 = <span class="number">2</span>;
     <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">5</span>;
 
     <span class="kw">const </span>BACKUP_Y_SPEED: f32 = -<span class="number">0.5</span>;
@@ -444,7 +448,7 @@
 
     <span class="kw">const </span>ALIGN_X_SPEED: f32 = <span class="number">0.0</span>;
     <span class="kw">const </span>ALIGN_Y_SPEED: f32 = <span class="number">0.0</span>;
-    <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = <span class="number">6.0</span>;
+    <span class="kw">const </span>ALIGN_YAW_SPEED: f32 = <span class="number">3.0</span>;
 
     <span class="kw">const </span>SHOT_DEPTH: f32 = -<span class="number">0.6</span>;
     <span class="kw">const </span>SHOT_ANGLE: f32 = <span class="number">22.5</span>;
@@ -491,7 +495,7 @@
         )),
         ActionWhile::new(<span class="macro">act_nest!</span>(
             ActionChain::new,
-            Vision::&lt;Con, BuoyModel&lt;OnnxModel&gt;, f64&gt;::new(context, BuoyModel::default()),
+            VisionSizeLock::&lt;Con, BuoyModel&lt;OnnxModel&gt;, f64&gt;::new(context, BuoyModel::default()),
             TupleSecond::&lt;<span class="kw">_</span>, bool&gt;::new(ActionConcurrent::new(
                 ActionSequence::new(
                     <span class="macro">act_nest!</span>(
