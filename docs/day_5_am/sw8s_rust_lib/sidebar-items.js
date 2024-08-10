@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"macro":["act_nest","load_onnx","logln","write_stream_mutexed"],"mod":["comms","missions","video_source","vision"],"static":["LOGFILE"]};
+window.SIDEBAR_ITEMS = {"constant":["POOL_YAW_SIGN"],"macro":["act_nest","load_onnx","logln","write_stream_mutexed"],"mod":["comms","missions","video_source","vision"],"static":["LOGFILE","TIMESTAMP"]};

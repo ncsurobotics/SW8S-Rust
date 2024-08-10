@@ -408,6 +408,7 @@
 <a href="#408" id="408">408</a>
 <a href="#409" id="409">409</a>
 <a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>opencv::core::Size;
 <span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
@@ -421,11 +422,11 @@
         },
         basic::DelayAction,
         extra::{
-            AlwaysBetterFalse, AlwaysBetterTrue, AlwaysFalse, AlwaysTrue, CountFalse, CountTrue,
-            IsSome, OutputType, Terminal, ToVec,
+            AlwaysBetterFalse, AlwaysBetterTrue, AlwaysTrue, CountFalse, CountTrue, OutputType,
+            Terminal, ToVec,
         },
         movement::{
-            AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, NoAdjust, OffsetToPose, SetX,
+            AdjustType, ClampX, ConstYaw, LinearYawFromX, NoAdjust, OffsetToPose, SetX,
             Stability2Adjust, Stability2Movement, Stability2Pos, StripY, ZeroMovement,
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},
@@ -434,6 +435,7 @@
         path::{Path, Yuv},
         Offset2D,
     },
+    POOL_YAW_SIGN,
 };
 
 <span class="kw">use super</span>::{
@@ -485,7 +487,7 @@
     <span class="kw">const </span>FALSE_COUNT: u32 = <span class="number">3</span>;
     <span class="kw">const </span>ADJUST_COUNT: u32 = <span class="number">2</span>;
 
-    <span class="kw">const </span>OCTAGON_SPIN: f32 = <span class="number">60.0</span>;
+    <span class="kw">const </span>OCTAGON_SPIN: f32 = <span class="number">60.0 </span>* POOL_YAW_SIGN;
 
     <span class="kw">const </span>MISSION_END_TIME: f32 = INIT_TIME + BLIND_TIME + <span class="number">16.0</span>;
 

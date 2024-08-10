@@ -236,27 +236,15 @@
 <a href="#236" id="236">236</a>
 <a href="#237" id="237">237</a>
 <a href="#238" id="238">238</a>
-<a href="#239" id="239">239</a>
-<a href="#240" id="240">240</a>
-<a href="#241" id="241">241</a>
-<a href="#242" id="242">242</a>
-<a href="#243" id="243">243</a>
-<a href="#244" id="244">244</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bytes::BufMut;
 <span class="kw">use </span>tokio::io::AsyncReadExt;
 
 <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
-</span><span class="kw">use </span>tokio::{
-    fs::OpenOptions,
-    io::AsyncWriteExt,
-    sync::{Mutex, OnceCell},
-};
+</span><span class="kw">use </span>tokio::{fs::OpenOptions, io::AsyncWriteExt, sync::Mutex};
 
 <span class="kw">use </span><span class="kw">super</span>::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
 <span class="kw">use </span><span class="kw">crate</span>::logln;
 
-<span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
-</span><span class="kw">static </span>LOG_TIMESTAMP: OnceCell&lt;String&gt; = OnceCell::const_new();
 <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
 </span><span class="kw">static </span>LOG_NAMES: Mutex&lt;Vec&lt;String&gt;&gt; = Mutex::const_new(Vec::new());
 
@@ -400,9 +388,9 @@
 
 <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
 </span><span class="kw">pub async fn </span>fmt_filename_time(dump_file: <span class="kw-2">&amp;</span>str) -&gt; String {
-    <span class="kw">let </span>formatted_time = LOG_TIMESTAMP
-        .get_or_init(|| <span class="kw">async </span>{ chrono::Local::now().format(<span class="string">"%Y-%m-%d_%H:%M:%S"</span>).to_string() })
-        .<span class="kw">await</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::TIMESTAMP;
+
+    <span class="kw">let </span>formatted_time = <span class="kw-2">&amp;*</span>TIMESTAMP;
 
     <span class="kw">let </span><span class="kw-2">mut </span>names = LOG_NAMES.lock().<span class="kw">await</span>;
     <span class="kw">if </span>!names.iter().any(|n| n == dump_file) {

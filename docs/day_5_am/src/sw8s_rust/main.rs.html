@@ -476,7 +476,6 @@
 <a href="#476" id="476">476</a>
 <a href="#477" id="477">477</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
-<span class="kw">use </span>chrono::Local;
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::env::temp_dir;
 
@@ -509,6 +508,7 @@
     },
     video_source::appsink::Camera,
     vision::buoy::Target,
+    TIMESTAMP,
 };
 <span class="kw">use </span>tokio::{
     io::WriteHalf,
@@ -566,7 +566,7 @@
             Camera::jetson_new(
                 <span class="kw-2">&amp;</span>Configuration::default().front_cam,
                 <span class="string">"front"</span>,
-                <span class="kw-2">&amp;</span>temp_dir().join(Local::now().format(<span class="string">"cams_%Y-%m-%d_%H:%M:%S"</span>).to_string()),
+                <span class="kw-2">&amp;</span>temp_dir().join(<span class="string">"cams_"</span>.to_string() + <span class="kw-2">&amp;</span>TIMESTAMP),
             )
             .unwrap()
         })
@@ -580,7 +580,7 @@
             Camera::jetson_new(
                 <span class="kw-2">&amp;</span>Configuration::default().bottom_cam,
                 <span class="string">"bottom"</span>,
-                <span class="kw-2">&amp;</span>temp_dir().join(Local::now().format(<span class="string">"cams_%Y-%m-%d_%H:%M:%S"</span>).to_string()),
+                <span class="kw-2">&amp;</span>temp_dir().join(<span class="string">"cams_"</span>.to_string() + <span class="kw-2">&amp;</span>TIMESTAMP),
             )
             .unwrap()
         })
@@ -935,7 +935,7 @@
             Camera::jetson_new(
                 <span class="kw-2">&amp;</span>Configuration::default().bottom_cam,
                 <span class="string">"front"</span>,
-                <span class="kw-2">&amp;</span>temp_dir().join(Local::now().format(<span class="string">"cams_%Y-%m-%d_%H:%M:%S"</span>).to_string()),
+                <span class="kw-2">&amp;</span>temp_dir().join(<span class="string">"cams_"</span>.to_string() + <span class="kw-2">&amp;</span>TIMESTAMP),
             )
             .unwrap();
             <span class="prelude-val">Ok</span>(())
