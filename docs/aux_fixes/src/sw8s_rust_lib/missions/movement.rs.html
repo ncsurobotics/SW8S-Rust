@@ -4504,9 +4504,9 @@ impl MultiplyX&lt;&amp;Stability2Adjust&gt; {
 
 <span class="attr">#[derive(Debug, Default, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Side {
+    Red,
     <span class="attr">#[default]
-    </span>Red,
-    Blue,
+    </span>Blue,
 }
 
 <span class="kw">static </span>SIDE: Mutex&lt;Side&gt; = Mutex::new(Side::Blue);
