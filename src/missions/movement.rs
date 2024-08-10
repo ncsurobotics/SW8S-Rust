@@ -2084,8 +2084,8 @@ impl ActionExec<Stability2Adjust> for MultiplyX<&Stability2Adjust> {
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum Side {
-    #[default]
     Red,
+    #[default]
     Blue,
 }
 

@@ -57,12 +57,12 @@ pub fn octagon<
 >(
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
-    const FULL_SPEED_Y: f32 = 1.0;
+    const FULL_SPEED_Y: f32 = 0.7;
     const FULL_SPEED_X: f32 = 0.0;
     const FULL_SPEED_PITCH: f32 = -45.0 / 4.0;
     const DEPTH: f32 = -0.75;
 
-    const INIT_X: f32 = 1.0;
+    const INIT_X: f32 = 0.5;
     const INIT_Y: f32 = 0.0;
     const INIT_TIME: f32 = 3.0;
 
@@ -71,7 +71,7 @@ pub fn octagon<
     const X_CLAMP: f32 = 0.3;
 
     const FALSE_COUNT: u32 = 3;
-    const ADJUST_COUNT: u32 = 10;
+    const ADJUST_COUNT: u32 = 2;
 
     act_nest!(
         ActionSequence::new,
@@ -80,10 +80,10 @@ pub fn octagon<
             act_nest!(
                 ActionChain::new,
                 NoAdjust::<Stability2Adjust>::new(),
-                ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(7.0)),
+                ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(80.0)),
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(INIT_X, INIT_Y, 0.0, 0.0, None, DEPTH)
+                    Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)
                 ),
                 OutputType::<()>::new(),
             ),
