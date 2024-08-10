@@ -2393,13 +2393,6 @@
 <a href="#2393" id="2393">2393</a>
 <a href="#2394" id="2394">2394</a>
 <a href="#2395" id="2395">2395</a>
-<a href="#2396" id="2396">2396</a>
-<a href="#2397" id="2397">2397</a>
-<a href="#2398" id="2398">2398</a>
-<a href="#2399" id="2399">2399</a>
-<a href="#2400" id="2400">2400</a>
-<a href="#2401" id="2401">2401</a>
-<a href="#2402" id="2402">2402</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::comms::control_board::ControlBoard;
 <span class="kw">use </span><span class="kw">crate</span>::comms::control_board::LAST_YAW;
 <span class="kw">use </span><span class="kw">crate</span>::logln;
@@ -2470,22 +2463,15 @@
         <span class="kw">let </span>cur_yaw;
 
         <span class="comment">// Intializes yaw to current value
-        </span><span class="attr">#[allow(clippy::await_holding_lock)]
-        </span><span class="kw">let </span>last_yaw = LAST_YAW.lock().unwrap();
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(last_yaw) = <span class="kw-2">*</span>last_yaw {
-            cur_yaw = last_yaw;
-        } <span class="kw">else </span>{
-            drop(last_yaw);
-            <span class="comment">// Repeats until an angle measurement exists
-            </span><span class="kw">loop </span>{
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(angles) = cntrl.responses().get_angles().<span class="kw">await </span>{
-                    cur_yaw = <span class="kw-2">*</span>angles.yaw();
-                    <span class="kw">break</span>;
-                } <span class="kw">else </span>{
-                    cntrl.bno055_periodic_read(<span class="bool-val">true</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-                }
-                sleep(SLEEP_LEN).<span class="kw">await</span>;
+        // Repeats until an angle measurement exists
+        </span><span class="kw">loop </span>{
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(angles) = cntrl.get_initial_angles().<span class="kw">await </span>{
+                cur_yaw = <span class="kw-2">*</span>angles.yaw();
+                <span class="kw">break</span>;
+            } <span class="kw">else </span>{
+                cntrl.bno055_periodic_read(<span class="bool-val">true</span>).<span class="kw">await</span><span class="question-mark">?</span>;
             }
+            sleep(SLEEP_LEN).<span class="kw">await</span>;
         }
 
         cntrl

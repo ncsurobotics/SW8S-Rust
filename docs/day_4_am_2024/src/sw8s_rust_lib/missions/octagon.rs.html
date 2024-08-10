@@ -345,7 +345,7 @@
 ) -&gt; <span class="kw">impl </span>ActionExec&lt;()&gt; + <span class="lifetime">'_ </span>{
     <span class="kw">const </span>FULL_SPEED_Y: f32 = <span class="number">1.0</span>;
     <span class="kw">const </span>FULL_SPEED_X: f32 = <span class="number">0.0</span>;
-    <span class="kw">const </span>FULL_SPEED_PITCH: f32 = -<span class="number">45.0</span>;
+    <span class="kw">const </span>FULL_SPEED_PITCH: f32 = -<span class="number">45.0 </span>/ <span class="number">4.0</span>;
     <span class="kw">const </span>DEPTH: f32 = -<span class="number">0.75</span>;
 
     <span class="kw">const </span>INIT_X: f32 = <span class="number">1.0</span>;

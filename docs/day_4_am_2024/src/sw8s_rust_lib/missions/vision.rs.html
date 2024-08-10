@@ -952,6 +952,8 @@
 <a href="#952" id="952">952</a>
 <a href="#953" id="953">953</a>
 <a href="#954" id="954">954</a>
+<a href="#955" id="955">955</a>
+<a href="#956" id="956">956</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::{Debug, Display};
 <span class="kw">use </span>std::ops::{Add, Div, Mul};
 <span class="kw">use </span>std::sync::RwLock;
@@ -1849,6 +1851,7 @@ where
 </span><span class="kw">pub struct </span>SizeUnder&lt;T, U&gt; {
     values: Vec&lt;VisualDetection&lt;T, U&gt;&gt;,
     size: f64,
+    lock: bool,
 }
 
 <span class="kw">impl</span>&lt;T, U&gt; SizeUnder&lt;T, U&gt; {
@@ -1856,6 +1859,7 @@ where
         <span class="self">Self </span>{
             values: <span class="macro">vec!</span>[],
             size,
+            lock: <span class="bool-val">false</span>,
         }
     }
 }
@@ -1868,10 +1872,9 @@ where
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;T, DrawRect2d&gt;&gt;&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>area = <span class="self">self
             </span>.values
-            .iter()
+            .last()
             .map(|val| val.position().width * val.position().height)
-            .sum::&lt;f64&gt;()
-            / (<span class="self">self</span>.values.len() <span class="kw">as </span>f64);
+            .unwrap_or(<span class="number">0.0</span>);
 
         <span class="comment">// IEEE, my enemy
         </span><span class="kw">if </span>area.is_nan() {
@@ -1879,7 +1882,8 @@ where
         };
 
         <span class="macro">logln!</span>(<span class="string">"Area: {}"</span>, area);
-        <span class="kw">if </span>area &lt; <span class="self">self</span>.size {
+        <span class="kw">if </span><span class="self">self</span>.lock || (area &lt; <span class="self">self</span>.size) {
+            <span class="self">self</span>.lock = <span class="bool-val">true</span>;
             <span class="prelude-val">Some</span>(<span class="self">self</span>.values.clone())
         } <span class="kw">else </span>{
             <span class="prelude-val">None
