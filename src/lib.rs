@@ -1,12 +1,20 @@
 use std::{
-    fs::File,
+    fs::{create_dir, File},
     sync::{LazyLock, Mutex},
 };
 
 use chrono::Local;
 
 pub static LOGFILE: LazyLock<Mutex<File>> = LazyLock::new(|| {
-    Mutex::new(File::create(Local::now().format("%Y-%m-%d_%H:%M:%S").to_string()).unwrap())
+    let _ = create_dir("console");
+    Mutex::new(
+        File::create(
+            &("console".to_string()
+                + &Local::now().format("%Y-%m-%d_%H:%M:%S").to_string()
+                + ".txt"),
+        )
+        .unwrap(),
+    )
 });
 
 #[macro_export]
