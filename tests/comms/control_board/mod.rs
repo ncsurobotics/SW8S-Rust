@@ -217,3 +217,36 @@ pub async fn tcp_spin_global() {
     // Will be broken until get IMU data read
     sleep(Duration::from_secs(10)).await;
 }
+
+#[ignore = "requires a UI, is long"]
+#[tokio::test]
+pub async fn tcp_reset() {
+    const LOCALHOST: &str = "127.0.0.1";
+    const SIM_PORT: &str = "5012";
+    const SIM_DUMMY_PORT: &str = "5011";
+
+    let godot = GODOT.lock().await;
+    open_sim(godot.to_string()).await.unwrap();
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+
+    while timeout(
+        Duration::from_secs(1),
+        control_board.global_speed_set(0.0, 0.0, 0.0, 0.0, 1.0, 0.0),
+    )
+    .await
+    .is_err()
+    {
+        println!("Global timeout");
+    }
+
+    println!("Send reset");
+    if control_board.reset().await.is_err() {
+        println!("Reset failure");
+    }
+    println!("Finished reset");
+
+    // Will be broken until get IMU data read
+    sleep(Duration::from_secs(10)).await;
+}

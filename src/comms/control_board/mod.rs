@@ -480,7 +480,7 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         }
     }
 
-    pub async fn reset(&self) -> Result<()> {
+    pub async fn reset(self) -> Result<()> {
         const RESET: [u8; 5] = *b"RESET";
 
         let mut message: Vec<_> = RESET.into();

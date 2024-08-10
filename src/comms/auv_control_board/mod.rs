@@ -121,7 +121,10 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
 
     pub async fn write_out_no_response(&self, message_body: Vec<u8>) -> Result<()> {
         let (_, message) = self.add_metadata(&message_body).await;
-        self.comm_out.lock().await.write_all(&message).await?;
+        let mut comm_out = self.comm_out.lock().await;
+        comm_out.write_all(&message).await?;
+        comm_out.flush().await?;
+        comm_out.shutdown().await?;
         Ok(())
     }
 }

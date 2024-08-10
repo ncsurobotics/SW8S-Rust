@@ -9,7 +9,7 @@ pub static LOGFILE: LazyLock<Mutex<File>> = LazyLock::new(|| {
     let _ = create_dir("console");
     Mutex::new(
         File::create(
-            &("console".to_string()
+            &("console/".to_string()
                 + &Local::now().format("%Y-%m-%d_%H:%M:%S").to_string()
                 + ".txt"),
         )
