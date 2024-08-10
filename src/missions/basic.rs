@@ -85,7 +85,7 @@ where
     ZeroMovement<'a, Con>: ActionExec<T>,
 {
     // time in seconds that each action will wait until before continuing onto the next action.
-    let dive_duration = 2.0;
+    let dive_duration = 4.0;
     let forward_duration = 2.0;
     ActionSequence::new(
         WaitArm::new(context),

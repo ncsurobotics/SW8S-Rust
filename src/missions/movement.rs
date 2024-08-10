@@ -2228,7 +2228,7 @@ impl ActionExec<Stability2Adjust> for SideMult {
                 AdjustType::Replace(x) => x,
             };
 
-            if is_blue {
+            if !is_blue {
                 *x = -*x;
             }
         };
@@ -2238,7 +2238,7 @@ impl ActionExec<Stability2Adjust> for SideMult {
                 AdjustType::Adjust(yaw) => yaw,
                 AdjustType::Replace(yaw) => yaw,
             };
-            if is_blue {
+            if !is_blue {
                 *yaw = -*yaw;
             }
         };

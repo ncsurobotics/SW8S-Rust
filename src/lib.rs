@@ -32,7 +32,7 @@ macro_rules! logln {
 /// Set to `1.0` or `-1.0`.
 ///
 /// `1.0` is counterclockwise to find buoy, clockwise to find octagon.
-pub const POOL_YAW_SIGN: f32 = 1.0;
+pub const POOL_YAW_SIGN: f32 = -1.0;
 
 pub mod comms;
 pub mod missions;

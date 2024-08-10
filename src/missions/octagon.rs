@@ -61,7 +61,7 @@ pub fn octagon<
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
     const FULL_SPEED_Y: f32 = 0.7;
-    const FULL_SPEED_X: f32 = 0.0;
+    const FULL_SPEED_X: f32 = 0.1;
     const FULL_SPEED_PITCH: f32 = -45.0 / 4.0;
     const DEPTH: f32 = -0.75;
 
@@ -76,9 +76,9 @@ pub fn octagon<
     const FALSE_COUNT: u32 = 3;
     const ADJUST_COUNT: u32 = 2;
 
-    const OCTAGON_SPIN: f32 = 60.0 * POOL_YAW_SIGN;
+    const OCTAGON_SPIN: f32 = 80.0 * POOL_YAW_SIGN;
 
-    const MISSION_END_TIME: f32 = INIT_TIME + BLIND_TIME + 16.0;
+    const MISSION_END_TIME: f32 = INIT_TIME + BLIND_TIME + 22.0;
 
     RaceAction::new(
         act_nest!(

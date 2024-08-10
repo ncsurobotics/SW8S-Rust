@@ -153,7 +153,7 @@ pub fn buoy_circle_sequence_blind<
     const BUOY_Y_SPEED: f32 = 0.15;
     const BUOY_YAW_SPEED: f32 = 12.0;
     const DEPTH: f32 = -1.5;
-    const DESCEND_WAIT_DURATION: f32 = 3.0;
+    const DESCEND_WAIT_DURATION: f32 = 5.0;
     const CIRCLE_COUNT: u32 = 34;
 
     act_nest!(

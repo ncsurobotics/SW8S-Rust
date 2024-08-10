@@ -61,7 +61,7 @@ pub fn fancy_octagon<
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
     const FULL_SPEED_Y: f32 = 0.7;
-    const FULL_SPEED_X: f32 = 0.0;
+    const FULL_SPEED_X: f32 = 0.1;
     const FULL_SPEED_PITCH: f32 = -45.0 / 4.0;
     const DEPTH: f32 = -0.75;
 
@@ -76,11 +76,11 @@ pub fn fancy_octagon<
     const FALSE_COUNT: u32 = 3;
     const ADJUST_COUNT: u32 = 2;
 
-    const OCTAGON_SPIN: f32 = 60.0;
+    const OCTAGON_SPIN: f32 = 80.0 * POOL_YAW_SIGN;
 
-    const MISSION_END_TIME: f32 = INIT_TIME + BLIND_TIME + 16.0;
+    const MISSION_END_TIME: f32 = INIT_TIME + BLIND_TIME + 13.0;
 
-    const ALIGN_YAW_SPEED: f32 = 7.0 * POOL_YAW_SIGN;
+    const ALIGN_YAW_SPEED: f32 = 5.0 * POOL_YAW_SIGN;
 
     act_nest!(
         ActionSequence::new,
@@ -123,14 +123,14 @@ pub fn fancy_octagon<
             ),
             OutputType::<()>::new(),
         ),
-        DelayAction::new(BLIND_TIME),
+        DelayAction::new(MISSION_END_TIME),
         ActionWhile::new(ActionSequence::new(
             act_nest!(
                 ActionChain::new,
                 ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)
+                    Stability2Pos::new(0.0, 0.0, FULL_SPEED_PITCH, 0.0, None, DEPTH)
                 ),
                 OutputType::<()>::new(),
             ),
@@ -138,7 +138,7 @@ pub fn fancy_octagon<
                 ActionChain::new,
                 Vision::<Con, Path, f64>::new(context, octagon_path_model()),
                 DetectTarget::new(true),
-                CountTrue::new(1),
+                CountTrue::new(3),
             ),
         ),),
         ActionWhile::new(act_nest!(
