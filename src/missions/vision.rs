@@ -427,6 +427,54 @@ where
     }
 }
 
+/// Runs a vision routine to obtain object positions.
+#[derive(Debug)]
+pub struct VisionSizeLock<'a, T, U, V> {
+    context: &'a T,
+    model: U,
+    _num: PhantomData<V>,
+}
+
+impl<'a, T, U, V> VisionSizeLock<'a, T, U, V> {
+    pub const fn new(context: &'a T, model: U) -> Self {
+        Self {
+            context,
+            model,
+            _num: PhantomData,
+        }
+    }
+}
+
+impl<T, U, V> Action for VisionSizeLock<'_, T, U, V> {}
+
+impl<
+        T: GetFrontCamMat + Send + Sync,
+        V: Num + Float + FromPrimitive + Send + Sync,
+        U: VisualDetector<V> + Send + Sync,
+    > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, U::Position>>>>
+    for VisionSizeLock<'_, T, U, V>
+where
+    U::Position: Debug + Send + Sync,
+    VisualDetection<U::ClassEnum, U::Position>: Draw,
+    U::ClassEnum: Send + Sync + Debug,
+{
+    async fn execute(&mut self) -> Result<Vec<VisualDetection<U::ClassEnum, U::Position>>> {
+        #[cfg(feature = "logging")]
+        {
+            logln!("Running detection...");
+        }
+
+        #[allow(unused_mut)]
+        let mut mat = self.context.get_front_camera_mat().await.clone();
+
+        let det = self.model.detect(&mat);
+        match det {
+            Ok(x) => Ok(x),
+            Err(x) => Err(x),
+        }
+    }
+}
+
 /*
 /// Runs a pipelined vision routine to obtain object positions
 ///
@@ -926,10 +974,10 @@ impl<T: Send + Sync + Clone> ActionExec<Option<Vec<VisualDetection<T, DrawRect2d
         };
 
         logln!("Area: {}", area);
-        if self.lock || (area < self.size) {
-            self.lock = true;
+        if (!self.lock) || (area < self.size) {
             Some(self.values.clone())
         } else {
+            self.lock = true;
             None
         }
     }

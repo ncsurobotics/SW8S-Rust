@@ -12,8 +12,9 @@ use crate::{
         basic::DelayAction,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
         movement::{
-            AdjustType, ClampX, Descend, LinearYawFromX, MultiplyX, OffsetToPose, SetX,
-            Stability2Adjust, Stability2Movement, Stability2Pos, StripY, ZeroMovement,
+            AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, NoAdjust,
+            OffsetToPose, SetX, Stability2Adjust, Stability2Movement, Stability2Pos, StripY,
+            ZeroMovement,
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},
     },
@@ -70,10 +71,25 @@ pub fn octagon<
     const X_CLAMP: f32 = 0.3;
 
     const FALSE_COUNT: u32 = 3;
+    const ADJUST_COUNT: u32 = 10;
 
     act_nest!(
         ActionSequence::new,
-        Descend::new(context, DEPTH),
+        ActionWhile::new(act_nest!(
+            ActionSequence::new,
+            act_nest!(
+                ActionChain::new,
+                NoAdjust::<Stability2Adjust>::new(),
+                ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(7.0)),
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(INIT_X, INIT_Y, 0.0, 0.0, None, DEPTH)
+                ),
+                OutputType::<()>::new(),
+            ),
+            DelayAction::new(1.0),
+            ActionChain::<bool, _, _>::new(AlwaysTrue::default(), CountTrue::new(ADJUST_COUNT)),
+        ),),
         DelayAction::new(2.0),
         ActionChain::new(
             Stability2Movement::new(

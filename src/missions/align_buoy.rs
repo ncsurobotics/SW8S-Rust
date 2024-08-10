@@ -16,7 +16,9 @@ use crate::{
             AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, OffsetToPose, ReplaceX, SetX,
             SetY, Stability2Adjust, Stability2Movement, Stability2Pos, ZeroMovement,
         },
-        vision::{DetectTarget, ExtractPosition, MidPoint, Norm, SizeUnder, Vision},
+        vision::{
+            DetectTarget, ExtractPosition, MidPoint, Norm, SizeUnder, Vision, VisionSizeLock,
+        },
     },
     vision::{
         buoy_model::{BuoyModel, Target},
@@ -47,9 +49,9 @@ pub fn buoy_align<
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = 8.0;
+    const ALIGN_YAW_SPEED: f32 = 4.0;
 
-    const FAST_DISTANCE: f64 = 5_000.0;
+    const FAST_DISTANCE: f64 = 3_000.0;
     const CORRECT_YAW_SPEED: f32 = 3.0;
     const CORRECT_X_MULTIPLY: f32 = 0.5;
     const CORRECT_X_CLAMP: f32 = 0.15;
@@ -153,7 +155,7 @@ pub fn buoy_align_shot<
 ) -> impl ActionExec<()> + '_ {
     const Y_SPEED: f32 = 0.2;
     const DEPTH: f32 = -0.9;
-    const TRUE_COUNT: u32 = 3;
+    const TRUE_COUNT: u32 = 2;
     const FALSE_COUNT: u32 = 5;
 
     const BACKUP_Y_SPEED: f32 = -0.5;
@@ -161,7 +163,7 @@ pub fn buoy_align_shot<
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = 6.0;
+    const ALIGN_YAW_SPEED: f32 = 3.0;
 
     const SHOT_DEPTH: f32 = -0.6;
     const SHOT_ANGLE: f32 = 22.5;
@@ -208,7 +210,7 @@ pub fn buoy_align_shot<
         )),
         ActionWhile::new(act_nest!(
             ActionChain::new,
-            Vision::<Con, BuoyModel<OnnxModel>, f64>::new(context, BuoyModel::default()),
+            VisionSizeLock::<Con, BuoyModel<OnnxModel>, f64>::new(context, BuoyModel::default()),
             TupleSecond::<_, bool>::new(ActionConcurrent::new(
                 ActionSequence::new(
                     act_nest!(

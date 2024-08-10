@@ -2393,3 +2393,28 @@ impl Default for GlobalPos {
         Self::const_default()
     }
 }
+
+#[derive(Debug)]
+pub struct NoAdjust<T> {
+    _phantom: PhantomData<T>,
+}
+
+impl<T> Action for NoAdjust<T> {}
+
+impl<T> NoAdjust<T> {
+    pub const fn new() -> Self {
+        Self {
+            _phantom: PhantomData,
+        }
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for NoAdjust<T> {
+    fn modify(&mut self, input: &T) {}
+}
+
+impl ActionExec<Stability2Adjust> for NoAdjust<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        Stability2Adjust::default()
+    }
+}
