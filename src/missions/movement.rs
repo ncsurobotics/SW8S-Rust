@@ -300,6 +300,7 @@ where
 impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>>
     for AdjustMovementAngle<'_, T>
 {
+    #[allow(clippy::await_holding_lock)]
     async fn execute(&mut self) -> Result<()> {
         const ADJUST_VAL: f32 = 1.5;
         const MIN_X: f32 = 0.3;
@@ -2400,6 +2401,12 @@ pub struct NoAdjust<T> {
 }
 
 impl<T> Action for NoAdjust<T> {}
+
+impl<T> Default for NoAdjust<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl<T> NoAdjust<T> {
     pub const fn new() -> Self {

@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 use chrono::Local;
 use config::Configuration;
-use std::{env::temp_dir, path::Path};
+use std::env::temp_dir;
 
 use std::env;
 use std::process::exit;

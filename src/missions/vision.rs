@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt::{Debug, Display};
 use std::ops::{Add, Div, Mul};
 use std::sync::RwLock;
@@ -12,7 +13,7 @@ use crate::vision::{Draw, DrawRect2d, Offset2D, RelPos, VisualDetection, VisualD
 
 use anyhow::{anyhow, Result};
 use num_traits::{Float, FromPrimitive, Num};
-use opencv::core::Mat;
+use opencv::core::{Mat, Rect2d};
 use uuid::Uuid;
 
 use crate::missions::action_context::GetFrontCamMat;
@@ -962,10 +963,17 @@ impl<T: Send + Sync + Clone> ActionExec<Option<Vec<VisualDetection<T, DrawRect2d
     for SizeUnder<T, DrawRect2d>
 {
     async fn execute(&mut self) -> Option<Vec<VisualDetection<T, DrawRect2d>>> {
-        let mut area = self
-            .values
+        let bounding_box_size = |b: &Rect2d| -> f64 { b.width * b.height };
+
+        let mut poses: Vec<_> = self.values.iter().map(|v| v.position().clone()).collect();
+        poses.sort_unstable_by(|lhs, rhs| {
+            std::cmp::PartialOrd::partial_cmp(&bounding_box_size(lhs), &bounding_box_size(rhs))
+                .unwrap_or(Ordering::Equal)
+        });
+
+        let mut area = poses
             .last()
-            .map(|val| val.position().width * val.position().height)
+            .map(|val| val.width * val.height)
             .unwrap_or(0.0);
 
         // IEEE, my enemy
@@ -973,8 +981,8 @@ impl<T: Send + Sync + Clone> ActionExec<Option<Vec<VisualDetection<T, DrawRect2d
             area = 0.0;
         };
 
-        logln!("Area: {}", area);
-        if (!self.lock) || (area < self.size) {
+        logln!("Limit check area: {}", area);
+        if (!self.lock) && (area < self.size) {
             Some(self.values.clone())
         } else {
             self.lock = true;

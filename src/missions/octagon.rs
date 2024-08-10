@@ -12,9 +12,8 @@ use crate::{
         basic::DelayAction,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
         movement::{
-            AdjustType, ClampX, ConstYaw, Descend, LinearYawFromX, MultiplyX, NoAdjust,
-            OffsetToPose, SetX, Stability2Adjust, Stability2Movement, Stability2Pos, StripY,
-            ZeroMovement,
+            AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, NoAdjust, OffsetToPose, SetX,
+            Stability2Adjust, Stability2Movement, Stability2Pos, StripY, ZeroMovement,
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},
     },
