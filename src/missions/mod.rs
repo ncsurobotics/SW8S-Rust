@@ -8,6 +8,7 @@ pub mod coinflip;
 pub mod comms;
 pub mod example;
 pub mod extra;
+pub mod fancy_octagon;
 pub mod fire_torpedo;
 pub mod gate;
 pub mod graph;
