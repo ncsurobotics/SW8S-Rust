@@ -58,7 +58,7 @@ pub fn octagon<
 ) -> impl ActionExec<()> + '_ {
     const FULL_SPEED_Y: f32 = 1.0;
     const FULL_SPEED_X: f32 = 0.0;
-    const FULL_SPEED_PITCH: f32 = -45.0;
+    const FULL_SPEED_PITCH: f32 = -45.0 / 4.0;
     const DEPTH: f32 = -0.75;
 
     const INIT_X: f32 = 1.0;

@@ -895,6 +895,7 @@ impl<T: Send + Sync + Clone, U: Send + Sync + Clone, V> ActionMod<VisualDetectio
 pub struct SizeUnder<T, U> {
     values: Vec<VisualDetection<T, U>>,
     size: f64,
+    lock: bool,
 }
 
 impl<T, U> SizeUnder<T, U> {
@@ -902,6 +903,7 @@ impl<T, U> SizeUnder<T, U> {
         Self {
             values: vec![],
             size,
+            lock: false,
         }
     }
 }
@@ -914,10 +916,9 @@ impl<T: Send + Sync + Clone> ActionExec<Option<Vec<VisualDetection<T, DrawRect2d
     async fn execute(&mut self) -> Option<Vec<VisualDetection<T, DrawRect2d>>> {
         let mut area = self
             .values
-            .iter()
+            .last()
             .map(|val| val.position().width * val.position().height)
-            .sum::<f64>()
-            / (self.values.len() as f64);
+            .unwrap_or(0.0);
 
         // IEEE, my enemy
         if area.is_nan() {
@@ -925,7 +926,8 @@ impl<T: Send + Sync + Clone> ActionExec<Option<Vec<VisualDetection<T, DrawRect2d
         };
 
         logln!("Area: {}", area);
-        if area < self.size {
+        if self.lock || (area < self.size) {
+            self.lock = true;
             Some(self.values.clone())
         } else {
             None

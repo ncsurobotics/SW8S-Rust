@@ -9,6 +9,7 @@ use crate::{
             TupleSecond,
         },
         basic::DelayAction,
+        comms::StartBno055,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
         fire_torpedo::FireTorpedo,
         movement::{
@@ -40,21 +41,22 @@ pub fn buoy_align<
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
     const Y_SPEED: f32 = 0.2;
-    const Y_SPEED_FAST: f32 = 0.8;
+    const Y_SPEED_FAST: f32 = 0.5;
     const DEPTH: f32 = -1.0;
     const FALSE_COUNT: u32 = 5;
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = -8.0;
+    const ALIGN_YAW_SPEED: f32 = 8.0;
 
-    const FAST_DISTANCE: f64 = 9_000.0;
-    const CORRECT_YAW_SPEED: f32 = 7.0;
+    const FAST_DISTANCE: f64 = 5_000.0;
+    const CORRECT_YAW_SPEED: f32 = 3.0;
     const CORRECT_X_MULTIPLY: f32 = 0.5;
     const CORRECT_X_CLAMP: f32 = 0.15;
 
     act_nest!(
         ActionSequence::new,
+        StartBno055::new(context),
         act_nest!(
             ActionChain::new,
             Stability2Movement::new(context, Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)),
@@ -159,9 +161,9 @@ pub fn buoy_align_shot<
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = -6.0;
+    const ALIGN_YAW_SPEED: f32 = 6.0;
 
-    const SHOT_DEPTH: f32 = -0.3;
+    const SHOT_DEPTH: f32 = -0.6;
     const SHOT_ANGLE: f32 = 22.5;
 
     act_nest!(
@@ -181,7 +183,11 @@ pub fn buoy_align_shot<
             OutputType::<()>::new(),
         ),
         DelayAction::new(BACKUP_TIME),
-        ZeroMovement::new(context, DEPTH),
+        act_nest!(
+            ActionChain::new,
+            Stability2Movement::new(context, Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)),
+            OutputType::<()>::new(),
+        ),
         DelayAction::new(4.0),
         ActionWhile::new(ActionSequence::new(
             act_nest!(
@@ -255,6 +261,17 @@ pub fn buoy_align_shot<
             Stability2Movement::new(
                 context,
                 Stability2Pos::new(0.0, 0.0, SHOT_ANGLE, 0.0, None, SHOT_DEPTH)
+            ),
+            OutputType::<()>::new(),
+        ),
+        DelayAction::new(1.0),
+        FireTorpedo::new(context),
+        act_nest!(
+            ActionChain::new,
+            ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
+            Stability2Movement::new(
+                context,
+                Stability2Pos::new(0.2, 0.0, SHOT_ANGLE, 0.0, None, SHOT_DEPTH)
             ),
             OutputType::<()>::new(),
         ),

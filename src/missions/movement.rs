@@ -68,22 +68,15 @@ impl<T: GetControlBoard<WriteHalf<SerialStream>>> ActionExec<Result<()>> for Des
         let cur_yaw;
 
         // Intializes yaw to current value
-        #[allow(clippy::await_holding_lock)]
-        let last_yaw = LAST_YAW.lock().unwrap();
-        if let Some(last_yaw) = *last_yaw {
-            cur_yaw = last_yaw;
-        } else {
-            drop(last_yaw);
-            // Repeats until an angle measurement exists
-            loop {
-                if let Some(angles) = cntrl.responses().get_angles().await {
-                    cur_yaw = *angles.yaw();
-                    break;
-                } else {
-                    cntrl.bno055_periodic_read(true).await?;
-                }
-                sleep(SLEEP_LEN).await;
+        // Repeats until an angle measurement exists
+        loop {
+            if let Some(angles) = cntrl.get_initial_angles().await {
+                cur_yaw = *angles.yaw();
+                break;
+            } else {
+                cntrl.bno055_periodic_read(true).await?;
             }
+            sleep(SLEEP_LEN).await;
         }
 
         cntrl
