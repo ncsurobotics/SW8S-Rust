@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["into_read_buf_parts"],"struct":["ReadBufParts","VecWithInitialized"],"trait":["VecU8"]};

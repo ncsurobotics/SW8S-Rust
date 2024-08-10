@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["accept","bind_addr"]};

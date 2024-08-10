@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["interests_to_epoll"],"mod":["event","stateless_io_source"],"static":["NEXT_ID"],"struct":["Selector"],"type":["Event","Events"]};

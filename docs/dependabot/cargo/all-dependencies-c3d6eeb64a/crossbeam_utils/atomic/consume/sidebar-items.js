@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["impl_atomic","impl_consume"],"trait":["AtomicConsume"]};

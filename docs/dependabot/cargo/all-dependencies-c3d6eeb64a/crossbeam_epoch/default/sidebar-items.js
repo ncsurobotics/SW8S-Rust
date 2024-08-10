@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["HANDLE"],"fn":["collector","default_collector","is_pinned","pin","with_handle"]};
