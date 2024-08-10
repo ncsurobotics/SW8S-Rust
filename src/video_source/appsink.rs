@@ -47,7 +47,7 @@ impl Camera {
                     .ok_or(anyhow!("filesink_dir is not a string"))?
                 + "/"
                 + camera_name
-                + "\" ";
+                + ".mp4\" ";
 
         let frame: Arc<Mutex<Option<Mat>>> = Arc::default();
         let frame_copy = frame.clone();

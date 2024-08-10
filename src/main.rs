@@ -1,6 +1,7 @@
 use anyhow::{bail, Result};
+use chrono::Local;
 use config::Configuration;
-use std::path::Path;
+use std::{env::temp_dir, path::Path};
 
 use std::env;
 use std::process::exit;
@@ -88,7 +89,7 @@ async fn front_cam() -> &'static Camera {
             Camera::jetson_new(
                 &Configuration::default().front_cam,
                 "front",
-                Path::new("/tmp/front_feed.mp4"),
+                &temp_dir().join(Local::now().format("cams_%Y-%m-%d_%H:%M:%S").to_string()),
             )
             .unwrap()
         })
@@ -102,7 +103,7 @@ async fn bottom_cam() -> &'static Camera {
             Camera::jetson_new(
                 &Configuration::default().bottom_cam,
                 "bottom",
-                Path::new("/tmp/bottom_feed.mp4"),
+                &temp_dir().join(Local::now().format("cams_%Y-%m-%d_%H:%M:%S").to_string()),
             )
             .unwrap()
         })
@@ -454,7 +455,7 @@ async fn run_mission(mission: &str) -> Result<()> {
             Camera::jetson_new(
                 &Configuration::default().bottom_cam,
                 "front",
-                Path::new("/tmp/front_feed.mp4"),
+                &temp_dir().join(Local::now().format("cams_%Y-%m-%d_%H:%M:%S").to_string()),
             )
             .unwrap();
             Ok(())
