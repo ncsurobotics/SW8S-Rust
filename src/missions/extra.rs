@@ -615,3 +615,57 @@ impl<T: Send + Sync + Clone> ActionExec<bool> for IsSome<T> {
         !self.value.is_empty()
     }
 }
+
+/// AlwaysBetter returns a true value
+#[derive(Debug)]
+pub struct AlwaysBetterTrue {}
+
+impl AlwaysBetterTrue {
+    pub fn new() -> Self {
+        AlwaysBetterTrue {}
+    }
+}
+impl Default for AlwaysBetterTrue {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Action for AlwaysBetterTrue {}
+
+impl<T: Send + Sync> ActionMod<T> for AlwaysBetterTrue {
+    fn modify(&mut self, _input: &T) {}
+}
+
+impl ActionExec<anyhow::Result<()>> for AlwaysBetterTrue {
+    async fn execute(&mut self) -> anyhow::Result<()> {
+        Ok(())
+    }
+}
+
+/// AlwaysBetter returns a false value
+#[derive(Debug)]
+pub struct AlwaysBetterFalse {}
+
+impl AlwaysBetterFalse {
+    pub fn new() -> Self {
+        AlwaysBetterFalse {}
+    }
+}
+impl Default for AlwaysBetterFalse {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Action for AlwaysBetterFalse {}
+
+impl<T: Send + Sync> ActionMod<T> for AlwaysBetterFalse {
+    fn modify(&mut self, _input: &T) {}
+}
+
+impl ActionExec<anyhow::Result<()>> for AlwaysBetterFalse {
+    async fn execute(&mut self) -> anyhow::Result<()> {
+        bail!("")
+    }
+}

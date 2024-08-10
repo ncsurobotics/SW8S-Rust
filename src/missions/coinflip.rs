@@ -3,8 +3,18 @@ use tokio_serial::SerialStream;
 
 use crate::{
     act_nest,
-    missions::movement::{AdjustType, ConstYaw, Descend},
-    vision::{gate_poles::GatePoles, nn_cv2::OnnxModel},
+    missions::{
+        action::{wrap_action, FirstValid},
+        meb::WaitArm,
+        movement::{AdjustType, ConstYaw, Descend},
+        vision::DetectTarget,
+    },
+    vision::{
+        buoy::Target,
+        gate_poles::GatePoles,
+        nn_cv2::{OnnxModel, YoloClass},
+        Offset2D,
+    },
 };
 
 use super::{
@@ -36,7 +46,11 @@ pub fn coinflip<
 
     act_nest!(
         ActionSequence::new,
-        ActionConcurrent::new(Descend::new(context, DEPTH), StartBno055::new(context)),
+        ActionConcurrent::new(WaitArm::new(context), StartBno055::new(context)),
+        ActionChain::new(
+            Stability2Movement::new(context, Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)),
+            OutputType::<()>::new()
+        ),
         DelayAction::new(DELAY_TIME),
         ActionWhile::new(ActionSequence::new(
             act_nest!(
@@ -50,7 +64,10 @@ pub fn coinflip<
             ),
             act_nest!(
                 ActionChain::new,
-                VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default(),),
+                VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(
+                    context,
+                    GatePoles::load_640(0.7),
+                ),
                 CountTrue::new(TRUE_COUNT),
             ),
         )),

@@ -10,7 +10,10 @@ use crate::{
             TupleSecond,
         },
         basic::DelayAction,
-        extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
+        extra::{
+            AlwaysBetterFalse, AlwaysBetterTrue, AlwaysFalse, AlwaysTrue, CountFalse, CountTrue,
+            IsSome, OutputType, Terminal, ToVec,
+        },
         movement::{
             AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, NoAdjust, OffsetToPose, SetX,
             Stability2Adjust, Stability2Movement, Stability2Pos, StripY, ZeroMovement,
@@ -61,7 +64,7 @@ pub fn octagon<
     const FULL_SPEED_PITCH: f32 = -45.0 / 4.0;
     const DEPTH: f32 = -0.75;
 
-    const INIT_X: f32 = 0.5;
+    const INIT_X: f32 = 0.0;
     const INIT_Y: f32 = 0.0;
     const INIT_TIME: f32 = 3.0;
 
@@ -72,6 +75,8 @@ pub fn octagon<
     const FALSE_COUNT: u32 = 3;
     const ADJUST_COUNT: u32 = 2;
 
+    const OCTAGON_SPIN: f32 = 60.0;
+
     act_nest!(
         ActionSequence::new,
         ActionWhile::new(act_nest!(
@@ -79,7 +84,7 @@ pub fn octagon<
             act_nest!(
                 ActionChain::new,
                 NoAdjust::<Stability2Adjust>::new(),
-                ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(80.0)),
+                ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(OCTAGON_SPIN)),
                 Stability2Movement::new(
                     context,
                     Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)
@@ -133,46 +138,93 @@ pub fn octagon<
             act_nest!(
                 ActionChain::new,
                 Vision::<Con, Path, f64>::new(context, octagon_path_model()),
-                IsSome::default(),
-                CountTrue::new(1)
+                TupleSecond::new(ActionConcurrent::new(
+                    act_nest!(
+                        ActionChain::new,
+                        ToVec::new(),
+                        Norm::new(Path::default()),
+                        ExtractPosition::new(),
+                        MidPoint::new(),
+                        OffsetToPose::<Offset2D<f64>>::default(),
+                        LinearYawFromX::<Stability2Adjust>::new(7.0),
+                        ClampX::<Stability2Adjust>::new(X_CLAMP),
+                        StripY::<Stability2Adjust>::new(),
+                        ActionChain::new(
+                            Stability2Movement::new(
+                                context,
+                                Stability2Pos::new(
+                                    FULL_SPEED_X,
+                                    FULL_SPEED_Y,
+                                    0.0,
+                                    0.0,
+                                    None,
+                                    DEPTH
+                                )
+                            ),
+                            OutputType::<()>::new(),
+                        ),
+                    ),
+                    ActionChain::new(IsSome::default(), CountTrue::new(1)),
+                ))
             )
         )),
         ActionWhile::new(act_nest!(
             ActionChain::new,
             Vision::<Con, Path, f64>::new(context, octagon_path_model()),
-            TupleSecond::<_, bool>::new(ActionConcurrent::new(
+            ActionDataConditional::new(
+                DetectTarget::new(true),
                 ActionSequence::new(
                     act_nest!(
                         ActionChain::new,
-                        ActionDataConditional::new(
-                            DetectTarget::new(true),
-                            act_nest!(
-                                ActionChain::new,
-                                Norm::new(Path::default()),
-                                ExtractPosition::new(),
-                                MidPoint::new(),
-                                OffsetToPose::<Offset2D<f64>>::default(),
-                                LinearYawFromX::<Stability2Adjust>::new(7.0),
-                                MultiplyX::new(0.5),
-                                ClampX::<Stability2Adjust>::new(X_CLAMP),
-                            ),
-                            act_nest!(
-                                ActionSequence::new,
-                                Terminal::new(),
-                                SetX::<Stability2Adjust>::new(AdjustType::Replace(FULL_SPEED_X)),
-                            )
-                        ),
+                        Norm::new(Path::default()),
+                        ExtractPosition::new(),
+                        MidPoint::new(),
+                        OffsetToPose::<Offset2D<f64>>::default(),
+                        LinearYawFromX::<Stability2Adjust>::new(7.0),
+                        ClampX::<Stability2Adjust>::new(X_CLAMP),
                         StripY::<Stability2Adjust>::new(),
-                        Stability2Movement::new(
-                            context,
-                            Stability2Pos::new(FULL_SPEED_X, FULL_SPEED_Y, 0.0, 0.0, None, DEPTH)
+                        ActionChain::new(
+                            Stability2Movement::new(
+                                context,
+                                Stability2Pos::new(
+                                    FULL_SPEED_X,
+                                    FULL_SPEED_Y,
+                                    0.0,
+                                    0.0,
+                                    None,
+                                    DEPTH
+                                )
+                            ),
+                            OutputType::<()>::new(),
                         ),
-                        OutputType::<()>::new(),
                     ),
-                    AlwaysTrue::new()
+                    AlwaysBetterTrue::new(),
                 ),
-                ActionChain::new(IsSome::default(), CountFalse::new(FALSE_COUNT))
-            )),
+                ActionSequence::new(
+                    act_nest!(
+                        ActionSequence::new,
+                        Terminal::new(),
+                        SetX::<Stability2Adjust>::new(AdjustType::Replace(FULL_SPEED_X)),
+                        StripY::<Stability2Adjust>::new(),
+                        ActionChain::new(
+                            Stability2Movement::new(
+                                context,
+                                Stability2Pos::new(
+                                    FULL_SPEED_X,
+                                    FULL_SPEED_Y,
+                                    0.0,
+                                    0.0,
+                                    None,
+                                    DEPTH
+                                )
+                            ),
+                            OutputType::<()>::new(),
+                        ),
+                    ),
+                    AlwaysBetterFalse::new(),
+                ),
+            ),
+            CountFalse::new(FALSE_COUNT)
         ),),
         ZeroMovement::new(context, DEPTH),
         OutputType::<()>::new()

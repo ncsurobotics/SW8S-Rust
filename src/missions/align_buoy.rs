@@ -49,7 +49,7 @@ pub fn buoy_align<
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = 4.0;
+    const ALIGN_YAW_SPEED: f32 = -4.0;
 
     const FAST_DISTANCE: f64 = 3_000.0;
     const CORRECT_YAW_SPEED: f32 = 3.0;
@@ -163,7 +163,7 @@ pub fn buoy_align_shot<
 
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = 3.0;
+    const ALIGN_YAW_SPEED: f32 = -3.0;
 
     const SHOT_DEPTH: f32 = -0.6;
     const SHOT_ANGLE: f32 = 22.5;

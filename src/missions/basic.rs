@@ -1,10 +1,11 @@
 use crate::logln;
 
 use super::{
-    action::{Action, ActionExec, ActionSequence},
+    action::{Action, ActionChain, ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
+    extra::OutputType,
     meb::WaitArm,
-    movement::{Descend, StraightMovement, ZeroMovement},
+    movement::{Descend, Stability2Movement, Stability2Pos, StraightMovement, ZeroMovement},
 };
 
 use tokio::{
@@ -90,7 +91,13 @@ where
         WaitArm::new(context),
         ActionSequence::new(
             ActionSequence::new(
-                Descend::new(context, depth),
+                ActionChain::new(
+                    Stability2Movement::new(
+                        context,
+                        Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, depth),
+                    ),
+                    OutputType::<()>::new(),
+                ),
                 DelayAction::new(dive_duration),
             ),
             ActionSequence::new(

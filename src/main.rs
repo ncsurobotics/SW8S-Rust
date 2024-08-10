@@ -21,7 +21,6 @@ use sw8s_rust_lib::{
         },
         coinflip::coinflip,
         example::initial_descent,
-        fire_torpedo::FireTorpedo,
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         meb::WaitArm,
         octagon::octagon,
@@ -439,7 +438,7 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "torpedo_only" => {
-            FireTorpedo::new(static_context().await).execute().await;
+            //FireTorpedo::new(static_context().await).execute().await;
             Ok(())
         }
         "coinflip" => {
