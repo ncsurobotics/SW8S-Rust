@@ -286,7 +286,7 @@
         },
         control_board::response::{KeyedAcknowledges, MAP_POLL_SLEEP},
     },
-    write_stream_mutexed,
+    logln, write_stream_mutexed,
 };
 
 <span class="kw">use </span>derive_getters::Getters;
@@ -404,7 +404,7 @@
     {
         <span class="kw">let </span>err_stream = <span class="kw-2">&amp;</span>Mutex::new(err_stream);
         stream::iter(get_messages(buffer, serial_conn, <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)] </span><span class="string">"meb_in"</span>).<span class="kw">await</span>).for_each_concurrent(<span class="prelude-val">None</span>, |message| <span class="kw">async move </span>{
-            <span class="kw">if </span>message.len() &lt; <span class="number">4 </span>{ <span class="macro">println!</span>(<span class="string">"Message len &lt; 4: {:?}"</span>, message); <span class="kw">return</span>; };
+            <span class="kw">if </span>message.len() &lt; <span class="number">4 </span>{ <span class="macro">logln!</span>(<span class="string">"Message len &lt; 4: {:?}"</span>, message); <span class="kw">return</span>; };
 
             <span class="kw">let </span>id = u16::from_be_bytes(message[<span class="number">0</span>..<span class="number">2</span>].try_into().unwrap());
             <span class="kw">let </span>message_body = <span class="kw-2">&amp;</span>message[<span class="number">2</span>..(message.len() - <span class="number">2</span>)];

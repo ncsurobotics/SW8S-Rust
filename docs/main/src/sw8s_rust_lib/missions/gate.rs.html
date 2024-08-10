@@ -215,18 +215,18 @@
 <a href="#215" id="215">215</a>
 <a href="#216" id="216">216</a>
 <a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>tokio::io::WriteHalf;
 <span class="kw">use </span>tokio_serial::SerialStream;
 
 <span class="kw">use crate</span>::{
     act_nest,
     missions::{
-        action::{ActionConcurrentSplit, ActionConditional, ActionDataConditional},
+        action::{ActionConcurrentSplit, ActionDataConditional},
         basic::descend_depth_and_go_forward,
         extra::{AlwaysFalse, AlwaysTrue, Terminal},
         movement::{
-            AdjustType, ClampX, FlipX, InvertX, MultiplyX, ReplaceX, SetSideBlue, SetSideRed, SetX,
-            SetY,
+            AdjustType, ClampX, FlipX, InvertX, ReplaceX, SetSideBlue, SetSideRed, SetX, SetY,
         },
         vision::{MidPoint, OffsetClass},
     },
@@ -366,7 +366,8 @@
                         ActionConcurrent::new,
                         <span class="macro">act_nest!</span>(
                             ActionChain::new,
-                            OffsetClass::new(Target::Middle, Offset2D::&lt;f64&gt;::new(-<span class="number">0.1</span>, <span class="number">0.0</span>)),
+                            OffsetClass::new(Target::Middle, Offset2D::&lt;f64&gt;::new(-<span class="number">0.05</span>, <span class="number">0.0</span>)),
+                            OffsetClass::new(Target::Blue, Offset2D::&lt;f64&gt;::new(-<span class="number">0.1</span>, <span class="number">0.0</span>)),
                             ExtractPosition::new(),
                             MidPoint::new(),
                             OffsetToPose::default(),
@@ -386,7 +387,8 @@
                                 ExtractPosition::new(),
                                 MidPoint::new(),
                                 OffsetToPose::default(),
-                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(<span class="number">7.0</span>),
+                                InvertX::new(),
+                                LinearYawFromX::&lt;Stability2Adjust&gt;::new(-<span class="number">7.0</span>),
                                 <span class="comment">//ClampX::new(0.8),
                                 </span>SetY::&lt;Stability2Adjust&gt;::new(AdjustType::Replace(<span class="number">0.2</span>)),
                                 ReplaceX::new(),

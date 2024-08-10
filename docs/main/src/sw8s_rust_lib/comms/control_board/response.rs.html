@@ -312,7 +312,7 @@
                     let now = SystemTime::now();
                     unsafe {
                         if now.duration_since(PREV_YAW_PRINT).unwrap() &gt; Duration::from_secs(1) {
-                            println!("Current yaw reading: {}", 
+                            logln!("Current yaw reading: {}", 
                         Angles::from_raw(new_status).yaw()
                                 );
                         PREV_YAW_PRINT = SystemTime::now();

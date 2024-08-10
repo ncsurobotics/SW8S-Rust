@@ -807,7 +807,7 @@
     }
 }
 
-<span class="kw">pub trait </span>VisionModel: Debug + Sync + Send {
+<span class="kw">pub trait </span>VisionModel: Debug + Sync + Send + Clone {
     <span class="kw">type </span>PostProcessArgs;
     <span class="kw">type </span>ModelOutput;
 

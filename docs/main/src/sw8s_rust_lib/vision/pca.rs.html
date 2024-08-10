@@ -96,6 +96,8 @@
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
 <a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Mul;
 
 <span class="kw">use </span>derive_getters::Getters;
@@ -104,6 +106,8 @@
     imgproc::{<span class="self">self</span>, LINE_8},
     prelude::Mat,
 };
+
+<span class="kw">use </span><span class="kw">crate</span>::logln;
 
 <span class="kw">use super</span>::{Angle2D, Draw, RelPosAngle, VisualDetection};
 
@@ -161,7 +165,7 @@
 <span class="kw">impl </span>Draw <span class="kw">for </span>VisualDetection&lt;bool, PosVector&gt; {
     <span class="kw">fn </span>draw(<span class="kw-2">&amp;</span><span class="self">self</span>, canvas: <span class="kw-2">&amp;mut </span>Mat) -&gt; anyhow::Result&lt;()&gt; {
         <span class="kw">let </span>color = <span class="kw">if </span><span class="self">self</span>.class {
-            <span class="macro">println!</span>(<span class="string">"Drawing true: {:#?}"</span>, <span class="self">self</span>.position());
+            <span class="macro">logln!</span>(<span class="string">"Drawing true: {:#?}"</span>, <span class="self">self</span>.position());
             Scalar::from((<span class="number">0.0</span>, <span class="number">255.0</span>, <span class="number">0.0</span>))
         } <span class="kw">else </span>{
             Scalar::from((<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">255.0</span>))

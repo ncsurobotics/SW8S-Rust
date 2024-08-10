@@ -949,7 +949,69 @@
 <a href="#949" id="949">949</a>
 <a href="#950" id="950">950</a>
 <a href="#951" id="951">951</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::{Debug, Display};
+<a href="#952" id="952">952</a>
+<a href="#953" id="953">953</a>
+<a href="#954" id="954">954</a>
+<a href="#955" id="955">955</a>
+<a href="#956" id="956">956</a>
+<a href="#957" id="957">957</a>
+<a href="#958" id="958">958</a>
+<a href="#959" id="959">959</a>
+<a href="#960" id="960">960</a>
+<a href="#961" id="961">961</a>
+<a href="#962" id="962">962</a>
+<a href="#963" id="963">963</a>
+<a href="#964" id="964">964</a>
+<a href="#965" id="965">965</a>
+<a href="#966" id="966">966</a>
+<a href="#967" id="967">967</a>
+<a href="#968" id="968">968</a>
+<a href="#969" id="969">969</a>
+<a href="#970" id="970">970</a>
+<a href="#971" id="971">971</a>
+<a href="#972" id="972">972</a>
+<a href="#973" id="973">973</a>
+<a href="#974" id="974">974</a>
+<a href="#975" id="975">975</a>
+<a href="#976" id="976">976</a>
+<a href="#977" id="977">977</a>
+<a href="#978" id="978">978</a>
+<a href="#979" id="979">979</a>
+<a href="#980" id="980">980</a>
+<a href="#981" id="981">981</a>
+<a href="#982" id="982">982</a>
+<a href="#983" id="983">983</a>
+<a href="#984" id="984">984</a>
+<a href="#985" id="985">985</a>
+<a href="#986" id="986">986</a>
+<a href="#987" id="987">987</a>
+<a href="#988" id="988">988</a>
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+<a href="#993" id="993">993</a>
+<a href="#994" id="994">994</a>
+<a href="#995" id="995">995</a>
+<a href="#996" id="996">996</a>
+<a href="#997" id="997">997</a>
+<a href="#998" id="998">998</a>
+<a href="#999" id="999">999</a>
+<a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
+<a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::cmp::Ordering;
+<span class="kw">use </span>std::fmt::{Debug, Display};
 <span class="kw">use </span>std::ops::{Add, Div, Mul};
 <span class="kw">use </span>std::sync::RwLock;
 <span class="kw">use </span>std::{iter::Sum, marker::PhantomData};
@@ -957,12 +1019,13 @@
 <span class="kw">use </span><span class="kw">super</span>::action::{Action, ActionExec, ActionMod};
 <span class="kw">use </span><span class="kw">super</span>::action_context::GetBottomCamMat;
 <span class="kw">use </span><span class="kw">super</span>::graph::DotString;
+<span class="kw">use </span><span class="kw">crate</span>::logln;
 <span class="kw">use </span><span class="kw">crate</span>::vision::nn_cv2::VisionModel;
 <span class="kw">use </span><span class="kw">crate</span>::vision::{Draw, DrawRect2d, Offset2D, RelPos, VisualDetection, VisualDetector};
 
-<span class="kw">use </span>anyhow::{anyhow, bail, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>anyhow::{anyhow, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>num_traits::{Float, FromPrimitive, Num};
-<span class="kw">use </span>opencv::core::Mat;
+<span class="kw">use </span>opencv::core::{Mat, Rect2d};
 <span class="kw">use </span>uuid::Uuid;
 
 <span class="kw">use </span><span class="kw">crate</span>::missions::action_context::GetFrontCamMat;
@@ -1009,14 +1072,14 @@
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Offset2D&lt;V&gt;&gt; {
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
-            <span class="macro">println!</span>(<span class="string">"Running detection..."</span>);
+            <span class="macro">logln!</span>(<span class="string">"Running detection..."</span>);
         }
 
         <span class="attr">#[allow(unused_mut)]
         </span><span class="kw">let </span><span class="kw-2">mut </span>mat = <span class="self">self</span>.context.get_front_camera_mat().<span class="kw">await</span>.clone();
         <span class="kw">let </span>detections = <span class="self">self</span>.model.detect(<span class="kw-2">&amp;</span>mat);
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
-        </span><span class="macro">println!</span>(<span class="string">"Detect attempt: {}"</span>, detections.is_ok());
+        </span><span class="macro">logln!</span>(<span class="string">"Detect attempt: {}"</span>, detections.is_ok());
         <span class="kw">let </span>detections = detections<span class="question-mark">?</span>;
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
@@ -1027,7 +1090,7 @@
                 );
                 x.draw(<span class="kw-2">&amp;mut </span>mat).unwrap()
             });
-            <span class="macro">println!</span>(<span class="string">"Number of detects: {}"</span>, detections.len());
+            <span class="macro">logln!</span>(<span class="string">"Number of detects: {}"</span>, detections.len());
             <span class="kw">let _ </span>= create_dir_all(<span class="string">"/tmp/detect"</span>);
             imwrite(
                 <span class="kw-2">&amp;</span>(<span class="string">"/tmp/detect/"</span>.to_string() + <span class="kw-2">&amp;</span>Uuid::new_v4().to_string() + <span class="string">".jpeg"</span>),
@@ -1088,14 +1151,14 @@
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Offset2D&lt;V&gt;&gt; {
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
-            <span class="macro">println!</span>(<span class="string">"Running detection..."</span>);
+            <span class="macro">logln!</span>(<span class="string">"Running detection..."</span>);
         }
 
         <span class="attr">#[allow(unused_mut)]
         </span><span class="kw">let </span><span class="kw-2">mut </span>mat = <span class="self">self</span>.context.get_bottom_camera_mat().<span class="kw">await</span>.clone();
         <span class="kw">let </span>detections = <span class="self">self</span>.model.detect(<span class="kw-2">&amp;</span>mat);
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
-        </span><span class="macro">println!</span>(<span class="string">"Detect attempt: {}"</span>, detections.is_ok());
+        </span><span class="macro">logln!</span>(<span class="string">"Detect attempt: {}"</span>, detections.is_ok());
         <span class="kw">let </span>detections = detections<span class="question-mark">?</span>;
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
@@ -1106,7 +1169,7 @@
                 );
                 x.draw(<span class="kw-2">&amp;mut </span>mat).unwrap()
             });
-            <span class="macro">println!</span>(<span class="string">"Number of detects: {}"</span>, detections.len());
+            <span class="macro">logln!</span>(<span class="string">"Number of detects: {}"</span>, detections.len());
             <span class="kw">let _ </span>= create_dir_all(<span class="string">"/tmp/detect"</span>);
             imwrite(
                 <span class="kw-2">&amp;</span>(<span class="string">"/tmp/detect/"</span>.to_string() + <span class="kw-2">&amp;</span>Uuid::new_v4().to_string() + <span class="string">".jpeg"</span>),
@@ -1170,14 +1233,14 @@
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VisualDetection&lt;U::ClassEnum, Offset2D&lt;V&gt;&gt;&gt;&gt; {
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
-            <span class="macro">println!</span>(<span class="string">"Running detection..."</span>);
+            <span class="macro">logln!</span>(<span class="string">"Running detection..."</span>);
         }
 
         <span class="attr">#[allow(unused_mut)]
         </span><span class="kw">let </span><span class="kw-2">mut </span>mat = <span class="self">self</span>.context.get_front_camera_mat().<span class="kw">await</span>.clone();
         <span class="kw">let </span>detections = <span class="self">self</span>.model.detect(<span class="kw-2">&amp;</span>mat);
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
-        </span><span class="macro">println!</span>(<span class="string">"Detect attempt: {:#?}"</span>, detections);
+        </span><span class="macro">logln!</span>(<span class="string">"Detect attempt: {:#?}"</span>, detections);
         <span class="kw">let </span>detections = detections<span class="question-mark">?</span>;
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
@@ -1246,14 +1309,14 @@
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VisualDetection&lt;U::ClassEnum, Offset2D&lt;V&gt;&gt;&gt;&gt; {
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
-            <span class="macro">println!</span>(<span class="string">"Running detection..."</span>);
+            <span class="macro">logln!</span>(<span class="string">"Running detection..."</span>);
         }
 
         <span class="attr">#[allow(unused_mut)]
         </span><span class="kw">let </span><span class="kw-2">mut </span>mat = <span class="self">self</span>.context.get_bottom_camera_mat().<span class="kw">await</span>.clone();
         <span class="kw">let </span>detections = <span class="self">self</span>.model.detect(<span class="kw-2">&amp;</span>mat);
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
-        </span><span class="macro">println!</span>(<span class="string">"Detect attempt: {:#?}"</span>, detections);
+        </span><span class="macro">logln!</span>(<span class="string">"Detect attempt: {:#?}"</span>, detections);
         <span class="kw">let </span>detections = detections<span class="question-mark">?</span>;
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
@@ -1367,13 +1430,61 @@
     <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VisualDetection&lt;U::ClassEnum, U::Position&gt;&gt;&gt; {
         <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
         </span>{
-            <span class="macro">println!</span>(<span class="string">"Running detection..."</span>);
+            <span class="macro">logln!</span>(<span class="string">"Running detection..."</span>);
         }
 
         <span class="attr">#[allow(unused_mut)]
         </span><span class="kw">let </span><span class="kw-2">mut </span>mat = <span class="self">self</span>.context.get_front_camera_mat().<span class="kw">await</span>.clone();
 
         <span class="self">self</span>.model.detect(<span class="kw-2">&amp;</span>mat)
+    }
+}
+
+<span class="doccomment">/// Runs a vision routine to obtain object positions.
+</span><span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>VisionSizeLock&lt;<span class="lifetime">'a</span>, T, U, V&gt; {
+    context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>T,
+    model: U,
+    _num: PhantomData&lt;V&gt;,
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T, U, V&gt; VisionSizeLock&lt;<span class="lifetime">'a</span>, T, U, V&gt; {
+    <span class="kw">pub const fn </span>new(context: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>T, model: U) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            context,
+            model,
+            _num: PhantomData,
+        }
+    }
+}
+
+<span class="kw">impl</span>&lt;T, U, V&gt; Action <span class="kw">for </span>VisionSizeLock&lt;<span class="lifetime">'_</span>, T, U, V&gt; {}
+
+<span class="kw">impl</span>&lt;
+        T: GetFrontCamMat + Send + Sync,
+        V: Num + Float + FromPrimitive + Send + Sync,
+        U: VisualDetector&lt;V&gt; + Send + Sync,
+    &gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;VisualDetection&lt;U::ClassEnum, U::Position&gt;&gt;&gt;&gt;
+    <span class="kw">for </span>VisionSizeLock&lt;<span class="lifetime">'_</span>, T, U, V&gt;
+<span class="kw">where
+    </span>U::Position: Debug + Send + Sync,
+    VisualDetection&lt;U::ClassEnum, U::Position&gt;: Draw,
+    U::ClassEnum: Send + Sync + Debug,
+{
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;VisualDetection&lt;U::ClassEnum, U::Position&gt;&gt;&gt; {
+        <span class="attr">#[cfg(feature = <span class="string">"logging"</span>)]
+        </span>{
+            <span class="macro">logln!</span>(<span class="string">"Running detection..."</span>);
+        }
+
+        <span class="attr">#[allow(unused_mut)]
+        </span><span class="kw">let </span><span class="kw-2">mut </span>mat = <span class="self">self</span>.context.get_front_camera_mat().<span class="kw">await</span>.clone();
+
+        <span class="kw">let </span>det = <span class="self">self</span>.model.detect(<span class="kw-2">&amp;</span>mat);
+        <span class="kw">match </span>det {
+            <span class="prelude-val">Ok</span>(x) =&gt; <span class="prelude-val">Ok</span>(x),
+            <span class="prelude-val">Err</span>(x) =&gt; <span class="prelude-val">Err</span>(x),
+        }
     }
 }
 
@@ -1443,14 +1554,14 @@ where
 
         #[cfg(feature = "logging")]
         {
-            println!("Running detection...");
+            logln!("Running detection...");
         }
 
         let detections = pipeline.get_single().await;
 
         #[cfg(feature = "logging")]
         {
-            println!("Pipeline detections: {:#?}", detections);
+            logln!("Pipeline detections: {:#?}", detections);
         }
 
         Ok(detections
@@ -1520,7 +1631,7 @@ where
                 .cloned()
                 .collect();
             <span class="kw">if </span>!passing_vals.is_empty() {
-                <span class="macro">println!</span>(<span class="string">"Passing this: {:#?}"</span>, passing_vals);
+                <span class="macro">logln!</span>(<span class="string">"Passing this: {:#?}"</span>, passing_vals);
                 <span class="prelude-val">Some</span>(passing_vals)
             } <span class="kw">else </span>{
                 <span class="prelude-val">None
@@ -1659,7 +1770,7 @@ where
                 .unwrap();
 
             <span class="kw">let </span>val = <span class="prelude-val">Some</span>(Offset2D::new((max_x + min_x) / <span class="number">2.0</span>, (max_y + min_y) / <span class="number">2.0</span>));
-            <span class="macro">println!</span>(<span class="string">"Processed this: {:#?}"</span>, val);
+            <span class="macro">logln!</span>(<span class="string">"Processed this: {:#?}"</span>, val);
             val
         }
     }
@@ -1845,6 +1956,7 @@ where
 </span><span class="kw">pub struct </span>SizeUnder&lt;T, U&gt; {
     values: Vec&lt;VisualDetection&lt;T, U&gt;&gt;,
     size: f64,
+    lock: bool,
 }
 
 <span class="kw">impl</span>&lt;T, U&gt; SizeUnder&lt;T, U&gt; {
@@ -1852,32 +1964,42 @@ where
         <span class="self">Self </span>{
             values: <span class="macro">vec!</span>[],
             size,
+            lock: <span class="bool-val">false</span>,
         }
     }
 }
 
 <span class="kw">impl</span>&lt;T, U&gt; Action <span class="kw">for </span>SizeUnder&lt;T, U&gt; {}
 
-<span class="kw">impl</span>&lt;T: Send + Sync&gt; ActionExec&lt;<span class="prelude-ty">Result</span>&lt;()&gt;&gt; <span class="kw">for </span>SizeUnder&lt;T, DrawRect2d&gt; {
-    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>area = <span class="self">self
-            </span>.values
-            .iter()
-            .map(|val| val.position().width * val.position().height)
-            .sum::&lt;f64&gt;()
-            / (<span class="self">self</span>.values.len() <span class="kw">as </span>f64);
+<span class="kw">impl</span>&lt;T: Send + Sync + Clone&gt; ActionExec&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;T, DrawRect2d&gt;&gt;&gt;&gt;
+    <span class="kw">for </span>SizeUnder&lt;T, DrawRect2d&gt;
+{
+    <span class="kw">async fn </span>execute(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;VisualDetection&lt;T, DrawRect2d&gt;&gt;&gt; {
+        <span class="kw">let </span>bounding_box_size = |b: <span class="kw-2">&amp;</span>Rect2d| -&gt; f64 { b.width * b.height };
+
+        <span class="kw">let </span><span class="kw-2">mut </span>poses: Vec&lt;<span class="kw">_</span>&gt; = <span class="self">self</span>.values.iter().map(|v| v.position().clone()).collect();
+        poses.sort_unstable_by(|lhs, rhs| {
+            std::cmp::PartialOrd::partial_cmp(<span class="kw-2">&amp;</span>bounding_box_size(lhs), <span class="kw-2">&amp;</span>bounding_box_size(rhs))
+                .unwrap_or(Ordering::Equal)
+        });
+
+        <span class="kw">let </span><span class="kw-2">mut </span>area = poses
+            .last()
+            .map(|val| val.width * val.height)
+            .unwrap_or(<span class="number">0.0</span>);
 
         <span class="comment">// IEEE, my enemy
         </span><span class="kw">if </span>area.is_nan() {
             area = <span class="number">0.0</span>;
         };
 
-        <span class="macro">println!</span>(<span class="string">"Area: {}"</span>, area);
-        <span class="kw">if </span>area &lt; <span class="self">self</span>.size {
-            <span class="prelude-val">Ok</span>(())
+        <span class="macro">logln!</span>(<span class="string">"Limit check area: {}"</span>, area);
+        <span class="kw">if </span>(!<span class="self">self</span>.lock) &amp;&amp; (area &lt; <span class="self">self</span>.size) {
+            <span class="prelude-val">Some</span>(<span class="self">self</span>.values.clone())
         } <span class="kw">else </span>{
-            <span class="macro">bail!</span>(<span class="string">""</span>)
-        }
+            <span class="self">self</span>.lock = <span class="bool-val">true</span>;
+            <span class="prelude-val">None
+        </span>}
     }
 }
 

@@ -498,11 +498,12 @@
 <a href="#498" id="498">498</a>
 <a href="#499" id="499">499</a>
 <a href="#500" id="500">500</a>
+<a href="#501" id="501">501</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>core::fmt::Debug;
 <span class="kw">use </span>std::{
     ops::Deref,
     sync::{Arc, OnceLock},
-    time::{Duration, SystemTime},
+    time::Duration,
 };
 
 <span class="kw">use </span>anyhow::{anyhow, bail, <span class="prelude-ty">Result</span>};
@@ -521,6 +522,7 @@
 };
 
 <span class="kw">use </span><span class="kw">super</span>::auv_control_board::{AUVControlBoard, MessageId};
+<span class="kw">use </span><span class="kw">crate</span>::logln;
 
 <span class="kw">pub mod </span>response;
 <span class="kw">pub mod </span>util;
@@ -616,7 +618,7 @@
                 .<span class="kw">await</span>)
                     .is_err()
                 {
-                    <span class="macro">eprintln!</span>(<span class="string">"Watchdog ACK timed out."</span>);
+                    <span class="macro">logln!</span>(<span class="string">"Watchdog ACK timed out."</span>);
                 }
 
                 sleep(Duration::from_millis(<span class="number">200</span>)).<span class="kw">await</span>;
