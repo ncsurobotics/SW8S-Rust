@@ -472,8 +472,15 @@
 <a href="#472" id="472">472</a>
 <a href="#473" id="473">473</a>
 <a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
+<a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{bail, <span class="prelude-ty">Result</span>};
-<span class="kw">use </span>chrono::Local;
 <span class="kw">use </span>config::Configuration;
 <span class="kw">use </span>std::env::temp_dir;
 
@@ -495,7 +502,8 @@
         },
         coinflip::coinflip,
         example::initial_descent,
-        fire_torpedo::FireTorpedo,
+        fancy_octagon::fancy_octagon,
+        fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
         gate::{gate_run_complex, gate_run_naive, gate_run_testing},
         meb::WaitArm,
         octagon::octagon,
@@ -506,6 +514,7 @@
     },
     video_source::appsink::Camera,
     vision::buoy::Target,
+    TIMESTAMP,
 };
 <span class="kw">use </span>tokio::{
     io::WriteHalf,
@@ -563,7 +572,7 @@
             Camera::jetson_new(
                 <span class="kw-2">&amp;</span>Configuration::default().front_cam,
                 <span class="string">"front"</span>,
-                <span class="kw-2">&amp;</span>temp_dir().join(Local::now().format(<span class="string">"cams_%Y-%m-%d_%H:%M:%S"</span>).to_string()),
+                <span class="kw-2">&amp;</span>temp_dir().join(<span class="string">"cams_"</span>.to_string() + <span class="kw-2">&amp;</span>TIMESTAMP),
             )
             .unwrap()
         })
@@ -577,7 +586,7 @@
             Camera::jetson_new(
                 <span class="kw-2">&amp;</span>Configuration::default().bottom_cam,
                 <span class="string">"bottom"</span>,
-                <span class="kw-2">&amp;</span>temp_dir().join(Local::now().format(<span class="string">"cams_%Y-%m-%d_%H:%M:%S"</span>).to_string()),
+                <span class="kw-2">&amp;</span>temp_dir().join(<span class="string">"cams_"</span>.to_string() + <span class="kw-2">&amp;</span>TIMESTAMP),
             )
             .unwrap()
         })
@@ -876,6 +885,10 @@
             <span class="kw">let _ </span>= octagon(static_context().<span class="kw">await</span>).execute().<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }
+        <span class="string">"fancy_octagon" </span>=&gt; {
+            <span class="kw">let _ </span>= fancy_octagon(static_context().<span class="kw">await</span>).execute().<span class="kw">await</span>;
+            <span class="prelude-val">Ok</span>(())
+        }
         <span class="string">"buoy_circle" </span>=&gt; {
             <span class="kw">let _ </span>= buoy_circle_sequence(<span class="kw-2">&amp;</span>FullActionContext::new(
                 control_board().<span class="kw">await</span>,
@@ -913,7 +926,10 @@
             <span class="prelude-val">Ok</span>(())
         }
         <span class="string">"torpedo_only" </span>=&gt; {
-            FireTorpedo::new(static_context().<span class="kw">await</span>).execute().<span class="kw">await</span>;
+            FireRightTorpedo::new(static_context().<span class="kw">await</span>)
+                .execute()
+                .<span class="kw">await</span>;
+            FireLeftTorpedo::new(static_context().<span class="kw">await</span>).execute().<span class="kw">await</span>;
             <span class="prelude-val">Ok</span>(())
         }
         <span class="string">"coinflip" </span>=&gt; {
@@ -929,7 +945,7 @@
             Camera::jetson_new(
                 <span class="kw-2">&amp;</span>Configuration::default().bottom_cam,
                 <span class="string">"front"</span>,
-                <span class="kw-2">&amp;</span>temp_dir().join(Local::now().format(<span class="string">"cams_%Y-%m-%d_%H:%M:%S"</span>).to_string()),
+                <span class="kw-2">&amp;</span>temp_dir().join(<span class="string">"cams_"</span>.to_string() + <span class="kw-2">&amp;</span>TIMESTAMP),
             )
             .unwrap();
             <span class="prelude-val">Ok</span>(())

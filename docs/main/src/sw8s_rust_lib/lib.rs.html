@@ -37,6 +37,7 @@
 <a href="#37" id="37">37</a>
 <a href="#38" id="38">38</a>
 <a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::{
     fs::{create_dir, File},
     sync::{LazyLock, Mutex},
@@ -44,16 +45,12 @@
 
 <span class="kw">use </span>chrono::Local;
 
+<span class="kw">pub static </span>TIMESTAMP: LazyLock&lt;String&gt; =
+    LazyLock::new(|| Local::now().format(<span class="string">"%Y-%m-%d_%H:%M:%S"</span>).to_string());
+
 <span class="kw">pub static </span>LOGFILE: LazyLock&lt;Mutex&lt;File&gt;&gt; = LazyLock::new(|| {
     <span class="kw">let _ </span>= create_dir(<span class="string">"console"</span>);
-    Mutex::new(
-        File::create(
-            <span class="kw-2">&amp;</span>(<span class="string">"console"</span>.to_string()
-                + <span class="kw-2">&amp;</span>Local::now().format(<span class="string">"%Y-%m-%d_%H:%M:%S"</span>).to_string()
-                + <span class="string">".txt"</span>),
-        )
-        .unwrap(),
-    )
+    Mutex::new(File::create(<span class="kw-2">&amp;</span>(<span class="string">"console/"</span>.to_string() + <span class="kw-2">&amp;</span>TIMESTAMP + <span class="string">".txt"</span>)).unwrap())
 });
 
 <span class="attr">#[macro_export]
@@ -71,6 +68,11 @@
         }
     };
 }
+
+<span class="doccomment">/// Set to `1.0` or `-1.0`.
+///
+/// `1.0` is counterclockwise to find buoy, clockwise to find octagon.
+</span><span class="kw">pub const </span>POOL_YAW_SIGN: f32 = -<span class="number">1.0</span>;
 
 <span class="kw">pub mod </span>comms;
 <span class="kw">pub mod </span>missions;

@@ -103,13 +103,21 @@
 <a href="#103" id="103">103</a>
 <a href="#104" id="104">104</a>
 <a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::logln;
 
 <span class="kw">use super</span>::{
-    action::{Action, ActionExec, ActionSequence},
+    action::{Action, ActionChain, ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
+    extra::OutputType,
     meb::WaitArm,
-    movement::{Descend, StraightMovement, ZeroMovement},
+    movement::{Descend, Stability2Movement, Stability2Pos, StraightMovement, ZeroMovement},
 };
 
 <span class="kw">use </span>tokio::{
@@ -189,13 +197,19 @@
     </span>ZeroMovement&lt;<span class="lifetime">'a</span>, Con&gt;: ActionExec&lt;T&gt;,
 {
     <span class="comment">// time in seconds that each action will wait until before continuing onto the next action.
-    </span><span class="kw">let </span>dive_duration = <span class="number">2.0</span>;
+    </span><span class="kw">let </span>dive_duration = <span class="number">4.0</span>;
     <span class="kw">let </span>forward_duration = <span class="number">2.0</span>;
     ActionSequence::new(
         WaitArm::new(context),
         ActionSequence::new(
             ActionSequence::new(
-                Descend::new(context, depth),
+                ActionChain::new(
+                    Stability2Movement::new(
+                        context,
+                        Stability2Pos::new(<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="prelude-val">None</span>, depth),
+                    ),
+                    OutputType::&lt;()&gt;::new(),
+                ),
                 DelayAction::new(dive_duration),
             ),
             ActionSequence::new(

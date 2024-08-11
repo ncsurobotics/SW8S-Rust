@@ -384,12 +384,31 @@
 <a href="#384" id="384">384</a>
 <a href="#385" id="385">385</a>
 <a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>anyhow::{anyhow, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>derive_getters::Getters;
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>num_traits::{zero, FromPrimitive, Num};
 <span class="kw">use </span>opencv::{
-    core::{MatTraitConst, Rect2d, Scalar, Vector},
+    core::{MatTraitConst, Point, Rect, Rect2d, Scalar, Vector},
     imgproc::{<span class="self">self</span>, LINE_8},
     prelude::Mat,
 };
@@ -406,6 +425,7 @@
 <span class="kw">pub mod </span>gate_poles;
 <span class="kw">pub mod </span>image_prep;
 <span class="kw">pub mod </span>nn_cv2;
+<span class="kw">pub mod </span>octagon;
 <span class="kw">pub mod </span>path;
 <span class="kw">pub mod </span>pca;
 <span class="kw">pub mod </span>yolo_model;
@@ -472,6 +492,24 @@
             x: <span class="self">self</span>.x / T::from_usize(rhs).unwrap(),
             y: <span class="self">self</span>.y / T::from_usize(rhs).unwrap(),
         }
+    }
+}
+
+<span class="kw">impl</span>&lt;T: Num + Clone + TryInto&lt;i32, Error: Debug&gt;&gt; Draw <span class="kw">for </span>Offset2D&lt;T&gt; {
+    <span class="kw">fn </span>draw(<span class="kw-2">&amp;</span><span class="self">self</span>, canvas: <span class="kw-2">&amp;mut </span>Mat) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        imgproc::circle(
+            canvas,
+            Point::new(
+                <span class="self">self</span>.x().clone().try_into().unwrap(),
+                <span class="self">self</span>.y().clone().try_into().unwrap(),
+            ),
+            <span class="number">10</span>,
+            Scalar::from((<span class="number">0.0</span>, <span class="number">255.0</span>, <span class="number">0.0</span>)),
+            <span class="number">2</span>,
+            LINE_8,
+            <span class="number">0</span>,
+        )<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(())
     }
 }
 
