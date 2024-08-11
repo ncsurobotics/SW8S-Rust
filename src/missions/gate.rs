@@ -127,13 +127,13 @@ pub fn adjust_logic<
         ActionChain::new(
             TupleSecond::new(ActionConcurrent::new(
                 ActionDataConditional::new(
-                    act_nest!(
-                        wrap_action(ActionConcurrent::new, FirstValid::new),
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
-                            Target::Middle
-                        ),
-                    ),
+                    //act_nest!(
+                    //wrap_action(ActionConcurrent::new, FirstValid::new),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
+                    //DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
+                    //Target::Middle
+                    //),
+                    //),
                     ActionSequence::new(SetSideBlue::new(), Terminal::new()),
                     ActionDataConditional::new(
                         DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),

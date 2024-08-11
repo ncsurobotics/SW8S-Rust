@@ -76,9 +76,9 @@ pub fn octagon<
     const FALSE_COUNT: u32 = 3;
     const ADJUST_COUNT: u32 = 2;
 
-    const OCTAGON_SPIN: f32 = 60.0 * POOL_YAW_SIGN;
+    const OCTAGON_SPIN: f32 = 50.0 * POOL_YAW_SIGN;
 
-    const MISSION_END_TIME: f32 = ((INIT_TIME + BLIND_TIME) * 2.0) + 13.0;
+    const MISSION_END_TIME: f32 = ((INIT_TIME + BLIND_TIME) * 2.0) + 13.0 + 6.0;
 
     RaceAction::new(
         act_nest!(
