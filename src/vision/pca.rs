@@ -1,6 +1,8 @@
-use std::ops::Mul;
+use std::{fmt::Debug, ops::Mul};
 
+use anyhow::anyhow;
 use derive_getters::Getters;
+use num_traits::Num;
 use opencv::{
     core::{MatTraitConst, Point, Scalar},
     imgproc::{self, LINE_8},
@@ -9,7 +11,7 @@ use opencv::{
 
 use crate::logln;
 
-use super::{Angle2D, Draw, RelPosAngle, VisualDetection};
+use super::{Angle2D, Draw, Offset2D, RelPosAngle, VisualDetection};
 
 #[derive(Debug, Clone, Getters)]
 pub struct PosVector {
@@ -94,6 +96,27 @@ impl Draw for VisualDetection<bool, PosVector> {
             LINE_8,
             0,
             0.1,
+        )?;
+        Ok(())
+    }
+}
+
+impl Draw for VisualDetection<bool, Offset2D<f64>> {
+    fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
+        let color = if self.class {
+            Scalar::from((0.0, 255.0, 0.0))
+        } else {
+            Scalar::from((0.0, 0.0, 255.0))
+        };
+
+        imgproc::circle(
+            canvas,
+            Point::new(*self.position.x() as i32, *self.position.y() as i32),
+            10,
+            color,
+            2,
+            LINE_8,
+            0,
         )?;
         Ok(())
     }

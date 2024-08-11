@@ -3,7 +3,7 @@ use derive_getters::Getters;
 use itertools::Itertools;
 use num_traits::{zero, FromPrimitive, Num};
 use opencv::{
-    core::{MatTraitConst, Rect2d, Scalar, Vector},
+    core::{MatTraitConst, Point, Rect, Rect2d, Scalar, Vector},
     imgproc::{self, LINE_8},
     prelude::Mat,
 };
@@ -20,10 +20,10 @@ pub mod gate;
 pub mod gate_poles;
 pub mod image_prep;
 pub mod nn_cv2;
+pub mod octagon;
 pub mod path;
 pub mod pca;
 pub mod yolo_model;
-pub mod octagon;
 
 pub trait Draw {
     /// Draws self on top of `canvas`
@@ -87,6 +87,24 @@ impl<T: Num + FromPrimitive> Div<usize> for Offset2D<T> {
             x: self.x / T::from_usize(rhs).unwrap(),
             y: self.y / T::from_usize(rhs).unwrap(),
         }
+    }
+}
+
+impl<T: Num + Clone + TryInto<i32, Error: Debug>> Draw for Offset2D<T> {
+    fn draw(&self, canvas: &mut Mat) -> Result<()> {
+        imgproc::circle(
+            canvas,
+            Point::new(
+                self.x().clone().try_into().unwrap(),
+                self.y().clone().try_into().unwrap(),
+            ),
+            10,
+            Scalar::from((0.0, 255.0, 0.0)),
+            2,
+            LINE_8,
+            0,
+        )?;
+        Ok(())
     }
 }
 

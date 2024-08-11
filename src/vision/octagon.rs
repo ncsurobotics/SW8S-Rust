@@ -9,8 +9,8 @@ use opencv::{
     },
     imgcodecs::imwrite,
     imgproc::{
-        bounding_rect, contour_area, cvt_color, filter_2d, find_contours, COLOR_RGB2YUV,
-        COLOR_YUV2RGB,
+        bounding_rect, contour_area, cvt_color, filter_2d, find_contours, find_contours_def,
+        CHAIN_APPROX_SIMPLE, COLOR_RGB2YUV, COLOR_YUV2RGB, RETR_TREE,
     },
     prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
@@ -45,9 +45,16 @@ impl From<&Rgb> for VecN<u8, 3> {
     }
 }
 
-impl Into<(u8, u8, u8)> for Rgb {
-    fn into(self) -> (u8, u8, u8) {
-        (self.r, self.g, self.b)
+impl From<Rgb> for (u8, u8, u8) {
+    fn from(val: Rgb) -> Self {
+        (val.r, val.g, val.b)
+    }
+}
+
+impl From<Rgb> for (f64, f64, f64) {
+    fn from(val: Rgb) -> Self {
+        let (x, y, z): (u8, u8, u8) = val.into();
+        (x as f64, y as f64, z as f64)
     }
 }
 
@@ -66,6 +73,10 @@ impl Octagon {
             image: Mat::default().into(),
         }
     }
+
+    pub fn image(&self) -> Mat {
+        self.image.0.clone()
+    }
 }
 
 impl Default for Octagon {
@@ -77,7 +88,7 @@ impl Default for Octagon {
                 b: 210,
             })..=(Rgb {
                 r: 255,
-                g: 220,
+                g: 180,
                 b: 255,
             }),
             Size::from((400, 300)),
@@ -94,45 +105,57 @@ impl VisualDetector<f64> for Octagon {
         input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
         let image = resize(input_image, &self.size)?;
-        let mut rgb_image = Mat::default();
+        self.image.0 = image.clone();
 
-        cvt_color(&image, &mut rgb_image, COLOR_RGB2YUV, 0).unwrap();
-        let image_center = ((rgb_image.cols() / 2) as f64, (rgb_image.rows() / 2) as f64);
-
-        cvt_color(&rgb_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
+        let mut mask = Mat::default();
+        // let Rgb { upper_r: , g, b } = self.color_bounds.start();
+        let lower: VecN<u8, 3> = self.color_bounds.start().into();
+        let upper: VecN<u8, 3> = self.color_bounds.end().into();
+        in_range(&image, &lower, &upper, &mut mask).unwrap();
 
         #[cfg(feature = "logging")]
         {
-            create_dir_all("/tmp/path_images").unwrap();
+            create_dir_all("/tmp/octagon_images").unwrap();
             imwrite(
-                &("/tmp/path_images/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
-                &self.image.0,
+                &("/tmp/octagon_images/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
+                &image,
                 &Vector::default(),
             )
             .unwrap();
         }
 
-        let mut mask = Mat::default();
-        // let Rgb { upper_r: , g, b } = self.color_bounds.start();
-        let lower: (u8, u8, u8) = self.color_bounds.start().clone().into();
-        let upper: (u8, u8, u8) = self.color_bounds.end().clone().into();
-        in_range(
-            &rgb_image,
-            &opencv::core::Scalar_::<u8>::from(lower),
-            &opencv::core::Scalar_::<u8>::from(upper),
-            &mut mask,
+        #[cfg(feature = "logging")]
+        {
+            create_dir_all("/tmp/masks").unwrap();
+            imwrite(
+                &("/tmp/masks/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
+                &mask,
+                &Vector::default(),
+            )
+            .unwrap();
+        }
+
+        println!("MASK: {:#?}", mask);
+
+        let mut contours_out: Vector<Vector<Point>> = Vector::new();
+        find_contours(
+            &mask,
+            &mut contours_out,
+            RETR_TREE,
+            CHAIN_APPROX_SIMPLE,
+            Point::new(0, 0),
         )
         .unwrap();
-        let mut contours_out = Mat::default();
-        find_contours(&mask, &mut contours_out, 3, 2, Point::new(0, 0)).unwrap();
 
-        let contour_vec: Vec<Point> = contours_out.iter().unwrap().map(|x| x.1).collect();
-        if (contour_vec.len() > 2) {
-            let selected_contour = contour_vec.get(contour_vec.len() - 2).unwrap();
-            Ok(vec![VisualDetection {
-                position: Offset2D::new(selected_contour.x as f64, selected_contour.y as f64),
-                class: true,
-            }])
+        if contours_out.len() > 2 {
+            let selected_contour_set = contours_out.get(contours_out.len() - 2).unwrap();
+            Ok(selected_contour_set
+                .iter()
+                .map(|contour| VisualDetection {
+                    position: Offset2D::new(contour.x as f64, contour.y as f64),
+                    class: true,
+                })
+                .collect())
         } else {
             Ok(vec![])
         }
@@ -146,4 +169,3 @@ impl VisualDetector<f64> for Octagon {
         )
     }
 }
-

@@ -20,10 +20,7 @@ use crate::{
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},
     },
-    vision::{
-        path::{Path, Yuv},
-        Offset2D,
-    },
+    vision::{octagon::Octagon, path::Yuv, Offset2D},
     POOL_YAW_SIGN,
 };
 
@@ -32,22 +29,8 @@ use super::{
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
 };
 
-pub fn octagon_path_model() -> Path {
-    Path::new(
-        (Yuv {
-            y: 64,
-            u: 127,
-            v: 127,
-        })..=(Yuv {
-            y: 180,
-            u: 224,
-            v: 224,
-        }),
-        5.0..=200.0,
-        4,
-        Size::from((400, 300)),
-        3,
-    )
+pub fn octagon_path_model() -> Octagon {
+    Octagon::default()
 }
 
 pub fn octagon<
@@ -141,12 +124,12 @@ pub fn octagon<
                 ),
                 act_nest!(
                     ActionChain::new,
-                    Vision::<Con, Path, f64>::new(context, octagon_path_model()),
+                    Vision::<Con, Octagon, f64>::new(context, octagon_path_model()),
                     TupleSecond::new(ActionConcurrent::new(
                         act_nest!(
                             ActionChain::new,
                             ToVec::new(),
-                            Norm::new(Path::default()),
+                            Norm::new(Octagon::default()),
                             ExtractPosition::new(),
                             MidPoint::new(),
                             OffsetToPose::<Offset2D<f64>>::default(),
@@ -174,13 +157,13 @@ pub fn octagon<
             )),
             ActionWhile::new(act_nest!(
                 ActionChain::new,
-                Vision::<Con, Path, f64>::new(context, octagon_path_model()),
+                Vision::<Con, Octagon, f64>::new(context, octagon_path_model()),
                 ActionDataConditional::new(
                     DetectTarget::new(true),
                     ActionSequence::new(
                         act_nest!(
                             ActionChain::new,
-                            Norm::new(Path::default()),
+                            Norm::new(Octagon::default()),
                             ExtractPosition::new(),
                             MidPoint::new(),
                             OffsetToPose::<Offset2D<f64>>::default(),
@@ -263,7 +246,7 @@ mod tests {
         )
         .unwrap();
 
-        let output: Vec<_> = <Path as VisualDetector<f64>>::detect(&mut model, &image)
+        let output: Vec<_> = <Octagon as VisualDetector<f64>>::detect(&mut model, &image)
             .unwrap()
             .into_iter()
             .filter(|x| *x.class())
@@ -289,7 +272,7 @@ mod tests {
         )
         .unwrap();
 
-        let output: Vec<_> = <Path as VisualDetector<f64>>::detect(&mut model, &image)
+        let output: Vec<_> = <Octagon as VisualDetector<f64>>::detect(&mut model, &image)
             .unwrap()
             .into_iter()
             .filter(|x| *x.class())
@@ -325,7 +308,7 @@ mod tests {
                 let mut model = octagon_path_model();
                 let image = imread(f.unwrap().path().to_str().unwrap(), IMREAD_COLOR).unwrap();
 
-                let output: Vec<_> = <Path as VisualDetector<f64>>::detect(&mut model, &image)
+                let output: Vec<_> = <Octagon as VisualDetector<f64>>::detect(&mut model, &image)
                     .unwrap()
                     .into_iter()
                     .filter(|x| *x.class())
@@ -374,7 +357,7 @@ mod tests {
                 let image = imread(f.unwrap().path().to_str().unwrap(), IMREAD_COLOR).unwrap();
 
                 let output_prefilter: Vec<_> =
-                    <Path as VisualDetector<f64>>::detect(&mut model, &image).unwrap();
+                    <Octagon as VisualDetector<f64>>::detect(&mut model, &image).unwrap();
 
                 let output: Vec<_> = output_prefilter
                     .clone()
