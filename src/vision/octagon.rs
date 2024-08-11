@@ -1,12 +1,17 @@
-/*
 use std::{fs::create_dir_all, ops::RangeInclusive};
 
 use chrono::Offset;
 use itertools::Itertools;
 use opencv::{
-    core::{in_range, MatTrait, Point, Point2f, Point2i, Rect, Scalar, Size, VecN, Vector, BORDER_DEFAULT, CV_32F},
+    core::{
+        in_range, MatTrait, Point, Point2f, Point2i, Rect, Scalar, Size, VecN, Vector,
+        BORDER_DEFAULT, CV_32F,
+    },
     imgcodecs::imwrite,
-    imgproc::{bounding_rect, contour_area, cvt_color, filter_2d, find_contours, COLOR_RGB2YUV, COLOR_YUV2RGB},
+    imgproc::{
+        bounding_rect, contour_area, cvt_color, filter_2d, find_contours, COLOR_RGB2YUV,
+        COLOR_YUV2RGB,
+    },
     prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
 use uuid::Uuid;
@@ -14,14 +19,14 @@ use uuid::Uuid;
 use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
 
 use super::{
-    image_prep::resize, pca::PosVector, MatWrapper, Offset2D, VisualDetection, VisualDetector
+    image_prep::resize, pca::PosVector, MatWrapper, Offset2D, VisualDetection, VisualDetector,
 };
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Rgb {
     r: u8,
     g: u8,
-    b: u8
+    b: u8,
 }
 
 impl From<&VecN<u8, 3>> for Rgb {
@@ -54,10 +59,7 @@ pub struct Octagon {
 }
 
 impl Octagon {
-    pub fn new(
-        color_bounds: RangeInclusive<Rgb>,
-        size: Size,
-    ) -> Self {
+    pub fn new(color_bounds: RangeInclusive<Rgb>, size: Size) -> Self {
         Self {
             color_bounds,
             size,
@@ -69,7 +71,11 @@ impl Octagon {
 impl Default for Octagon {
     fn default() -> Self {
         Octagon::new(
-            (Rgb { r: 210, g: 100, b: 210 })..=(Rgb {
+            (Rgb {
+                r: 210,
+                g: 100,
+                b: 210,
+            })..=(Rgb {
                 r: 255,
                 g: 220,
                 b: 255,
@@ -106,32 +112,30 @@ impl VisualDetector<f64> for Octagon {
             .unwrap();
         }
 
-        let mut mask  = Mat::default();
+        let mut mask = Mat::default();
         // let Rgb { upper_r: , g, b } = self.color_bounds.start();
         let lower: (u8, u8, u8) = self.color_bounds.start().clone().into();
         let upper: (u8, u8, u8) = self.color_bounds.end().clone().into();
-        in_range(&rgb_image, &opencv::core::Scalar_::<u8>::from(lower), &opencv::core::Scalar_::<u8>::from(upper), &mut mask).unwrap();
+        in_range(
+            &rgb_image,
+            &opencv::core::Scalar_::<u8>::from(lower),
+            &opencv::core::Scalar_::<u8>::from(upper),
+            &mut mask,
+        )
+        .unwrap();
         let mut contours_out = Mat::default();
-        find_contours(&mask, &mut contours_out, 3, 2, Point::new(0,0)).unwrap();
+        find_contours(&mask, &mut contours_out, 3, 2, Point::new(0, 0)).unwrap();
 
         let contour_vec: Vec<Point> = contours_out.iter().unwrap().map(|x| x.1).collect();
         if (contour_vec.len() > 2) {
             let selected_contour = contour_vec.get(contour_vec.len() - 2).unwrap();
-            Ok(
-                vec![
-                    VisualDetection {
-                        position: Offset2D::new(selected_contour.x as f64, selected_contour.y as f64),
-                        class: true
-                    }
-                ]
-            )
-
+            Ok(vec![VisualDetection {
+                position: Offset2D::new(selected_contour.x as f64, selected_contour.y as f64),
+                class: true,
+            }])
         } else {
-            Ok(
-                vec![]
-            )
+            Ok(vec![])
         }
-
     }
 
     fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
@@ -142,4 +146,4 @@ impl VisualDetector<f64> for Octagon {
         )
     }
 }
-*/
+
