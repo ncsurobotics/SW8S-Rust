@@ -336,6 +336,77 @@ where
     }
 }
 
+/// Runs a vision routine to obtain object positions
+///
+/// The relative positions are normalized to [-1, 1] on both axes.
+/// The values are returned without an angle.
+#[derive(Debug)]
+pub struct VisionNoStrip<'a, T, U, V> {
+    context: &'a T,
+    model: U,
+    _num: PhantomData<V>,
+}
+
+impl<'a, T, U, V> VisionNoStrip<'a, T, U, V> {
+    pub const fn new(context: &'a T, model: U) -> Self {
+        Self {
+            context,
+            model,
+            _num: PhantomData,
+        }
+    }
+}
+
+impl<T, U, V> Action for VisionNoStrip<'_, T, U, V> {}
+
+impl<
+        T: GetFrontCamMat + Send + Sync,
+        V: Num + Float + FromPrimitive + Send + Sync,
+        U: VisualDetector<V, Position: Send + Sync> + Send + Sync,
+    > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, U::Position>>>>
+    for VisionNoStrip<'_, T, U, V>
+where
+    U::Position: RelPos<Number = V> + Debug + for<'a> Mul<&'a Mat, Output = U::Position>,
+    VisualDetection<U::ClassEnum, U::Position>: Draw,
+    U::ClassEnum: Send + Sync + Debug,
+{
+    async fn execute(&mut self) -> Result<Vec<VisualDetection<U::ClassEnum, U::Position>>> {
+        #[cfg(feature = "logging")]
+        {
+            logln!("Running detection...");
+        }
+
+        #[allow(unused_mut)]
+        let mut mat = self.context.get_front_camera_mat().await.clone();
+        let detections = self.model.detect(&mat);
+        #[cfg(feature = "logging")]
+        logln!("Detect attempt: {:#?}", detections);
+        let detections = detections?;
+        #[cfg(feature = "logging")]
+        {
+            detections.iter().for_each(|x| {
+                let x = VisualDetection::new(
+                    x.class().clone(),
+                    self.model.normalize(x.position()) * &mat,
+                );
+                x.draw(&mut mat).unwrap()
+            });
+            create_dir_all("/tmp/detect").unwrap();
+            imwrite(
+                &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
+                &mat,
+                &Vector::default(),
+            )
+            .unwrap();
+        }
+
+        Ok(detections
+            .into_iter()
+            .map(|detect| VisualDetection::new(detect.class().clone(), detect.position().clone()))
+            .collect())
+    }
+}
+
 /// Normalizes vision output.
 ///
 /// The relative positions are normalized to [-1, 1] on both axes.

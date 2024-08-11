@@ -251,7 +251,7 @@ pub fn buoy_align_shot<
         ),),
         act_nest!(
             ActionChain::new,
-            ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
+            //ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
             Stability2Movement::new(
                 context,
                 Stability2Pos::new(-0.2, 0.0, 0.0, 0.0, None, DEPTH)
@@ -259,6 +259,13 @@ pub fn buoy_align_shot<
             OutputType::<()>::new(),
         ),
         DelayAction::new(0.5),
+        act_nest!(
+            ActionChain::new,
+            //ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
+            Stability2Movement::new(context, Stability2Pos::new(0.0, 0.5, 0.0, 0.0, None, DEPTH)),
+            OutputType::<()>::new(),
+        ),
+        DelayAction::new(1.0),
         act_nest!(
             ActionChain::new,
             ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),

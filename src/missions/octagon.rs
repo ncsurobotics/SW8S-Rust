@@ -45,7 +45,7 @@ pub fn octagon<
 ) -> impl ActionExec<()> + '_ {
     const FULL_SPEED_Y: f32 = 0.7;
     const FULL_SPEED_X: f32 = 0.0;
-    const FULL_SPEED_PITCH: f32 = -45.0 / 4.0;
+    const FULL_SPEED_PITCH: f32 = -45.0 / 2.0;
     const DEPTH: f32 = -0.75;
 
     const INIT_X: f32 = 0.0;
@@ -142,7 +142,7 @@ pub fn octagon<
                                     Stability2Pos::new(
                                         FULL_SPEED_X,
                                         FULL_SPEED_Y,
-                                        0.0,
+                                        FULL_SPEED_PITCH,
                                         0.0,
                                         None,
                                         DEPTH
@@ -176,7 +176,7 @@ pub fn octagon<
                                     Stability2Pos::new(
                                         FULL_SPEED_X,
                                         FULL_SPEED_Y,
-                                        0.0,
+                                        FULL_SPEED_PITCH,
                                         0.0,
                                         None,
                                         DEPTH
@@ -199,7 +199,7 @@ pub fn octagon<
                                     Stability2Pos::new(
                                         FULL_SPEED_X,
                                         FULL_SPEED_Y,
-                                        0.0,
+                                        FULL_SPEED_PITCH,
                                         0.0,
                                         None,
                                         DEPTH

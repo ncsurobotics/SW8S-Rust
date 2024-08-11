@@ -4,14 +4,22 @@ use tokio_serial::SerialStream;
 use crate::{
     act_nest,
     missions::{
+        extra::ToVec,
         meb::WaitArm,
         movement::{AdjustType, ConstYaw},
+        vision::{SizeUnder, VisionNoStrip},
     },
-    vision::{gate_poles::GatePoles, nn_cv2::OnnxModel},
+    vision::{
+        gate_poles::{GatePoles, Target},
+        nn_cv2::{OnnxModel, YoloClass},
+        DrawRect2d, Offset2D, VisualDetection,
+    },
 };
 
 use super::{
-    action::{ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile},
+    action::{
+        Action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence, ActionWhile,
+    },
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
     basic::DelayAction,
     comms::StartBno055,
@@ -35,7 +43,7 @@ pub fn coinflip<
     const DEPTH: f32 = -1.25;
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = 3.0;
+    const ALIGN_YAW_SPEED: f32 = 5.0;
 
     act_nest!(
         ActionSequence::new,
@@ -57,12 +65,57 @@ pub fn coinflip<
             ),
             act_nest!(
                 ActionChain::new,
-                VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(
+                VisionNoStrip::<Con, GatePoles<OnnxModel>, f64>::new(
                     context,
                     GatePoles::load_640(0.7),
                 ),
+                ToVec::new(),
+                SizePass::default(),
                 CountTrue::new(TRUE_COUNT),
             ),
         )),
     )
+}
+
+#[derive(Debug)]
+struct SizePass<T, U> {
+    values: Vec<VisualDetection<T, U>>,
+}
+
+impl<T, U> Default for SizePass<T, U> {
+    fn default() -> Self {
+        Self { values: vec![] }
+    }
+}
+
+impl<T, U> Action for SizePass<T, U> {}
+
+impl<T, U> ActionMod<Vec<VisualDetection<T, U>>> for SizePass<T, U>
+where
+    T: Send + Sync + Clone,
+    U: Send + Sync + Clone,
+{
+    fn modify(&mut self, input: &Vec<VisualDetection<T, U>>) {
+        self.values = input.clone();
+    }
+}
+
+impl ActionExec<bool> for SizePass<YoloClass<Target>, DrawRect2d> {
+    async fn execute(&mut self) -> bool {
+        self.values
+            .iter()
+            .map(|detect| {
+                let class = detect.class().identifier();
+                let detect_size = detect.position().size();
+
+                let size_min = match class {
+                    Target::Red | Target::Blue | Target::Middle => 400.0,
+                    Target::Pole => 4_500.0,
+                    _ => f64::MAX,
+                };
+
+                (detect_size.width * detect_size.height) > size_min
+            })
+            .any(|x| x)
+    }
 }

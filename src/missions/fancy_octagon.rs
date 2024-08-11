@@ -20,10 +20,7 @@ use crate::{
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},
     },
-    vision::{
-        path::{Path, Yuv},
-        Offset2D,
-    },
+    vision::{octagon::Octagon, path::Yuv, Offset2D},
     POOL_YAW_SIGN,
 };
 
@@ -32,22 +29,8 @@ use super::{
     action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
 };
 
-pub fn octagon_path_model() -> Path {
-    Path::new(
-        (Yuv {
-            y: 64,
-            u: 127,
-            v: 127,
-        })..=(Yuv {
-            y: 180,
-            u: 224,
-            v: 224,
-        }),
-        5.0..=200.0,
-        4,
-        Size::from((400, 300)),
-        3,
-    )
+pub fn octagon_path_model() -> Octagon {
+    Octagon::default()
 }
 
 pub fn fancy_octagon<
@@ -62,7 +45,7 @@ pub fn fancy_octagon<
 ) -> impl ActionExec<()> + '_ {
     const FULL_SPEED_Y: f32 = 0.7;
     const FULL_SPEED_X: f32 = 0.1;
-    const FULL_SPEED_PITCH: f32 = -45.0 / 4.0;
+    const FULL_SPEED_PITCH: f32 = -45.0 / 2.0;
     const DEPTH: f32 = -0.75;
 
     const INIT_X: f32 = 0.0;
@@ -136,20 +119,20 @@ pub fn fancy_octagon<
             ),
             act_nest!(
                 ActionChain::new,
-                Vision::<Con, Path, f64>::new(context, octagon_path_model()),
+                Vision::<Con, Octagon, f64>::new(context, octagon_path_model()),
                 DetectTarget::new(true),
                 CountTrue::new(3),
             ),
         ),),
         ActionWhile::new(act_nest!(
             ActionChain::new,
-            Vision::<Con, Path, f64>::new(context, octagon_path_model()),
+            Vision::<Con, Octagon, f64>::new(context, octagon_path_model()),
             ActionDataConditional::new(
                 DetectTarget::new(true),
                 ActionSequence::new(
                     act_nest!(
                         ActionChain::new,
-                        Norm::new(Path::default()),
+                        Norm::new(Octagon::default()),
                         ExtractPosition::new(),
                         MidPoint::new(),
                         OffsetToPose::<Offset2D<f64>>::default(),
