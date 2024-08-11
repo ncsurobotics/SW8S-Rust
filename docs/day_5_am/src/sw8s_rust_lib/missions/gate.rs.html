@@ -351,14 +351,14 @@
         ActionChain::new(
             TupleSecond::new(ActionConcurrent::new(
                 ActionDataConditional::new(
-                    <span class="macro">act_nest!</span>(
-                        wrap_action(ActionConcurrent::new, FirstValid::new),
-                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Blue),
-                        DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(
-                            Target::Middle
-                        ),
-                    ),
-                    ActionSequence::new(SetSideBlue::new(), Terminal::new()),
+                    <span class="comment">//act_nest!(
+                    //wrap_action(ActionConcurrent::new, FirstValid::new),
+                    </span>DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Blue),
+                    <span class="comment">//DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(
+                    //Target::Middle
+                    //),
+                    //),
+                    </span>ActionSequence::new(SetSideBlue::new(), Terminal::new()),
                     ActionDataConditional::new(
                         DetectTarget::&lt;Target, YoloClass&lt;Target&gt;, Offset2D&lt;f64&gt;&gt;::new(Target::Red),
                         ActionSequence::new(SetSideRed::new(), Terminal::new()),
