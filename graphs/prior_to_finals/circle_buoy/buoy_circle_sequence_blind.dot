@@ -1,0 +1,24 @@
+digraph G {
+	splines = true;
+	nodesep = 1.0;
+	bgcolor = "none"
+	"4365bf36-6520-4202-827e-5fd5fee646af" [shape = diamond];
+	"2829df07-658b-4a0a-9961-d099cc78a02d" -> "1feb292f-0818-4f93-9d15-a78477cd8746" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"de95fa1f-9571-4a4c-baa3-d0b5cb98f6fb" -> "2829df07-658b-4a0a-9961-d099cc78a02d" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"a96ad86c-448a-418d-851a-9c6cd62a4804" -> "de95fa1f-9571-4a4c-baa3-d0b5cb98f6fb" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"332d162a-a563-4a63-b534-df713ff0f03a" -> "4365bf36-6520-4202-827e-5fd5fee646af" [color = purple, fontcolor = purple, label = "Pass Data"];
+	"6c0e5399-6ae1-4335-935d-4be14e4863ca" -> "332d162a-a563-4a63-b534-df713ff0f03a" ;
+	"4365bf36-6520-4202-827e-5fd5fee646af" -> "a96ad86c-448a-418d-851a-9c6cd62a4804" [label = "True"];
+	"4365bf36-6520-4202-827e-5fd5fee646af" -> "61f8a122-079f-4844-a23b-3c441a98749e" [label = "False"];
+	"9bfe4ad5-db7c-4160-a81c-9a9fdfa5f705" -> "a96ad86c-448a-418d-851a-9c6cd62a4804" ;
+	"eb8edb7f-b8c8-411c-b4a6-762c65be5e1a" [label = "Stability2Movement", margin = 0];
+	"9bfe4ad5-db7c-4160-a81c-9a9fdfa5f705" [label = "DelayAction", margin = 0];
+	"a96ad86c-448a-418d-851a-9c6cd62a4804" [label = "ConstYaw", margin = 0];
+	"de95fa1f-9571-4a4c-baa3-d0b5cb98f6fb" [label = "SetX", margin = 0];
+	"2829df07-658b-4a0a-9961-d099cc78a02d" [label = "SideMult", margin = 0];
+	"1feb292f-0818-4f93-9d15-a78477cd8746" [label = "Stability2Movement", margin = 0];
+	"6c0e5399-6ae1-4335-935d-4be14e4863ca" [label = "DelayAction", margin = 0];
+	"332d162a-a563-4a63-b534-df713ff0f03a" [label = "AlwaysTrue", margin = 0];
+	"4365bf36-6520-4202-827e-5fd5fee646af" [label = "Consecutive True < 34", margin = 0];
+	"61f8a122-079f-4844-a23b-3c441a98749e" [label = "ZeroMovement", margin = 0];
+}
