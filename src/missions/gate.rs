@@ -154,7 +154,8 @@ pub fn adjust_logic<
                         ActionConcurrent::new,
                         act_nest!(
                             ActionChain::new,
-                            OffsetClass::new(Target::Middle, Offset2D::<f64>::new(-0.05, 0.0)),
+                            OffsetClass::new(Target::Middle, Offset2D::<f64>::new(0.05, 0.0)),
+                            OffsetClass::new(Target::Red, Offset2D::<f64>::new(0.2, 0.0)),
                             //OffsetClass::new(Target::Blue, Offset2D::<f64>::new(-0.1, 0.0)),
                             ExtractPosition::new(),
                             MidPoint::new(),

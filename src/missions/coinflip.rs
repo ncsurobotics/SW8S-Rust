@@ -43,7 +43,7 @@ pub fn coinflip<
     const DEPTH: f32 = -1.25;
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
-    const ALIGN_YAW_SPEED: f32 = 5.0;
+    const ALIGN_YAW_SPEED: f32 = 45.0;
 
     act_nest!(
         ActionSequence::new,
@@ -69,8 +69,6 @@ pub fn coinflip<
                     context,
                     GatePoles::load_640(0.7),
                 ),
-                ToVec::new(),
-                SizePass::default(),
                 CountTrue::new(TRUE_COUNT),
             ),
         )),
