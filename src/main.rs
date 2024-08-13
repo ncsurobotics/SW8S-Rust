@@ -459,6 +459,15 @@ async fn run_mission(mission: &str) -> Result<()> {
             while control_board().await.raw_speed_set([0.0; 8]).await.is_err() {}
             sleep(Duration::from_secs(u64::MAX)).await;
         },
+        "drain_battery" => loop {
+            while control_board()
+                .await
+                .raw_speed_set([1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0])
+                .await
+                .is_err()
+            {}
+            sleep(Duration::MAX).await;
+        },
         "open_cam_test" => {
             Camera::jetson_new(
                 &Configuration::default().bottom_cam,
