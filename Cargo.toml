@@ -30,31 +30,31 @@ graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2", "dep
 networked_testing = []
 
 [dependencies]
-opencv = { version = "0.92.0", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
+opencv = { version = "0.92.2", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
 tokio-serial = "5.4.1" # Async serial comms
-tokio = { version = "1.38.0", features = ["full"] } # Async runtime
+tokio = { version = "1.39.3", features = ["full"] } # Async runtime
 anyhow = "1.0.86" # Error handling
 itertools = "0.13.0" # Enhance iterators
 num-traits = "0.2.19" # Numeric generics
-derive-getters = "0.4.0" # Getter macro
+derive-getters = "0.5.0" # Getter macro
 futures = { version = "0.3.30", default-features = false, features = ["std"] }# Futures utilities
-toml = "0.8.14" # Configuration file
-serde = { version = "1.0.203", features = ["derive"] } # Config serial handling
-bytes = "1.6.0" # Byte buffering
-uuid = { version = "1.9.0", features = ["v4", "fast-rng"] } # Unique IDs
+toml = "0.8.19" # Configuration file
+serde = { version = "1.0.209", features = ["derive"] } # Config serial handling
+bytes = "1.7.1" # Byte buffering
+uuid = { version = "1.10.0", features = ["v4", "fast-rng"] } # Unique IDs
 graphviz-rust = { version = "0.9.0", optional = true } # Drawing graphs
 paste = { version = "1.0.15", optional = true } # Concat identifiers
 chrono = "0.4.38" # Handling times
-reqwest = { version = "0.12.3", optional = true } # Downloading godot sim
+reqwest = { version = "0.12.7", optional = true } # Downloading godot sim
 async-channel = "2.3.1" # Blocking -> Async thread message passing
 crossbeam = "0.8.4" # Blocking thread message passing
 nonzero = "0.2.0"
 
 [build-dependencies]
-quote = { version = "1.0.36", optional = true }
-syn = { version = "2.0.68", features = ["full", "fold"], optional = true }
+quote = { version = "1.0.37", optional = true }
+syn = { version = "2.0.76", features = ["full", "fold"], optional = true }
 proc-macro2 = { version = "1.0.86", optional = true }
-cc = { version = "1.0.99", optional = true }
+cc = { version = "1.1.14", optional = true }
 
 [dev-dependencies]
 assert_approx_eq = "1.1.0" # Floating point eq
@@ -69,7 +69,7 @@ name = "model_processing"
 harness = false
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]
-flate2 = "1.0.30" # Decompressing gz
+flate2 = "1.0.33" # Decompressing gz
 tar = "0.4.40" # Unpacking tar
 
 [target.'cfg(not(target_os = "linux"))'.dev-dependencies]
