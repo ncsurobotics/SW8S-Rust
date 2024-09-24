@@ -3,7 +3,7 @@ use derive_getters::Getters;
 use itertools::Itertools;
 use num_traits::{zero, FromPrimitive, Num};
 use opencv::{
-    core::{Rect2d, Scalar},
+    core::{MatTraitConst, Point, Rect, Rect2d, Scalar, Vector},
     imgproc::{self, LINE_8},
     prelude::Mat,
 };
@@ -11,14 +11,16 @@ use std::{
     fmt::Debug,
     hash::Hash,
     iter::Sum,
-    ops::{Add, Deref, Div},
+    ops::{Add, Deref, DerefMut, Div, Mul},
 };
 
 pub mod buoy;
+pub mod buoy_model;
 pub mod gate;
 pub mod gate_poles;
 pub mod image_prep;
 pub mod nn_cv2;
+pub mod octagon;
 pub mod path;
 pub mod pca;
 pub mod yolo_model;
@@ -44,6 +46,12 @@ pub trait Draw {
 pub struct Offset2D<T: Num> {
     x: T,
     y: T,
+}
+
+impl<T: Num> Offset2D<T> {
+    pub fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
 }
 
 pub trait RelPos {
@@ -79,6 +87,24 @@ impl<T: Num + FromPrimitive> Div<usize> for Offset2D<T> {
             x: self.x / T::from_usize(rhs).unwrap(),
             y: self.y / T::from_usize(rhs).unwrap(),
         }
+    }
+}
+
+impl<T: Num + Clone + TryInto<i32, Error: Debug>> Draw for Offset2D<T> {
+    fn draw(&self, canvas: &mut Mat) -> Result<()> {
+        imgproc::circle(
+            canvas,
+            Point::new(
+                self.x().clone().try_into().unwrap(),
+                self.y().clone().try_into().unwrap(),
+            ),
+            10,
+            Scalar::from((0.0, 255.0, 0.0)),
+            2,
+            LINE_8,
+            0,
+        )?;
+        Ok(())
     }
 }
 
@@ -228,7 +254,7 @@ impl RelPos for Offset2D<f64> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct DrawRect2d {
     inner: Rect2d,
 }
@@ -267,3 +293,113 @@ impl Draw for DrawRect2d {
         Ok(())
     }
 }
+
+impl Mul<&Mat> for DrawRect2d {
+    type Output = Self;
+
+    fn mul(self, rhs: &Mat) -> Self::Output {
+        let size = rhs.size().unwrap();
+        Self {
+            inner: Rect2d {
+                width: (self.width + 0.5) * (size.width as f64),
+                height: (self.height + 0.5) * (size.height as f64),
+                x: (self.x + 1.0) * (size.width as f64),
+                y: (self.y + 1.0) * (size.height as f64),
+            },
+        }
+    }
+}
+
+impl Div<usize> for DrawRect2d {
+    type Output = Self;
+    fn div(self, rhs: usize) -> Self::Output {
+        let mut inner = self.inner;
+        inner.x /= rhs as f64;
+        inner.y /= rhs as f64;
+        inner.width /= rhs as f64;
+        inner.height /= rhs as f64;
+        Self { inner }
+    }
+}
+
+impl Add for DrawRect2d {
+    type Output = DrawRect2d;
+    fn add(self, rhs: Self) -> Self::Output {
+        let mut inner = self.inner;
+        inner.x += rhs.x;
+        inner.y += rhs.y;
+        inner.width += rhs.width;
+        inner.height += rhs.height;
+        Self { inner }
+    }
+}
+
+impl Sum for DrawRect2d {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.reduce(|acc, next| acc + next).unwrap_or_default()
+    }
+}
+
+impl From<Rect2d> for DrawRect2d {
+    fn from(value: Rect2d) -> Self {
+        Self { inner: value }
+    }
+}
+
+/// Allows [`Mat`] to be shared across threads for async.
+/// The C pointer is perfectly safe to share between threads, Rust just
+/// defaults to not giving any pointer Send/Sync so we have to use this wrapper
+/// pattern.
+#[derive(Debug, Default, Clone)]
+pub struct MatWrapper(pub Mat);
+
+impl Deref for MatWrapper {
+    type Target = Mat;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for MatWrapper {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<Mat> for MatWrapper {
+    fn from(value: Mat) -> Self {
+        Self(value)
+    }
+}
+
+unsafe impl Send for MatWrapper {}
+unsafe impl Sync for MatWrapper {}
+
+/// Allows [`Vector<Mat>`] to be shared across threads for async.
+/// The C pointer is perfectly safe to share between threads, Rust just
+/// defaults to not giving any pointer Send/Sync so we have to use this wrapper
+/// pattern.
+#[derive(Debug, Clone)]
+pub struct VecMatWrapper(pub Vector<Mat>);
+
+impl Deref for VecMatWrapper {
+    type Target = Vector<Mat>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for VecMatWrapper {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl From<Vector<Mat>> for VecMatWrapper {
+    fn from(value: Vector<Mat>) -> Self {
+        Self(value)
+    }
+}
+
+unsafe impl Send for VecMatWrapper {}
+unsafe impl Sync for VecMatWrapper {}

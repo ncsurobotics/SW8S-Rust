@@ -125,7 +125,7 @@ mod graphing {
             })
             .for_each(|(path, file, actions)| {
                 let actions_str =
-                    "pub fn graph_actions<T: GraphActionContext::GetMainElectronicsBoard + GraphActionContext::GetControlBoard<tokio::io::WriteHalf<tokio_serial::SerialStream>> + GraphActionContext::GetFrontCamMat + Send + Sync + std::marker::Unpin>(context: &T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
+                    "pub fn graph_actions<T: GraphActionContext::GetMainElectronicsBoard + GraphActionContext::GetControlBoard<tokio::io::WriteHalf<tokio_serial::SerialStream>> + GraphActionContext::GetFrontCamMat + GraphActionContext::GetBottomCamMat + Send + Sync + std::marker::Unpin>(context: &'static T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
                         .to_string()
                         + &actions
                             .into_iter()
@@ -147,4 +147,34 @@ mod graphing {
 fn main() {
     #[cfg(feature = "graphing")]
     graphing::graphing_variants();
+
+    #[cfg(feature = "cuda")]
+    {
+        // https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+        const COMPUTE_CODES: &[&str] = &[
+            "52", "53", "60", "61", "62", "70", "72", "75", "80", "86", "87", "89", "90", "90a",
+        ];
+
+        // Rebuild on any kernel change
+        println!("cargo:rerun-if-changed=src/cuda_kernels");
+
+        // Rebuild for specific files that use kernels changing
+        println!("cargo:rerun-if-changed=src/vision/nn_cv2.rs");
+
+        let mut build = cc::Build::new();
+        build.cuda(true).flag("-cudart=shared");
+
+        for code in COMPUTE_CODES {
+            build
+                .flag("-gencode")
+                .flag(&format!("arch=compute_{},code=sm_{}", code, code));
+        }
+
+        // Specify all cuda kernels that need to be built
+        build
+            .file("src/cuda_kernels/process_net.cu")
+            .compile("libsw8s_cuda.a");
+
+        println!("cargo:rustc-link-lib=cudart");
+    }
 }

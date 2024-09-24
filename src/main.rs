@@ -1,6 +1,6 @@
 use anyhow::{bail, Result};
 use config::Configuration;
-use std::path::Path;
+use std::env::temp_dir;
 
 use std::env;
 use std::process::exit;
@@ -9,17 +9,30 @@ use sw8s_rust_lib::{
         control_board::{ControlBoard, SensorStatuses},
         meb::MainElectronicsBoard,
     },
+    logln,
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
+        align_buoy::{buoy_align, buoy_align_shot},
         basic::descend_and_go_forward,
-        circle_buoy::buoy_circle_sequence,
+        circle_buoy::{
+            buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
+        },
+        coinflip::coinflip,
         example::initial_descent,
-        gate::{gate_run_complex, gate_run_naive},
-        octagon::look_up_octagon,
+        fancy_octagon::fancy_octagon,
+        fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
+        gate::{gate_run_complex, gate_run_naive, gate_run_testing},
+        meb::WaitArm,
+        octagon::octagon,
+        path_align::path_align,
+        reset_torpedo::ResetTorpedo,
+        spin::spin,
+        vision::PIPELINE_KILL,
     },
     video_source::appsink::Camera,
     vision::buoy::Target,
+    TIMESTAMP,
 };
 use tokio::{
     io::WriteHalf,
@@ -38,20 +51,34 @@ static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<SerialStream>>> = Onc
 async fn control_board() -> &'static ControlBoard<WriteHalf<SerialStream>> {
     CONTROL_BOARD_CELL
         .get_or_init(|| async {
-            ControlBoard::serial(&Configuration::default().control_board_path)
-                .await
-                .unwrap()
+            let board = ControlBoard::serial(&Configuration::default().control_board_path).await;
+            match board {
+                Ok(x) => x,
+                Err(e) => {
+                    logln!("Error initializing control board: {:#?}", e);
+                    let backup_board =
+                        ControlBoard::serial(&Configuration::default().control_board_backup_path)
+                            .await
+                            .unwrap();
+                    backup_board.reset().await.unwrap();
+                    ControlBoard::serial(&Configuration::default().control_board_path)
+                        .await
+                        .unwrap()
+                }
+            }
         })
         .await
 }
 
-static MEB_CELL: OnceCell<MainElectronicsBoard> = OnceCell::const_new();
-async fn meb() -> &'static MainElectronicsBoard {
+static MEB_CELL: OnceCell<MainElectronicsBoard<WriteHalf<SerialStream>>> = OnceCell::const_new();
+async fn meb() -> &'static MainElectronicsBoard<WriteHalf<SerialStream>> {
     MEB_CELL
         .get_or_init(|| async {
-            MainElectronicsBoard::serial(&Configuration::default().meb_path)
-                .await
-                .unwrap()
+            MainElectronicsBoard::<WriteHalf<SerialStream>>::serial(
+                &Configuration::default().meb_path,
+            )
+            .await
+            .unwrap()
         })
         .await
 }
@@ -63,7 +90,7 @@ async fn front_cam() -> &'static Camera {
             Camera::jetson_new(
                 &Configuration::default().front_cam,
                 "front",
-                Path::new("/tmp/front_feed.mp4"),
+                &temp_dir().join("cams_".to_string() + &TIMESTAMP),
             )
             .unwrap()
         })
@@ -77,16 +104,32 @@ async fn bottom_cam() -> &'static Camera {
             Camera::jetson_new(
                 &Configuration::default().bottom_cam,
                 "bottom",
-                Path::new("/tmp/bottom_feed.mp4"),
+                &temp_dir().join("cams_".to_string() + &TIMESTAMP),
             )
             .unwrap()
         })
         .await
 }
+
 static GATE_TARGET: OnceCell<RwLock<Target>> = OnceCell::const_new();
 async fn gate_target() -> &'static RwLock<Target> {
     GATE_TARGET
         .get_or_init(|| async { RwLock::new(Target::Earth1) })
+        .await
+}
+
+static STATIC_CONTEXT: OnceCell<FullActionContext<WriteHalf<SerialStream>>> = OnceCell::const_new();
+async fn static_context() -> &'static FullActionContext<'static, WriteHalf<SerialStream>> {
+    STATIC_CONTEXT
+        .get_or_init(|| async {
+            FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            )
+        })
         .await
 }
 
@@ -95,36 +138,58 @@ async fn main() {
     let shutdown_tx = shutdown_handler().await;
     let _config = Configuration::default();
 
+    let orig_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |panic_info| {
+        orig_hook(panic_info);
+        exit(1);
+    }));
+
+    let shutdown_tx_clone = shutdown_tx.clone();
+    tokio::spawn(async move {
+        let meb = meb().await;
+
+        // Wait for arm condition
+        while meb.thruster_arm().await != Some(true) {
+            sleep(Duration::from_secs(1)).await;
+        }
+
+        // Wait for disarm condition
+        while meb.thruster_arm().await != Some(false) {
+            sleep(Duration::from_secs(1)).await;
+        }
+
+        shutdown_tx_clone.send(1).unwrap();
+    });
+
     for arg in env::args().skip(1).collect::<Vec<String>>() {
         run_mission(&arg).await.unwrap();
     }
 
     // Send shutdown signal
-    shutdown_tx.send(()).unwrap();
+    shutdown_tx.send(0).unwrap();
 }
 
 /// Graceful shutdown, see <https://tokio.rs/tokio/topics/shutdown>
-async fn shutdown_handler() -> UnboundedSender<()> {
-    let (shutdown_tx, mut shutdown_rx) = mpsc::unbounded_channel::<()>();
+async fn shutdown_handler() -> UnboundedSender<i32> {
+    let (shutdown_tx, mut shutdown_rx) = mpsc::unbounded_channel::<i32>();
     tokio::spawn(async move {
         // Wait for shutdown signal
-        let exit_status =
-            tokio::select! {_ = signal::ctrl_c() => { 1 }, _ = shutdown_rx.recv() => { 0 }};
+        let exit_status = tokio::select! {_ = signal::ctrl_c() => {
+        logln!("CTRL-C RECV");
+        1 }, Some(x) = shutdown_rx.recv() => {
+            logln!("SHUTDOWN SIGNAL RECV");
+            x }};
 
         let status = control_board().await.sensor_status_query().await;
 
         match status.unwrap() {
             SensorStatuses::ImuNr => {
-                println!("imu not ready");
-                exit(1);
+                logln!("imu not ready");
             }
             SensorStatuses::DepthNr => {
-                println!("depth not ready");
-                exit(1);
+                logln!("depth not ready");
             }
-            _ => {
-                println!("all good");
-            }
+            _ => {}
         }
 
         // Stop motors
@@ -135,6 +200,9 @@ async fn shutdown_handler() -> UnboundedSender<()> {
                 .unwrap();
         };
 
+        // Reset Torpedo
+        ResetTorpedo::new(static_context().await).execute().await;
+
         // If shutdown is unexpected, immediately exit nonzero
         if exit_status != 0 {
             exit(exit_status)
@@ -144,15 +212,9 @@ async fn shutdown_handler() -> UnboundedSender<()> {
 }
 
 async fn run_mission(mission: &str) -> Result<()> {
-    match mission.to_lowercase().as_str() {
+    let res = match mission.to_lowercase().as_str() {
         "arm" => {
-            let cntrl_ready = tokio::spawn(async { control_board().await });
-            println!("Waiting on MEB");
-            while meb().await.thruster_arm().await != Some(true) {
-                sleep(Duration::from_millis(10)).await;
-            }
-            println!("Got MEB");
-            let _ = cntrl_ready.await;
+            WaitArm::new(static_context().await).execute().await;
             Ok(())
         }
         "empty" => {
@@ -162,32 +224,32 @@ async fn run_mission(mission: &str) -> Result<()> {
                 .await
                 .unwrap();
             sleep(Duration::from_millis(1000)).await;
-            println!("1");
+            logln!("1");
             control_board
                 .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0])
                 .await
                 .unwrap();
             sleep(Duration::from_millis(1000)).await;
-            println!("2");
+            logln!("2");
             control_board
                 .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0])
                 .await
                 .unwrap();
             sleep(Duration::from_millis(1000)).await;
-            println!("3");
+            logln!("3");
             control_board
                 .raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
                 .await
                 .unwrap();
-            println!("4");
+            logln!("4");
             Ok(())
         }
         "depth_test" | "depth-test" => {
             let _control_board = control_board().await;
-            println!("Init ctrl");
+            logln!("Init ctrl");
             sleep(Duration::from_millis(1000)).await;
-            println!("End sleep");
-            println!("Starting depth hold...");
+            logln!("End sleep");
+            logln!("Starting depth hold...");
             loop {
                 if let Ok(ret) = timeout(
                     Duration::from_secs(1),
@@ -202,11 +264,11 @@ async fn run_mission(mission: &str) -> Result<()> {
                 }
             }
             sleep(Duration::from_secs(5)).await;
-            println!("Finished depth hold");
+            logln!("Finished depth hold");
             Ok(())
         }
         "travel_test" | "travel-test" => {
-            println!("Starting travel...");
+            logln!("Starting travel...");
             loop {
                 if let Ok(ret) = timeout(
                     Duration::from_secs(1),
@@ -221,11 +283,11 @@ async fn run_mission(mission: &str) -> Result<()> {
                 }
             }
             sleep(Duration::from_secs(10)).await;
-            println!("Finished travel");
+            logln!("Finished travel");
             Ok(())
         }
         "surface_" | "surface-test" => {
-            println!("Starting travel...");
+            logln!("Starting travel...");
             loop {
                 if let Ok(ret) = timeout(
                     Duration::from_secs(1),
@@ -240,7 +302,7 @@ async fn run_mission(mission: &str) -> Result<()> {
                 }
             }
             sleep(Duration::from_secs(10)).await;
-            println!("Finished travel");
+            logln!("Finished travel");
             Ok(())
         }
         "descend" | "forward" => {
@@ -279,17 +341,27 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
-        "start_cam" => {
-            // This has not been tested
-            println!("Opening camera");
-            front_cam().await;
-            bottom_cam().await;
-            println!("Opened camera");
+        "gate_run_testing" => {
+            let _ = gate_run_testing(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
             Ok(())
         }
-        /*
+        "start_cam" => {
+            // This has not been tested
+            logln!("Opening camera");
+            front_cam().await;
+            bottom_cam().await;
+            logln!("Opened camera");
+            Ok(())
+        }
         "path_align" => {
-            bail!("TODO");
             let _ = path_align(&FullActionContext::new(
                 control_board().await,
                 meb().await,
@@ -301,13 +373,13 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
+        /*
         "buoy_circle" => {
             bail!("TODO");
             let _ = gate_run(&FullActionContext::new(
                 control_board().await,
                 meb().await,
-                front_cam().await,
-                bottom_cam().await,
+                front_cam().await,bottom_cam().await,
                 gate_target().await,
             ))
             .execute()
@@ -327,16 +399,12 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
-        "look_up_octagon" => {
-            let _ = look_up_octagon(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
+        "octagon" => {
+            let _ = octagon(static_context().await).execute().await;
+            Ok(())
+        }
+        "fancy_octagon" => {
+            let _ = fancy_octagon(static_context().await).execute().await;
             Ok(())
         }
         "buoy_circle" => {
@@ -351,6 +419,64 @@ async fn run_mission(mission: &str) -> Result<()> {
             .await;
             Ok(())
         }
+        "buoy_model" => {
+            let _ = buoy_circle_sequence_model(static_context().await)
+                .execute()
+                .await;
+            Ok(())
+        }
+        "buoy_blind" => {
+            let _ = buoy_circle_sequence_blind(static_context().await)
+                .execute()
+                .await;
+            Ok(())
+        }
+        "buoy_align" => {
+            let _ = buoy_align(static_context().await).execute().await;
+            Ok(())
+        }
+        "spin" => {
+            let _ = spin(static_context().await).execute().await;
+            Ok(())
+        }
+        "torpedo" | "fire_torpedo" => {
+            let _ = buoy_align_shot(static_context().await).execute().await;
+            Ok(())
+        }
+        "torpedo_only" => {
+            FireRightTorpedo::new(static_context().await)
+                .execute()
+                .await;
+            FireLeftTorpedo::new(static_context().await).execute().await;
+            Ok(())
+        }
+        "coinflip" => {
+            let _ = coinflip(static_context().await).execute().await;
+            Ok(())
+        }
+        // Just stall out forever
+        "forever" | "infinite" => loop {
+            while control_board().await.raw_speed_set([0.0; 8]).await.is_err() {}
+            sleep(Duration::from_secs(u64::MAX)).await;
+        },
+        "open_cam_test" => {
+            Camera::jetson_new(
+                &Configuration::default().bottom_cam,
+                "front",
+                &temp_dir().join("cams_".to_string() + &TIMESTAMP),
+            )
+            .unwrap();
+            Ok(())
+        }
         x => bail!("Invalid argument: [{x}]"),
+    };
+
+    // Kill any vision pipelines
+    PIPELINE_KILL.write().unwrap().1 = true;
+    while PIPELINE_KILL.read().unwrap().0 > 0 {
+        sleep(Duration::from_millis(100)).await;
     }
+    PIPELINE_KILL.write().unwrap().1 = false;
+
+    res
 }

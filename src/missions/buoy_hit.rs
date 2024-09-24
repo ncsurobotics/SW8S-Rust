@@ -7,7 +7,6 @@ use super::{
 use crate::vision::{buoy::Buoy, nn_cv2::OnnxModel, VisualDetector};
 
 use anyhow::Result;
-use async_trait::async_trait;
 use core::fmt::Debug;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
@@ -28,29 +27,11 @@ pub struct FindBuoy<'a, T> {
     buoy_model: Buoy<OnnxModel>,
 }
 
-pub struct DriveToBuoy<'a, T> {
-    context: &'a T,
-    target_depth: f32,
-    forward_power: f32,
-    k_p: f32,
-}
-
 impl<'a, T> FindBuoy<'a, T> {
     pub fn new(context: &'a T, buoy_model: Buoy<OnnxModel>) -> Self {
         FindBuoy {
             context,
             buoy_model,
-        }
-    }
-}
-
-impl<'a, T> DriveToBuoy<'a, T> {
-    pub fn new(context: &'a T, target_depth: f32, forward_power: f32) -> Self {
-        DriveToBuoy {
-            context,
-            target_depth,
-            forward_power,
-            k_p: 0.3,
         }
     }
 }
@@ -69,10 +50,8 @@ impl<'a, T> DriveToBuoyVision<'a, T> {
 
 impl<T> Action for DriveToBuoyVision<'_, T> {}
 
-impl<T> Action for DriveToBuoy<'_, T> {}
 impl<T> Action for FindBuoy<'_, T> {}
 
-#[async_trait]
 impl<T> ActionExec<Result<()>> for FindBuoy<'_, T>
 where
     T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
@@ -82,7 +61,7 @@ where
         let class_of_interest = self.context.get_desired_buoy_gate().await;
 
         let model_acquisition = self.buoy_model.detect(&camera_aquisition.await);
-        let detected = match model_acquisition {
+        match model_acquisition {
             Ok(acquisition_vec) if !acquisition_vec.is_empty() => {
                 acquisition_vec
                     .iter()
@@ -91,10 +70,9 @@ where
             Ok(_) => todo!(),
             Err(_) => todo!(),
         };
-        return Ok(detected);
+        Ok(())
     }
 }
-#[async_trait]
 impl<T> ActionExec<Result<()>> for DriveToBuoyVision<'_, T>
 where
     T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,

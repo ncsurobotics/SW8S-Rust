@@ -1,11 +1,13 @@
+use crate::logln;
+
 use super::{
-    action::{Action, ActionExec, ActionSequence},
+    action::{Action, ActionChain, ActionExec, ActionSequence},
     action_context::{GetControlBoard, GetMainElectronicsBoard},
+    extra::OutputType,
     meb::WaitArm,
-    movement::{Descend, StraightMovement, ZeroMovement},
+    movement::{Descend, Stability2Movement, Stability2Pos, StraightMovement, ZeroMovement},
 };
 
-use async_trait::async_trait;
 use tokio::{
     io::WriteHalf,
     time::{sleep, Duration},
@@ -19,12 +21,11 @@ pub struct DelayAction {
 
 impl Action for DelayAction {}
 
-#[async_trait]
 impl ActionExec<()> for DelayAction {
-    async fn execute(&mut self) -> () {
-        println!("BEGIN sleep for {} seconds", self.delay);
+    async fn execute(&mut self) {
+        logln!("BEGIN sleep for {} seconds", self.delay);
         sleep(Duration::from_secs_f32(self.delay)).await;
-        println!("END sleep for {} seconds", self.delay);
+        logln!("END sleep for {} seconds", self.delay);
     }
 }
 
@@ -49,16 +50,54 @@ pub fn descend_and_go_forward<
 where
     ZeroMovement<'a, Con>: ActionExec<T>,
 {
-    let depth: f32 = -1.0;
+    let depth: f32 = -1.5;
 
     // time in seconds that each action will wait until before continuing onto the next action.
-    let dive_duration = 5.0;
-    let forward_duration = 5.0;
+    let dive_duration = 2.0;
+    let forward_duration = 2.0;
     ActionSequence::new(
         WaitArm::new(context),
         ActionSequence::new(
             ActionSequence::new(
                 Descend::new(context, depth),
+                DelayAction::new(dive_duration),
+            ),
+            ActionSequence::new(
+                ActionSequence::new(
+                    StraightMovement::new(context, depth, true),
+                    DelayAction::new(forward_duration),
+                ),
+                ZeroMovement::new(context, depth),
+            ),
+        ),
+    )
+}
+
+pub fn descend_depth_and_go_forward<
+    'a,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard,
+    T: Send + Sync,
+>(
+    context: &'a Con,
+    depth: f32,
+) -> impl ActionExec<T> + 'a
+where
+    ZeroMovement<'a, Con>: ActionExec<T>,
+{
+    // time in seconds that each action will wait until before continuing onto the next action.
+    let dive_duration = 4.0;
+    let forward_duration = 2.0;
+    ActionSequence::new(
+        WaitArm::new(context),
+        ActionSequence::new(
+            ActionSequence::new(
+                ActionChain::new(
+                    Stability2Movement::new(
+                        context,
+                        Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, depth),
+                    ),
+                    OutputType::<()>::new(),
+                ),
                 DelayAction::new(dive_duration),
             ),
             ActionSequence::new(

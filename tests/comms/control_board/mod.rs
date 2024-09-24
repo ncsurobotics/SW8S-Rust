@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 
 use std::str::from_utf8;
 use std::time::Duration;
@@ -23,6 +23,7 @@ const GODOT: &str = "tests/godot_sim/GodotAUVSim.exe";
 
 const GODOT_DIR: &str = "tests/godot_sim/";
 
+#[cfg(feature = "networked_testing")]
 async fn download_sim() -> Result<()> {
     const VERSION: &str = "v1.2.1";
 
@@ -48,7 +49,12 @@ async fn download_sim() -> Result<()> {
 
 async fn open_sim(godot: String) -> Result<()> {
     if !Path::new(&godot).is_file() {
-        download_sim().await?
+        if cfg!(feature = "networked_testing") {
+            #[cfg(feature = "networked_testing")]
+            download_sim().await?
+        } else {
+            bail!("Enable feature \"networked_testing\" to download the godot simulator");
+        }
     }
 
     tokio::spawn(async move {
@@ -231,4 +237,64 @@ pub async fn tcp_move_sassist_2() {
     // Will be broken until get IMU data read
     sleep(Duration::from_secs(10)).await;
     todo!();
+}
+
+#[ignore = "requires a UI, is long"]
+#[tokio::test]
+pub async fn tcp_spin_global() {
+    const LOCALHOST: &str = "127.0.0.1";
+    const SIM_PORT: &str = "5012";
+    const SIM_DUMMY_PORT: &str = "5011";
+
+    let godot = GODOT.lock().await;
+    open_sim(godot.to_string()).await.unwrap();
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+
+    while timeout(
+        Duration::from_secs(1),
+        control_board.global_speed_set(0.0, 0.0, 0.0, 0.0, 1.0, 0.0),
+    )
+    .await
+    .is_err()
+    {
+        println!("Global timeout");
+    }
+
+    // Will be broken until get IMU data read
+    sleep(Duration::from_secs(10)).await;
+}
+
+#[ignore = "requires a UI, is long"]
+#[tokio::test]
+pub async fn tcp_reset() {
+    const LOCALHOST: &str = "127.0.0.1";
+    const SIM_PORT: &str = "5012";
+    const SIM_DUMMY_PORT: &str = "5011";
+
+    let godot = GODOT.lock().await;
+    open_sim(godot.to_string()).await.unwrap();
+    let control_board = ControlBoard::tcp(LOCALHOST, SIM_PORT, SIM_DUMMY_PORT.to_string())
+        .await
+        .unwrap();
+
+    while timeout(
+        Duration::from_secs(1),
+        control_board.global_speed_set(0.0, 0.0, 0.0, 0.0, 1.0, 0.0),
+    )
+    .await
+    .is_err()
+    {
+        println!("Global timeout");
+    }
+
+    println!("Send reset");
+    if control_board.reset().await.is_err() {
+        println!("Reset failure");
+    }
+    println!("Finished reset");
+
+    // Will be broken until get IMU data read
+    sleep(Duration::from_secs(10)).await;
 }

@@ -1,11 +1,16 @@
 use core::fmt::Debug;
-use std::{ops::Deref, sync::Arc, time::Duration};
+use std::{
+    ops::Deref,
+    sync::{Arc, OnceLock},
+    time::Duration,
+};
 
 use anyhow::{anyhow, bail, Result};
 use num_traits::ToBytes;
 use tokio::{
     io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, WriteHalf},
     net::TcpStream,
+    spawn,
     sync::Mutex,
     time::{sleep, timeout},
 };
@@ -17,6 +22,7 @@ use self::{
 };
 
 use super::auv_control_board::{AUVControlBoard, MessageId};
+use crate::logln;
 
 pub mod response;
 pub mod util;
@@ -26,6 +32,31 @@ pub enum SensorStatuses {
     DepthNr,
     AllGood,
 }
+
+static STAB_2_DRIFT: OnceLock<Arc<std::sync::Mutex<f32>>> = OnceLock::new();
+fn stab_2_drift() -> f32 {
+    let drift_val = STAB_2_DRIFT.get_or_init(|| {
+        let drift_val = Arc::new(std::sync::Mutex::new(0.0));
+
+        let drift_val_clone = drift_val.clone();
+        spawn(async move {
+            sleep(Duration::from_secs(5)).await;
+            loop {
+                {
+                    let mut drift_val_inner = drift_val_clone.lock().unwrap();
+                    *drift_val_inner += 0.015;
+                }
+                sleep(Duration::from_secs(1)).await
+            }
+        });
+
+        drift_val
+    });
+
+    *drift_val.lock().unwrap()
+}
+
+pub static LAST_YAW: std::sync::Mutex<Option<f32>> = std::sync::Mutex::new(None);
 
 #[derive(Debug)]
 pub struct ControlBoard<T>
@@ -237,7 +268,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
                 .await)
                     .is_err()
                 {
-                    eprintln!("Watchdog ACK timed out.");
+                    logln!("Watchdog ACK timed out.");
                 }
 
                 sleep(Duration::from_millis(200)).await;
@@ -433,6 +464,27 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         self.write_out_basic(message).await
     }
 
+    pub async fn global_speed_set(
+        &self,
+        x: f32,
+        y: f32,
+        z: f32,
+        pitch_speed: f32,
+        roll_speed: f32,
+        yaw_speed: f32,
+    ) -> Result<()> {
+        const GLOBAL_SET: [u8; 6] = *b"GLOBAL";
+        // Oversized to avoid reallocations
+        let mut message = Vec::with_capacity(32 * 8);
+        message.extend(GLOBAL_SET);
+
+        [x, y, z, pitch_speed, roll_speed, yaw_speed]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
+
+        self.write_out_basic(message).await
+    }
+
     pub async fn stability_2_speed_set(
         &self,
         x: f32,
@@ -447,10 +499,18 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         let mut message = Vec::with_capacity(32 * 8);
         message.extend(SASSIST_2);
 
-        [x, y, target_pitch, target_roll, target_yaw, target_depth]
-            .iter()
-            .for_each(|val| message.extend(val.to_le_bytes()));
+        [
+            x,
+            y,
+            target_pitch,
+            target_roll,
+            (target_yaw + stab_2_drift()),
+            target_depth,
+        ]
+        .iter()
+        .for_each(|val| message.extend(val.to_le_bytes()));
 
+        *LAST_YAW.lock().unwrap() = Some(target_yaw);
         self.write_out_basic(message).await
     }
 
@@ -510,10 +570,10 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         target_roll: f32,
         target_depth: f32,
     ) -> Result<()> {
-        const SASSIST_2: [u8; 8] = *b"SASSIST1";
+        const SASSIST_1: [u8; 8] = *b"SASSIST1";
         // Oversized to avoid reallocations
         let mut message = Vec::with_capacity(32 * 8);
-        message.extend(SASSIST_2);
+        message.extend(SASSIST_1);
 
         [x, y, yaw_speed, target_pitch, target_roll, target_depth]
             .iter()
@@ -581,6 +641,17 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         } else {
             return Ok(SensorStatuses::AllGood);
         }
+    }
+
+    pub async fn reset(self) -> Result<()> {
+        const RESET: [u8; 5] = *b"RESET";
+
+        let mut message: Vec<_> = RESET.into();
+        message.extend_from_slice(&[0x0D, 0x1E]);
+
+        self.write_out_no_response(message).await?;
+        sleep(Duration::from_secs(2)).await; // Reset time
+        Ok(())
     }
 
     pub async fn watchdog_status(&self) -> Option<bool> {

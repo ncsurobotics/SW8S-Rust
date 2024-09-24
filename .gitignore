@@ -8,6 +8,7 @@ util/.sw8_ssh_identity
 graphs
 sysroot-jetson
 target-jetson
+console/
 
 # Ignore all log files generated
 logging/
@@ -15,4 +16,8 @@ logging/
 # Ignore JetBrains IDE config folder
 .idea/
 
-.vscode
+.vscode/
+
+# Ignore perf output
+flamegraph.svg
+perf.data*

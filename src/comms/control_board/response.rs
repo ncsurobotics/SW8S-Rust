@@ -4,10 +4,9 @@ use std::{
         mpsc::{channel, Sender, TryRecvError},
         Arc,
     },
-    time::Duration,
+    time::{Duration, SystemTime},
 };
 
-use async_trait::async_trait;
 use derive_getters::Getters;
 use futures::stream;
 use futures::StreamExt;
@@ -35,7 +34,7 @@ const DEBUG: [u8; 5] = *b"DEBUG";
 #[allow(dead_code)]
 const DBGDAT: [u8; 6] = *b"DBGDAT";
 
-type KeyedAcknowledges = HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>;
+pub type KeyedAcknowledges = HashMap<u16, Result<Vec<u8>, AcknowledgeErr>>;
 
 #[derive(Debug, Getters)]
 pub struct ResponseMap {
@@ -48,7 +47,7 @@ pub struct ResponseMap {
 
 // Completely arbitrary
 const DEFAULT_BUF_LEN: usize = 512;
-const MAP_POLL_SLEEP: Duration = Duration::from_millis(5);
+pub const MAP_POLL_SLEEP: Duration = Duration::from_millis(5);
 
 impl ResponseMap {
     pub async fn new<T>(read_connection: T) -> Self
@@ -129,7 +128,21 @@ impl ResponseMap {
                 } else if message_body.get(0..4) == Some(&WDGS) {
                     *watchdog_status.write().await = Some(message_body[4] != 0);
                 } else if message_body.get(0..7) == Some(&BNO055D) {
-                    *bno055_status.write().await = Some(message_body[7..].try_into().unwrap());
+                    static mut PREV_YAW_PRINT: SystemTime = SystemTime::UNIX_EPOCH;
+                    let new_status = message_body[7..].try_into().unwrap();
+                    /*
+                    let now = SystemTime::now();
+                    unsafe {
+                        if now.duration_since(PREV_YAW_PRINT).unwrap() > Duration::from_secs(1) {
+                            logln!("Current yaw reading: {}", 
+                        Angles::from_raw(new_status).yaw()
+                                );
+                        PREV_YAW_PRINT = SystemTime::now();
+                        }
+                    }
+                    */
+
+                    *bno055_status.write().await = Some(new_status);
                 } else if message_body.get(0..7) == Some(&MS5837D) {
                     *ms5837_status.write().await = Some(message_body[7..].try_into().unwrap());
                 } else {
@@ -153,7 +166,6 @@ impl ResponseMap {
     }
 }
 
-#[async_trait]
 impl GetAck for ResponseMap {
     async fn get_ack(&self, id: u16) -> Result<Vec<u8>, AcknowledgeErr> {
         loop {

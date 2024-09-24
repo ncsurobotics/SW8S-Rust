@@ -1,13 +1,15 @@
 use anyhow::{anyhow, Result};
-use async_trait::async_trait;
 use opencv::prelude::Mat;
 use opencv::videoio::VideoCapture;
 use opencv::videoio::VideoCaptureAPIs;
 use opencv::videoio::VideoCaptureTrait;
+use std::fs::create_dir_all;
+use std::path::Path;
 use std::sync::Arc;
 use std::thread::spawn;
-use std::{fs::create_dir, path::Path};
 use tokio::sync::Mutex;
+
+use crate::logln;
 
 use super::MatSource;
 
@@ -20,16 +22,16 @@ impl Camera {
     pub fn new(
         camera_path: &str,
         camera_name: &str,
-        filesink_dir: &Path,
+        filesink: &Path,
         camera_dimensions: (u32, u32),
         rtsp: bool,
     ) -> Result<Self> {
-        if !filesink_dir.is_dir() {
-            create_dir(filesink_dir)?
+        if !filesink.is_dir() {
+            create_dir_all(filesink)?
         }
 
         let rtsp_string = "h264. ! queue ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! rtspclientsink location=rtsp://127.0.0.1:8554/".to_string()
-                        + camera_name + " ";
+                        + camera_name + ".mp4 ";
 
         let capture_string =
             pipeline_head(camera_path, camera_dimensions.0, camera_dimensions.1, 30)
@@ -40,25 +42,27 @@ impl Camera {
                 + " ! tee name=h264 "
                 + if rtsp { &rtsp_string } else { "" }
                 + "h264. ! queue ! mpegtsmux ! filesink location=\""
-                + filesink_dir
+                + filesink
                     .to_str()
                     .ok_or(anyhow!("filesink_dir is not a string"))?
                 + "/"
                 + camera_name
-                + "\" ";
-
-        #[cfg(feature = "logging")]
-        println!("Capture string: {capture_string}");
-        let mut capture =
-            VideoCapture::from_file(&capture_string, VideoCaptureAPIs::CAP_GSTREAMER as i32)?;
+                + ".mp4\" ";
 
         let frame: Arc<Mutex<Option<Mat>>> = Arc::default();
         let frame_copy = frame.clone();
 
-        spawn(move || loop {
-            let mut mat = Mat::default();
-            if capture.read(&mut mat).unwrap() {
-                *frame_copy.blocking_lock() = Some(mat)
+        #[cfg(feature = "logging")]
+        logln!("Capture string: {capture_string}");
+        spawn(move || {
+            let mut capture =
+                VideoCapture::from_file(&capture_string, VideoCaptureAPIs::CAP_GSTREAMER as i32)
+                    .unwrap();
+            loop {
+                let mut mat = Mat::default();
+                if capture.read(&mut mat).unwrap() {
+                    *frame_copy.blocking_lock() = Some(mat)
+                }
             }
         });
 
@@ -66,11 +70,10 @@ impl Camera {
     }
 
     pub fn jetson_new(camera_path: &str, camera_name: &str, filesink_dir: &Path) -> Result<Self> {
-        Camera::new(camera_path, camera_name, filesink_dir, (800, 600), true)
+        Camera::new(camera_path, camera_name, filesink_dir, (640, 480), true)
     }
 }
 
-#[async_trait]
 impl MatSource for Camera {
     async fn get_mat(&self) -> Mat {
         loop {
@@ -118,6 +121,6 @@ mod tests {
         .unwrap()
         .get_mat()
         .await;
-        println!("{:?}", output);
+        logln!("{:?}", output);
     }
 }

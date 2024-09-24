@@ -1,11 +1,17 @@
+use std::{fmt::Debug, ops::Mul};
+
+use anyhow::anyhow;
 use derive_getters::Getters;
+use num_traits::Num;
 use opencv::{
-    core::{Point, Scalar},
+    core::{MatTraitConst, Point, Scalar},
     imgproc::{self, LINE_8},
     prelude::Mat,
 };
 
-use super::{Angle2D, Draw, RelPosAngle, VisualDetection};
+use crate::logln;
+
+use super::{Angle2D, Draw, Offset2D, RelPosAngle, VisualDetection};
 
 #[derive(Debug, Clone, Getters)]
 pub struct PosVector {
@@ -42,9 +48,26 @@ impl RelPosAngle for PosVector {
     }
 }
 
+impl Mul<&Mat> for PosVector {
+    type Output = Self;
+
+    fn mul(self, rhs: &Mat) -> Self::Output {
+        let size = rhs.size().unwrap();
+        Self {
+            x: (self.x + 0.5) * (size.width as f64),
+            y: (self.y + 0.5) * (size.height as f64),
+            width: self.width * (size.width as f64),
+            length: self.length * (size.width as f64),
+            length_2: self.length_2 * (size.width as f64),
+            angle: self.angle,
+        }
+    }
+}
+
 impl Draw for VisualDetection<bool, PosVector> {
     fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
         let color = if self.class {
+            logln!("Drawing true: {:#?}", self.position());
             Scalar::from((0.0, 255.0, 0.0))
         } else {
             Scalar::from((0.0, 0.0, 255.0))
@@ -78,32 +101,22 @@ impl Draw for VisualDetection<bool, PosVector> {
     }
 }
 
-impl Draw for PosVector {
+impl Draw for VisualDetection<bool, Offset2D<f64>> {
     fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
-        let color = Scalar::from((0.0, 255.0, 0.0));
+        let color = if self.class {
+            Scalar::from((0.0, 255.0, 0.0))
+        } else {
+            Scalar::from((0.0, 0.0, 255.0))
+        };
 
         imgproc::circle(
             canvas,
-            Point::new(*self.x() as i32, *self.y() as i32),
+            Point::new(*self.position.x() as i32, *self.position.y() as i32),
             10,
             color,
             2,
             LINE_8,
             0,
-        )?;
-
-        imgproc::arrowed_line(
-            canvas,
-            Point::new(*self.x() as i32, *self.y() as i32),
-            Point::new(
-                (self.x() + 0.02 * self.length() * self.length()) as i32,
-                (self.y() + 0.4 * self.length_2() * self.length()) as i32,
-            ),
-            color,
-            2,
-            LINE_8,
-            0,
-            0.1,
         )?;
         Ok(())
     }
