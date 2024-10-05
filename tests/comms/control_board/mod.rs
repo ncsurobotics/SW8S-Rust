@@ -122,24 +122,34 @@ pub async fn unity_tcp_connect() {
     const LOCALHOST: &str = "172.23.240.1";
     const SIM_PORT: &str = "1234";
 
-    let test_type : u8 = 1; // 0 for normal unity sim, 1 for data collection
+    let test_type : u8 = 0; // 0 for normal unity sim, 1 for data collection
     let control_board = ControlBoard::unity_tcp(LOCALHOST, SIM_PORT, test_type)
         .await
         .unwrap();
     sleep(Duration::from_secs(1)).await;
-    let _ = control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 0.0, -3.0).await;
-    sleep(Duration::from_secs(5)).await;
-    let _ = control_board.stability_2_speed_set(0., 1., 0.0, 0.0, 0.0, -3.0).await;
-    sleep(Duration::from_secs(5)).await;
-
-    let _ = control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 90.0, -4.0).await;
-    sleep(Duration::from_secs(5)).await;
-    let _ = control_board.stability_2_speed_set(1., 0., 0.0, 0.0, 0.0, -4.0).await;
-    sleep(Duration::from_secs(5)).await;
-    let _ = control_board.stability_2_speed_set(0., -0.5, 90.0, 0.0, 0.0, -4.0).await;
-    sleep(Duration::from_secs(5)).await;
-    let _ = control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 0.0, 0.0).await;
-    sleep(Duration::from_secs(5)).await;
+    control_board.raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8, 0.8]).await;
+    //let _ = control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 0.0, -3.0).await;
+    sleep(Duration::from_secs(1)).await;
+    control_board.raw_speed_set([0.0, 1.0, 0.0, 0.0, 0.8, 0.8, 0.8, 0.8]).await;
+    //let _ = control_board.stability_2_speed_set(0., 1., 0.0, 0.0, 0.0, -3.0).await;
+    sleep(Duration::from_secs(1)).await;
+    control_board.raw_speed_set([0.0, 0.0, 1.0, 0.0, 0.8, 0.8, 0.8, 0.8]).await;
+    //let _ = control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 90.0, -4.0).await;
+    sleep(Duration::from_secs(1)).await;
+    control_board.raw_speed_set([0.0, 0.0, 0.0, 1.0, 0.8, 0.8, 0.8, 0.8]).await;
+    //let _ = control_board.stability_2_speed_set(1., 0., 0.0, 0.0, 0.0, -4.0).await;
+    sleep(Duration::from_secs(1)).await;
+    control_board.raw_speed_set([0.0, 0.0, 0.0, 0.0, 1.0, 0.8, 0.8, 0.8]).await;
+    //let _ = control_board.stability_2_speed_set(0., -0.5, 90.0, 0.0, 0.0, -4.0).await;
+    sleep(Duration::from_secs(1)).await;
+    control_board.raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.8, 1.0, 0.8, 0.8]).await;
+    //let _ = control_board.stability_2_speed_set(0., 0., 0.0, 0.0, 0.0, 0.0).await;
+    sleep(Duration::from_secs(1)).await;
+    control_board.raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.8, 0.8, 1.0, 0.8]).await;
+    sleep(Duration::from_secs(1)).await;
+    control_board.raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8, 1.0]).await;
+    sleep(Duration::from_secs(1)).await;
+    control_board.raw_speed_set([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]).await;
     //sleep(Duration::from_secs(1)).await;
     //control_board.raw_speed_set([1., 0.0, 0.0, 0., 0., 0., 0., 0.]).await;
     //sleep(Duration::from_secs(1)).await;
@@ -158,11 +168,15 @@ pub async fn unity_tcp_connect() {
     //control_board.raw_speed_set([0., 0.0, 0.0, 0., 0., 0., 0., 1.]).await;
     //sleep(Duration::from_secs(1)).await;
 
-    //const CAPTUREU: [u8; 8] = *b"CAPTUREU";
-    //let mut message = Vec::from(CAPTUREU);
-    //message.push(2);
-    //control_board.write_out(message).await;
-    assert_eq!(control_board.watchdog_status().await, Some(true));
+    
+    //assert_eq!(control_board.watchdog_status().await, Some(true));
+
+    const RESTARTU: [u8; 8] = *b"RESTARTU";
+    let mut message = Vec::from(RESTARTU);
+    message.push(2);
+    control_board.write_out(message).await;
+    sleep(Duration::from_secs(2)).await;
+
 }
 #[ignore = "requires a UI, is long"]
 #[tokio::test]

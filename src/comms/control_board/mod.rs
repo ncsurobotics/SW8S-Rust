@@ -99,7 +99,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
             initial_angles: Arc::default(),
         };
 
-        this.unity_startup(1).await?;
+        this.unity_startup(4).await?;
         this.startup().await?;
         Ok(this)
     }
