@@ -1,5 +1,5 @@
 # Docker image for https://github.com/ncsurobotics/SW8S-Rust
-FROM ubuntu
+FROM ubuntu:22.04
 
 # Make sure apt doesn't prompt
 ARG DEBIAN_FRONTEND=noninteractive
