@@ -20,6 +20,8 @@ RUN apt-get update \
   && useradd -m -s /bin/bash aquapack \
   && echo 'aquapack ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
 
+
+RUN apt-get install nano
 # User setup
 USER aquapack
 WORKDIR /home/aquapack
