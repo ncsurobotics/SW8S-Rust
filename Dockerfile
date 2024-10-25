@@ -4,6 +4,8 @@ FROM ubuntu:22.04
 # Make sure apt doesn't prompt frontend
 ARG DEBIAN_FRONTEND=noninteractive
 
+LABEL org.opencontainers.image.description "TEST Docker image for Seawolf 8 (Aquapack NCSU)"
+
 # System setup
 RUN apt-get update \
   # Install system dependencies
