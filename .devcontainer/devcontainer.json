@@ -3,9 +3,7 @@
     "image": "ghcr.io/sarangar/sw8s-rust:main",
     "initializeCommand": "bash .devcontainer/init.sh",
     "postStartCommand": "bash .devcontainer/postStart.sh",
-    "remoteEnv": {
-        "PATH": "${containerWorkspaceFolder}/scripts:${containerEnv:PATH}"
-    },
+    "postCreateCommand": "bash .devcontainer/postCreate.sh",
     "runArgs": [
         "--network=host",
         "--name=sw8-rust",
