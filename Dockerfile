@@ -17,6 +17,8 @@ RUN apt-get update \
     clang \
     libclang-dev \
     libopencv-dev \
+    lld \
+    llvm \
     sudo \
   # Create the user (adapted from https://github.com/Homebrew/brew/blob/master/Dockerfile)
   && useradd -m -s /bin/bash aquapack \
