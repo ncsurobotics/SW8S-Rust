@@ -2,7 +2,7 @@ use std::{fs::create_dir_all, ops::RangeInclusive};
 
 use itertools::Itertools;
 use opencv::{
-    core::{in_range, Size, VecN, Vector},
+    core::{in_range, AlgorithmHint, Size, VecN, Vector},
     imgcodecs::imwrite,
     imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
     prelude::{Mat, MatTraitConst, MatTraitConstManual},
@@ -122,11 +122,25 @@ impl VisualDetector<i32> for Path {
         self.image = resize(input_image, &self.size)?.into();
         let mut yuv_image = Mat::default();
 
-        cvt_color(&self.image.0, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
+        cvt_color(
+            &self.image.0,
+            &mut yuv_image,
+            COLOR_RGB2YUV,
+            0,
+            AlgorithmHint::ALGO_HINT_DEFAULT,
+        )
+        .unwrap();
         yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
         let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
 
-        cvt_color(&yuv_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
+        cvt_color(
+            &yuv_image,
+            &mut self.image.0,
+            COLOR_YUV2RGB,
+            0,
+            AlgorithmHint::ALGO_HINT_DEFAULT,
+        )
+        .unwrap();
 
         yuv_image
             .iter::<VecN<u8, 3>>()
@@ -219,11 +233,25 @@ impl VisualDetector<f64> for Path {
         let image = resize(input_image, &self.size)?;
         let mut yuv_image = Mat::default();
 
-        cvt_color(&image, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
+        cvt_color(
+            &image,
+            &mut yuv_image,
+            COLOR_RGB2YUV,
+            0,
+            AlgorithmHint::ALGO_HINT_DEFAULT,
+        )
+        .unwrap();
         yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
         let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
 
-        cvt_color(&yuv_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
+        cvt_color(
+            &yuv_image,
+            &mut self.image.0,
+            COLOR_YUV2RGB,
+            0,
+            AlgorithmHint::ALGO_HINT_DEFAULT,
+        )
+        .unwrap();
 
         #[cfg(feature = "logging")]
         {
