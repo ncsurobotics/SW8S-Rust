@@ -1,5 +1,6 @@
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
+use rand::Rng;
 
 use crate::{
     act_nest,
@@ -29,6 +30,8 @@ pub fn coinflip<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
+
+    
     const TRUE_COUNT: u32 = 2;
     const DELAY_TIME: f32 = 3.0;
 
@@ -37,15 +40,32 @@ pub fn coinflip<
     const ALIGN_Y_SPEED: f32 = 0.0;
     const ALIGN_YAW_SPEED: f32 = 3.0;
 
+
+    //simulate the coin flip (0 for heads, 1 for tails)
+    let coin_flip_result = rand::thread_rng().gen_range(0..2);
+
+    let (angle, action_description) = match coin_flip_result{
+        0 => (90.0, "AUV starts parallel to the gate (Heads)"),
+        1 => (180.0, "AUV backward-facing orientation, tail pointed towards gate (Tails)"),
+        _ => (90.0, "AUV starts parallel to the gate (Heads)"),
+    };     
+    
+
+
+    
+    // execute action sequence based on the coin flip outcome. 
     act_nest!(
         ActionSequence::new,
         ActionConcurrent::new(WaitArm::new(context), StartBno055::new(context)),
         ActionChain::new(
-            Stability2Movement::new(context, Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)),
+            Stability2Movement::new(context, Stability2Pos::new(0.0, 0.0, 0.0, 0.0, angle, DEPTH)),
             OutputType::<()>::new()
         ),
+        //delay to allow system to stabilize. 
         DelayAction::new(DELAY_TIME),
         ActionWhile::new(ActionSequence::new(
+
+
             act_nest!(
                 ActionChain::new,
                 ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
