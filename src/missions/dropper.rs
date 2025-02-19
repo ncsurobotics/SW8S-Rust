@@ -5,6 +5,8 @@ use crate::missions::action_context::GetFrontCamMat;
 use crate::missions::action_context::GetMainElectronicsBoard;
 use crate::missions::action::ActionExec;
 
+use crate::missions::movement::StraightMovement;
+use crate::missions::path_align::path_align;
 use crate::{
     act_nest,
     missions::{
@@ -12,7 +14,7 @@ use crate::{
             ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
             TupleSecond,
         },
-        basic::DelayAction,
+        basic::{DelayAction, descend_and_go_forward},
         comms::StartBno055,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
         fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
@@ -57,6 +59,7 @@ pub fn dropper<
     // Returns something that implements ActionExec
 )  -> impl ActionExec<()> + '_ {
 
+    /* 
     // Start building the action sequence macro
     act_nest!(
         // Wrapper, child, child, ...
@@ -73,10 +76,19 @@ pub fn dropper<
                 OutputType::<()>::new(),
         )
     )
+    */
 
-    
     // First align to path
-    // path_align();
+    let path_aligner = path_align(context); // using path_align.rs
+    let go_straight = descend_and_go_forward(context);  // using basic.rs
+    act_nest!(
+        ActionSequence::new,
+        path_aligner,
+        // Add logic to make it follow the path
+        // Defaulted: 2s descend, 2s forward
+        go_straight,
+        // Next, need to use vision models to look for blocks
+        Terminal::new,
+    );
 
-    // Then follow path concurrently
 }
