@@ -2,10 +2,10 @@ use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 use crate::missions::action_context::GetControlBoard;
 use crate::missions::action_context::GetFrontCamMat;
+use super::action_context::GetBottomCamMat;
 use crate::missions::action_context::GetMainElectronicsBoard;
 use crate::missions::action::ActionExec;
 
-use crate::missions::movement::StraightMovement;
 use crate::missions::path_align::path_align;
 use crate::{
     act_nest,
@@ -34,6 +34,7 @@ use crate::{
     POOL_YAW_SIGN,
 };
 
+
 // Comments: Align_buoy is a good reference!
 
 // Constants for alignment and movement
@@ -51,6 +52,7 @@ pub fn dropper<
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
         + GetFrontCamMat
+        + GetBottomCamMat
         + Unpin,
 >(
     // Needs a context given to it
@@ -88,7 +90,9 @@ pub fn dropper<
         // Defaulted: 2s descend, 2s forward
         go_straight,
         // Next, need to use vision models to look for blocks
-        Terminal::new,
-    );
+
+        // Need an OutputType to resolve the action sequence
+        OutputType::<()>::new(),
+    )
 
 }
