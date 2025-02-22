@@ -42,15 +42,18 @@ pub fn coinflip<
 
 
     //simulate the coin flip (0 for heads, 1 for tails)
-    let coin_flip_result = rand::thread_rng().gen_range(0..2);
-
-    let (angle, action_description) = match coin_flip_result{
-        0 => (90.0, "AUV starts parallel to the gate (Heads)"),
-        1 => (180.0, "AUV backward-facing orientation, tail pointed towards gate (Tails)"),
-        _ => (90.0, "AUV starts parallel to the gate (Heads)"),
-    };     
+    let coin_flip_result = rand::thread_rng().gen_range(0..2); 
     
 
+    // 90 - AUV starts parallel to the gate (Heads)
+    // 180 - AUV tail pointed toward the gate (Tails)
+    let initial_yaw: Option<f32> = if coin_flip_result == 0 {90.0} else {180.0};
+    /*let (initial_yaw, description) = match coin_flip_result {
+        initial_yaw = if coin_flip_result == 0 { 90.0 } else { 180.0 },
+            0 => (90.0, "AUV starts parallel to the gate (Heads)"),
+            1 => (180.0, "AUV tail pointed toward the gate (Tails)"),
+            _ => unreachable!(),  // This line will never execute, but included for exhaustiveness
+        };*/
 
     
     // execute action sequence based on the coin flip outcome. 
@@ -58,23 +61,26 @@ pub fn coinflip<
         ActionSequence::new,
         ActionConcurrent::new(WaitArm::new(context), StartBno055::new(context)),
         ActionChain::new(
-            Stability2Movement::new(context, Stability2Pos::new(0.0, 0.0, 0.0, 0.0, angle, DEPTH)),
+            Stability2Movement::new(context, Stability2Pos::new(0.0, 0.0, 0.0, 0.0, initial_yaw, DEPTH)),
             OutputType::<()>::new()
         ),
-        //delay to allow system to stabilize. 
+        //Delay to allow the system to stabilize after setting the initial yaw.
         DelayAction::new(DELAY_TIME),
+        //Perform orientation adjustment start a mission. 
         ActionWhile::new(ActionSequence::new(
 
 
             act_nest!(
                 ActionChain::new,
-                ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(ALIGN_YAW_SPEED)),
+                ConstYaw::<Stability2Adjust>::new(AdjustType::Adjust(initial_yaw)),
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(ALIGN_X_SPEED, ALIGN_Y_SPEED, 0.0, 0.0, None, DEPTH)
+                    Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH)
                 ),
                 OutputType::<()>::new(),
             ),
+
+            //initialize computer vision model
             act_nest!(
                 ActionChain::new,
                 VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(
