@@ -86,7 +86,9 @@ pub fn gate_run_complex<
 
     let depth: f32 = -1.25;
 
-    ActionSequence::new(
+    act_nest!(
+        ActionSequence::new,
+        DelayAction::new(3.0),
         ActionConcurrent::new(
             descend_depth_and_go_forward(context, depth),
             StartBno055::new(context),
