@@ -8,6 +8,7 @@ use crate::{
             ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
             TupleSecond,
         },
+        basic::DelayAction,
         extra::{CountTrue, OutputType, Terminal, ToVec},
         movement::{
             LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement, Stability2Pos,
@@ -38,7 +39,7 @@ pub fn path_align<
     act_nest!(
         ActionSequence::new,
         ZeroMovement::new(context, DEPTH),
-        DelayAction::new(2),
+        DelayAction::new(2.0),
         ActionWhile::new(ActionChain::new(
             VisionNormBottom::<Con, Path, f64>::new(context, Path::default()),
             TupleSecond::new(ActionConcurrent::new(

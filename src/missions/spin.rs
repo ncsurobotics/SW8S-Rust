@@ -28,8 +28,8 @@ pub fn spin<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    const GATE_DEPTH: f32 = -1.5;
-    const DEPTH: f32 = -1.5;
+    const GATE_DEPTH: f32 = -1.75;
+    const DEPTH: f32 = -1.75;
     const Z_TARGET: f32 = 0.0;
     const FORWARD_SPEED: f32 = 1.0;
     const SPIN_SPEED: f32 = 1.0;
