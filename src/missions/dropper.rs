@@ -5,6 +5,7 @@ use crate::missions;
 use missions::action_context::GetBottomCamMat;
 use crate::missions::path_align::path_align;
 use std::default::Default;
+use crate::missions::gate::adjust_logic;
 
 use crate::{
     act_nest,
@@ -53,42 +54,29 @@ pub fn dropper<
 >(
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
-    act_nest!(
-        ActionSequence::new,
-        // Step 1: Initialize the BNO055 sensor
-        StartBno055::new(context),
-
-        // Step 2: Align with the path
-        path_align(context),
-
-        /**
-        // Step 3: Follow the path
+    ActionSequence::new(
+        ActionConcurrent::new(
+            // Step 1: Align with the path
+            path_align(context),
+            // Step 2: Initialize the BNO055 sensor
+            StartBno055::new(context),
+        ),
+        // Step 3: Try to move with the path
         act_nest!(
             ActionSequence::new,
-            // Detect and extract the path position
-            IsSome::new(ExtractPosition::new()), // Loop while the path exists
-            act_nest!(
-                ActionChain::new,
-                OffsetToPose::new(Norm::default())), // Convert offset to movement command
-                LinearYawFromX::new(ALIGN_YAW_SPEED), // Adjust yaw based on lateral offset
+            adjust_logic(context, DEPTH, CountTrue::new(4)),
+            ActionChain::new(
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(ALIGN_X_SPEED, ALIGN_Y_SPEED, 0.0, 0.0, None, DEPTH)
+                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, DEPTH),
                 ),
-                OutputType::<()>::new(),
+                OutputType::<()>::default()
             ),
-            OutputType::<()>::new(),
-        ),
-        */
-
-        // Step 4: Perform the drop
-        act_nest!(
-            ActionSequence::new,
-            // Stop the robot
+            DelayAction::new(3.0),
             ZeroMovement::new(context, DEPTH),
-            // Perform the drop (e.g., release an object)
-            FireLeftTorpedo::new(context), // Replace with your drop mechanism
+            // Step 4: Perform the drop
             OutputType::<()>::new(),
+            
         )
     )
 }
