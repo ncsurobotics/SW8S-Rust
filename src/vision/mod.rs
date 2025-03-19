@@ -22,6 +22,7 @@ pub mod image_prep;
 pub mod nn_cv2;
 pub mod octagon;
 pub mod path;
+pub mod path_cv;
 pub mod pca;
 pub mod yolo_model;
 

@@ -17,6 +17,7 @@ use crate::{
         vision::{DetectTarget, ExtractPosition, MidPoint, VisionNormBottom},
     },
     vision::path::Path,
+    vision::path_cv::PathCV,
 };
 
 use super::{
