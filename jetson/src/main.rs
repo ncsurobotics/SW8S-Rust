@@ -2,12 +2,15 @@
 use std::{
     env::{args, current_dir, set_var},
     fmt::Write,
-    process::Command,
+    fs::read_to_string,
+    process::{exit, Command},
     thread,
 };
 
+use anyhow::{anyhow, Context, Result};
 use futures_util::TryStreamExt;
 use indicatif::{MultiProgress, ProgressBar, ProgressDrawTarget, ProgressState, ProgressStyle};
+use serde::Deserialize;
 use tar::Archive;
 use tokio::{spawn, task::spawn_blocking};
 use tokio_util::io::{StreamReader, SyncIoBridge};
@@ -16,14 +19,18 @@ use which::which;
 use xz::read::XzDecoder;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     println!("This tool is run to build SW8S-Rust for the Jetson Nano.");
     println!("It downloads the \"sysroot-jetson\" subdirectory for libraries.");
     println!("It builds a binary in the \"jetson-target\" subdirectory.");
     println!("The default cargo command is a release \"build\" with cuda and logging, but arguments will override this command.");
     println!();
 
-    tools_check().unwrap();
+    let config_str =
+        read_to_string("config.toml").context("Could not read config file config.toml")?;
+    let config: Config = toml::from_str(config_str.as_str()).context("Failed to parse config")?;
+
+    tools_check()?;
 
     let mut system_args = args().skip(1).collect::<Vec<_>>();
     if system_args.is_empty() {
@@ -35,10 +42,15 @@ async fn main() {
         ];
     }
 
-    let cur_dir = current_dir().unwrap();
-    let parent_dir = cur_dir.parent().unwrap().canonicalize().unwrap();
+    let cur_dir = current_dir().context("failure getting current directory")?;
+    let parent_dir = cur_dir
+        .parent()
+        .ok_or_else(|| anyhow!("Failed to get parent of current directory"))?
+        .canonicalize()?;
     let sysroot = parent_dir.join("sysroot-jetson");
-    let sysroot_str = sysroot.to_str().unwrap();
+    let sysroot_str = sysroot
+        .to_str()
+        .ok_or_else(|| anyhow!("Failed to stringify sysroot directory"))?;
 
     let multibar = MultiProgress::new();
     let multibar_clone = multibar.clone();
@@ -59,16 +71,25 @@ async fn main() {
     });
 
     let sysroot_clone = sysroot.clone();
+    let config_clone = config.clone();
     let get_sysroot = spawn(async {
         let sysroot = sysroot_clone;
+        let config = config_clone;
         let multibar = multibar_clone;
 
         println!("Testing for sysroot");
-        if !sysroot.exists() {
+        let need_sysroot;
+        let sysroot_missing = !sysroot.exists();
+        if let Some(fetch) = config.fetch_sysroot.to_owned() {
+            need_sysroot = fetch && sysroot_missing;
+        } else {
+            need_sysroot = sysroot_missing;
+        }
+        if need_sysroot {
             // Streaming this process reduces I/O and reduces delay
             println!("Downloading sysroot...");
 
-            let source = reqwest::get("https://github.com/MB3hel/RustCrossExperiments/releases/download/demosysroot/sysroot-jetson.tar.xz").await.unwrap();
+            let source = reqwest::get(config.sysroot_url).await.unwrap();
 
             multibar.set_move_cursor(true); // Reduce flickering
             let dl_bar = multibar.add(ProgressBar::new(source.content_length().unwrap_or(0)));
@@ -97,7 +118,12 @@ async fn main() {
                 .unwrap();
             println!("Downloaded sysroot");
         } else {
-            println!("Found sysroot");
+            if sysroot_missing {
+                eprintln!("Sysroot not found, fetching it is disabled");
+                exit(1);
+            } else {
+                println!("Found sysroot");
+            }
         }
     });
 
@@ -113,7 +139,7 @@ async fn main() {
             "/usr/local/cuda-10.2/targets/aarch64-linux/lib/ -L"
         }
         + sysroot_str
-        + "/opt/opencv-4.6.0/lib/";
+        + "/usr/lib/aarch64-linux-gnu/";
     // Only to clang to compile C code
     let cflags = &shared_flags;
     // Only to clang++ to compile C++ code
@@ -155,32 +181,37 @@ async fn main() {
     get_sysroot.await.unwrap();
 
     // OpenCV setup
-    let opencv_link_libs: String = WalkDir::new(sysroot.join("./opt/opencv-4.6.0/lib/"))
+    let opencv_link_libs: String = WalkDir::new(sysroot.join("./usr/lib/aarch64-linux-gnu/"))
         .max_depth(1)
         .into_iter()
         .filter_map(|e| e.ok())
         .map(|f| f.file_name().to_string_lossy().to_string())
-        .filter(|f| f.ends_with(".so"))
+        .filter(|f| f.ends_with(".so") && f.starts_with("lib"))
         .map(|f| ",".to_string() + &f[3..f.len() - 3])
         .collect(); // remove beginning "lib" and ending ".so"
     set_var("OPENCV_LINK_LIBS", opencv_link_libs);
-    set_var("OPENCV_LINK_PATHS", sysroot.join("./opt/opencv-4.6.0/lib/"));
+    set_var(
+        "OPENCV_LINK_PATHS",
+        sysroot.join("./usr/lib/aarch64-linux-gnu/"),
+    );
     set_var(
         "OPENCV_INCLUDE_PATHS",
         sysroot
-            .join("./opt/opencv-4.6.0/include/opencv4")
+            .join("./usr/include/opencv4")
             .to_str()
             .unwrap()
             .to_string()
             + ","
             + sysroot
-                .join("./opt/opencv-4.6.0/include/opencv4/opencv2")
+                .join("./usr/include/opencv4/opencv2")
                 .to_str()
                 .unwrap(),
     );
 
     // Wait for Jetson Nano toolchain
-    toolchain_install.await.unwrap();
+    toolchain_install
+        .await
+        .context("failure while waiting for Jetson Nano toolchain install")?;
 
     Command::new("cargo")
         .current_dir(parent_dir.clone())
@@ -191,28 +222,33 @@ async fn main() {
             "--target-dir",
             "target-jetson",
         ])
-        .spawn()
-        .unwrap()
+        .spawn().context("failure spawning cargo sub proccess")?
         .wait()
-        .map_err(|e| format!("Make sure current directory ({:?}) is the \"jetson\" subdirectory (SW8S-Rust/jetson)\n{:#?}", cur_dir, e))
-        .unwrap();
+        .map_err(|e| anyhow!("Make sure current directory ({:?}) is the \"jetson\" subdirectory (SW8S-Rust/jetson)\n{:#?}", cur_dir, e))?;
     println!(
         "\nThe cross-compiled binary is in {:?}",
         parent_dir
             .join("target-jetson")
             .join("aarch64-unknown-linux-gnu")
     );
+    Ok(())
 }
 
 /// Checks that all required programs are installed
-fn tools_check() -> Result<(), String> {
+fn tools_check() -> Result<()> {
     ["rustup", "cargo", "clang", "lld"]
         .into_iter()
         .try_for_each(program_check)
 }
 
 /// Checks that all programs are installed
-fn program_check(program: &str) -> Result<(), String> {
-    which(program).map_err(|_| format!("{program} is not installed"))?;
+fn program_check(program: &str) -> Result<()> {
+    which(program).map_err(|_| anyhow!("{program} is not installed"))?;
     Ok(())
+}
+
+#[derive(Debug, Deserialize, Clone)]
+struct Config {
+    fetch_sysroot: Option<bool>,
+    sysroot_url: String,
 }
