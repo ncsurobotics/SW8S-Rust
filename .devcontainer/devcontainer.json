@@ -1,0 +1,25 @@
+{
+    "name": "SW8 Rust Development",
+    "image": "ghcr.io/ncsurobotics/sw8s-rust:main",
+    "initializeCommand": "bash .devcontainer/init.sh",
+    "postStartCommand": "bash .devcontainer/postStart.sh",
+    "postCreateCommand": "bash .devcontainer/postCreate.sh",
+    "runArgs": [
+        "--network=host",
+        "--name=sw8-rust",
+        "--init"
+    ],
+    "privileged": true,
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-docker",
+                "Github.copilot",
+                "eamodio.gitlens",
+                "appulate.filewatcher",
+                "formulahendry.code-runner"
+            ]
+        }
+    }
+
+}

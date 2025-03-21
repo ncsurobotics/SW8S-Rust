@@ -1,8 +1,10 @@
 # Docker image for https://github.com/ncsurobotics/SW8S-Rust
-FROM ubuntu
+FROM ubuntu:22.04
 
-# Make sure apt doesn't prompt
+# Make sure apt doesn't prompt frontend
 ARG DEBIAN_FRONTEND=noninteractive
+
+LABEL org.opencontainers.image.description="TEST Docker image for Seawolf 8 (Aquapack NCSU)"
 
 # System setup
 RUN apt-get update \
@@ -15,11 +17,15 @@ RUN apt-get update \
     clang \
     libclang-dev \
     libopencv-dev \
+    lld \
+    llvm \
     sudo \
   # Create the user (adapted from https://github.com/Homebrew/brew/blob/master/Dockerfile)
   && useradd -m -s /bin/bash aquapack \
   && echo 'aquapack ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
 
+
+RUN apt-get install nano
 # User setup
 USER aquapack
 WORKDIR /home/aquapack
