@@ -34,8 +34,4 @@ RUN  \
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
   && . "$HOME/.cargo/env" && echo '. "$HOME/.cargo/env"' >> ~/.bashrc \
   # Clone the repo
-  && git clone https://github.com/ncsurobotics/SW8S-Rust \
-  # Test the build
-  && cd SW8S-Rust && cargo test --verbose \
-  # Ok it gets too big...
-  && cargo clean
+  && git clone https://github.com/ncsurobotics/SW8S-Rust
