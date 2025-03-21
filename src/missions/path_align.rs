@@ -4,13 +4,17 @@ use tokio_serial::SerialStream;
 use crate::{
     act_nest,
     missions::{
-        action::{ActionChain, ActionConcurrent, ActionSequence, TupleSecond},
+        action::{
+            ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
+            TupleSecond,
+        },
+        basic::DelayAction,
         extra::{CountTrue, OutputType, Terminal, ToVec},
         movement::{
             LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement, Stability2Pos,
             ZeroMovement,
         },
-        vision::{ExtractPosition, MidPoint, VisionNormBottom},
+        vision::{DetectTarget, ExtractPosition, MidPoint, VisionNormBottom},
     },
     vision::path::Path,
 };
@@ -29,31 +33,45 @@ pub fn path_align<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    const DEPTH: f32 = 1.25;
-    const PATH_ALIGN_SPEED: f32 = 0.6;
+    const DEPTH: f32 = -1.25;
+    const PATH_ALIGN_SPEED: f32 = 0.3;
 
     act_nest!(
         ActionSequence::new,
         ZeroMovement::new(context, DEPTH),
-        ActionChain::new(
+        DelayAction::new(2.0),
+        ActionWhile::new(ActionChain::new(
             VisionNormBottom::<Con, Path, f64>::new(context, Path::default()),
             TupleSecond::new(ActionConcurrent::new(
                 act_nest!(
                     ActionChain::new,
-                    ToVec::new(),
-                    ExtractPosition::new(),
-                    MidPoint::new(),
-                    OffsetToPose::default(),
-                    LinearYawFromX::<Stability2Adjust>::default(),
-                    Stability2Movement::new(
-                        context,
-                        Stability2Pos::new(0.0, PATH_ALIGN_SPEED, 0.0, 0.0, None, DEPTH),
+                    ActionDataConditional::new(
+                        DetectTarget::new(true),
+                        act_nest!(
+                            ActionChain::new,
+                            ExtractPosition::new(),
+                            MidPoint::new(),
+                            OffsetToPose::default(),
+                            LinearYawFromX::<Stability2Adjust>::default(),
+                            Stability2Movement::new(
+                                context,
+                                Stability2Pos::new(0.0, PATH_ALIGN_SPEED, 30.0, 0.0, None, DEPTH),
+                            ),
+                        ),
+                        act_nest!(
+                            ActionSequence::new,
+                            Terminal::new(),
+                            Stability2Movement::new(
+                                context,
+                                Stability2Pos::new(0.0, PATH_ALIGN_SPEED, 30.0, 0.0, None, DEPTH),
+                            ),
+                        ),
                     ),
                     OutputType::<()>::new(),
                 ),
-                CountTrue::new(3),
+                ActionChain::new(DetectTarget::new(true), CountTrue::new(5)),
             )),
-        ),
+        )),
         Terminal::new(),
     )
 }
