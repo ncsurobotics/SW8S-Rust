@@ -50,10 +50,13 @@ pub fn dropper<
         + GetMainElectronicsBoard
         + GetFrontCamMat
         + Unpin
-        + GetBottomCamMat,
+        + GetBottomCamMat
+        + std::fmt::Display
+        + std::cmp::PartialEq,
 >(
     context: &'static Con,
 ) -> impl ActionExec<()> + '_ {
+    // Part 1: Move to the location to drop
     ActionSequence::new(
         ActionConcurrent::new(
             // Step 1: Align with the path
@@ -68,15 +71,26 @@ pub fn dropper<
             ActionChain::new(
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, DEPTH),
+                    Stability2Pos::new(ALIGN_X_SPEED, ALIGN_Y_SPEED, 0.0, 0.0, None, DEPTH),
                 ),
                 OutputType::<()>::default()
             ),
-            DelayAction::new(3.0),
-            ZeroMovement::new(context, DEPTH),
-            // Step 4: Perform the drop
-            OutputType::<()>::new(),
-            // im not sure whats the right command to drop here
+            // Step 4: Vision part to detect the target and drop the item
+            ActionSequence::new(
+                Vision::new(context, BuoyModel::new("model_name.onnx", 224, 0.5).unwrap()), // Detect objects using the front camera
+                ActionSequence::new(
+                    DetectTarget::<BuoyModel>::new(Target::RedBuoy), // Use an existing variant for the specific target
+                    ActionSequence::new(
+                        SizeUnder::new(0.5), // Ensure the target is within the size threshold
+                        FireLeftTorpedo::new(context), // Drop the item
+                    ),
+                ),
+            ),
+            // Step 5: Try to stop at this target after finding it
+            ActionSequence::new(
+                DelayAction::new(3.0),
+                ZeroMovement::new(context, DEPTH),
+            ),
         )
     )
 }
