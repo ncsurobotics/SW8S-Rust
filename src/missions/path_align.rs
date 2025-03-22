@@ -17,6 +17,7 @@ use crate::{
         vision::{DetectTarget, ExtractPosition, MidPoint, VisionNormBottom},
     },
     vision::path::Path,
+    vision::path_cv::PathCV,
 };
 
 use super::{
@@ -41,7 +42,7 @@ pub fn path_align<
         ZeroMovement::new(context, DEPTH),
         DelayAction::new(2.0),
         ActionWhile::new(ActionChain::new(
-            VisionNormBottom::<Con, Path, f64>::new(context, Path::default()),
+            VisionNormBottom::<Con, PathCV, f64>::new(context, PathCV::default()),
             TupleSecond::new(ActionConcurrent::new(
                 act_nest!(
                     ActionChain::new,
