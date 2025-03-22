@@ -1,23 +1,104 @@
-use std::{fs::create_dir_all, ops::RangeInclusive};
+use std::{fs::create_dir_all, ops::Mul, ops::RangeInclusive};
 
+use derive_getters::Getters;
 use itertools::Itertools;
 use opencv::{
-    core::{in_range, Size, VecN, Vector},
+    core::{in_range, Point, Scalar, Size, VecN, Vector},
     imgcodecs::imwrite,
-    imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
+    imgproc::{
+        self, box_points, circle, contour_area_def, cvt_color_def, find_contours_def,
+        min_area_rect, CHAIN_APPROX_SIMPLE, COLOR_BGR2YUV, COLOR_YUV2BGR, LINE_8, RETR_EXTERNAL,
+    },
     prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
 use uuid::Uuid;
 
 use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
+use crate::vision::{Angle2D, Draw, Offset2D, RelPosAngle};
 
 use super::{
     image_prep::{kmeans, resize},
-    pca::PosVector,
     MatWrapper, VisualDetection, VisualDetector,
 };
 
 static FORWARD: (f64, f64) = (0.0, -1.0);
+
+#[derive(Debug, Clone, Getters, PartialEq)]
+pub struct PosVector {
+    x: f64,
+    y: f64,
+    z: f64,
+    angle: f64,
+}
+
+impl PosVector {
+    fn new(x: f64, y: f64, z: f64, angle: f64) -> Self {
+        Self { x, y, z, angle }
+    }
+}
+
+impl RelPosAngle for PosVector {
+    type Number = f64;
+
+    fn offset_angle(&self) -> Angle2D<Self::Number> {
+        Angle2D {
+            x: self.x,
+            y: self.y,
+            angle: self.angle,
+        }
+    }
+}
+
+impl Mul<&Mat> for PosVector {
+    type Output = Self;
+
+    fn mul(self, rhs: &Mat) -> Self::Output {
+        let size = rhs.size().unwrap();
+        Self {
+            x: (self.x + 0.5) * (size.width as f64),
+            y: (self.y + 0.5) * (size.height as f64),
+            z: 0.,
+            angle: self.angle,
+        }
+    }
+}
+
+impl Draw for VisualDetection<bool, PosVector> {
+    fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
+        let color = if self.class {
+            logln!("Drawing true: {:#?}", self.position());
+            Scalar::from((0.0, 255.0, 0.0))
+        } else {
+            Scalar::from((0.0, 0.0, 255.0))
+        };
+
+        imgproc::circle(
+            canvas,
+            Point::new(*self.position.x() as i32, *self.position.y() as i32),
+            10,
+            color,
+            2,
+            LINE_8,
+            0,
+        )?;
+
+        // imgproc::arrowed_line(
+        //     canvas,
+        //     Point::new(*self.position.x() as i32, *self.position.y() as i32),
+        //     Point::new(
+        //         (self.position.x() + 0.02 * self.position.length() * self.position.length()) as i32,
+        //         (self.position.y() + 0.4 * self.position.length_2() * self.position.length())
+        //             as i32,
+        //     ),
+        //     color,
+        //     2,
+        //     LINE_8,
+        //     0,
+        //     0.1,
+        // )?;
+        Ok(())
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub struct Yuv {
@@ -91,7 +172,7 @@ impl PathCV {
 impl Default for PathCV {
     fn default() -> Self {
         PathCV::new(
-            (Yuv { y: 0, u: 0, v: 127 })..=(Yuv {
+            (Yuv { y: 0, u: 0, v: 175 })..=(Yuv {
                 y: 255,
                 u: 127,
                 v: 255,
@@ -122,78 +203,77 @@ impl VisualDetector<i32> for PathCV {
         self.image = resize(input_image, &self.size)?.into();
         let mut yuv_image = Mat::default();
 
-        cvt_color(&self.image.0, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
-        yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
-        let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
+        cvt_color_def(&self.image.0, &mut yuv_image, COLOR_BGR2YUV)?;
 
-        cvt_color(&yuv_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
+        let color_start = self.color_bounds.start();
+        let color_end = self.color_bounds.end();
+        let lower_orange = Scalar::new(
+            color_start.y as f64,
+            color_start.u as f64,
+            color_start.v as f64,
+            0.,
+        );
+        let upper_orange = Scalar::new(
+            color_end.y as f64,
+            color_end.u as f64,
+            color_end.v as f64,
+            0.,
+        );
 
-        yuv_image
-            .iter::<VecN<u8, 3>>()
-            .unwrap()
-            .sorted_by(|(_, val), (_, n_val)| Ord::cmp(val.as_slice(), n_val.as_slice()))
-            .dedup_by(|(_, val), (_, n_val)| val == n_val)
-            .map(|(_, val)| {
-                               
-                // let mut bin_image = Mat::default();
-                // in_range(&yuv_image, &val, &val, &mut bin_image).unwrap();
-                // let on_points = cvt_binary_to_points(&bin_image.try_into_typed().unwrap());
-                // let pca_output = binary_pca(&on_points, 0).unwrap();
+        let mut mask = Mat::default();
+        in_range(&yuv_image, &lower_orange, &upper_orange, &mut mask);
 
-                // let (length_idx, width_idx) = if pca_output.pca_value().get(1).unwrap()
-                //     > pca_output.pca_value().get(0).unwrap()
-                // {
-                //     (1, 0)
-                // } else {
-                //     (0, 1)
-                // };
-                // // width bounds have a temp fix -- not sure why output is so large
-                // let width = pca_output.pca_value().get(width_idx).unwrap() / 100.0;
-                // let length = pca_output.pca_value().get(length_idx).unwrap();
-                // let length_2 = pca_output.pca_vector().get(length_idx + 1).unwrap();
+        let mut contours = Vector::<Vector<Point>>::new();
+        find_contours_def(&mask, &mut contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE)?;
 
-                // logln!("Testing for valid...");
-                // logln!("\tself.width_bounds = {:?}", self.width_bounds);
-                // logln!("\tself.width = {:?}", width);
-                // logln!(
-                //     "\tcontained_width = {:?}",
-                //     self.width_bounds.contains(&width)
-                // );
-                // logln!();
-                // logln!("\tYUV range = {:?}", self.color_bounds);
-                // logln!("\tYUV val = {:?}", Yuv::from(&val));
-                // logln!(
-                //     "\tcontained_color = {:?}",
-                //     Yuv::from(&val).in_range(&self.color_bounds)
-                // );
-                // logln!();
+        let max_contour = contours.iter().max_by(|x, y| {
+            contour_area_def(&x)
+                .unwrap()
+                .partial_cmp(&contour_area_def(&y).unwrap())
+                .unwrap()
+        });
 
-                // let valid = self.width_bounds.contains(&width)
-                //     && Yuv::from(&val).in_range(&self.color_bounds);
+        if let Some(contour) = max_contour {
+            let area = contour_area_def(&contour)?;
+            if area > 1000.0 {
+                let rect = min_area_rect(&contour)?;
+                let mut angle = rect.angle as f64;
+                let width = rect.size.width;
+                let height = rect.size.height;
+                if width > height {
+                    angle = rect.angle as f64;
+                } else {
+                    angle = (rect.angle as f64) + 90.0;
+                }
+                angle -= 90.0;
+                let mut box_rect = Mat::default();
+                box_points(rect, &mut box_rect)?;
 
-                // let p_vec = PosVector::new(
-                //     ((pca_output.mean().get(0).unwrap()) - image_center.0)
-                //         + (self.image.size().unwrap().width as f64) / 2.0,
-                //     (pca_output.mean().get(1).unwrap()) - image_center.1
-                //         + (self.image.size().unwrap().height as f64) / 2.0,
-                //     compute_angle(
-                //         (
-                //             pca_output.pca_vector().get(length_idx).unwrap(),
-                //             pca_output.pca_vector().get(length_idx + 1).unwrap(),
-                //         ),
-                //         FORWARD,
-                //     ),
-                //     width,
-                //     length / 300.0,
-                //     length_2,
-                // );
+                println!("{:?}", angle);
+                // DRAW STUFF
+                // SEND TO RTSP SERVER
 
-                // Ok(VisualDetection {
-                //     class: valid,
-                //     position: p_vec,
-                // })
-            })
-            .collect()
+                let center_adjusted_x =
+                    (rect.center.x as f64) - ((self.image.size()?.width as f64) / 2.0);
+                let center_adjusted_y =
+                    ((self.image.size()?.height as f64) / 2.0) - (rect.center.y as f64);
+
+                Ok(vec![VisualDetection {
+                    class: true,
+                    position: PosVector::new(center_adjusted_x, center_adjusted_y, 0., angle),
+                }])
+            } else {
+                Ok(vec![VisualDetection {
+                    class: false,
+                    position: PosVector::new(0., 0., 0., 0.),
+                }])
+            }
+        } else {
+            Ok(vec![VisualDetection {
+                class: false,
+                position: PosVector::new(0., 0., 0., 0.),
+            }])
+        }
     }
 
     fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
@@ -201,10 +281,8 @@ impl VisualDetector<i32> for PathCV {
         Self::Position::new(
             ((*pos.x() / (img_size.width as f64)) - 0.5) * 2.0,
             ((*pos.y() / (img_size.height as f64)) - 0.5) * 2.0,
+            0.,
             *pos.angle(),
-            *pos.width() / (img_size.width as f64),
-            *pos.length() / (img_size.height as f64),
-            *pos.length_2() / (img_size.height as f64),
         )
     }
 }
@@ -217,107 +295,80 @@ impl VisualDetector<f64> for PathCV {
         &mut self,
         input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
-        let image = resize(input_image, &self.size)?;
+        self.image = resize(input_image, &self.size)?.into();
         let mut yuv_image = Mat::default();
 
-        cvt_color(&image, &mut yuv_image, COLOR_RGB2YUV, 0).unwrap();
-        yuv_image = kmeans(&yuv_image, self.num_regions, self.attempts);
-        let image_center = ((yuv_image.cols() / 2) as f64, (yuv_image.rows() / 2) as f64);
+        cvt_color_def(&self.image.0, &mut yuv_image, COLOR_BGR2YUV)?;
 
-        cvt_color(&yuv_image, &mut self.image.0, COLOR_YUV2RGB, 0).unwrap();
+        let color_start = self.color_bounds.start();
+        let color_end = self.color_bounds.end();
+        let lower_orange = Scalar::new(
+            color_start.y as f64,
+            color_start.u as f64,
+            color_start.v as f64,
+            0.,
+        );
+        let upper_orange = Scalar::new(
+            color_end.y as f64,
+            color_end.u as f64,
+            color_end.v as f64,
+            0.,
+        );
 
-        #[cfg(feature = "logging")]
-        {
-            create_dir_all("/tmp/path_images").unwrap();
-            imwrite(
-                &("/tmp/path_images/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
-                &self.image.0,
-                &Vector::default(),
-            )
-            .unwrap();
-        }
+        let mut mask = Mat::default();
+        in_range(&yuv_image, &lower_orange, &upper_orange, &mut mask);
 
-        yuv_image
-            .iter::<VecN<u8, 3>>()
-            .unwrap()
-            .sorted_by(|(_, val), (_, n_val)| Ord::cmp(val.as_slice(), n_val.as_slice()))
-            .dedup_by(|(_, val), (_, n_val)| val == n_val)
-            .map(|(_, val)| {
-                let mut bin_image = Mat::default();
-                in_range(&yuv_image, &val, &val, &mut bin_image).unwrap();
-                let on_points = cvt_binary_to_points(&bin_image.try_into_typed().unwrap());
-                let pca_output = binary_pca(&on_points, 0).unwrap();
+        let mut contours = Vector::<Vector<Point>>::new();
+        find_contours_def(&mask, &mut contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE)?;
 
-                let (length_idx, width_idx) = if pca_output.pca_value().get(1).unwrap()
-                    > pca_output.pca_value().get(0).unwrap()
-                {
-                    (1, 0)
+        let max_contour = contours.iter().max_by(|x, y| {
+            contour_area_def(&x)
+                .unwrap()
+                .partial_cmp(&contour_area_def(&y).unwrap())
+                .unwrap()
+        });
+
+        if let Some(contour) = max_contour {
+            let area = contour_area_def(&contour)?;
+            if area > 1000.0 {
+                let rect = min_area_rect(&contour)?;
+                let mut angle = rect.angle as f64;
+                let width = rect.size.width;
+                let height = rect.size.height;
+                if width > height {
+                    angle = rect.angle as f64;
                 } else {
-                    (0, 1)
-                };
-                // width bounds have a temp fix -- not sure why output is so large
-                let width = pca_output.pca_value().get(width_idx).unwrap() / 100.0;
-                let length = pca_output.pca_value().get(length_idx).unwrap();
-                let length_2 = pca_output.pca_vector().get(length_idx + 1).unwrap();
+                    angle = (rect.angle as f64) + 90.0;
+                }
+                angle -= 90.0;
+                let mut box_rect = Mat::default();
+                box_points(rect, &mut box_rect)?;
 
-                logln!("Testing for valid...");
-                logln!("\tself.width_bounds = {:?}", self.width_bounds);
-                logln!("\tself.width = {:?}", width);
-                logln!(
-                    "\tcontained_width = {:?}",
-                    self.width_bounds.contains(&width)
-                );
-                logln!();
-                logln!("\tYUV range = {:?}", self.color_bounds);
-                logln!("\tYUV val = {:?}", Yuv::from(&val));
-                logln!(
-                    "\tcontained_color = {:?}",
-                    Yuv::from(&val).in_range(&self.color_bounds)
-                );
-                logln!();
+                println!("{:?}", angle);
+                // DRAW STUFF
+                // SEND TO RTSP SERVER
 
-                let valid = self.width_bounds.contains(&width)
-                    && Yuv::from(&val).in_range(&self.color_bounds);
+                let center_adjusted_x =
+                    (rect.center.x as f64) - ((self.image.size()?.width as f64) / 2.0);
+                let center_adjusted_y =
+                    ((self.image.size()?.height as f64) / 2.0) - (rect.center.y as f64);
 
-                if valid {
-                    logln!("\tself.width_bounds = {:?}", self.width_bounds);
-                    logln!("\tself.width = {:?}", width);
-                    logln!(
-                        "\tcontained_width = {:?}",
-                        self.width_bounds.contains(&width)
-                    );
-                    logln!();
-                    logln!("\tYUV range = {:?}", self.color_bounds);
-                    logln!("\tYUV val = {:?}", Yuv::from(&val));
-                    logln!(
-                        "\tcontained_color = {:?}",
-                        Yuv::from(&val).in_range(&self.color_bounds)
-                    );
-                };
-
-                let p_vec = PosVector::new(
-                    ((pca_output.mean().get(0).unwrap()) - image_center.0)
-                        + (self.image.size().unwrap().width as f64) / 2.0,
-                    (pca_output.mean().get(1).unwrap()) - image_center.1
-                        + (self.image.size().unwrap().height as f64) / 2.0,
-                    compute_angle(
-                        (
-                            pca_output.pca_vector().get(length_idx).unwrap(),
-                            pca_output.pca_vector().get(length_idx + 1).unwrap(),
-                        ),
-                        FORWARD,
-                    ),
-                    width,
-                    length / 300.0,
-                    length_2,
-                );
-
-                Ok(VisualDetection {
-                    class: valid,
-                    position: p_vec,
-                })
-            })
-            .collect()
+                Ok(vec![VisualDetection {
+                    class: true,
+                    position: PosVector::new(center_adjusted_x, center_adjusted_y, 0., angle),
+                }])
+            } else {
+                Ok(vec![VisualDetection {
+                    class: false,
+                    position: PosVector::new(0., 0., 0., 0.),
+                }])
+            }
+        } else {
+            Ok(vec![VisualDetection {
+                class: false,
+                position: PosVector::new(0., 0., 0., 0.),
+            }])
+        }
     }
 
     fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
@@ -325,13 +376,11 @@ impl VisualDetector<f64> for PathCV {
         Self::Position::new(
             ((*pos.x() / (img_size.width as f64)) - 0.5) * 2.0,
             ((*pos.y() / (img_size.height as f64)) - 0.5) * 2.0,
+            0.,
             *pos.angle(),
-            *pos.width() / (img_size.width as f64),
-            *pos.length() / (img_size.height as f64),
-            *pos.length_2() / (img_size.height as f64),
         )
     }
-}:
+}
 
 #[cfg(test)]
 mod tests {
@@ -368,4 +417,3 @@ mod tests {
         .unwrap();
     }
 }
-
