@@ -24,6 +24,7 @@ pub mod octagon;
 pub mod path;
 pub mod pca;
 pub mod yolo_model;
+pub mod bins;
 
 pub trait Draw {
     /// Draws self on top of `canvas`

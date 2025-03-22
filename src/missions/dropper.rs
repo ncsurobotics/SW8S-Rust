@@ -1,11 +1,18 @@
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
-use std::time::Duration;
 use crate::missions;
 use missions::action_context::GetBottomCamMat;
 use crate::missions::path_align::path_align;
 use std::default::Default;
 use crate::missions::gate::adjust_logic;
+use crate::missions::action::Action;
+use crate::comms::meb::MainElectronicsBoard; // Import MainElectronicsBoard
+use crate::comms::meb::MebCmd; // Import MebCmd
+use super::{action::ActionExec, action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard}};
+use crate::vision::bins::Bin;
+use crate::vision::nn_cv2::YoloClass;
+use crate::vision::Offset2D;
+use crate::vision::DrawRect2d;
 
 use crate::{
     act_nest,
@@ -26,15 +33,39 @@ use crate::{
             DetectTarget, ExtractPosition, MidPoint, Norm, SizeUnder, Vision, VisionSizeLock,
         },
     },
-    vision::{
-        buoy_model::{BuoyModel, Target},
-        nn_cv2::OnnxModel,
-        Offset2D,
-    },
+    vision::bins::Target,
     POOL_YAW_SIGN,
 };
 
-use super::{action::ActionExec, action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard}};
+#[derive(Debug)]
+pub struct DropObject<'a, T> {
+    meb: &'a T,
+}
+
+impl<'a, T> DropObject<'a, T> {
+    pub fn new(meb: &'a T) -> Self {
+        Self { meb }
+    }
+}
+
+impl<T> Action for DropObject<'_, T> {}
+
+impl<T: GetMainElectronicsBoard> ActionExec<()> for DropObject<'_, T> {
+    async fn execute<'a>(&'a mut self) {
+        let send_cmd = |meb: &'a MainElectronicsBoard<WriteHalf<SerialStream>>, cmd| async move {
+            if let Err(e) = meb.send_msg(cmd).await {
+            logln!("{:#?} failure: {:#?}", cmd, e);
+            } else {
+            logln!("{:#?} success", cmd);
+            }
+        };
+
+        let meb = self.meb.get_main_electronics_board();
+        for _ in 0..3 {
+            send_cmd(meb, MebCmd::D1Trig).await;
+        }
+    }
+}
 
 // Constants for alignment and movement
 const ALIGN_X_SPEED: f32 = 0.5; // Speed for lateral adjustment
@@ -55,7 +86,7 @@ pub fn dropper<
         + std::cmp::PartialEq,
 >(
     context: &'static Con,
-) -> impl ActionExec<()> + '_ {
+) -> impl ActionExec<anyhow::Result<()>> + '_ {
     // Part 1: Move to the location to drop
     ActionSequence::new(
         ActionConcurrent::new(
@@ -77,12 +108,12 @@ pub fn dropper<
             ),
             // Step 4: Vision part to detect the target and drop the item
             ActionSequence::new(
-                Vision::new(context, BuoyModel::new("model_name.onnx", 224, 0.5).unwrap()), // Detect objects using the front camera
+                Vision::new(context, Bin::new("bins_640.onnx", 224, 0.5).unwrap()), // Detect objects using the bottom camera
                 ActionSequence::new(
-                    DetectTarget::<BuoyModel>::new(Target::RedBuoy), // Use an existing variant for the specific target
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::SawFish), // Provide the additional generic arguments
                     ActionSequence::new(
-                        SizeUnder::new(0.5), // Ensure the target is within the size threshold
-                        FireLeftTorpedo::new(context), // Drop the item
+                        SizeUnder::<Target, DrawRect2d>::new(0.5), // Ensure the target is within the size threshold
+                        DropObject::new(context), // Drop the item
                     ),
                 ),
             ),
