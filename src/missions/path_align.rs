@@ -9,10 +9,10 @@ use crate::{
             TupleSecond,
         },
         basic::DelayAction,
-        extra::{CountTrue, OutputType, Terminal, ToVec},
+        extra::{CountFalse, CountTrue, OutputType, Terminal, ToVec},
         movement::{
-            LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement, Stability2Pos,
-            ZeroMovement,
+            AdjustType, ClampX, FlipX, LinearYawFromX, OffsetToPose, SetY, Stability2Adjust,
+            Stability2Movement, Stability2Pos, ZeroMovement,
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, VisionNormBottom},
     },
@@ -34,7 +34,7 @@ pub fn path_align<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    const DEPTH: f32 = -1.25;
+    const DEPTH: f32 = -1.5;
     const PATH_ALIGN_SPEED: f32 = 0.3;
 
     act_nest!(
@@ -53,10 +53,13 @@ pub fn path_align<
                             ExtractPosition::new(),
                             MidPoint::new(),
                             OffsetToPose::default(),
-                            LinearYawFromX::<Stability2Adjust>::default(),
+                            // LinearYawFromX::<Stability2Adjust>::new(0.0),
+                            ClampX::new(1.0),
+                            // SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.02)),
+                            // FlipX::default(),
                             Stability2Movement::new(
                                 context,
-                                Stability2Pos::new(0.0, PATH_ALIGN_SPEED, 30.0, 0.0, None, DEPTH),
+                                Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, DEPTH),
                             ),
                         ),
                         act_nest!(
@@ -64,13 +67,102 @@ pub fn path_align<
                             Terminal::new(),
                             Stability2Movement::new(
                                 context,
-                                Stability2Pos::new(0.0, PATH_ALIGN_SPEED, 30.0, 0.0, None, DEPTH),
+                                Stability2Pos::new(0.0, PATH_ALIGN_SPEED, 0.0, 0.0, None, DEPTH),
                             ),
                         ),
                     ),
                     OutputType::<()>::new(),
                 ),
-                ActionChain::new(DetectTarget::new(true), CountTrue::new(5)),
+                ActionChain::new(DetectTarget::new(true), CountTrue::new(10)),
+            )),
+        )),
+        ActionWhile::new(ActionChain::new(
+            VisionNormBottom::<Con, PathCV, f64>::new(context, PathCV::default()),
+            TupleSecond::new(ActionConcurrent::new(
+                act_nest!(
+                    ActionChain::new,
+                    ActionDataConditional::new(
+                        DetectTarget::new(true),
+                        act_nest!(
+                            ActionChain::new,
+                            ExtractPosition::new(),
+                            MidPoint::new(),
+                            OffsetToPose::default(),
+                            LinearYawFromX::<Stability2Adjust>::default(),
+                            Stability2Movement::new(
+                                context,
+                                Stability2Pos::new(0.0, PATH_ALIGN_SPEED, 0.0, 0.0, None, DEPTH),
+                            ),
+                        ),
+                        act_nest!(
+                            ActionSequence::new,
+                            Terminal::new(),
+                            Stability2Movement::new(
+                                context,
+                                Stability2Pos::new(0.0, PATH_ALIGN_SPEED, 0.0, 0.0, None, DEPTH),
+                            ),
+                        ),
+                    ),
+                    OutputType::<()>::new(),
+                ),
+                ActionChain::new(DetectTarget::new(true), CountTrue::new(10)),
+            )),
+        )),
+        ActionWhile::new(ActionChain::new(
+            VisionNormBottom::<Con, PathCV, f64>::new(context, PathCV::default()),
+            TupleSecond::new(ActionConcurrent::new(
+                act_nest!(
+                    ActionChain::new,
+                    // act_nest!(
+                    //     ActionChain::new,
+                    //     ActionDataConditional::new(
+                    //         DetectTarget::new(true),
+                    //         act_nest!(
+                    //             ActionChain::new,
+                    //             ExtractPosition::new(),
+                    //             MidPoint::new(),
+                    //             OffsetToPose::default(),
+                    //             LinearYawFromX::<Stability2Adjust>::default(),
+                    //             Stability2Movement::new(
+                    //                 context,
+                    //                 Stability2Pos::new(
+                    //                     0.0,
+                    //                     PATH_ALIGN_SPEED,
+                    //                     0.0,
+                    //                     0.0,
+                    //                     None,
+                    //                     DEPTH
+                    //                 ),
+                    //             ),
+                    //         ),
+                    //         act_nest!(
+                    //             ActionSequence::new,
+                    //             Terminal::new(),
+                    //             Stability2Movement::new(
+                    //                 context,
+                    //                 Stability2Pos::new(
+                    //                     0.0,
+                    //                     PATH_ALIGN_SPEED,
+                    //                     0.0,
+                    //                     0.0,
+                    //                     None,
+                    //                     DEPTH
+                    //                 ),
+                    //             ),
+                    //         ),
+                    //     OutputType::<()>::new(),
+                    // ),
+                    act_nest!(
+                        ActionSequence::new,
+                        Terminal::new(),
+                        Stability2Movement::new(
+                            context,
+                            Stability2Pos::new(0.0, PATH_ALIGN_SPEED / 1.5, 0.0, 0.0, None, DEPTH),
+                        ),
+                    ),
+                    OutputType::<()>::new(),
+                ),
+                ActionChain::new(DetectTarget::new(true), CountFalse::new(5)),
             )),
         )),
         Terminal::new(),

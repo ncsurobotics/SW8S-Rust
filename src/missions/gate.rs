@@ -121,7 +121,7 @@ pub fn gate_run_coinflip<
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
     const TIMEOUT: f32 = 30.0;
 
-    let depth: f32 = -1.0;
+    let depth: f32 = -1.6;
 
     act_nest!(
         ActionSequence::new,

@@ -235,7 +235,7 @@ impl VisualDetector<i32> for PathCV {
 
         if let Some(contour) = max_contour {
             let area = contour_area_def(&contour)?;
-            if area > 1000.0 {
+            if area > 5000.0 {
                 let rect = min_area_rect(&contour)?;
                 let mut angle = rect.angle as f64;
                 let width = rect.size.width;
@@ -253,10 +253,12 @@ impl VisualDetector<i32> for PathCV {
                 // DRAW STUFF
                 // SEND TO RTSP SERVER
 
-                let center_adjusted_x =
-                    (rect.center.x as f64) - ((self.image.size()?.width as f64) / 2.0);
-                let center_adjusted_y =
-                    ((self.image.size()?.height as f64) / 2.0) - (rect.center.y as f64);
+                // let center_adjusted_x =
+                //     (rect.center.x as f64) - ((self.image.size()?.width as f64) / 2.0);
+                // let center_adjusted_y =
+                //     ((self.image.size()?.height as f64) / 2.0) - (rect.center.y as f64);
+                let center_adjusted_x = rect.center.x as f64;
+                let center_adjusted_y = rect.center.y as f64;
 
                 Ok(vec![VisualDetection {
                     class: true,
@@ -330,7 +332,7 @@ impl VisualDetector<f64> for PathCV {
 
         if let Some(contour) = max_contour {
             let area = contour_area_def(&contour)?;
-            if area > 1000.0 {
+            if area > 500.0 {
                 let rect = min_area_rect(&contour)?;
                 let mut angle = rect.angle as f64;
                 let width = rect.size.width;
@@ -348,10 +350,12 @@ impl VisualDetector<f64> for PathCV {
                 // DRAW STUFF
                 // SEND TO RTSP SERVER
 
-                let center_adjusted_x =
-                    (rect.center.x as f64) - ((self.image.size()?.width as f64) / 2.0);
-                let center_adjusted_y =
-                    ((self.image.size()?.height as f64) / 2.0) - (rect.center.y as f64);
+                // let center_adjusted_x =
+                //     (rect.center.x as f64) - ((self.image.size()?.width as f64) / 2.0);
+                // let center_adjusted_y =
+                //     ((self.image.size()?.height as f64) / 2.0) - (rect.center.y as f64);
+                let center_adjusted_x = rect.center.x as f64;
+                let center_adjusted_y = rect.center.y as f64;
 
                 Ok(vec![VisualDetection {
                     class: true,
