@@ -1077,6 +1077,73 @@ impl ActionExec<Stability1Adjust> for FlipX<Stability1Adjust> {
 }
 
 #[derive(Debug)]
+pub struct FlipY<T> {
+    pose: T,
+}
+
+impl<T> Action for FlipY<T> {}
+
+impl FlipY<&Stability2Adjust> {
+    const DEFAULT_POSE: Stability2Adjust = Stability2Adjust::const_default();
+    pub const fn new() -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+impl FlipY<&Stability1Adjust> {
+    const DEFAULT_POSE: Stability1Adjust = Stability1Adjust::const_default();
+    pub const fn new() -> Self {
+        Self {
+            pose: &Self::DEFAULT_POSE,
+        }
+    }
+}
+
+impl<T: Default> FlipY<T> {
+    pub fn new() -> Self {
+        Self { pose: T::default() }
+    }
+}
+
+impl<T: Default> Default for FlipY<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: Sync + Send + Clone> ActionMod<T> for FlipY<T> {
+    fn modify(&mut self, input: &T) {
+        self.pose = input.clone();
+    }
+}
+
+impl ActionExec<Stability2Adjust> for FlipY<Stability2Adjust> {
+    async fn execute(&mut self) -> Stability2Adjust {
+        if let Some(ref mut y) = self.pose.y {
+            *y = match *y {
+                AdjustType::Adjust(y) => AdjustType::Adjust(-y),
+                AdjustType::Replace(y) => AdjustType::Replace(-y),
+            };
+        }
+        self.pose.clone()
+    }
+}
+
+impl ActionExec<Stability1Adjust> for FlipY<Stability1Adjust> {
+    async fn execute(&mut self) -> Stability1Adjust {
+        if let Some(ref mut y) = self.pose.y {
+            *y = match *y {
+                AdjustType::Adjust(y) => AdjustType::Adjust(-y),
+                AdjustType::Replace(y) => AdjustType::Replace(-y),
+            };
+        }
+        self.pose.clone()
+    }
+}
+
+#[derive(Debug)]
 pub struct StripX<T> {
     pose: T,
 }
