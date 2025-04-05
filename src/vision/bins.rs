@@ -14,9 +14,9 @@ use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
-    WholeBin,
-    Shark,
-    SawFish,
+    cover,
+    bin1,
+    bin2,
 }
 
 impl From<YoloClass<Target>> for Target {
@@ -42,9 +42,9 @@ impl TryFrom<i32> for Target {
     type Error = TargetError;
     fn try_from(value: i32) -> std::result::Result<Self, Self::Error> {
         match value {
-            0 => Ok(Self::WholeBin),
-            1 => Ok(Self::Shark),
-            2 => Ok(Self::SawFish),
+            0 => Ok(Self::cover),
+            1 => Ok(Self::bin1),
+            2 => Ok(Self::bin2),
             x => Err(TargetError { x }),
         }
     }

@@ -111,7 +111,7 @@ pub fn dropper<
             ActionSequence::new(
                 Vision::new(context, Bin::new("bins_640.onnx", 224, 0.5).unwrap()), // Detect objects using the bottom camera
                 ActionSequence::new(
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::SawFish), // Provide the additional generic arguments
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::bin1), // Provide the additional generic arguments
                     ActionSequence::new(
                         SizeUnder::<Target, DrawRect2d>::new(0.5), // Ensure the target is within the size threshold
                         DropObject::new(context), // Drop the item
