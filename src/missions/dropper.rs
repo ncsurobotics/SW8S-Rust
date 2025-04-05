@@ -7,9 +7,9 @@ use std::default::Default;
 use crate::missions::gate::adjust_logic;
 use crate::missions::action::Action;
 use crate::comms::meb::MainElectronicsBoard; // Import MainElectronicsBoard
-use crate::comms::meb::MebCmd; // Import MebCmd
 use super::{action::ActionExec, action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard}};
 use crate::vision::bins::Bin;
+use crate::comms::meb::MebCmd;
 use crate::vision::nn_cv2::YoloClass;
 use crate::vision::Offset2D;
 use crate::vision::DrawRect2d;
@@ -24,7 +24,6 @@ use crate::{
         basic::DelayAction,
         comms::StartBno055,
         extra::{AlwaysTrue, CountFalse, CountTrue, IsSome, OutputType, Terminal},
-        fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
         movement::{
             AdjustType, ClampX, ConstYaw, LinearYawFromX, MultiplyX, OffsetToPose, ReplaceX, SetX,
             SetY, Stability2Adjust, Stability2Movement, Stability2Pos, ZeroMovement,
@@ -53,16 +52,18 @@ impl<T> Action for DropObject<'_, T> {}
 impl<T: GetMainElectronicsBoard> ActionExec<()> for DropObject<'_, T> {
     async fn execute<'a>(&'a mut self) {
         let send_cmd = |meb: &'a MainElectronicsBoard<WriteHalf<SerialStream>>, cmd| async move {
-            if let Err(e) = meb.send_msg(cmd).await {
-            logln!("{:#?} failure: {:#?}", cmd, e);
+            if let Err(e) = meb.send_dropper_msg(cmd).await {
+                logln!("{:#?} failure: {:#?}", cmd, e);
             } else {
-            logln!("{:#?} success", cmd);
+                logln!("{:#?} success", cmd);
             }
         };
 
         let meb = self.meb.get_main_electronics_board();
         for _ in 0..3 {
             send_cmd(meb, MebCmd::D1Trig).await;
+            send_cmd(meb, MebCmd::D2Trig).await;
+            send_cmd(meb, MebCmd::Reset).await;
         }
     }
 }
@@ -70,9 +71,9 @@ impl<T: GetMainElectronicsBoard> ActionExec<()> for DropObject<'_, T> {
 // Constants for alignment and movement
 const ALIGN_X_SPEED: f32 = 0.5; // Speed for lateral adjustment
 const ALIGN_Y_SPEED: f32 = 0.5; // Speed for forward movement
-const ALIGN_YAW_SPEED: f32 = 7.0; // Yaw adjustment speed
+//const ALIGN_YAW_SPEED: f32 = 7.0; // Yaw adjustment speed
 const DEPTH: f32 = 1.5; // Target depth for the robot
-const PATH_DETECTION_THRESHOLD: f32 = 0.1; // Threshold for path detection
+//const PATH_DETECTION_THRESHOLD: f32 = 0.1; // Threshold for path detection
 
 pub fn dropper<
     Con: Send
@@ -85,7 +86,7 @@ pub fn dropper<
         + std::fmt::Display
         + std::cmp::PartialEq,
 >(
-    context: &'static Con,
+    context: &Con,
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
     // Part 1: Move to the location to drop
     ActionSequence::new(

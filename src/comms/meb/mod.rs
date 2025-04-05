@@ -88,3 +88,10 @@ impl<C: AsyncWriteExt + Unpin> MainElectronicsBoard<C> {
         self.board.write_out_basic(formatted_cmd.to_vec()).await
     }
 }
+
+impl<C: AsyncWriteExt + Unpin> MainElectronicsBoard<C> {
+    pub async fn send_dropper_msg(&self, cmd: MebCmd) -> anyhow::Result<()> {
+        let formatted_cmd: [u8; 4] = [b'M', b'S', b'D', cmd as u8]; // Use 'MSD' for dropper commands
+        self.board.write_out_basic(formatted_cmd.to_vec()).await
+    }
+}
