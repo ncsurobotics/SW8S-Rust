@@ -30,7 +30,8 @@ graphing = ["dep:graphviz-rust", "dep:quote", "dep:syn", "dep:proc-macro2", "dep
 networked_testing = []
 
 [dependencies]
-opencv = { version = "0.92.0", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio"] } # Vision processing
+opencv = { version = "0.94.2", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio", "cudaimgproc", "cudafilters"] } # Vision processing
+# opencv = "0.94.2"
 tokio-serial = "5.4.1" # Async serial comms
 tokio = { version = "1.38.0", features = ["full"] } # Async runtime
 anyhow = "1.0.86" # Error handling

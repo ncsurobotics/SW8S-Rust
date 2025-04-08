@@ -1,17 +1,13 @@
 {
     "name": "SW8 Rust Development",
-    "image": "ghcr.io/sarangar/sw8s-rust:main",
-    "workspaceFolder": "/SW8S-Rust",  // Set your project folder name inside the container
-    "mounts": [
-    "source=${localWorkspaceFolder},target=/SW8S-Rust,type=bind"  // Mount your local project folder to /SW8S-Rust inside the container
-    ],
+    "image": "ghcr.io/ncsurobotics/sw8s-rust:main",
     "initializeCommand": "bash .devcontainer/init.sh",
     "postStartCommand": "bash .devcontainer/postStart.sh",
     "postCreateCommand": "bash .devcontainer/postCreate.sh",
     "runArgs": [
-    "--network=host",
-    "--name=sw8-rust",
-    "--init"
+        "--network=host",
+        "--name=sw8-rust",
+        "--init"
     ],
     "privileged": true,
     "customizations": {
@@ -21,11 +17,9 @@
                 "Github.copilot",
                 "eamodio.gitlens",
                 "appulate.filewatcher",
-                "formulahendry.code-runner",
-                "ms-vscode.cpptools",
-                "rust-lang.rust-analyzer",
-                "rust-lang.rustfmt"  // Optionally add more extensions
+                "formulahendry.code-runner"
             ]
         }
     }
+
 }

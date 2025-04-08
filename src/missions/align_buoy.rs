@@ -45,7 +45,7 @@ pub fn buoy_align<
 ) -> impl ActionExec<()> + '_ {
     const Y_SPEED: f32 = 0.2;
     const Y_SPEED_FAST: f32 = 0.5;
-    const DEPTH: f32 = -1.0;
+    const DEPTH: f32 = -1.5;
     const FALSE_COUNT: u32 = 5;
 
     const ALIGN_X_SPEED: f32 = 0.0;

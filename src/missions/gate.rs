@@ -84,9 +84,11 @@ pub fn gate_run_complex<
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
     const TIMEOUT: f32 = 30.0;
 
-    let depth: f32 = -1.25;
+    let depth: f32 = -1.40;
 
-    ActionSequence::new(
+    act_nest!(
+        ActionSequence::new,
+        DelayAction::new(3.0),
         ActionConcurrent::new(
             descend_depth_and_go_forward(context, depth),
             StartBno055::new(context),
@@ -94,6 +96,68 @@ pub fn gate_run_complex<
         act_nest!(
             ActionSequence::new,
             adjust_logic(context, depth, CountTrue::new(4)),
+            adjust_logic(context, depth, CountFalse::new(4)),
+            ActionChain::new(
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
+                ),
+                OutputType::<()>::default()
+            ),
+            DelayAction::new(3.0),
+            ZeroMovement::new(context, depth),
+        ),
+    )
+}
+
+pub fn gate_run_coinflip<
+    Con: Send
+        + Sync
+        + GetControlBoard<WriteHalf<SerialStream>>
+        + GetMainElectronicsBoard
+        + GetFrontCamMat,
+>(
+    context: &Con,
+) -> impl ActionExec<anyhow::Result<()>> + '_ {
+    const TIMEOUT: f32 = 30.0;
+
+    let depth: f32 = -1.0;
+
+    act_nest!(
+        ActionSequence::new,
+        ActionConcurrent::new(
+            ActionChain::new(
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
+                ),
+                OutputType::<()>::default()
+            ),
+            StartBno055::new(context),
+        ),
+        act_nest!(
+            ActionSequence::new,
+            adjust_logic(context, depth, CountTrue::new(4)),
+            // adjust_logic(context, depth, CountFalse::new(10)),
+            ActionChain::new(
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
+                ),
+                OutputType::<()>::default()
+            ),
+            ActionWhile::new(act_nest!(
+                ActionChain::new,
+                VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
+                act_nest!(
+                    wrap_action(ActionConcurrent::new, FirstValid::new),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                ),
+                CountFalse::new(5),
+            )),
             ActionChain::new(
                 Stability2Movement::new(
                     context,
