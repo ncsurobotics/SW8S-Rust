@@ -31,6 +31,8 @@ pub trait GetMainElectronicsBoard: Send + Sync {
 #[allow(async_fn_in_trait)]
 pub trait GetFrontCamMat {
     fn get_front_camera_mat(&self) -> impl std::future::Future<Output = Mat> + Send;
+    #[cfg(feature = "annotated_streams")]
+    async fn annotate_front_camera(&self, image: &impl ToInputArray);
     async fn get_desired_buoy_gate(&self) -> Target;
     async fn set_desired_buoy_gate(&mut self, value: Target) -> &Self;
 }
@@ -41,6 +43,7 @@ pub trait GetFrontCamMat {
 #[allow(async_fn_in_trait)]
 pub trait GetBottomCamMat {
     async fn get_bottom_camera_mat(&self) -> Mat;
+    #[cfg(feature = "annotated_streams")]
     async fn annotate_bottom_camera(&self, image: &impl ToInputArray);
 }
 
@@ -99,6 +102,10 @@ impl<T: AsyncWriteExt + Unpin + Send> GetFrontCamMat for FullActionContext<'_, T
     async fn get_front_camera_mat(&self) -> Mat {
         self.front_cam.get_mat().await
     }
+    #[cfg(feature = "annotated_streams")]
+    async fn annotate_front_camera(&self, image: &impl ToInputArray) {
+        self.front_cam.push_annotated_frame(image);
+    }
     async fn get_desired_buoy_gate(&self) -> Target {
         let res = self.desired_buoy_target.read().await;
         (*res).clone()
@@ -113,6 +120,7 @@ impl<T: AsyncWriteExt + Unpin + Send> GetBottomCamMat for FullActionContext<'_, 
     async fn get_bottom_camera_mat(&self) -> Mat {
         self.bottom_cam.get_mat().await
     }
+    #[cfg(feature = "annotated_streams")]
     async fn annotate_bottom_camera(&self, image: &impl ToInputArray) {
         self.bottom_cam.push_annotated_frame(image);
     }
@@ -134,6 +142,10 @@ impl GetFrontCamMat for EmptyActionContext {
     async fn get_front_camera_mat(&self) -> Mat {
         todo!()
     }
+    #[cfg(feature = "annotated_streams")]
+    async fn annotate_front_camera(&self, image: &impl ToInputArray) {
+        todo!();
+    }
     async fn get_desired_buoy_gate(&self) -> Target {
         todo!()
     }
@@ -146,6 +158,7 @@ impl GetBottomCamMat for EmptyActionContext {
     async fn get_bottom_camera_mat(&self) -> Mat {
         todo!()
     }
+    #[cfg(feature = "annotated_streams")]
     async fn annotate_bottom_camera(&self, image: &impl ToInputArray) {
         todo!();
     }

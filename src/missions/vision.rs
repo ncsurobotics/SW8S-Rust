@@ -86,6 +86,8 @@ where
                 &Vector::default(),
             )
             .unwrap();
+            #[cfg(feature = "annotated_streams")]
+            self.context.annotate_front_camera(&mat).await;
         }
 
         let positions: Vec<_> = detections
@@ -165,6 +167,8 @@ where
                 &Vector::default(),
             )
             .unwrap();
+            #[cfg(feature = "annotated_streams")]
+            self.context.annotate_bottom_camera(&mat).await;
         }
 
         let positions: Vec<_> = detections
@@ -246,6 +250,8 @@ where
                 &Vector::default(),
             )
             .unwrap();
+            #[cfg(feature = "annotated_streams")]
+            self.context.annotate_front_camera(&mat).await;
         }
 
         Ok(detections
@@ -322,6 +328,7 @@ where
                 &Vector::default(),
             )
             .unwrap();
+            #[cfg(feature = "annotated_streams")]
             self.context.annotate_bottom_camera(&mat).await;
         }
 
