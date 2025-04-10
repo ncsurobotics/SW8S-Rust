@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
             "build".to_string(),
             "--release".to_string(),
             "--features".to_string(),
-            "logging".to_string(),
+            "logging,annotated_streams".to_string(),
         ];
     }
 

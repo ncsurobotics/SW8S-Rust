@@ -1,10 +1,16 @@
 use anyhow::{anyhow, Result};
+use opencv::core::Size;
+use opencv::mod_prelude::ToInputArray;
 use opencv::prelude::Mat;
-use opencv::videoio::VideoCapture;
 use opencv::videoio::VideoCaptureAPIs;
-use opencv::videoio::VideoCaptureTrait;
+use opencv::videoio::{
+    VideoCapture, VideoWriter, CAP_GSTREAMER, CAP_PROP_FPS, CAP_PROP_FRAME_HEIGHT,
+    CAP_PROP_FRAME_WIDTH,
+};
+use opencv::videoio::{VideoCaptureTrait, VideoCaptureTraitConst, VideoWriterTrait};
 use std::fs::create_dir_all;
 use std::path::Path;
+use std::sync;
 use std::sync::Arc;
 use std::thread::spawn;
 use tokio::sync::Mutex;
@@ -16,6 +22,8 @@ use super::MatSource;
 #[derive(Debug)]
 pub struct Camera {
     frame: Arc<Mutex<Option<Mat>>>,
+    #[cfg(feature = "annotated_streams")]
+    output: Arc<sync::Mutex<VideoWriter>>,
 }
 
 impl Camera {
@@ -49,8 +57,18 @@ impl Camera {
                 + camera_name
                 + ".mp4\" ";
 
+        #[cfg(feature = "annotated_streams")]
+        let output_string = "appsrc ! videoconvert ! x264enc key-int-max=30 insert-vui=1 tune=zerolatency ! mpegtsmux ! rtspclientsink location=rtspt://127.0.0.1:8554/".to_string()
+            + camera_name + "_annotated.mp4 ";
+
         let frame: Arc<Mutex<Option<Mat>>> = Arc::default();
         let frame_copy = frame.clone();
+
+        #[cfg(feature = "annotated_streams")]
+        let output: Arc<sync::Mutex<VideoWriter>> =
+            Arc::new(sync::Mutex::new(VideoWriter::default().unwrap()));
+        #[cfg(feature = "annotated_streams")]
+        let output_copy = output.clone();
 
         #[cfg(feature = "logging")]
         logln!("Capture string: {capture_string}");
@@ -58,6 +76,29 @@ impl Camera {
             let mut capture =
                 VideoCapture::from_file(&capture_string, VideoCaptureAPIs::CAP_GSTREAMER as i32)
                     .unwrap();
+
+            #[cfg(feature = "annotated_streams")]
+            {
+                let width = capture
+                    .get(CAP_PROP_FRAME_WIDTH)
+                    .expect("Failed to get capture frame width") as i32;
+                let height = capture
+                    .get(CAP_PROP_FRAME_HEIGHT)
+                    .expect("Failed to get capture frame height")
+                    as i32;
+                let fps = capture
+                    .get(CAP_PROP_FPS)
+                    .expect("Failed to get capture FPS");
+
+                *output_copy.lock().unwrap() = VideoWriter::new_with_backend_def(
+                    &output_string,
+                    CAP_GSTREAMER,
+                    VideoWriter::fourcc('X', '2', '6', '4').unwrap(),
+                    fps,
+                    Size::new(width, height),
+                )
+                .unwrap();
+            }
             loop {
                 let mut mat = Mat::default();
                 if capture.read(&mut mat).unwrap() {
@@ -66,11 +107,21 @@ impl Camera {
             }
         });
 
-        Ok(Self { frame })
+        Ok(Self {
+            frame,
+            #[cfg(feature = "annotated_streams")]
+            output,
+        })
     }
 
     pub fn jetson_new(camera_path: &str, camera_name: &str, filesink_dir: &Path) -> Result<Self> {
         Camera::new(camera_path, camera_name, filesink_dir, (640, 480), true)
+    }
+
+    pub fn push_annotated_frame(&self, image: &impl ToInputArray) {
+        let writer = self.output.clone();
+        let mut writer = writer.lock().unwrap();
+        writer.write(image);
     }
 }
 

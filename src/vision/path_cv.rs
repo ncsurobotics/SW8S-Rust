@@ -250,13 +250,7 @@ impl VisualDetector<i32> for PathCV {
                 box_points(rect, &mut box_rect)?;
 
                 println!("{:?}", angle);
-                // DRAW STUFF
-                // SEND TO RTSP SERVER
 
-                // let center_adjusted_x =
-                //     (rect.center.x as f64) - ((self.image.size()?.width as f64) / 2.0);
-                // let center_adjusted_y =
-                //     ((self.image.size()?.height as f64) / 2.0) - (rect.center.y as f64);
                 let center_adjusted_x = rect.center.x as f64;
                 let center_adjusted_y = rect.center.y as f64;
 
@@ -347,13 +341,7 @@ impl VisualDetector<f64> for PathCV {
                 box_points(rect, &mut box_rect)?;
 
                 println!("{:?}", angle);
-                // DRAW STUFF
-                // SEND TO RTSP SERVER
 
-                // let center_adjusted_x =
-                //     (rect.center.x as f64) - ((self.image.size()?.width as f64) / 2.0);
-                // let center_adjusted_y =
-                //     ((self.image.size()?.height as f64) / 2.0) - (rect.center.y as f64);
                 let center_adjusted_x = rect.center.x as f64;
                 let center_adjusted_y = rect.center.y as f64;
 

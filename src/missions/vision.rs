@@ -322,6 +322,7 @@ where
                 &Vector::default(),
             )
             .unwrap();
+            self.context.annotate_bottom_camera(&mat);
         }
 
         Ok(detections

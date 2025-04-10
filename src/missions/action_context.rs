@@ -1,5 +1,6 @@
 use core::fmt::Debug;
 use opencv::core::Mat;
+use opencv::mod_prelude::ToInputArray;
 use tokio::io::{AsyncWriteExt, WriteHalf};
 use tokio::sync::RwLock;
 use tokio_serial::SerialStream;
@@ -40,6 +41,7 @@ pub trait GetFrontCamMat {
 #[allow(async_fn_in_trait)]
 pub trait GetBottomCamMat {
     async fn get_bottom_camera_mat(&self) -> Mat;
+    async fn annotate_bottom_camera(&self, image: &impl ToInputArray);
 }
 
 /*
@@ -111,6 +113,9 @@ impl<T: AsyncWriteExt + Unpin + Send> GetBottomCamMat for FullActionContext<'_, 
     async fn get_bottom_camera_mat(&self) -> Mat {
         self.bottom_cam.get_mat().await
     }
+    async fn annotate_bottom_camera(&self, image: &impl ToInputArray) {
+        self.bottom_cam.push_annotated_frame(image);
+    }
 }
 
 impl GetControlBoard<WriteHalf<SerialStream>> for EmptyActionContext {
@@ -140,5 +145,8 @@ impl GetFrontCamMat for EmptyActionContext {
 impl GetBottomCamMat for EmptyActionContext {
     async fn get_bottom_camera_mat(&self) -> Mat {
         todo!()
+    }
+    async fn annotate_bottom_camera(&self, image: &impl ToInputArray) {
+        todo!();
     }
 }
