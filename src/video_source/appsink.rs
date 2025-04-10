@@ -58,8 +58,11 @@ impl Camera {
                 + ".mp4\" ";
 
         #[cfg(feature = "annotated_streams")]
-        let output_string = "appsrc ! videoconvert ! x264enc key-int-max=30 insert-vui=1 tune=zerolatency ! mpegtsmux ! rtspclientsink location=rtspt://127.0.0.1:8554/".to_string()
-            + camera_name + "_annotated.mp4 ";
+        let output_string = "appsrc ! videoconvert ! ".to_string()
+            + &h264_enc_pipeline(2048000)
+            + " ! mpegtsmux ! rtspclientsink location=rtspt://127.0.0.1:8554/"
+            + camera_name
+            + "_annotated.mp4 ";
 
         let frame: Arc<Mutex<Option<Mat>>> = Arc::default();
         let frame_copy = frame.clone();
