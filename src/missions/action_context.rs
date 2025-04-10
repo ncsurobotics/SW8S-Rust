@@ -29,7 +29,7 @@ pub trait GetMainElectronicsBoard: Send + Sync {
  * Inherit this trait if you have a front camera
  */
 #[allow(async_fn_in_trait)]
-pub trait GetFrontCamMat {
+pub trait FrontCamIO {
     fn get_front_camera_mat(&self) -> impl std::future::Future<Output = Mat> + Send;
     #[cfg(feature = "annotated_streams")]
     async fn annotate_front_camera(&self, image: &impl ToInputArray);
@@ -41,7 +41,7 @@ pub trait GetFrontCamMat {
  * Inherit this trait if you have a bottom camera
  */
 #[allow(async_fn_in_trait)]
-pub trait GetBottomCamMat {
+pub trait BottomCamIO {
     async fn get_bottom_camera_mat(&self) -> Mat;
     #[cfg(feature = "annotated_streams")]
     async fn annotate_bottom_camera(&self, image: &impl ToInputArray);
@@ -98,7 +98,7 @@ impl GetMainElectronicsBoard for FullActionContext<'_, WriteHalf<SerialStream>> 
     }
 }
 
-impl<T: AsyncWriteExt + Unpin + Send> GetFrontCamMat for FullActionContext<'_, T> {
+impl<T: AsyncWriteExt + Unpin + Send> FrontCamIO for FullActionContext<'_, T> {
     async fn get_front_camera_mat(&self) -> Mat {
         self.front_cam.get_mat().await
     }
@@ -116,7 +116,7 @@ impl<T: AsyncWriteExt + Unpin + Send> GetFrontCamMat for FullActionContext<'_, T
     }
 }
 
-impl<T: AsyncWriteExt + Unpin + Send> GetBottomCamMat for FullActionContext<'_, T> {
+impl<T: AsyncWriteExt + Unpin + Send> BottomCamIO for FullActionContext<'_, T> {
     async fn get_bottom_camera_mat(&self) -> Mat {
         self.bottom_cam.get_mat().await
     }
@@ -138,7 +138,7 @@ impl GetMainElectronicsBoard for EmptyActionContext {
     }
 }
 
-impl GetFrontCamMat for EmptyActionContext {
+impl FrontCamIO for EmptyActionContext {
     async fn get_front_camera_mat(&self) -> Mat {
         todo!()
     }
@@ -154,7 +154,7 @@ impl GetFrontCamMat for EmptyActionContext {
     }
 }
 
-impl GetBottomCamMat for EmptyActionContext {
+impl BottomCamIO for EmptyActionContext {
     async fn get_bottom_camera_mat(&self) -> Mat {
         todo!()
     }

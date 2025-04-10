@@ -1,6 +1,6 @@
 use super::{
     action::{Action, ActionExec, ActionSequence, ActionWhile},
-    action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
+    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::{StraightMovement, ZeroMovement},
 };
@@ -54,7 +54,7 @@ impl<T> Action for FindBuoy<'_, T> {}
 
 impl<T> ActionExec<Result<()>> for FindBuoy<'_, T>
 where
-    T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
+    T: GetControlBoard<WriteHalf<SerialStream>> + FrontCamIO + Sync + Unpin,
 {
     async fn execute(&mut self) -> Result<()> {
         let camera_aquisition = self.context.get_front_camera_mat();
@@ -75,7 +75,7 @@ where
 }
 impl<T> ActionExec<Result<()>> for DriveToBuoyVision<'_, T>
 where
-    T: GetControlBoard<WriteHalf<SerialStream>> + GetFrontCamMat + Sync + Unpin,
+    T: GetControlBoard<WriteHalf<SerialStream>> + FrontCamIO + Sync + Unpin,
 {
     async fn execute(&mut self) -> Result<()> {
         let camera_aquisition = self.context.get_front_camera_mat();
@@ -121,7 +121,7 @@ pub fn buoy_collision_sequence<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat
+        + FrontCamIO
         + Unpin,
     T: Send + Sync,
 >(

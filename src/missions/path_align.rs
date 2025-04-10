@@ -22,15 +22,11 @@ use crate::{
 
 use super::{
     action::ActionExec,
-    action_context::{GetBottomCamMat, GetControlBoard, GetMainElectronicsBoard},
+    action_context::{BottomCamIO, GetControlBoard, GetMainElectronicsBoard},
 };
 
 pub fn path_align<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetBottomCamMat,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + BottomCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {

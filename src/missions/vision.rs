@@ -5,7 +5,7 @@ use std::sync::RwLock;
 use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};
-use super::action_context::GetBottomCamMat;
+use super::action_context::BottomCamIO;
 use super::graph::DotString;
 use crate::logln;
 use crate::vision::nn_cv2::VisionModel;
@@ -16,7 +16,7 @@ use num_traits::{Float, FromPrimitive, Num};
 use opencv::core::{Mat, Rect2d};
 use uuid::Uuid;
 
-use crate::missions::action_context::GetFrontCamMat;
+use crate::missions::action_context::FrontCamIO;
 #[cfg(feature = "logging")]
 use opencv::{core::Vector, imgcodecs::imwrite};
 #[cfg(feature = "logging")]
@@ -49,7 +49,7 @@ impl<'a, T, U, V> VisionNormOffset<'a, T, U, V> {
 impl<T, U, V> Action for VisionNormOffset<'_, T, U, V> {}
 
 impl<
-        T: GetFrontCamMat + Send + Sync,
+        T: FrontCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Offset2D<V>>> for VisionNormOffset<'_, T, U, V>
@@ -130,7 +130,7 @@ impl<'a, T, U, V> VisionNormOffsetBottom<'a, T, U, V> {
 impl<T, U, V> Action for VisionNormOffsetBottom<'_, T, U, V> {}
 
 impl<
-        T: GetBottomCamMat + Send + Sync,
+        T: BottomCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Offset2D<V>>> for VisionNormOffsetBottom<'_, T, U, V>
@@ -212,7 +212,7 @@ impl<'a, T, U, V> VisionNorm<'a, T, U, V> {
 impl<T, U, V> Action for VisionNorm<'_, T, U, V> {}
 
 impl<
-        T: GetFrontCamMat + Send + Sync,
+        T: FrontCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>>>
@@ -290,7 +290,7 @@ impl<'a, T, U, V> VisionNormBottom<'a, T, U, V> {
 impl<T, U, V> Action for VisionNormBottom<'_, T, U, V> {}
 
 impl<
-        T: GetBottomCamMat + Send + Sync,
+        T: BottomCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>>>
@@ -414,7 +414,7 @@ impl<'a, T, U, V> Vision<'a, T, U, V> {
 impl<T, U, V> Action for Vision<'_, T, U, V> {}
 
 impl<
-        T: GetFrontCamMat + Send + Sync,
+        T: FrontCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, U::Position>>>> for Vision<'_, T, U, V>
@@ -457,7 +457,7 @@ impl<'a, T, U, V> VisionSizeLock<'a, T, U, V> {
 impl<T, U, V> Action for VisionSizeLock<'_, T, U, V> {}
 
 impl<
-        T: GetFrontCamMat + Send + Sync,
+        T: FrontCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, U::Position>>>>

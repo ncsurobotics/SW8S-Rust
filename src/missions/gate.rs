@@ -24,7 +24,7 @@ use super::{
         wrap_action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence,
         ActionWhile, FirstValid, TupleSecond,
     },
-    action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
+    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
     basic::{descend_and_go_forward, DelayAction},
     comms::StartBno055,
     extra::{CountFalse, CountTrue, OutputType},
@@ -40,7 +40,7 @@ pub fn gate_run_naive<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat,
+        + FrontCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
@@ -78,7 +78,7 @@ pub fn gate_run_complex<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat,
+        + FrontCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
@@ -115,7 +115,7 @@ pub fn gate_run_coinflip<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat,
+        + FrontCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
@@ -177,7 +177,7 @@ pub fn adjust_logic<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat,
+        + FrontCamIO,
     X: 'a + ActionMod<bool> + ActionExec<anyhow::Result<()>>,
 >(
     context: &'a Con,
@@ -279,7 +279,7 @@ pub fn gate_run_testing<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat,
+        + FrontCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {

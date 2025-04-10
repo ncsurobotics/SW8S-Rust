@@ -26,7 +26,7 @@ use crate::{
 
 use super::{
     action::ActionExec,
-    action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
+    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
 };
 
 pub fn octagon_path_model() -> Octagon {
@@ -38,7 +38,7 @@ pub fn octagon<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat
+        + FrontCamIO
         + Unpin,
 >(
     context: &'static Con,

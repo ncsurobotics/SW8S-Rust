@@ -30,7 +30,7 @@ use crate::{
 
 use super::{
     action::ActionExec,
-    action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
+    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
 };
 
 pub fn buoy_align<
@@ -38,7 +38,7 @@ pub fn buoy_align<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat
+        + FrontCamIO
         + Unpin,
 >(
     context: &'static Con,
@@ -149,7 +149,7 @@ pub fn buoy_align_shot<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat
+        + FrontCamIO
         + Unpin,
 >(
     context: &'static Con,
