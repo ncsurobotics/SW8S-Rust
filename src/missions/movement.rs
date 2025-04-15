@@ -1,6 +1,7 @@
 use crate::comms::control_board::ControlBoard;
 use crate::comms::control_board::LAST_YAW;
 use crate::logln;
+use crate::vision::Angle2D;
 use crate::vision::DrawRect2d;
 use crate::vision::Offset2D;
 use crate::vision::RelPos;
@@ -1368,6 +1369,17 @@ impl ActionExec<Stability2Adjust> for OffsetToPose<Offset2D<f64>> {
         adjust
     }
 }
+
+// Messes up type inference for all missions using offset2d
+// impl ActionExec<Stability2Adjust> for OffsetToPose<Angle2D<f64>> {
+//     async fn execute(&mut self) -> Stability2Adjust {
+//         let mut adjust = Stability2Adjust::default();
+//         adjust.set_x(AdjustType::Replace(*self.offset.x() as f32));
+//         adjust.set_y(AdjustType::Replace(*self.offset.y() as f32));
+//         adjust.set_target_yaw(AdjustType::Adjust(*self.offset.angle() as f32));
+//         adjust
+//     }
+// }
 
 #[derive(Debug)]
 pub struct BoxToPose<T> {

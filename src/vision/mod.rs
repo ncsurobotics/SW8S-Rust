@@ -110,11 +110,17 @@ impl<T: Num + Clone + TryInto<i32, Error: Debug>> Draw for Offset2D<T> {
 }
 
 /// Holds x, y, and angle offset of object in frame
-#[derive(Debug, Getters)]
+#[derive(Debug, Getters, Clone)]
 pub struct Angle2D<T: Num> {
     x: T,
     y: T,
     angle: T,
+}
+
+impl<T: Num> Angle2D<T> {
+    pub fn new(x: T, y: T, angle: T) -> Self {
+        Self { x, y, angle }
+    }
 }
 
 impl<T: Num> Add for Angle2D<T> {

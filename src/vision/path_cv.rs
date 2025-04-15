@@ -1,4 +1,7 @@
-use std::{fs::create_dir_all, ops::Mul, ops::RangeInclusive};
+use std::{
+    fs::create_dir_all,
+    ops::{Mul, RangeInclusive},
+};
 
 use derive_getters::Getters;
 use itertools::Itertools;
@@ -72,6 +75,16 @@ impl Draw for VisualDetection<bool, PosVector> {
             Scalar::from((0.0, 0.0, 255.0))
         };
 
+        let angle_rad = (*self.position.angle() as f32) * (3.14152965 / 180.0);
+        let b = (angle_rad.cos() * 640.0) / 2.0;
+        let a = (angle_rad.sin() * 480.0) / 2.0;
+
+        let start = Point::new(*self.position.x() as i32, *self.position.y() as i32);
+        let end = Point::new(
+            *self.position.x() as i32 + a as i32,
+            *self.position.y() as i32 + b as i32,
+        );
+
         imgproc::circle(
             canvas,
             Point::new(*self.position.x() as i32, *self.position.y() as i32),
@@ -81,6 +94,8 @@ impl Draw for VisualDetection<bool, PosVector> {
             LINE_8,
             0,
         )?;
+
+        imgproc::line(canvas, start, end, color, 2, LINE_8, 0)?;
 
         // imgproc::arrowed_line(
         //     canvas,
@@ -331,12 +346,12 @@ impl VisualDetector<f64> for PathCV {
                 let mut angle = rect.angle as f64;
                 let width = rect.size.width;
                 let height = rect.size.height;
-                if width > height {
-                    angle = rect.angle as f64;
-                } else {
-                    angle = (rect.angle as f64) + 90.0;
-                }
-                angle -= 90.0;
+                // if width > height {
+                // angle = rect.angle as f64;
+                // } else {
+                // angle = (rect.angle as f64) + 90.0;
+                // }
+                // angle -= 90.0;
                 let mut box_rect = Mat::default();
                 box_points(rect, &mut box_rect)?;
 
