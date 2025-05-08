@@ -33,7 +33,8 @@ pub async fn path_align_procedural<
         }
     };
 
-    cb.stability_2_speed_set(0.0, PATH_ALIGN_SPEED, 0.0, 0.0, initial_yaw, DEPTH)
+    let _ = cb
+        .stability_2_speed_set(0.0, PATH_ALIGN_SPEED, 0.0, 0.0, initial_yaw, DEPTH)
         .await;
 
     let mut last_set_yaw = initial_yaw;
@@ -66,18 +67,31 @@ pub async fn path_align_procedural<
                 .into_iter()
                 .filter_map(|d| d.class().then_some(d.position().clone()));
 
+            let x;
+            let y;
+            let yaw;
+
             if let Some(position) = positions.next() {
-                let x = *position.x() as f32;
-                let y = (*position.y() as f32) * -1.0;
-                let angle = position.angle();
-                last_set_yaw = current_yaw + *angle as f32;
-                cb.stability_2_speed_set(x, y, 0.0, 0.0, last_set_yaw, DEPTH)
-                    .await;
+                x = *position.x() as f32;
+                y = (*position.y() as f32) * -1.0;
+                yaw = current_yaw + *position.angle() as f32;
+
+                last_set_yaw = yaw;
                 consec_detections += 1;
             } else {
-                cb.stability_2_speed_set(0.0, PATH_ALIGN_SPEED, 0.0, 0.0, last_set_yaw, DEPTH)
-                    .await;
+                x = 0.0;
+                y = PATH_ALIGN_SPEED;
+                yaw = last_set_yaw;
+
                 consec_detections = 0;
+            }
+
+            if let Err(e) = cb
+                .stability_2_speed_set(x, y, 0.0, 0.0, last_set_yaw, DEPTH)
+                .await
+            {
+                #[cfg(feature = "logging")]
+                logln!("SASSIST2 command to cb resulted in error: `{e}`");
             }
         } else {
             #[cfg(feature = "logging")]
