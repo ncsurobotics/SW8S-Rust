@@ -24,7 +24,7 @@ use super::{
         wrap_action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence,
         ActionWhile, FirstValid, TupleSecond,
     },
-    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
+    action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard},
     basic::{descend_and_go_forward, DelayAction},
     comms::StartBno055,
     extra::{CountFalse, CountTrue, OutputType},
@@ -36,11 +36,7 @@ use super::{
 };
 
 pub fn gate_run_naive<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + FrontCamIO,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
@@ -74,11 +70,7 @@ pub fn gate_run_naive<
 }
 
 pub fn gate_run_complex<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + FrontCamIO,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
@@ -111,17 +103,13 @@ pub fn gate_run_complex<
 }
 
 pub fn gate_run_coinflip<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + FrontCamIO,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
     const TIMEOUT: f32 = 30.0;
 
-    let depth: f32 = -1.6;
+    let depth: f32 = -1.25;
 
     act_nest!(
         ActionSequence::new,
@@ -156,16 +144,16 @@ pub fn gate_run_coinflip<
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
                 ),
-                CountFalse::new(5),
+                CountFalse::new(1),
             )),
             ActionChain::new(
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
+                    Stability2Pos::new(0.0, 0.5, 0.0, 0.0, None, depth),
                 ),
                 OutputType::<()>::default()
             ),
-            DelayAction::new(3.0),
+            DelayAction::new(0.0),
             ZeroMovement::new(context, depth),
         ),
     )
@@ -173,11 +161,7 @@ pub fn gate_run_coinflip<
 
 pub fn adjust_logic<
     'a,
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + FrontCamIO,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
     X: 'a + ActionMod<bool> + ActionExec<anyhow::Result<()>>,
 >(
     context: &'a Con,
@@ -275,11 +259,7 @@ pub fn adjust_logic<
 }
 
 pub fn gate_run_testing<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + FrontCamIO,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {

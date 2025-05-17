@@ -20,7 +20,7 @@ use super::{
         wrap_action, ActionChain, ActionConcurrent, ActionExec, ActionSequence, ActionWhile,
         FirstValid,
     },
-    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
+    action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard},
     basic::DelayAction,
     comms::StartBno055,
     extra::{CountTrue, OutputType},
@@ -29,18 +29,14 @@ use super::{
 };
 
 pub fn coinflip<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + FrontCamIO,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
     const TRUE_COUNT: u32 = 4;
     const DELAY_TIME: f32 = 3.0;
 
-    const DEPTH: f32 = -1.75;
+    const DEPTH: f32 = -1.25;
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
     const ALIGN_YAW_SPEED: f32 = -3.0;
