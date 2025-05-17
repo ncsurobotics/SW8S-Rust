@@ -39,6 +39,8 @@ pub async fn path_align_procedural<
         .stability_2_speed_set(0.0, PATH_ALIGN_SPEED, 0.0, 0.0, initial_yaw, DEPTH)
         .await;
 
+    // sleep(Duration::from_secs(10)).await;
+
     let mut last_set_yaw = initial_yaw;
     let mut consec_detections = 0;
 
@@ -81,11 +83,8 @@ pub async fn path_align_procedural<
                 last_set_yaw = yaw;
                 consec_detections += 1;
             } else {
-                x = 0.0;
-                y = PATH_ALIGN_SPEED;
-                yaw = last_set_yaw;
-
                 consec_detections = 0;
+                continue;
             }
 
             if let Err(e) = cb
