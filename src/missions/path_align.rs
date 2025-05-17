@@ -1,4 +1,5 @@
 use tokio::io::WriteHalf;
+use tokio::time::{sleep, Duration};
 use tokio_serial::SerialStream;
 
 use crate::{act_nest, missions::vision::VisionNormBottomAngle, vision::path_cv::PathCV};
@@ -21,6 +22,7 @@ pub async fn path_align_procedural<
     logln!("Starting path align");
 
     let cb = context.get_control_board();
+    cb.bno055_periodic_read(true).await;
     let mut vision_norm_bottom =
         VisionNormBottomAngle::<Con, PathCV, f64>::new(context, PathCV::default());
 
@@ -74,7 +76,7 @@ pub async fn path_align_procedural<
             if let Some(position) = positions.next() {
                 x = *position.x() as f32;
                 y = (*position.y() as f32) * -1.0;
-                yaw = current_yaw + *position.angle() as f32;
+                yaw = current_yaw + (*position.angle() * -1.0) as f32;
 
                 last_set_yaw = yaw;
                 consec_detections += 1;
@@ -101,4 +103,7 @@ pub async fn path_align_procedural<
         #[cfg(feature = "logging")]
         logln!("Positive detection count: {consec_detections}");
     }
+    cb.stability_2_speed_set(0.0, 1.0, 0.0, 0.0, last_set_yaw, DEPTH)
+        .await;
+    sleep(Duration::from_secs(1)).await;
 }
