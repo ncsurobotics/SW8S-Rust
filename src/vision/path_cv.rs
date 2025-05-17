@@ -255,14 +255,30 @@ impl VisualDetector<i32> for PathCV {
                 let mut angle = rect.angle as f64;
                 let width = rect.size.width;
                 let height = rect.size.height;
-                if width > height {
-                    angle = rect.angle as f64;
-                } else {
-                    angle = (rect.angle as f64) + 90.0;
+
+                let mut boxRect = Mat::default();
+                imgproc::box_points(rect, &mut boxRect)?;
+
+                let boxVec: Vec<Vec<f32>> = boxRect.to_vec_2d()?;
+
+                let zero = boxVec[0].clone();
+                let one = boxVec[1].clone();
+                let two = boxVec[2].clone();
+
+                let edge1 = (one[0] - zero[0], one[1] - zero[1]);
+                let edge2 = (two[0] - one[0], two[1] - one[1]);
+
+                // let longest_edge = max_by_key(edge1, edge2, |e| (e.0.powf(2.0) + e.1.powf(2.0)).sqrt());
+                let edge1mag = (edge1.0.powf(2.0) + edge1.1.powf(2.0)).sqrt();
+                let edge2mag = (edge2.0.powf(2.0) + edge2.1.powf(2.0)).sqrt();
+                let longest_edge = if edge2mag > edge1mag { edge2 } else { edge1 };
+
+                let mut angle = (longest_edge.0 / longest_edge.1).atan().to_degrees() * -1.0;
+
+                angle = ((angle + 180.0) % 360.0) - 180.0;
+                if angle < -90.0 {
+                    angle += 180.0;
                 }
-                angle -= 90.0;
-                let mut box_rect = Mat::default();
-                box_points(rect, &mut box_rect)?;
 
                 println!("{:?}", angle);
 
@@ -271,7 +287,12 @@ impl VisualDetector<i32> for PathCV {
 
                 Ok(vec![VisualDetection {
                     class: true,
-                    position: PosVector::new(center_adjusted_x, center_adjusted_y, 0., angle),
+                    position: PosVector::new(
+                        center_adjusted_x,
+                        center_adjusted_y,
+                        0.,
+                        angle as f64,
+                    ),
                 }])
             } else {
                 Ok(vec![VisualDetection {
@@ -341,19 +362,35 @@ impl VisualDetector<f64> for PathCV {
 
         if let Some(contour) = max_contour {
             let area = contour_area_def(&contour)?;
-            if area > 500.0 {
+            if area > 5000.0 {
                 let rect = min_area_rect(&contour)?;
                 let mut angle = rect.angle as f64;
                 let width = rect.size.width;
                 let height = rect.size.height;
-                // if width > height {
-                // angle = rect.angle as f64;
-                // } else {
-                // angle = (rect.angle as f64) + 90.0;
-                // }
-                // angle -= 90.0;
-                let mut box_rect = Mat::default();
-                box_points(rect, &mut box_rect)?;
+
+                let mut boxRect = Mat::default();
+                imgproc::box_points(rect, &mut boxRect)?;
+
+                let boxVec: Vec<Vec<f32>> = boxRect.to_vec_2d()?;
+
+                let zero = boxVec[0].clone();
+                let one = boxVec[1].clone();
+                let two = boxVec[2].clone();
+
+                let edge1 = (one[0] - zero[0], one[1] - zero[1]);
+                let edge2 = (two[0] - one[0], two[1] - one[1]);
+
+                // let longest_edge = max_by_key(edge1, edge2, |e| (e.0.powf(2.0) + e.1.powf(2.0)).sqrt());
+                let edge1mag = (edge1.0.powf(2.0) + edge1.1.powf(2.0)).sqrt();
+                let edge2mag = (edge2.0.powf(2.0) + edge2.1.powf(2.0)).sqrt();
+                let longest_edge = if edge2mag > edge1mag { edge2 } else { edge1 };
+
+                let mut angle = (longest_edge.0 / longest_edge.1).atan().to_degrees() * -1.0;
+
+                angle = ((angle + 180.0) % 360.0) - 180.0;
+                if angle < -90.0 {
+                    angle += 180.0;
+                }
 
                 println!("{:?}", angle);
 
@@ -362,7 +399,12 @@ impl VisualDetector<f64> for PathCV {
 
                 Ok(vec![VisualDetection {
                     class: true,
-                    position: PosVector::new(center_adjusted_x, center_adjusted_y, 0., angle),
+                    position: PosVector::new(
+                        center_adjusted_x,
+                        center_adjusted_y,
+                        0.,
+                        angle as f64,
+                    ),
                 }])
             } else {
                 Ok(vec![VisualDetection {
