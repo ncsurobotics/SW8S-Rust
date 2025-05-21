@@ -2,6 +2,7 @@ use tokio::io::WriteHalf;
 use tokio::time::{sleep, Duration};
 use tokio_serial::SerialStream;
 
+use crate::config::path_align::Config;
 use crate::{act_nest, missions::vision::VisionNormBottomAngle, vision::path_cv::PathCV};
 
 use super::{
@@ -13,11 +14,8 @@ pub async fn path_align_procedural<
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + BottomCamIO,
 >(
     context: &Con,
+    config: &Config,
 ) {
-    const DEPTH: f32 = -1.25;
-    const PATH_ALIGN_SPEED: f32 = 0.3;
-    const DETECTIONS: u8 = 10;
-
     #[cfg(feature = "logging")]
     logln!("Starting path align");
 
@@ -36,10 +34,8 @@ pub async fn path_align_procedural<
     };
 
     let _ = cb
-        .stability_2_speed_set(0.0, PATH_ALIGN_SPEED, 0.0, 0.0, initial_yaw, DEPTH)
+        .stability_2_speed_set(0.0, config.speed, 0.0, 0.0, initial_yaw, config.depth)
         .await;
-
-    // sleep(Duration::from_secs(10)).await;
 
     let mut last_set_yaw = initial_yaw;
     let mut consec_detections = 0;
@@ -48,7 +44,7 @@ pub async fn path_align_procedural<
     logln!("Starting path detection");
 
     loop {
-        if consec_detections >= DETECTIONS {
+        if consec_detections >= config.detections {
             #[cfg(feature = "logging")]
             logln!("Finished path align");
 
@@ -88,7 +84,7 @@ pub async fn path_align_procedural<
             }
 
             if let Err(e) = cb
-                .stability_2_speed_set(x, y, 0.0, 0.0, last_set_yaw, DEPTH)
+                .stability_2_speed_set(x, y, 0.0, 0.0, last_set_yaw, config.depth)
                 .await
             {
                 #[cfg(feature = "logging")]
@@ -102,7 +98,7 @@ pub async fn path_align_procedural<
         #[cfg(feature = "logging")]
         logln!("Positive detection count: {consec_detections}");
     }
-    cb.stability_2_speed_set(0.0, 1.0, 0.0, 0.0, last_set_yaw, DEPTH)
+    cb.stability_2_speed_set(0.0, 1.0, 0.0, 0.0, last_set_yaw, config.depth)
         .await;
     sleep(Duration::from_secs(1)).await;
 }

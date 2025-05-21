@@ -1,5 +1,5 @@
 use anyhow::{bail, Result};
-use config::Configuration;
+use crossbeam::epoch::Pointable;
 use std::env::temp_dir;
 
 use std::env;
@@ -9,6 +9,7 @@ use sw8s_rust_lib::{
         control_board::{ControlBoard, SensorStatuses},
         meb::MainElectronicsBoard,
     },
+    config::Config,
     logln,
     missions::{
         action::ActionExec,
@@ -47,21 +48,34 @@ use tokio_serial::SerialStream;
 pub mod config;
 use std::time::Duration;
 
+static CONFIG_CELL: OnceCell<Config> = OnceCell::const_new();
+async fn config() -> &'static Config {
+    CONFIG_CELL
+        .get_or_init(|| async {
+            Config::new().unwrap_or_else(|e| {
+                logln!("Error getting config file: {:#?}\nUsing default config", e);
+                Config::default()
+            })
+        })
+        .await
+}
+
 static CONTROL_BOARD_CELL: OnceCell<ControlBoard<WriteHalf<SerialStream>>> = OnceCell::const_new();
 async fn control_board() -> &'static ControlBoard<WriteHalf<SerialStream>> {
+    let config = config().await;
     CONTROL_BOARD_CELL
         .get_or_init(|| async {
-            let board = ControlBoard::serial(&Configuration::default().control_board_path).await;
+            let board = ControlBoard::serial(config.control_board_path.as_str()).await;
             match board {
                 Ok(x) => x,
                 Err(e) => {
                     logln!("Error initializing control board: {:#?}", e);
                     let backup_board =
-                        ControlBoard::serial(&Configuration::default().control_board_backup_path)
+                        ControlBoard::serial(config.control_board_backup_path.as_str())
                             .await
                             .unwrap();
                     backup_board.reset().await.unwrap();
-                    ControlBoard::serial(&Configuration::default().control_board_path)
+                    ControlBoard::serial(config.control_board_path.as_str())
                         .await
                         .unwrap()
                 }
@@ -75,7 +89,7 @@ async fn meb() -> &'static MainElectronicsBoard<WriteHalf<SerialStream>> {
     MEB_CELL
         .get_or_init(|| async {
             MainElectronicsBoard::<WriteHalf<SerialStream>>::serial(
-                &Configuration::default().meb_path,
+                config().await.meb_path.as_str(),
             )
             .await
             .unwrap()
@@ -88,7 +102,7 @@ async fn front_cam() -> &'static Camera {
     FRONT_CAM_CELL
         .get_or_init(|| async {
             Camera::jetson_new(
-                &Configuration::default().front_cam,
+                config().await.front_cam_path.as_str(),
                 "front",
                 &temp_dir().join("cams_".to_string() + &TIMESTAMP),
             )
@@ -102,7 +116,7 @@ async fn bottom_cam() -> &'static Camera {
     BOTTOM_CAM_CELL
         .get_or_init(|| async {
             Camera::jetson_new(
-                &Configuration::default().bottom_cam,
+                config().await.bottom_cam_path.as_str(),
                 "bottom",
                 &temp_dir().join("cams_".to_string() + &TIMESTAMP),
             )
@@ -136,7 +150,6 @@ async fn static_context() -> &'static FullActionContext<'static, WriteHalf<Seria
 #[tokio::main]
 async fn main() {
     let shutdown_tx = shutdown_handler().await;
-    let _config = Configuration::default();
 
     let orig_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic_info| {
@@ -212,6 +225,7 @@ async fn shutdown_handler() -> UnboundedSender<i32> {
 }
 
 async fn run_mission(mission: &str) -> Result<()> {
+    let config = config().await;
     let res = match mission.to_lowercase().as_str() {
         "arm" => {
             WaitArm::new(static_context().await).execute().await;
@@ -342,13 +356,16 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "gate_run_coinflip" => {
-            let _ = gate_run_coinflip(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
+            let _ = gate_run_coinflip(
+                &FullActionContext::new(
+                    control_board().await,
+                    meb().await,
+                    front_cam().await,
+                    bottom_cam().await,
+                    gate_target().await,
+                ),
+                &config.missions.gate,
+            )
             .execute()
             .await;
             Ok(())
@@ -374,13 +391,16 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "path_align" => {
-            let _ = path_align_procedural(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
+            let _ = path_align_procedural(
+                &FullActionContext::new(
+                    control_board().await,
+                    meb().await,
+                    front_cam().await,
+                    bottom_cam().await,
+                    gate_target().await,
+                ),
+                &config.missions.path_align,
+            )
             .await;
             Ok(())
         }
@@ -484,7 +504,7 @@ async fn run_mission(mission: &str) -> Result<()> {
         },
         "open_cam_test" => {
             Camera::jetson_new(
-                &Configuration::default().bottom_cam,
+                config.bottom_cam_path.as_str(),
                 "front",
                 &temp_dir().join("cams_".to_string() + &TIMESTAMP),
             )

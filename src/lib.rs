@@ -35,6 +35,7 @@ macro_rules! logln {
 pub const POOL_YAW_SIGN: f32 = -1.0;
 
 pub mod comms;
+pub mod config;
 pub mod missions;
 pub mod video_source;
 pub mod vision;
