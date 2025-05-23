@@ -28,6 +28,7 @@ use sw8s_rust_lib::{
         octagon::octagon,
         path_align::path_align_procedural,
         reset_torpedo::ResetTorpedo,
+        slalom::slalom,
         spin::spin,
         vision::PIPELINE_KILL,
     },
@@ -509,6 +510,20 @@ async fn run_mission(mission: &str) -> Result<()> {
                 &temp_dir().join("cams_".to_string() + &TIMESTAMP),
             )
             .unwrap();
+            Ok(())
+        }
+        "slalom" => {
+            let _ = slalom(
+                &FullActionContext::new(
+                    control_board().await,
+                    meb().await,
+                    front_cam().await,
+                    bottom_cam().await,
+                    gate_target().await,
+                ),
+                &config.missions.slalom,
+            )
+            .await;
             Ok(())
         }
         x => bail!("Invalid argument: [{x}]"),

@@ -1,5 +1,6 @@
 pub mod gate;
 pub mod path_align;
+pub mod slalom;
 
 use std::{
     fs::{read_to_string, write},
@@ -53,4 +54,5 @@ impl Default for Config {
 pub struct Missions {
     pub gate: gate::Config,
     pub path_align: path_align::Config,
+    pub slalom: slalom::Config,
 }
