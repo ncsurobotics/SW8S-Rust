@@ -104,9 +104,13 @@ impl<T: AsyncWriteExt + Unpin, U: GetAck> AUVControlBoard<T, U> {
     /// Only for communications that return no data with acknowledge
     pub async fn write_out_basic(&self, message_body: Vec<u8>) -> Result<()> {
         let (id, message) = self.add_metadata(&message_body).await;
+        println!("Writing");
         self.comm_out.lock().await.write_all(&message).await?;
+        println!("Wrote");
         // Spec guarantees empty response
+        println!("Getting ack");
         self.responses.get_ack(id).await?;
+        println!("Got ack");
         Ok(())
     }
 

@@ -103,23 +103,30 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         this.startup().await?;
         Ok(this)
     }
-    pub async fn unity_new_data_collection<U>(comm_out: T, comm_in: U, msg_id: Option<MessageId>) -> Result<Self>
+    pub async fn unity_new_data_collection<U>(
+        comm_out: T,
+        comm_in: U,
+        msg_id: Option<MessageId>,
+    ) -> Result<Self>
     where
         U: 'static + AsyncRead + Unpin + Send,
     {
         let msg_id = msg_id.unwrap_or_default();
         let responses = ResponseMap::new(comm_in).await;
+        println!("Making AUVCB");
         let this = Self {
             inner: AUVControlBoard::new(Mutex::from(comm_out).into(), responses, msg_id).into(),
             initial_angles: Arc::default(),
         };
+        println!("Made AUVCB");
 
         this.unity_startup(2).await?;
+        println!("Did unity startup");
 
         const CAMCFGU: [u8; 7] = *b"CAMCFGU";
         let mut message = Vec::from(CAMCFGU);
-        let height : i32 = 480;
-        let width : i32 = 640;
+        let height: i32 = 480;
+        let width: i32 = 640;
         [height, width]
             .iter()
             .for_each(|val| message.extend(val.to_le_bytes()));
@@ -127,11 +134,13 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         message.push(0b1100_0010);
         this.write_out_basic(message).await?;
         sleep(Duration::from_secs(1)).await;
+        println!("Sent cam config msg");
 
         const ROBRINU: [u8; 7] = *b"ROBRINU";
         const SCECFGU: [u8; 7] = *b"SCECFGU";
-        let inital_pose_bounds : [f32; 6] = [10.5, 2.0, 5.0, 30.0, 30.0, 30.0];
-        for i in (0..=500).step_by(5){
+        let inital_pose_bounds: [f32; 6] = [10.5, 2.0, 5.0, 30.0, 30.0, 30.0];
+        for i in (0..=500).step_by(5) {
+            println!("Doing thing");
             let mut message = Vec::from(SCECFGU);
             message.push(0b0000_1101);
             let i_16bit: u16 = i as u16;
@@ -145,7 +154,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
                 .for_each(|val| message.extend(val.to_le_bytes()));
             this.write_out(message).await?;
             sleep(Duration::from_micros(100)).await;
-            
+
             const CAPTUREU: [u8; 8] = *b"CAPTUREU";
             let mut message = Vec::from(CAPTUREU);
             message.push(4);
@@ -157,6 +166,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         Ok(this)
     }
     pub async fn unity_startup(&self, unity_scene: u8) -> Result<()> {
+        println!("Starting unity startup");
         // see https://github.com/XingjianL/RoboSubSim/blob/master/UnityCommands.md for reference
         // swap scene
         const SETENVU: [u8; 7] = *b"SETENVU";
@@ -164,6 +174,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         message.push(unity_scene);
         self.write_out_basic(message).await?;
         sleep(Duration::from_secs(5)).await;
+        println!("Did scene swap");
 
         // enable SimCB
         const SIMCBTOGU: [u8; 9] = *b"SIMCBTOGU";
@@ -174,34 +185,39 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         // configure robot
         const ROBCFGU: [u8; 7] = *b"ROBCFGU";
         let mut message = Vec::from(ROBCFGU);
-        const MASS : f32 = 32.0;
-        const VOLUME : f32 = 36.0;
-        const LDRAG : f32 = 3.0;
-        const ADRAG : f32 = 10.0;
-        const F_KGF : f32 = 2.36;
-        const R_KGF : f32 = 1.85;
+        const MASS: f32 = 32.0;
+        const VOLUME: f32 = 36.0;
+        const LDRAG: f32 = 3.0;
+        const ADRAG: f32 = 10.0;
+        const F_KGF: f32 = 2.36;
+        const R_KGF: f32 = 1.85;
         [MASS, VOLUME, LDRAG, ADRAG, F_KGF, R_KGF]
             .iter()
             .for_each(|val| message.extend(val.to_le_bytes()));
         self.write_out_basic(message).await?;
         sleep(Duration::from_secs(1)).await;
+        println!("Enabled simcb");
         // configure camera
         const CAMCFGU: [u8; 7] = *b"CAMCFGU";
         let mut message = Vec::from(CAMCFGU);
-        let height : i32 = 480;
-        let width : i32 = 640;
+        let height: i32 = 480;
+        let width: i32 = 640;
         [height, width]
             .iter()
             .for_each(|val| message.extend(val.to_le_bytes()));
         message.push(4);
         message.push(0b0100_1110);
+        println!("Writing cam conf msg");
         self.write_out_basic(message).await?;
+        println!("Wrote cam conf msg");
         sleep(Duration::from_secs(1)).await;
-        
+        println!("Configured camera");
+
         // configure unity scene
         const SCECFGU: [u8; 7] = *b"SCECFGU";
         let mut message = Vec::from(SCECFGU);
         message.push(0b0001_0010);
+        println!("Configuring scene");
         self.write_out_basic(message).await
     }
 
@@ -329,7 +345,10 @@ impl ControlBoard<WriteHalf<TcpStream>> {
 
         match test_type {
             0 => Self::unity_new(comm_out, comm_in, None).await,
-            1 => Self::unity_new_data_collection(comm_out, comm_in, None).await,
+            1 => {
+                println!("Making data coll cb");
+                Self::unity_new_data_collection(comm_out, comm_in, None).await
+            }
             _ => Self::unity_new(comm_out, comm_in, None).await,
         }
     }
