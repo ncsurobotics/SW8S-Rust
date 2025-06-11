@@ -43,7 +43,7 @@ fn stab_2_drift() -> f32 {
             loop {
                 {
                     let mut drift_val_inner = drift_val_clone.lock().unwrap();
-                    *drift_val_inner += 0.015;
+                    // *drift_val_inner += 0.015;
                 }
                 sleep(Duration::from_secs(1)).await
             }
@@ -155,9 +155,9 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
     async fn stab_tune(&self) -> Result<()> {
         self.stability_assist_pid_tune('X', 0.8, 0.0, 0.0, 0.6, false)
             .await?;
-        self.stability_assist_pid_tune('Y', 0.15, 0.0, 0.0, 0.1, false)
+        self.stability_assist_pid_tune('Y', 2.0, 0.0, 0.0, 0.1, false)
             .await?;
-        self.stability_assist_pid_tune('Z', 1.6, 1e-6, 0.0, 0.8, false)
+        self.stability_assist_pid_tune('Z', 10.0, 0.0, 0.0, 1.0, false)
             .await?;
         self.stability_assist_pid_tune('D', 1.5, 0.0, 0.0, 1.0, false)
             .await
@@ -341,7 +341,10 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
             y,
             target_pitch,
             target_roll,
-            (target_yaw + stab_2_drift()),
+            (
+                target_yaw
+                // + stab_2_drift()
+            ),
             target_depth,
         ]
         .iter()

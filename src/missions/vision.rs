@@ -5,18 +5,20 @@ use std::sync::RwLock;
 use std::{iter::Sum, marker::PhantomData};
 
 use super::action::{Action, ActionExec, ActionMod};
-use super::action_context::GetBottomCamMat;
+use super::action_context::BottomCamIO;
 use super::graph::DotString;
 use crate::logln;
 use crate::vision::nn_cv2::VisionModel;
-use crate::vision::{Draw, DrawRect2d, Offset2D, RelPos, VisualDetection, VisualDetector};
+use crate::vision::{
+    Angle2D, Draw, DrawRect2d, Offset2D, RelPos, RelPosAngle, VisualDetection, VisualDetector,
+};
 
 use anyhow::{anyhow, Result};
 use num_traits::{Float, FromPrimitive, Num};
 use opencv::core::{Mat, Rect2d};
 use uuid::Uuid;
 
-use crate::missions::action_context::GetFrontCamMat;
+use crate::missions::action_context::FrontCamIO;
 #[cfg(feature = "logging")]
 use opencv::{core::Vector, imgcodecs::imwrite};
 #[cfg(feature = "logging")]
@@ -49,7 +51,7 @@ impl<'a, T, U, V> VisionNormOffset<'a, T, U, V> {
 impl<T, U, V> Action for VisionNormOffset<'_, T, U, V> {}
 
 impl<
-        T: GetFrontCamMat + Send + Sync,
+        T: FrontCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Offset2D<V>>> for VisionNormOffset<'_, T, U, V>
@@ -86,6 +88,8 @@ where
                 &Vector::default(),
             )
             .unwrap();
+            #[cfg(feature = "annotated_streams")]
+            self.context.annotate_front_camera(&mat).await;
         }
 
         let positions: Vec<_> = detections
@@ -128,7 +132,7 @@ impl<'a, T, U, V> VisionNormOffsetBottom<'a, T, U, V> {
 impl<T, U, V> Action for VisionNormOffsetBottom<'_, T, U, V> {}
 
 impl<
-        T: GetBottomCamMat + Send + Sync,
+        T: BottomCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Offset2D<V>>> for VisionNormOffsetBottom<'_, T, U, V>
@@ -165,6 +169,8 @@ where
                 &Vector::default(),
             )
             .unwrap();
+            #[cfg(feature = "annotated_streams")]
+            self.context.annotate_bottom_camera(&mat).await;
         }
 
         let positions: Vec<_> = detections
@@ -208,7 +214,7 @@ impl<'a, T, U, V> VisionNorm<'a, T, U, V> {
 impl<T, U, V> Action for VisionNorm<'_, T, U, V> {}
 
 impl<
-        T: GetFrontCamMat + Send + Sync,
+        T: FrontCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>>>
@@ -246,6 +252,8 @@ where
                 &Vector::default(),
             )
             .unwrap();
+            #[cfg(feature = "annotated_streams")]
+            self.context.annotate_front_camera(&mat).await;
         }
 
         Ok(detections
@@ -284,7 +292,7 @@ impl<'a, T, U, V> VisionNormBottom<'a, T, U, V> {
 impl<T, U, V> Action for VisionNormBottom<'_, T, U, V> {}
 
 impl<
-        T: GetBottomCamMat + Send + Sync,
+        T: BottomCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, Offset2D<V>>>>>
@@ -322,6 +330,8 @@ where
                 &Vector::default(),
             )
             .unwrap();
+            #[cfg(feature = "annotated_streams")]
+            self.context.annotate_bottom_camera(&mat).await;
         }
 
         Ok(detections
@@ -330,6 +340,84 @@ where
                 VisualDetection::new(
                     detect.class().clone(),
                     self.model.normalize(detect.position()).offset(),
+                )
+            })
+            .collect())
+    }
+}
+
+/// Runs a vision routine to obtain object positions
+///
+/// The relative positions are normalized to [-1, 1] on both axes.
+/// The values are returned with an angle.
+#[derive(Debug)]
+pub struct VisionNormBottomAngle<'a, T, U, V> {
+    context: &'a T,
+    model: U,
+    _num: PhantomData<V>,
+}
+
+impl<'a, T, U, V> VisionNormBottomAngle<'a, T, U, V> {
+    pub const fn new(context: &'a T, model: U) -> Self {
+        Self {
+            context,
+            model,
+            _num: PhantomData,
+        }
+    }
+}
+
+impl<T, U, V> Action for VisionNormBottomAngle<'_, T, U, V> {}
+
+impl<
+        T: BottomCamIO + Send + Sync,
+        V: Num + Float + FromPrimitive + Send + Sync,
+        U: VisualDetector<V> + Send + Sync,
+    > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, Angle2D<V>>>>>
+    for VisionNormBottomAngle<'_, T, U, V>
+where
+    U::Position: RelPosAngle<Number = V> + Debug + for<'a> Mul<&'a Mat, Output = U::Position>,
+    VisualDetection<U::ClassEnum, U::Position>: Draw,
+    U::ClassEnum: Send + Sync + Debug,
+{
+    async fn execute(&mut self) -> Result<Vec<VisualDetection<U::ClassEnum, Angle2D<V>>>> {
+        #[cfg(feature = "logging")]
+        {
+            logln!("Running detection...");
+        }
+
+        #[allow(unused_mut)]
+        let mut mat = self.context.get_bottom_camera_mat().await.clone();
+        let detections = self.model.detect(&mat);
+        #[cfg(feature = "logging")]
+        logln!("Detect attempt: {:#?}", detections);
+        let detections = detections?;
+        #[cfg(feature = "logging")]
+        {
+            detections.iter().for_each(|x| {
+                let x = VisualDetection::new(
+                    x.class().clone(),
+                    self.model.normalize(x.position()) * &mat,
+                );
+                x.draw(&mut mat).unwrap()
+            });
+            create_dir_all("/tmp/detect").unwrap();
+            imwrite(
+                &("/tmp/detect/".to_string() + &Uuid::new_v4().to_string() + ".jpeg"),
+                &mat,
+                &Vector::default(),
+            )
+            .unwrap();
+            #[cfg(feature = "annotated_streams")]
+            self.context.annotate_bottom_camera(&mat).await;
+        }
+
+        Ok(detections
+            .into_iter()
+            .map(|detect| {
+                VisualDetection::new(
+                    detect.class().clone(),
+                    self.model.normalize(detect.position()).offset_angle(),
                 )
             })
             .collect())
@@ -406,7 +494,7 @@ impl<'a, T, U, V> Vision<'a, T, U, V> {
 impl<T, U, V> Action for Vision<'_, T, U, V> {}
 
 impl<
-        T: GetFrontCamMat + Send + Sync,
+        T: FrontCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, U::Position>>>> for Vision<'_, T, U, V>
@@ -449,7 +537,7 @@ impl<'a, T, U, V> VisionSizeLock<'a, T, U, V> {
 impl<T, U, V> Action for VisionSizeLock<'_, T, U, V> {}
 
 impl<
-        T: GetFrontCamMat + Send + Sync,
+        T: FrontCamIO + Send + Sync,
         V: Num + Float + FromPrimitive + Send + Sync,
         U: VisualDetector<V> + Send + Sync,
     > ActionExec<Result<Vec<VisualDetection<U::ClassEnum, U::Position>>>>
@@ -758,6 +846,65 @@ impl ActionExec<Option<Offset2D<f64>>> for MidPoint<Offset2D<f64>> {
                 .unwrap();
 
             let val = Some(Offset2D::new((max_x + min_x) / 2.0, (max_y + min_y) / 2.0));
+            logln!("Processed this: {:#?}", val);
+            val
+        }
+    }
+}
+
+impl ActionExec<Option<Angle2D<f64>>> for MidPoint<Angle2D<f64>> {
+    async fn execute(&mut self) -> Option<Angle2D<f64>> {
+        if self.values.is_empty() {
+            None
+        } else {
+            let min_x = self
+                .values
+                .iter()
+                .map(|val| val.x())
+                .cloned()
+                .reduce(f64::min)
+                .unwrap();
+            let max_x = self
+                .values
+                .iter()
+                .map(|val| val.x())
+                .cloned()
+                .reduce(f64::max)
+                .unwrap();
+            let min_y = self
+                .values
+                .iter()
+                .map(|val| val.y())
+                .cloned()
+                .reduce(f64::min)
+                .unwrap();
+            let max_y = self
+                .values
+                .iter()
+                .map(|val| val.y())
+                .cloned()
+                .reduce(f64::max)
+                .unwrap();
+            let min_angle = self
+                .values
+                .iter()
+                .map(|val| val.angle())
+                .cloned()
+                .reduce(f64::min)
+                .unwrap();
+            let max_angle = self
+                .values
+                .iter()
+                .map(|val| val.angle())
+                .cloned()
+                .reduce(f64::max)
+                .unwrap();
+
+            let val = Some(Angle2D::new(
+                (max_x + min_x) / 2.0,
+                (max_y + min_y) / 2.0,
+                (max_angle + min_angle) / 2.0,
+            ));
             logln!("Processed this: {:#?}", val);
             val
         }

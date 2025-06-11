@@ -22,6 +22,7 @@ pub mod image_prep;
 pub mod nn_cv2;
 pub mod octagon;
 pub mod path;
+pub mod path_cv;
 pub mod pca;
 pub mod yolo_model;
 
@@ -109,11 +110,17 @@ impl<T: Num + Clone + TryInto<i32, Error: Debug>> Draw for Offset2D<T> {
 }
 
 /// Holds x, y, and angle offset of object in frame
-#[derive(Debug, Getters)]
+#[derive(Debug, Getters, Clone)]
 pub struct Angle2D<T: Num> {
     x: T,
     y: T,
     angle: T,
+}
+
+impl<T: Num> Angle2D<T> {
+    pub fn new(x: T, y: T, angle: T) -> Self {
+        Self { x, y, angle }
+    }
 }
 
 impl<T: Num> Add for Angle2D<T> {

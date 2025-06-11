@@ -4,12 +4,16 @@ use tokio_serial::SerialStream;
 use crate::act_nest;
 
 use super::{
-    action::{Action, ActionConcurrent, ActionConditional, ActionExec, ActionSequence, RaceAction},
-    action_context::{GetControlBoard, GetMainElectronicsBoard},
+    action::{
+        Action, ActionChain, ActionConcurrent, ActionConditional, ActionExec, ActionSequence,
+        RaceAction,
+    },
+    action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard},
     basic::DelayAction,
-    extra::{AlwaysTrue, UnwrapAction},
+    comms::StartBno055,
+    extra::{AlwaysTrue, OutputType, UnwrapAction},
     meb::WaitArm,
-    movement::Descend,
+    movement::{Descend, Stability2Movement, Stability2Pos, ZeroMovement},
 };
 
 /// Example function for Action system
@@ -29,6 +33,42 @@ where
     ActionSequence::new(
         ActionConcurrent::new(WaitArm::new(context), Descend::new(context, -0.5)),
         WaitArm::new(context), //ActionConcurrent::new(WaitArm::new(context), Descend::new(context, -1.0)),
+    )
+}
+
+pub fn pid_test<
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
+>(
+    context: &Con,
+) -> impl ActionExec<()> + '_ {
+    const TIMEOUT: f32 = 30.0;
+
+    let depth: f32 = -1.6;
+
+    act_nest!(
+        ActionSequence::new,
+        ActionConcurrent::new(
+            ActionChain::new(
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, depth),
+                ),
+                OutputType::<()>::default()
+            ),
+            StartBno055::new(context),
+        ),
+        act_nest!(
+            ActionSequence::new,
+            ActionChain::new(DelayAction::new(5.0), OutputType::<()>::default(),),
+            ActionChain::new(
+                Stability2Movement::new(
+                    context,
+                    Stability2Pos::new(0.0, 0.0, 0.0, 0.0, Some(45.0), depth),
+                ),
+                OutputType::<()>::default()
+            ),
+            DelayAction::new(10.0),
+        ),
     )
 }
 

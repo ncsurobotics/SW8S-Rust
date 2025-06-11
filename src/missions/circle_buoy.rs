@@ -21,7 +21,7 @@ use crate::{
 
 use super::{
     action::{ActionExec, ActionSequence},
-    action_context::{GetControlBoard, GetFrontCamMat, GetMainElectronicsBoard},
+    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::ZeroMovement,
 };
@@ -35,7 +35,7 @@ pub fn buoy_circle_sequence<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat
+        + FrontCamIO
         + Unpin,
 >(
     context: &Con,
@@ -95,7 +95,7 @@ pub fn buoy_circle_sequence_model<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat
+        + FrontCamIO
         + Unpin,
 >(
     context: &'static Con,
@@ -144,7 +144,7 @@ pub fn buoy_circle_sequence_blind<
         + Sync
         + GetControlBoard<WriteHalf<SerialStream>>
         + GetMainElectronicsBoard
-        + GetFrontCamMat
+        + FrontCamIO
         + Unpin,
 >(
     context: &'static Con,

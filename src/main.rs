@@ -19,13 +19,13 @@ use sw8s_rust_lib::{
             buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
         },
         coinflip::coinflip,
-        example::initial_descent,
+        example::{initial_descent, pid_test},
         fancy_octagon::fancy_octagon,
         fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
         gate::{gate_run_coinflip, gate_run_complex, gate_run_naive, gate_run_testing},
         meb::WaitArm,
         octagon::octagon,
-        path_align::path_align,
+        path_align::path_align_procedural,
         reset_torpedo::ResetTorpedo,
         spin::spin,
         vision::PIPELINE_KILL,
@@ -374,14 +374,13 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "path_align" => {
-            let _ = path_align(&FullActionContext::new(
+            let _ = path_align_procedural(&FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
                 gate_target().await,
             ))
-            .execute()
             .await;
             Ok(())
         }
@@ -401,6 +400,18 @@ async fn run_mission(mission: &str) -> Result<()> {
         */
         "example" => {
             let _ = initial_descent(&FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ))
+            .execute()
+            .await;
+            Ok(())
+        }
+        "pid_test" => {
+            let _ = pid_test(&FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,

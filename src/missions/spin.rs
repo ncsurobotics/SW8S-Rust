@@ -16,15 +16,11 @@ use crate::{
 
 use super::{
     action::{Action, ActionExec},
-    action_context::{GetBottomCamMat, GetControlBoard, GetMainElectronicsBoard},
+    action_context::{BottomCamIO, GetControlBoard, GetMainElectronicsBoard},
 };
 
 pub fn spin<
-    Con: Send
-        + Sync
-        + GetControlBoard<WriteHalf<SerialStream>>
-        + GetMainElectronicsBoard
-        + GetBottomCamMat,
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + BottomCamIO,
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
@@ -43,7 +39,7 @@ pub fn spin<
             ),
             OutputType::<()>::new(),
         ),
-        DelayAction::new(6.0),
+        DelayAction::new(5.0),
         ActionWhile::new(TupleSecond::new(ActionConcurrent::new(
             act_nest!(
                 ActionSequence::new,
