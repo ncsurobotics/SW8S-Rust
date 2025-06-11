@@ -120,7 +120,7 @@ pub fn gate_run_coinflip<
             ActionChain::new(
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
+                    Stability2Pos::new(0.0, 0.5, 0.0, 0.0, None, depth),
                 ),
                 OutputType::<()>::default()
             ),
@@ -133,7 +133,7 @@ pub fn gate_run_coinflip<
             ActionChain::new(
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
+                    Stability2Pos::new(0.0, 0.5, 0.0, 0.0, None, depth),
                 ),
                 OutputType::<()>::default()
             ),
@@ -152,7 +152,7 @@ pub fn gate_run_coinflip<
             ActionChain::new(
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(0.0, 0.5, 0.0, 0.0, None, depth),
+                    Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, depth),
                 ),
                 OutputType::<()>::default()
             ),
