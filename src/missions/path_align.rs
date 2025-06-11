@@ -14,7 +14,7 @@ pub async fn path_align_procedural<
 >(
     context: &Con,
 ) {
-    const DEPTH: f32 = -1.25;
+    const DEPTH: f32 = -1.6;
     const PATH_ALIGN_SPEED: f32 = 0.3;
     const DETECTIONS: u8 = 10;
 

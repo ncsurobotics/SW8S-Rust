@@ -36,7 +36,7 @@ pub fn coinflip<
     const TRUE_COUNT: u32 = 4;
     const DELAY_TIME: f32 = 3.0;
 
-    const DEPTH: f32 = -1.25;
+    const DEPTH: f32 = -1.6;
     const ALIGN_X_SPEED: f32 = 0.0;
     const ALIGN_Y_SPEED: f32 = 0.0;
     const ALIGN_YAW_SPEED: f32 = -3.0;

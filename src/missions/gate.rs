@@ -109,7 +109,7 @@ pub fn gate_run_coinflip<
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
     const TIMEOUT: f32 = 30.0;
 
-    let depth: f32 = -1.25;
+    let depth: f32 = -1.75;
 
     act_nest!(
         ActionSequence::new,
@@ -117,7 +117,7 @@ pub fn gate_run_coinflip<
             ActionChain::new(
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
+                    Stability2Pos::new(0.0, 0.5, 0.0, 0.0, None, depth),
                 ),
                 OutputType::<()>::default()
             ),
@@ -130,7 +130,7 @@ pub fn gate_run_coinflip<
             ActionChain::new(
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
+                    Stability2Pos::new(0.0, 0.5, 0.0, 0.0, None, depth),
                 ),
                 OutputType::<()>::default()
             ),
@@ -149,7 +149,7 @@ pub fn gate_run_coinflip<
             ActionChain::new(
                 Stability2Movement::new(
                     context,
-                    Stability2Pos::new(0.0, 0.5, 0.0, 0.0, None, depth),
+                    Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, depth),
                 ),
                 OutputType::<()>::default()
             ),

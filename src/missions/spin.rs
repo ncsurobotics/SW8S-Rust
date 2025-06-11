@@ -39,7 +39,7 @@ pub fn spin<
             ),
             OutputType::<()>::new(),
         ),
-        DelayAction::new(6.0),
+        DelayAction::new(5.0),
         ActionWhile::new(TupleSecond::new(ActionConcurrent::new(
             act_nest!(
                 ActionSequence::new,
