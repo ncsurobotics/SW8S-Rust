@@ -1,4 +1,5 @@
 use core::fmt::Debug;
+use rand::Rng;
 use std::{
     ops::Deref,
     sync::{Arc, OnceLock},
@@ -137,8 +138,11 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
         println!("Sent cam config msg");
 
         const ROBRINU: [u8; 7] = *b"ROBRINU";
+        const ROBINIU: [u8; 7] = *b"ROBINIU";
         const SCECFGU: [u8; 7] = *b"SCECFGU";
-        let inital_pose_bounds: [f32; 6] = [10.5, 2.0, 5.0, 30.0, 30.0, 30.0];
+        let inital_pose_bounds: [f32; 6] = [15.0, 2.0, 30.0, 0.0, 180.0, 0.0];
+        let base_pose: [f32; 6] = [0.0, 0.0, -11.0, 0.0, 0.0, 0.0];
+        let mut rng = rand::thread_rng();
         for i in (0..=500).step_by(5) {
             println!("Doing thing");
             let mut message = Vec::from(SCECFGU);
@@ -148,10 +152,28 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
             this.write_out(message).await?;
 
             let mut message = Vec::with_capacity(32 * 6);
-            message.extend(ROBRINU);
-            inital_pose_bounds
-                .iter()
-                .for_each(|val| message.extend(val.to_le_bytes()));
+            message.extend(ROBINIU);
+            // base_pose
+            //     .iter()
+            //     .for_each(|val| message.extend(val.to_le_bytes()));
+            let x = base_pose[0] + rng.random_range(-2.0..=2.0);
+            message.extend(x.to_le_bytes());
+
+            let y = base_pose[1] + rng.random_range(-2.0..=2.0);
+            message.extend(y.to_le_bytes());
+
+            let z = base_pose[2] + rng.random_range(-0.2..=0.2);
+            message.extend(z.to_le_bytes());
+
+            let xr = base_pose[3] + rng.random_range(-5.0..=5.0);
+            message.extend(xr.to_le_bytes());
+
+            let yr = base_pose[4] + rng.random_range(-45.0..=45.0);
+            message.extend(yr.to_le_bytes());
+
+            let zr = base_pose[5] + rng.random_range(-5.0..=5.0);
+            message.extend(zr.to_le_bytes());
+
             this.write_out(message).await?;
             sleep(Duration::from_micros(100)).await;
 
@@ -160,6 +182,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
             message.push(4);
             this.write_out(message).await?;
             sleep(Duration::from_micros(100)).await;
+            // sleep(Duration::from_secs(2)).await;
         }
 
         this.startup().await?;
