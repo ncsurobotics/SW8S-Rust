@@ -14,8 +14,8 @@ use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
-    Side,
     Middle,
+    Side,
 }
 
 impl From<YoloClass<Target>> for Target {
@@ -41,8 +41,8 @@ impl TryFrom<i32> for Target {
     type Error = TargetError;
     fn try_from(value: i32) -> std::result::Result<Self, Self::Error> {
         match value {
-            0 => Ok(Self::Side),
-            1 => Ok(Self::Middle),
+            0 => Ok(Self::Middle),
+            1 => Ok(Self::Side),
             x => Err(TargetError { x }),
         }
     }

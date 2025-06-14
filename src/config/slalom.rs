@@ -4,9 +4,11 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     pub depth: f32,
     pub speed: f32,
-    pub detections: u8,
+    pub start_detections: u8,
+    pub end_detections: u8,
     pub side: Side,
     pub centered_threshold: f32,
+    pub dumb_strafe_secs: u64,
 }
 
 impl Default for Config {
@@ -14,14 +16,16 @@ impl Default for Config {
         Self {
             depth: -1.25,
             speed: 0.3,
-            detections: 10,
+            start_detections: 10,
+            end_detections: 10,
             side: Side::Left,
             centered_threshold: 0.0,
+            dumb_strafe_secs: 2,
         }
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
 pub enum Side {
     Right,
     Left,
