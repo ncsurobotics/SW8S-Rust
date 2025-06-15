@@ -16,8 +16,8 @@ const CONFIG_FILE: &str = "config.toml";
 const CONTROL_BOARD_PATH: &str = "/dev/ttyACM0";
 const CONTROL_BOARD_BACKUP_PATH: &str = "/dev/ttyACM3";
 const MEB_PATH: &str = "/dev/ttyACM2";
-const FRONT_CAM: &str = "/dev/video1";
-const BOTTOM_CAM: &str = "/dev/video0";
+const FRONT_CAM: &str = "/dev/video0";
+const BOTTOM_CAM: &str = "/dev/video1";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
