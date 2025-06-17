@@ -1,9 +1,14 @@
+use std::f32::consts::PI;
+
+use chrono::format::DelayedFormat;
+use itertools::Itertools;
+use serde::de::IntoDeserializer;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
 use crate::{
     act_nest,
-    config::gate::Config,
+    config::gate::{Config, Side},
     missions::{
         action::{ActionConcurrentSplit, ActionDataConditional},
         basic::descend_depth_and_go_forward,
@@ -35,6 +40,235 @@ use super::{
     },
     vision::{DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
 };
+
+pub async fn gate_run_procedural<
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
+>(
+    context: &Con,
+    config: &Config,
+) {
+    #[cfg(feature = "logging")]
+    logln!("Starting Procedural Gate");
+
+    let cb = context.get_control_board();
+    cb.bno055_periodic_read(true).await;
+
+    let mut vision =
+        VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default());
+
+    let initial_yaw = loop {
+        if let Some(initial_angle) = cb.responses().get_angles().await {
+            break *initial_angle.yaw() as f32;
+        } else {
+            #[cfg(feature = "logging")]
+            logln!("Failed to get initial angle");
+        }
+    };
+
+    let _ = cb
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+        .await;
+
+    let mut current_yaw = initial_yaw;
+
+    loop {
+        if let Some(current_angle) = cb.responses().get_angles().await {
+            current_yaw = *current_angle.yaw() as f32;
+        }
+
+        let detections = vision.execute().await.unwrap_or_else(|e| {
+            #[cfg(feature = "logging")]
+            logln!("Getting path detection resulted in error: `{e}`\n\tUsing empty detection vec");
+            vec![]
+        });
+
+        let pole = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::Pole))
+            .collect_vec();
+
+        let middle = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::Middle))
+            .collect_vec();
+
+        let red = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::Red))
+            .collect_vec();
+
+        let blue = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::Blue))
+            .collect_vec();
+
+        let mut traversal_started = false;
+        let mut traversal_timer = DelayAction::new(9.5); // forward duration in seconds
+
+        let mut true_count = 0;
+
+        match config.side {
+            Side::Left => {
+                if blue.len() > 0 {
+                    // Center on average x of blue
+                    let avg_x = blue.iter().map(|d| *d.position().x() as f32).sum::<f32>()
+                        / blue.len() as f32;
+
+                    #[cfg(feature = "logging")]
+                    logln!("AVG X: {}", avg_x);
+
+                    #[cfg(feature = "logging")]
+                    logln!("True Count: {}", true_count);
+
+                    if avg_x.abs() > 0.1 {
+                        let correction = -0.5 * avg_x;
+                        let fwd = 0.0;
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                            + correction * f32::cos(current_yaw * (PI / 180.0));
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                            + correction * f32::sin(current_yaw * (PI / 180.0));
+                        let _ = cb
+                            .stability_2_speed_set(
+                                x_speed,
+                                y_speed,
+                                0.0,
+                                0.0,
+                                initial_yaw,
+                                config.depth,
+                            )
+                            .await;
+                    } else {
+                        let fwd = config.speed;
+                        let correction = 0.0;
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                            + correction * f32::cos(current_yaw * (PI / 180.0));
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                            + correction * f32::sin(current_yaw * (PI / 180.0));
+
+                        true_count += 1;
+
+                        if true_count > config.true_count {
+                            let _ = cb
+                                .stability_2_speed_set(
+                                    x_speed,
+                                    y_speed,
+                                    0.0,
+                                    0.0,
+                                    initial_yaw,
+                                    config.depth,
+                                )
+                                .await;
+                            traversal_timer.execute().await;
+                            break;
+                        }
+                    }
+                } else {
+                    // Fallback search behavior
+                    #[cfg(feature = "logging")]
+                    logln!("LEFT: Missing Features, Fallback");
+
+                    let correction = -0.2;
+                    let fwd = 0.0;
+                    let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                        + correction * f32::cos(current_yaw * (PI / 180.0));
+                    let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                        + correction * f32::sin(current_yaw * (PI / 180.0));
+
+                    let _ = cb
+                        .stability_2_speed_set(
+                            x_speed,
+                            y_speed,
+                            0.0,
+                            0.0,
+                            initial_yaw,
+                            config.depth,
+                        )
+                        .await;
+                    // DelayAction::new(1.0).execute().await;
+                }
+            }
+
+            Side::Right => {
+                if red.len() > 0 {
+                    // Center on average x of blue
+                    let avg_x = red.iter().map(|d| *d.position().x() as f32).sum::<f32>()
+                        / red.len() as f32;
+
+                    #[cfg(feature = "logging")]
+                    logln!("AVG X: {}", avg_x);
+
+                    #[cfg(feature = "logging")]
+                    logln!("True Count: {}", true_count);
+
+                    if avg_x.abs() > 0.1 {
+                        let correction = -0.5 * avg_x;
+                        let fwd = 0.0;
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                            + correction * f32::cos(current_yaw * (PI / 180.0));
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                            + correction * f32::sin(current_yaw * (PI / 180.0));
+                        let _ = cb
+                            .stability_2_speed_set(
+                                x_speed,
+                                y_speed,
+                                0.0,
+                                0.0,
+                                initial_yaw,
+                                config.depth,
+                            )
+                            .await;
+                    } else {
+                        let fwd = config.speed;
+                        let correction = 0.0;
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                            + correction * f32::cos(current_yaw * (PI / 180.0));
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                            + correction * f32::sin(current_yaw * (PI / 180.0));
+
+                        true_count += 1;
+
+                        if true_count > config.true_count {
+                            let _ = cb
+                                .stability_2_speed_set(
+                                    x_speed,
+                                    y_speed,
+                                    0.0,
+                                    0.0,
+                                    initial_yaw,
+                                    config.depth,
+                                )
+                                .await;
+                            traversal_timer.execute().await;
+                            break;
+                        }
+                    }
+                } else {
+                    // Fallback search behavior
+                    #[cfg(feature = "logging")]
+                    logln!("RIGHT: Missing Features, Fallback");
+                    // DelayAction::new(1.0).execute().await;
+                    let correction = 0.2;
+                    let fwd = 0.0;
+                    let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                        + correction * f32::cos(current_yaw * (PI / 180.0));
+                    let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                        + correction * f32::sin(current_yaw * (PI / 180.0));
+
+                    let _ = cb
+                        .stability_2_speed_set(
+                            x_speed,
+                            y_speed,
+                            0.0,
+                            0.0,
+                            initial_yaw,
+                            config.depth,
+                        )
+                        .await;
+                }
+            }
+        }
+    }
+}
 
 pub fn gate_run_naive<
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,

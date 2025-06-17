@@ -6,6 +6,7 @@ pub struct Config {
     pub speed: f32,
     pub true_count: u32,
     pub false_count: u32,
+    pub side: Side,
 }
 
 impl Default for Config {
@@ -15,6 +16,13 @@ impl Default for Config {
             speed: 0.2,
             true_count: 4,
             false_count: 1,
+            side: Side::Right,
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
+pub enum Side {
+    Right,
+    Left,
 }

@@ -23,7 +23,10 @@ use sw8s_rust_lib::{
         example::{initial_descent, pid_test},
         fancy_octagon::fancy_octagon,
         fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
-        gate::{gate_run_coinflip, gate_run_complex, gate_run_naive, gate_run_testing},
+        gate::{
+            gate_run_coinflip, gate_run_complex, gate_run_naive, gate_run_procedural,
+            gate_run_testing,
+        },
         meb::WaitArm,
         octagon::octagon,
         path_align::path_align_procedural,
@@ -357,7 +360,19 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "gate_run_coinflip" => {
-            let _ = gate_run_coinflip(
+            // let _ = gate_run_coinflip(
+            //     &FullActionContext::new(
+            //         control_board().await,
+            //         meb().await,
+            //         front_cam().await,
+            //         bottom_cam().await,
+            //         gate_target().await,
+            //     ),
+            //     &config.missions.gate,
+            // )
+            // .execute()
+            // .await;
+            let _ = gate_run_procedural(
                 &FullActionContext::new(
                     control_board().await,
                     meb().await,
@@ -367,8 +382,8 @@ async fn run_mission(mission: &str) -> Result<()> {
                 ),
                 &config.missions.gate,
             )
-            .execute()
             .await;
+
             Ok(())
         }
         "gate_run_testing" => {

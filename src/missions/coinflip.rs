@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
@@ -27,6 +28,46 @@ use super::{
     movement::{Stability2Adjust, Stability2Movement, Stability2Pos},
     vision::{DetectTarget, VisionNorm},
 };
+
+pub async fn coinflip_procedural<
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
+>(
+    context: &Con,
+) {
+    #[cfg(feature = "logging")]
+    logln!("Starting path align");
+
+    let cb = context.get_control_board();
+    cb.bno055_periodic_read(true).await;
+    let mut vision =
+        VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default());
+
+    let initial_yaw = loop {
+        if let Some(initial_angle) = cb.responses().get_angles().await {
+            break *initial_angle.yaw() as f32;
+        } else {
+            #[cfg(feature = "logging")]
+            logln!("Failed to get initial angle");
+        }
+    };
+
+    let _ = cb
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, 0.0)
+        .await;
+
+    loop {
+        let detections = vision.execute().await.unwrap_or_else(|e| {
+            #[cfg(feature = "logging")]
+            logln!("Getting path detection resulted in error: `{e}`\n\tUsing empty detection vec");
+            vec![]
+        });
+
+        let gate = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::Gate))
+            .collect_vec();
+    }
+}
 
 pub fn coinflip<
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
