@@ -1,13 +1,12 @@
 use bluerobotics_ping::{
     common::{DeviceInformationStruct, ProtocolVersionStruct},
     device::{Ping360, PingDevice},
-    error::PingError,
     ping360::AutoDeviceDataStruct,
 };
 use serde::{Deserialize, Serialize};
 use std::{
-    fs::{self, File, OpenOptions},
-    io::{BufWriter, Write},
+    fs::{self, OpenOptions},
+    io::BufWriter,
     path::PathBuf,
     time::SystemTime,
 };
@@ -29,7 +28,7 @@ pub async fn sonar<
     logln!("Starting sonar");
 
     let cb = context.get_control_board();
-    cb.bno055_periodic_read(true).await;
+    let _ = cb.bno055_periodic_read(true).await;
 
     #[cfg(feature = "logging")]
     logln!("Initializing sonar with: {:?}", cfg.serial_port);
@@ -97,7 +96,7 @@ pub async fn sonar<
             }
         });
 
-    let mut file = BufWriter::new(file);
+    let file = BufWriter::new(file);
 
     #[cfg(feature = "logging")]
     logln!("Starting sonar auto transmit");

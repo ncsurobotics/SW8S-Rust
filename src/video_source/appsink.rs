@@ -121,10 +121,11 @@ impl Camera {
         Camera::new(camera_path, camera_name, filesink_dir, (640, 480), true)
     }
 
+    #[cfg(feature = "annotated_streams")]
     pub fn push_annotated_frame(&self, image: &impl ToInputArray) {
         let writer = self.output.clone();
         let mut writer = writer.lock().unwrap();
-        writer.write(image);
+        let _ = writer.write(image);
     }
 }
 

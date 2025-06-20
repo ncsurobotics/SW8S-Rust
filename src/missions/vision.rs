@@ -8,7 +8,6 @@ use super::action::{Action, ActionExec, ActionMod};
 use super::action_context::BottomCamIO;
 use super::graph::DotString;
 use crate::logln;
-use crate::vision::nn_cv2::VisionModel;
 use crate::vision::{
     Angle2D, Draw, DrawRect2d, Offset2D, RelPos, RelPosAngle, VisualDetection, VisualDetector,
 };

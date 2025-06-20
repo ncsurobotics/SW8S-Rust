@@ -1,8 +1,6 @@
 use std::{fmt::Debug, ops::Mul};
 
-use anyhow::anyhow;
 use derive_getters::Getters;
-use num_traits::Num;
 use opencv::{
     core::{MatTraitConst, Point, Scalar},
     imgproc::{self, LINE_8},

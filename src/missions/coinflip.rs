@@ -38,7 +38,7 @@ pub async fn coinflip_procedural<
     logln!("Starting path align");
 
     let cb = context.get_control_board();
-    cb.bno055_periodic_read(true).await;
+    let _ = cb.bno055_periodic_read(true).await;
     let mut vision =
         VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default());
 

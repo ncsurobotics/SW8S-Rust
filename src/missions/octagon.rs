@@ -1,4 +1,3 @@
-use opencv::core::Size;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
@@ -20,13 +19,13 @@ use crate::{
         },
         vision::{DetectTarget, ExtractPosition, MidPoint, Norm, Vision},
     },
-    vision::{octagon::Octagon, path::Yuv, Offset2D},
+    vision::{octagon::Octagon, Offset2D},
     POOL_YAW_SIGN,
 };
 
 use super::{
     action::ActionExec,
-    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
+    action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard},
 };
 
 pub fn octagon_path_model() -> Octagon {
@@ -42,7 +41,7 @@ pub fn octagon<
         + Unpin,
 >(
     context: &'static Con,
-) -> impl ActionExec<()> + '_ {
+) -> impl ActionExec<()> + 'static {
     const FULL_SPEED_Y: f32 = 0.7;
     const FULL_SPEED_X: f32 = 0.0;
     const FULL_SPEED_PITCH: f32 = -45.0 / 4.0;

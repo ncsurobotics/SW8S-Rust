@@ -1,26 +1,14 @@
 use std::{fs::create_dir_all, ops::RangeInclusive};
 
-use chrono::Offset;
-use itertools::Itertools;
 use opencv::{
-    core::{
-        in_range, MatTrait, Point, Point2f, Point2i, Rect, Scalar, Size, VecN, Vector,
-        BORDER_DEFAULT, CV_32F,
-    },
+    core::{in_range, Point, Size, VecN, Vector},
     imgcodecs::imwrite,
-    imgproc::{
-        bounding_rect, contour_area, cvt_color, filter_2d, find_contours, find_contours_def,
-        CHAIN_APPROX_SIMPLE, COLOR_RGB2YUV, COLOR_YUV2RGB, RETR_TREE,
-    },
-    prelude::{Mat, MatTraitConst, MatTraitConstManual},
+    imgproc::{find_contours, CHAIN_APPROX_SIMPLE, RETR_TREE},
+    prelude::{Mat, MatTraitConst},
 };
 use uuid::Uuid;
 
-use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
-
-use super::{
-    image_prep::resize, pca::PosVector, MatWrapper, Offset2D, VisualDetection, VisualDetector,
-};
+use super::{image_prep::resize, MatWrapper, Offset2D, VisualDetection, VisualDetector};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Rgb {

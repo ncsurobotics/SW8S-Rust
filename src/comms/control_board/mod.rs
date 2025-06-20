@@ -1,15 +1,10 @@
 use core::fmt::Debug;
-use std::{
-    ops::Deref,
-    sync::{Arc, OnceLock},
-    time::Duration,
-};
+use std::{ops::Deref, sync::Arc, time::Duration};
 
 use anyhow::{anyhow, bail, Result};
 use tokio::{
     io::{self, AsyncRead, AsyncWrite, AsyncWriteExt, WriteHalf},
     net::TcpStream,
-    spawn,
     sync::Mutex,
     time::{sleep, timeout},
 };
@@ -30,29 +25,6 @@ pub enum SensorStatuses {
     ImuNr,
     DepthNr,
     AllGood,
-}
-
-static STAB_2_DRIFT: OnceLock<Arc<std::sync::Mutex<f32>>> = OnceLock::new();
-fn stab_2_drift() -> f32 {
-    let drift_val = STAB_2_DRIFT.get_or_init(|| {
-        let drift_val = Arc::new(std::sync::Mutex::new(0.0));
-
-        let drift_val_clone = drift_val.clone();
-        spawn(async move {
-            sleep(Duration::from_secs(5)).await;
-            loop {
-                {
-                    let mut drift_val_inner = drift_val_clone.lock().unwrap();
-                    // *drift_val_inner += 0.015;
-                }
-                sleep(Duration::from_secs(1)).await
-            }
-        });
-
-        drift_val
-    });
-
-    *drift_val.lock().unwrap()
 }
 
 pub static LAST_YAW: std::sync::Mutex<Option<f32>> = std::sync::Mutex::new(None);
@@ -336,19 +308,9 @@ impl<T: AsyncWrite + Unpin> ControlBoard<T> {
         let mut message = Vec::with_capacity(32 * 8);
         message.extend(SASSIST_2);
 
-        [
-            x,
-            y,
-            target_pitch,
-            target_roll,
-            (
-                target_yaw
-                // + stab_2_drift()
-            ),
-            target_depth,
-        ]
-        .iter()
-        .for_each(|val| message.extend(val.to_le_bytes()));
+        [x, y, target_pitch, target_roll, target_yaw, target_depth]
+            .iter()
+            .for_each(|val| message.extend(val.to_le_bytes()));
 
         *LAST_YAW.lock().unwrap() = Some(target_yaw);
         self.write_out_basic(message).await

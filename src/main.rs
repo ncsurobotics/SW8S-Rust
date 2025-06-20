@@ -1,5 +1,4 @@
 use anyhow::{bail, Result};
-use crossbeam::epoch::Pointable;
 use std::env::temp_dir;
 
 use std::env;
@@ -23,10 +22,7 @@ use sw8s_rust_lib::{
         example::{initial_descent, pid_test},
         fancy_octagon::fancy_octagon,
         fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
-        gate::{
-            gate_run_coinflip, gate_run_complex, gate_run_naive, gate_run_procedural,
-            gate_run_testing,
-        },
+        gate::{gate_run_complex, gate_run_naive, gate_run_procedural, gate_run_testing},
         meb::WaitArm,
         octagon::octagon,
         path_align::path_align_procedural,
@@ -158,8 +154,7 @@ static SHUTDOWN_GUARD: Semaphore = Semaphore::const_new(1);
 
 #[tokio::main]
 async fn main() {
-    let mission_ct = CancellationToken::new();
-    let shutdown_tx = shutdown_handler(mission_ct.clone()).await;
+    let (shutdown_tx, mission_ct) = shutdown_handler().await;
 
     let orig_hook = std::panic::take_hook();
     let mission_ct_clone = mission_ct.clone();
@@ -170,12 +165,11 @@ async fn main() {
         mission_ct_clone.cancel();
         // Wait for running mission to exit
         handle.block_on(async {
-            SHUTDOWN_GUARD.acquire().await.unwrap();
+            let _ = SHUTDOWN_GUARD.acquire().await.unwrap();
         });
         exit(1);
     }));
 
-    let mission_ct_clone = mission_ct.clone();
     let shutdown_tx_clone = shutdown_tx.clone();
     tokio::spawn(async move {
         let meb = meb().await;
@@ -195,9 +189,7 @@ async fn main() {
 
     for arg in env::args().skip(1).collect::<Vec<String>>() {
         let _guard = SHUTDOWN_GUARD.acquire().await.unwrap();
-        run_mission(&arg, mission_cancellation_token.clone())
-            .await
-            .unwrap();
+        run_mission(&arg, mission_ct.clone()).await.unwrap();
     }
 
     // Send shutdown signal
@@ -205,8 +197,10 @@ async fn main() {
 }
 
 /// Graceful shutdown, see <https://tokio.rs/tokio/topics/shutdown>
-async fn shutdown_handler(mission_ct: CancellationToken) -> UnboundedSender<i32> {
+async fn shutdown_handler() -> (UnboundedSender<i32>, CancellationToken) {
     let (shutdown_tx, mut shutdown_rx) = mpsc::unbounded_channel::<i32>();
+    let mission_ct = CancellationToken::new();
+    let mission_ct_clone = mission_ct.clone();
     tokio::spawn(async move {
         // Wait for shutdown signal
         let exit_status = tokio::select! {
@@ -246,13 +240,13 @@ async fn shutdown_handler(mission_ct: CancellationToken) -> UnboundedSender<i32>
         // If shutdown is unexpected, cancel running missions and exit nonzero
         if exit_status != 0 {
             // Cancel running missions
-            mission_ct.cancel();
+            mission_ct_clone.cancel();
             // Wait for running mission to exit
             let _guard = SHUTDOWN_GUARD.acquire().await.unwrap();
             exit(exit_status)
         };
     });
-    shutdown_tx
+    (shutdown_tx, mission_ct)
 }
 
 async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {

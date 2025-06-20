@@ -1,7 +1,6 @@
 use std::f32::consts::PI;
 
 use itertools::Itertools;
-use serde::de::IntoDeserializer;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
 
@@ -50,7 +49,7 @@ pub async fn gate_run_procedural<
     logln!("Starting Procedural Gate");
 
     let cb = context.get_control_board();
-    cb.bno055_periodic_read(true).await;
+    let _ = cb.bno055_periodic_read(true).await;
 
     let mut vision =
         VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default());
@@ -308,8 +307,6 @@ pub fn gate_run_complex<
 >(
     context: &Con,
 ) -> impl ActionExec<anyhow::Result<()>> + '_ {
-    const TIMEOUT: f32 = 30.0;
-
     let depth: f32 = -1.40;
 
     act_nest!(
@@ -343,8 +340,6 @@ pub fn gate_run_coinflip<
     context: &'a Con,
     config: &Config,
 ) -> impl ActionExec<anyhow::Result<()>> + 'a {
-    const TIMEOUT: f32 = 30.0;
-
     let depth = config.depth;
 
     act_nest!(

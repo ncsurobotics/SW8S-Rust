@@ -21,7 +21,7 @@ pub async fn slalom<
     logln!("Starting slalom");
 
     let cb = context.get_control_board();
-    cb.bno055_periodic_read(true).await;
+    let _ = cb.bno055_periodic_read(true).await;
 
     let mut vision = VisionNorm::<Con, Slalom<OnnxModel>, f64>::new(context, Slalom::default());
 

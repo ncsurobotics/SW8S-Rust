@@ -1,7 +1,6 @@
 use crate::comms::control_board::ControlBoard;
 use crate::comms::control_board::LAST_YAW;
 use crate::logln;
-use crate::vision::Angle2D;
 use crate::vision::DrawRect2d;
 use crate::vision::Offset2D;
 use crate::vision::RelPos;
@@ -2496,7 +2495,7 @@ impl<T> NoAdjust<T> {
 }
 
 impl<T: Sync + Send + Clone> ActionMod<T> for NoAdjust<T> {
-    fn modify(&mut self, input: &T) {}
+    fn modify(&mut self, _input: &T) {}
 }
 
 impl ActionExec<Stability2Adjust> for NoAdjust<Stability2Adjust> {

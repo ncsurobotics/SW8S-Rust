@@ -41,8 +41,6 @@ pub fn pid_test<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    const TIMEOUT: f32 = 30.0;
-
     let depth: f32 = -1.6;
 
     act_nest!(

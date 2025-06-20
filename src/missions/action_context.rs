@@ -137,7 +137,7 @@ impl FrontCamIO for EmptyActionContext {
         todo!()
     }
     #[cfg(feature = "annotated_streams")]
-    async fn annotate_front_camera(&self, image: &impl ToInputArray) {
+    async fn annotate_front_camera(&self, _image: &impl ToInputArray) {
         todo!();
     }
     async fn get_desired_buoy_gate(&self) -> Target {
@@ -153,7 +153,7 @@ impl BottomCamIO for EmptyActionContext {
         todo!()
     }
     #[cfg(feature = "annotated_streams")]
-    async fn annotate_bottom_camera(&self, image: &impl ToInputArray) {
+    async fn annotate_bottom_camera(&self, _image: &impl ToInputArray) {
         todo!();
     }
 }

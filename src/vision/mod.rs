@@ -3,7 +3,7 @@ use derive_getters::Getters;
 use itertools::Itertools;
 use num_traits::{zero, FromPrimitive, Num};
 use opencv::{
-    core::{MatTraitConst, Point, Rect, Rect2d, Scalar, Vector},
+    core::{MatTraitConst, Point, Rect2d, Scalar, Vector},
     imgproc::{self, LINE_8},
     prelude::Mat,
 };

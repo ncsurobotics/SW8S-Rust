@@ -3,7 +3,7 @@ use tokio::time::{sleep, Duration};
 use tokio_serial::SerialStream;
 
 use crate::config::path_align::Config;
-use crate::{act_nest, missions::vision::VisionNormBottomAngle, vision::path_cv::PathCV};
+use crate::{missions::vision::VisionNormBottomAngle, vision::path_cv::PathCV};
 
 use super::{
     action::ActionExec,
@@ -20,7 +20,7 @@ pub async fn path_align_procedural<
     logln!("Starting path align");
 
     let cb = context.get_control_board();
-    cb.bno055_periodic_read(true).await;
+    let _ = cb.bno055_periodic_read(true).await;
     let mut vision_norm_bottom =
         VisionNormBottomAngle::<Con, PathCV, f64>::new(context, PathCV::default());
 
@@ -98,7 +98,8 @@ pub async fn path_align_procedural<
         #[cfg(feature = "logging")]
         logln!("Positive detection count: {consec_detections}");
     }
-    cb.stability_2_speed_set(0.0, 1.0, 0.0, 0.0, last_set_yaw, config.depth)
+    let _ = cb
+        .stability_2_speed_set(0.0, 1.0, 0.0, 0.0, last_set_yaw, config.depth)
         .await;
     sleep(Duration::from_secs(1)).await;
 }
