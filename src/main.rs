@@ -165,13 +165,14 @@ async fn main() {
         mission_ct_clone.cancel();
         // Wait for running mission to exit
         handle.block_on(async {
-            let _guard = timeout(
+            if let Err(_) = timeout(
                 Duration::from_secs(SHUTDOWN_TIMEOUT),
                 SHUTDOWN_GUARD.acquire(),
             )
             .await
-            .unwrap_or_else(|_| logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds"))
-            .unwrap();
+            {
+                logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds")
+            }
         });
         exit(1);
     }));
@@ -194,13 +195,7 @@ async fn main() {
     });
 
     for arg in env::args().skip(1).collect::<Vec<String>>() {
-        let _guard = timeout(
-            Duration::from_secs(SHUTDOWN_TIMEOUT),
-            SHUTDOWN_GUARD.acquire(),
-        )
-        .await
-        .unwrap_or_else(|_| logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds"))
-        .unwrap();
+        let _guard = SHUTDOWN_GUARD.acquire().await.unwrap();
         run_mission(&arg, mission_ct.clone()).await.unwrap();
     }
 
@@ -254,13 +249,14 @@ async fn shutdown_handler() -> (UnboundedSender<i32>, CancellationToken) {
             // Cancel running missions
             mission_ct_clone.cancel();
             // Wait for running mission to exit
-            let _guard = timeout(
+            if let Err(_) = timeout(
                 Duration::from_secs(SHUTDOWN_TIMEOUT),
                 SHUTDOWN_GUARD.acquire(),
             )
             .await
-            .unwrap_or_else(|_| logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds"))
-            .unwrap();
+            {
+                logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds")
+            }
             exit(exit_status)
         };
     });
