@@ -170,6 +170,7 @@ async fn main() {
                 SHUTDOWN_GUARD.acquire(),
             )
             .await
+            .unwrap_or_else(|_| logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds"))
             .unwrap();
         });
         exit(1);
@@ -198,6 +199,7 @@ async fn main() {
             SHUTDOWN_GUARD.acquire(),
         )
         .await
+        .unwrap_or_else(|_| logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds"))
         .unwrap();
         run_mission(&arg, mission_ct.clone()).await.unwrap();
     }
@@ -257,6 +259,7 @@ async fn shutdown_handler() -> (UnboundedSender<i32>, CancellationToken) {
                 SHUTDOWN_GUARD.acquire(),
             )
             .await
+            .unwrap_or_else(|_| logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds"))
             .unwrap();
             exit(exit_status)
         };
