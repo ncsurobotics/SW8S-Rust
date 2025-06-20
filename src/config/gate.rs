@@ -16,7 +16,7 @@ impl Default for Config {
             speed: 0.2,
             true_count: 4,
             false_count: 1,
-            side: Side::Right,
+            side: Side::default(),
         }
     }
 }
@@ -25,4 +25,10 @@ impl Default for Config {
 pub enum Side {
     Right,
     Left,
+}
+
+impl Default for Side {
+    fn default() -> Self {
+        Self::Right
+    }
 }

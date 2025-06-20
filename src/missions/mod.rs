@@ -20,3 +20,4 @@ pub mod reset_torpedo;
 pub mod slalom;
 pub mod spin;
 pub mod vision;
+pub mod sonar;

@@ -30,7 +30,7 @@ use crate::{
 
 use super::{
     action::ActionExec,
-    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
+    action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard},
 };
 
 pub fn buoy_align<
@@ -42,7 +42,7 @@ pub fn buoy_align<
         + Unpin,
 >(
     context: &'static Con,
-) -> impl ActionExec<()> + '_ {
+) -> impl ActionExec<()> + 'static {
     const Y_SPEED: f32 = 0.2;
     const Y_SPEED_FAST: f32 = 0.5;
     const DEPTH: f32 = -1.5;
@@ -153,7 +153,7 @@ pub fn buoy_align_shot<
         + Unpin,
 >(
     context: &'static Con,
-) -> impl ActionExec<()> + '_ {
+) -> impl ActionExec<()> + 'static {
     const Y_SPEED: f32 = 0.2;
     const DEPTH: f32 = -0.9;
     const TRUE_COUNT: u32 = 2;

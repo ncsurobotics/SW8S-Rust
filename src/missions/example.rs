@@ -13,7 +13,7 @@ use super::{
     comms::StartBno055,
     extra::{AlwaysTrue, OutputType, UnwrapAction},
     meb::WaitArm,
-    movement::{Descend, Stability2Movement, Stability2Pos, ZeroMovement},
+    movement::{Descend, Stability2Movement, Stability2Pos},
 };
 
 /// Example function for Action system

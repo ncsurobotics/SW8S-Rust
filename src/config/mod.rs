@@ -1,15 +1,11 @@
 pub mod gate;
 pub mod path_align;
 pub mod slalom;
+pub mod sonar;
 
-use std::{
-    fs::{read_to_string, write},
-    ops::{Deref, DerefMut},
-    path::PathBuf,
-};
+use std::fs::read_to_string;
 
 use anyhow::Result;
-use crossbeam::epoch::CompareAndSetOrdering;
 use serde::{Deserialize, Serialize};
 
 // Default values
@@ -27,6 +23,7 @@ pub struct Config {
     pub meb_path: String,
     pub front_cam_path: String,
     pub bottom_cam_path: String,
+    pub sonar: sonar::Config,
     pub missions: Missions,
 }
 
@@ -45,6 +42,7 @@ impl Default for Config {
             meb_path: MEB_PATH.to_string(),
             front_cam_path: FRONT_CAM.to_string(),
             bottom_cam_path: BOTTOM_CAM.to_string(),
+            sonar: sonar::Config::default(),
             missions: Missions::default(),
         }
     }

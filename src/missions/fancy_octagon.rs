@@ -5,14 +5,11 @@ use tokio_serial::SerialStream;
 use crate::{
     act_nest,
     missions::{
-        action::{
-            ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
-            RaceAction, TupleSecond,
-        },
+        action::{ActionChain, ActionDataConditional, ActionSequence, ActionWhile},
         basic::DelayAction,
         extra::{
             AlwaysBetterFalse, AlwaysBetterTrue, AlwaysTrue, CountFalse, CountTrue, OutputType,
-            Terminal, ToVec,
+            Terminal,
         },
         movement::{
             AdjustType, ClampX, ConstYaw, LinearYawFromX, NoAdjust, OffsetToPose, SetX,
@@ -29,7 +26,7 @@ use crate::{
 
 use super::{
     action::ActionExec,
-    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
+    action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard},
 };
 
 pub fn octagon_path_model() -> Path {
@@ -59,7 +56,7 @@ pub fn fancy_octagon<
         + Unpin,
 >(
     context: &'static Con,
-) -> impl ActionExec<()> + '_ {
+) -> impl ActionExec<()> + 'static {
     const FULL_SPEED_Y: f32 = 0.7;
     const FULL_SPEED_X: f32 = 0.1;
     const FULL_SPEED_PITCH: f32 = -45.0 / 4.0;
