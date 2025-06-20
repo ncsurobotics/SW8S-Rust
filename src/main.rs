@@ -8,7 +8,7 @@ use sw8s_rust_lib::{
         control_board::{ControlBoard, SensorStatuses},
         meb::MainElectronicsBoard,
     },
-    config::Config,
+    config::{Config, SHUTDOWN_TIMEOUT},
     logln,
     missions::{
         action::ActionExec,
@@ -165,7 +165,12 @@ async fn main() {
         mission_ct_clone.cancel();
         // Wait for running mission to exit
         handle.block_on(async {
-            let _ = SHUTDOWN_GUARD.acquire().await.unwrap();
+            let _guard = timeout(
+                Duration::from_secs(SHUTDOWN_TIMEOUT),
+                SHUTDOWN_GUARD.acquire(),
+            )
+            .await
+            .unwrap();
         });
         exit(1);
     }));
@@ -188,7 +193,12 @@ async fn main() {
     });
 
     for arg in env::args().skip(1).collect::<Vec<String>>() {
-        let _guard = SHUTDOWN_GUARD.acquire().await.unwrap();
+        let _guard = timeout(
+            Duration::from_secs(SHUTDOWN_TIMEOUT),
+            SHUTDOWN_GUARD.acquire(),
+        )
+        .await
+        .unwrap();
         run_mission(&arg, mission_ct.clone()).await.unwrap();
     }
 
@@ -242,7 +252,12 @@ async fn shutdown_handler() -> (UnboundedSender<i32>, CancellationToken) {
             // Cancel running missions
             mission_ct_clone.cancel();
             // Wait for running mission to exit
-            let _guard = SHUTDOWN_GUARD.acquire().await.unwrap();
+            let _guard = timeout(
+                Duration::from_secs(SHUTDOWN_TIMEOUT),
+                SHUTDOWN_GUARD.acquire(),
+            )
+            .await
+            .unwrap();
             exit(exit_status)
         };
     });

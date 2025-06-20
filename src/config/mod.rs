@@ -8,6 +8,8 @@ use std::fs::read_to_string;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
+pub const SHUTDOWN_TIMEOUT: u64 = 5;
+
 // Default values
 const CONFIG_FILE: &str = "config.toml";
 const CONTROL_BOARD_PATH: &str = "/dev/ttyACM0";
