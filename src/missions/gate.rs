@@ -3,6 +3,7 @@ use tokio_serial::SerialStream;
 
 use crate::{
     act_nest,
+    config::gate::Config,
     missions::{
         action::{ActionConcurrentSplit, ActionDataConditional},
         basic::descend_depth_and_go_forward,
@@ -103,13 +104,15 @@ pub fn gate_run_complex<
 }
 
 pub fn gate_run_coinflip<
+    'a,
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
 >(
-    context: &Con,
-) -> impl ActionExec<anyhow::Result<()>> + '_ {
+    context: &'a Con,
+    config: &Config,
+) -> impl ActionExec<anyhow::Result<()>> + 'a {
     const TIMEOUT: f32 = 30.0;
 
-    let depth: f32 = -1.75;
+    let depth = config.depth;
 
     act_nest!(
         ActionSequence::new,
@@ -125,7 +128,7 @@ pub fn gate_run_coinflip<
         ),
         act_nest!(
             ActionSequence::new,
-            adjust_logic(context, depth, CountTrue::new(4)),
+            adjust_logic(context, depth, CountTrue::new(config.true_count)),
             // adjust_logic(context, depth, CountFalse::new(10)),
             ActionChain::new(
                 Stability2Movement::new(
@@ -144,7 +147,7 @@ pub fn gate_run_coinflip<
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
                 ),
-                CountFalse::new(1),
+                CountFalse::new(config.false_count),
             )),
             ActionChain::new(
                 Stability2Movement::new(

@@ -47,12 +47,6 @@ pub trait BottomCamIO {
     async fn annotate_bottom_camera(&self, image: &impl ToInputArray);
 }
 
-/*
-pub trait GetConfig {
-    async fn get_config(&self) -> Configuration;
-}
-*/
-
 #[derive(Debug)]
 pub struct EmptyActionContext;
 
