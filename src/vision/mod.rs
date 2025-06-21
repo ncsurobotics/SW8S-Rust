@@ -24,6 +24,7 @@ pub mod octagon;
 pub mod path;
 pub mod path_cv;
 pub mod pca;
+pub mod slalom;
 pub mod yolo_model;
 
 pub trait Draw {
