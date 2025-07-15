@@ -30,6 +30,15 @@ pub async fn sonar<
     let cb = context.get_control_board();
     let _ = cb.bno055_periodic_read(true).await;
 
+    let initial_yaw = loop {
+        if let Some(initial_angle) = cb.responses().get_angles().await {
+            break *initial_angle.yaw() as f32;
+        } else {
+            #[cfg(feature = "logging")]
+            logln!("Failed to get initial angle");
+        }
+    };
+
     #[cfg(feature = "logging")]
     logln!("Initializing sonar with: {:?}", cfg.serial_port);
     let port = loop {
@@ -52,10 +61,21 @@ pub async fn sonar<
 
     let ping360 = Ping360::new(port);
 
+    // #[cfg(feature = "logging")]
+    // logln!("Reseting sonar unit");
+    // loop {
+    //     if let Err(e) = ping360.reset(cfg.bootloader as u8, 0).await {
+    //         #[cfg(feature = "logging")]
+    //         logln!("Failed to reset sonar unit: {e:#?}");
+    //     } else {
+    //         break;
+    //     }
+    // }
+
     #[cfg(feature = "logging")]
-    logln!("Reseting sonar unit");
+    logln!("Reseting MOTOR sonar unit");
     loop {
-        if let Err(e) = ping360.reset(cfg.bootloader as u8, 0).await {
+        if let Err(e) = ping360.motor_off().await {
             #[cfg(feature = "logging")]
             logln!("Failed to reset sonar unit: {e:#?}");
         } else {
@@ -65,7 +85,11 @@ pub async fn sonar<
 
     let (protocol_version, device_information) =
         tokio::try_join!(ping360.protocol_version(), ping360.device_information())
-            .expect("Failed to join device data results");
+            .expect("Failed to get device data!");
+
+    // let _ = cb
+    //     .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, -1.25)
+    //     .await;
 
     #[cfg(feature = "logging")]
     logln!("Opening log file");
@@ -133,9 +157,13 @@ pub async fn sonar<
             _ = cancel.cancelled() => { break; },
             r = ping360.auto_device_data() => {
                 if let Ok(d) = r {
+                    let angle_clone = d.angle.clone();
                     data.push(d);
                     #[cfg(feature = "logging")]
-                    logln!("Got data");
+                    logln!("Got data {}", angle_clone);
+                    if (angle_clone >= at.stop_angle) {
+                        break;
+                    }
                 }
             }
         }

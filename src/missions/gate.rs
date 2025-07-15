@@ -66,14 +66,13 @@ pub async fn gate_run_procedural<
     let _ = cb
         .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
         .await;
+    let current_yaw = initial_yaw;
 
-    let mut current_yaw = initial_yaw;
+    let TOLERANCE = 0.2;
+
+    let mut true_count = 0;
 
     loop {
-        if let Some(current_angle) = cb.responses().get_angles().await {
-            current_yaw = *current_angle.yaw() as f32;
-        }
-
         let detections = vision.execute().await.unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
             logln!("Getting path detection resulted in error: `{e}`\n\tUsing empty detection vec");
@@ -101,9 +100,7 @@ pub async fn gate_run_procedural<
             .collect_vec();
 
         let mut traversal_started = false;
-        let mut traversal_timer = DelayAction::new(9.5); // forward duration in seconds
-
-        let mut true_count = 0;
+        let mut traversal_timer = DelayAction::new(9.5); // forward duration in second
 
         match config.side {
             Side::Left => {
@@ -115,20 +112,18 @@ pub async fn gate_run_procedural<
                     #[cfg(feature = "logging")]
                     logln!("AVG X: {}", avg_x);
 
-                    #[cfg(feature = "logging")]
-                    logln!("True Count: {}", true_count);
-
-                    if avg_x.abs() > 0.1 {
-                        let correction = -0.5 * avg_x;
+                    if avg_x.abs() > TOLERANCE {
+                        let correction = 0.4 * avg_x;
                         let fwd = 0.0;
                         let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                             + correction * f32::cos(current_yaw * (PI / 180.0));
                         let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
                             + correction * f32::sin(current_yaw * (PI / 180.0));
+
                         let _ = cb
                             .stability_2_speed_set(
-                                x_speed,
-                                y_speed,
+                                correction,
+                                fwd,
                                 0.0,
                                 0.0,
                                 initial_yaw,
@@ -137,7 +132,7 @@ pub async fn gate_run_procedural<
                             .await;
                     } else {
                         let fwd = config.speed;
-                        let correction = 0.0;
+                        let correction = 0.05;
                         let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                             + correction * f32::cos(current_yaw * (PI / 180.0));
                         let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
@@ -145,11 +140,11 @@ pub async fn gate_run_procedural<
 
                         true_count += 1;
 
-                        if true_count > config.true_count {
+                        if true_count >= config.true_count {
                             let _ = cb
                                 .stability_2_speed_set(
-                                    x_speed,
-                                    y_speed,
+                                    correction,
+                                    fwd,
                                     0.0,
                                     0.0,
                                     initial_yaw,
@@ -174,8 +169,8 @@ pub async fn gate_run_procedural<
 
                     let _ = cb
                         .stability_2_speed_set(
-                            x_speed,
-                            y_speed,
+                            correction,
+                            fwd,
                             0.0,
                             0.0,
                             initial_yaw,
@@ -195,11 +190,8 @@ pub async fn gate_run_procedural<
                     #[cfg(feature = "logging")]
                     logln!("AVG X: {}", avg_x);
 
-                    #[cfg(feature = "logging")]
-                    logln!("True Count: {}", true_count);
-
-                    if avg_x.abs() > 0.1 {
-                        let correction = -0.5 * avg_x;
+                    if avg_x.abs() > 0.4 {
+                        let correction = 0.5 * avg_x;
                         let fwd = 0.0;
                         let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                             + correction * f32::cos(current_yaw * (PI / 180.0));
@@ -207,8 +199,8 @@ pub async fn gate_run_procedural<
                             + correction * f32::sin(current_yaw * (PI / 180.0));
                         let _ = cb
                             .stability_2_speed_set(
-                                x_speed,
-                                y_speed,
+                                correction,
+                                fwd,
                                 0.0,
                                 0.0,
                                 initial_yaw,
@@ -223,13 +215,10 @@ pub async fn gate_run_procedural<
                         let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
                             + correction * f32::sin(current_yaw * (PI / 180.0));
 
-                        true_count += 1;
-
-                        if true_count > config.true_count {
                             let _ = cb
                                 .stability_2_speed_set(
-                                    x_speed,
-                                    y_speed,
+                                    correction,
+                                    fwd,
                                     0.0,
                                     0.0,
                                     initial_yaw,
@@ -238,7 +227,6 @@ pub async fn gate_run_procedural<
                                 .await;
                             traversal_timer.execute().await;
                             break;
-                        }
                     }
                 } else {
                     // Fallback search behavior
@@ -254,8 +242,8 @@ pub async fn gate_run_procedural<
 
                     let _ = cb
                         .stability_2_speed_set(
-                            x_speed,
-                            y_speed,
+                            correction,
+                            fwd,
                             0.0,
                             0.0,
                             initial_yaw,

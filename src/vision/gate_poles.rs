@@ -44,10 +44,15 @@ impl TryFrom<i32> for Target {
     type Error = TargetError;
     fn try_from(value: i32) -> std::result::Result<Self, Self::Error> {
         match value {
-            0 => Ok(Self::Red),
+            // 0 => Ok(Self::Red),
+            // 1 => Ok(Self::Pole),
+            // 2 => Ok(Self::Blue),
+            // 3 => Ok(Self::Gate),
+            // 4 => Ok(Self::Middle),
+            0 => Ok(Self::Gate),
             1 => Ok(Self::Pole),
-            2 => Ok(Self::Blue),
-            3 => Ok(Self::Gate),
+            2 => Ok(Self::Red),
+            3 => Ok(Self::Blue),
             4 => Ok(Self::Middle),
             x => Err(TargetError { x }),
         }
@@ -74,7 +79,7 @@ impl GatePoles<OnnxModel> {
     }
 
     pub fn load_640(threshold: f64) -> Self {
-        let model = load_onnx!("models/gate_new_640.onnx", 640, 5);
+        let model = load_onnx!("models/gate_6_17_25.onnx", 640, 5);
 
         Self { model, threshold }
     }

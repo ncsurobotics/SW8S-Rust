@@ -32,6 +32,9 @@ networked_testing = []
 
 [dependencies]
 opencv = { version = "0.94.2", default-features = false, features = ["dnn", "imgcodecs", "imgproc", "videoio", "cudaimgproc", "cudafilters"] } # Vision processing
+geo = { version = "0.30.0"}
+geo-types = "0.7.16"
+hdbscan = "0.10.1"
 # opencv = "0.94.2"
 tokio-serial = "5.4.1" # Async serial comms
 tokio = { version = "1.38.0", features = ["full"] } # Async runtime

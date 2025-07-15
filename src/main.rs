@@ -27,7 +27,7 @@ use sw8s_rust_lib::{
         octagon::octagon,
         path_align::path_align_procedural,
         reset_torpedo::ResetTorpedo,
-        slalom::slalom,
+        slalom::{slalom, slalom_sonar},
         sonar::sonar,
         spin::spin,
         vision::PIPELINE_KILL,
@@ -164,16 +164,16 @@ async fn main() {
         // Cancel running missions
         mission_ct_clone.cancel();
         // Wait for running mission to exit
-        handle.block_on(async {
-            if let Err(_) = timeout(
-                Duration::from_secs(SHUTDOWN_TIMEOUT),
-                SHUTDOWN_GUARD.acquire(),
-            )
-            .await
-            {
-                logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds")
-            }
-        });
+        // handle.block_on(async {
+        //     if let Err(_) = timeout(
+        //         Duration::from_secs(SHUTDOWN_TIMEOUT),
+        //         SHUTDOWN_GUARD.acquire(),
+        //     )
+        //     .await
+        //     {
+        //         logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds")
+        //     }
+        // });
         exit(1);
     }));
 
@@ -563,7 +563,7 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             Ok(())
         }
         "slalom" => {
-            let _ = slalom(
+            let _ = slalom_sonar(
                 &FullActionContext::new(
                     control_board().await,
                     meb().await,
@@ -572,6 +572,8 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
                     gate_target().await,
                 ),
                 &config.missions.slalom,
+                &config.sonar,
+                cancel,
             )
             .await;
             Ok(())
