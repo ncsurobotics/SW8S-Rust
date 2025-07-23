@@ -407,19 +407,20 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             // )
             // .execute()
             // .await;
-            let _ = gate_run_procedural(
-                &FullActionContext::new(
-                    control_board().await,
-                    meb().await,
-                    front_cam().await,
-                    bottom_cam().await,
-                    gate_target().await,
-                ),
-                &config.missions.gate,
-            )
-            .await;
-
-            Ok(())
+            let context = &FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            );
+            tokio::select! {
+                _ = cancel.cancelled() => Ok(()),
+                _ = gate_run_procedural(
+                    context,
+                    &config.missions.gate,
+                ) => Ok(()),
+            }
         }
         "gate_run_testing" => {
             let _ = gate_run_testing(&FullActionContext::new(
@@ -563,20 +564,20 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             Ok(())
         }
         "slalom" => {
-            let _ = slalom_sonar(
-                &FullActionContext::new(
-                    control_board().await,
-                    meb().await,
-                    front_cam().await,
-                    bottom_cam().await,
-                    gate_target().await,
-                ),
-                &config.missions.slalom,
-                &config.sonar,
-                cancel,
-            )
-            .await;
-            Ok(())
+            let context = &FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            );
+            tokio::select! {
+                _ = cancel.cancelled() => Ok(()),
+                _ = slalom(
+                        context,
+                        &config.missions.slalom,
+                    ) => Ok(()),
+            }
         }
         "sonar" => {
             let _ = sonar(

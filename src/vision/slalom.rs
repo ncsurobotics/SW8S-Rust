@@ -62,13 +62,13 @@ pub struct Slalom<T: VisionModel> {
 
 impl Slalom<OnnxModel> {
     pub fn new(model_name: &str, model_size: i32, threshold: f64) -> Result<Self> {
-        let model = OnnxModel::from_file(model_name, model_size, 5)?;
+        let model = OnnxModel::from_file(model_name, model_size, 2)?;
 
         Ok(Self { model, threshold })
     }
 
     pub fn load_640(threshold: f64) -> Self {
-        let model = load_onnx!("models/slalom_640.onnx", 640, 2);
+        let model = load_onnx!("models/2025Slalom.onnx", 640, 2);
 
         Self { model, threshold }
     }
@@ -76,7 +76,7 @@ impl Slalom<OnnxModel> {
 
 impl Default for Slalom<OnnxModel> {
     fn default() -> Self {
-        Self::load_640(0.5)
+        Self::load_640(0.60)
     }
 }
 

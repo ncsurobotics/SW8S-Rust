@@ -15,6 +15,8 @@ use std::{error::Error, fmt::Display};
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
     Red,
+    LeftPole,
+    RightPole,
     Pole,
     Blue,
     Gate,
@@ -50,10 +52,13 @@ impl TryFrom<i32> for Target {
             // 3 => Ok(Self::Gate),
             // 4 => Ok(Self::Middle),
             0 => Ok(Self::Gate),
-            1 => Ok(Self::Pole),
+            1 => Ok(Self::Middle),
             2 => Ok(Self::Red),
             3 => Ok(Self::Blue),
-            4 => Ok(Self::Middle),
+            // 4 => Ok(Self::Pole),
+            // 5 => Ok(Self::Pole),
+            4 => Ok(Self::LeftPole),
+            5 => Ok(Self::RightPole),
             x => Err(TargetError { x }),
         }
     }
@@ -79,7 +84,7 @@ impl GatePoles<OnnxModel> {
     }
 
     pub fn load_640(threshold: f64) -> Self {
-        let model = load_onnx!("models/gate_6_17_25.onnx", 640, 5);
+        let model = load_onnx!("models/2025Gate.onnx", 640, 6);
 
         Self { model, threshold }
     }

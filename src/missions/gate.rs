@@ -79,9 +79,14 @@ pub async fn gate_run_procedural<
             vec![]
         });
 
-        let pole = detections
+        let left_pole = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Pole))
+            .filter(|d| matches!(d.class().identifier, Target::LeftPole))
+            .collect_vec();
+
+        let right_pole = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::RightPole))
             .collect_vec();
 
         let middle = detections
@@ -91,12 +96,12 @@ pub async fn gate_run_procedural<
 
         let red = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Red))
+            .filter(|d| matches!(d.class().identifier, Target::Blue))
             .collect_vec();
 
         let blue = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Blue))
+            .filter(|d| matches!(d.class().identifier, Target::Red))
             .collect_vec();
 
         let mut traversal_started = false;
@@ -110,10 +115,122 @@ pub async fn gate_run_procedural<
                         / blue.len() as f32;
 
                     #[cfg(feature = "logging")]
-                    logln!("AVG X: {}", avg_x);
+                    logln!("Found SHARK: {}", avg_x);
 
-                    if avg_x.abs() > TOLERANCE {
-                        let correction = 0.4 * avg_x;
+                    if avg_x.abs() + 0.4 > TOLERANCE {
+                        let correction = 0.4 * (avg_x + 0.4);
+                        let fwd = 0.0;
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                            + correction * f32::cos(current_yaw * (PI / 180.0));
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                            + correction * f32::sin(current_yaw * (PI / 180.0));
+
+                        let _ = cb
+                            .stability_2_speed_set(
+                                correction,
+                                fwd,
+                                0.0,
+                                0.0,
+                                initial_yaw,
+                                config.depth,
+                            )
+                            .await;
+                    } else {
+                        let fwd = config.speed;
+                        let correction = 0.05;
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                            + correction * f32::cos(current_yaw * (PI / 180.0));
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                            + correction * f32::sin(current_yaw * (PI / 180.0));
+
+                        true_count += 1;
+
+                        if true_count >= config.true_count {
+                            let _ = cb
+                                .stability_2_speed_set(
+                                    correction,
+                                    fwd,
+                                    0.0,
+                                    0.0,
+                                    initial_yaw,
+                                    config.depth,
+                                )
+                                .await;
+                            traversal_timer.execute().await;
+                            break;
+                        }
+                    }
+                } else if left_pole.len() > 0 && middle.len() > 0 {
+                    let left_avg = left_pole
+                        .iter()
+                        .map(|d| *d.position().x() as f32)
+                        .sum::<f32>()
+                        / left_pole.len() as f32;
+                    let middle_avg = middle.iter().map(|d| *d.position().x() as f32).sum::<f32>()
+                        / middle.len() as f32;
+                    let avg_x = (left_avg + middle_avg as f32) / 2.0;
+
+                    #[cfg(feature = "logging")]
+                    logln!("Found LEFT AND MIDDLE: {}", avg_x);
+
+                    if avg_x.abs() + 0.4 > TOLERANCE {
+                        let correction = 0.4 * (avg_x + 0.4);
+                        let fwd = 0.0;
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                            + correction * f32::cos(current_yaw * (PI / 180.0));
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                            + correction * f32::sin(current_yaw * (PI / 180.0));
+
+                        let _ = cb
+                            .stability_2_speed_set(
+                                correction,
+                                fwd,
+                                0.0,
+                                0.0,
+                                initial_yaw,
+                                config.depth,
+                            )
+                            .await;
+                    } else {
+                        let fwd = config.speed;
+                        let correction = 0.05;
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                            + correction * f32::cos(current_yaw * (PI / 180.0));
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                            + correction * f32::sin(current_yaw * (PI / 180.0));
+
+                        true_count += 1;
+
+                        if true_count >= config.true_count {
+                            let _ = cb
+                                .stability_2_speed_set(
+                                    correction,
+                                    fwd,
+                                    0.0,
+                                    0.0,
+                                    initial_yaw,
+                                    config.depth,
+                                )
+                                .await;
+                            traversal_timer.execute().await;
+                            break;
+                        }
+                    }
+                } else if middle.len() > 0 {
+                    let avg_x = middle.iter().map(|d| *d.position().x() as f32).sum::<f32>()
+                        / middle.len() as f32;
+                    // let correction = 0.4 * (avg_x - 0.3);
+                    // let fwd = 0.0;
+
+                    #[cfg(feature = "logging")]
+                    logln!("Found MIDDLE: {}", avg_x);
+
+                    // let _ = cb
+                    //     .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
+                    //     .await;
+
+                    if avg_x.abs() + 0.4 > TOLERANCE {
+                        let correction = 0.4 * (avg_x + 0.4);
                         let fwd = 0.0;
                         let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                             + correction * f32::cos(current_yaw * (PI / 180.0));
@@ -160,22 +277,15 @@ pub async fn gate_run_procedural<
                     #[cfg(feature = "logging")]
                     logln!("LEFT: Missing Features, Fallback");
 
-                    let correction = -0.2;
-                    let fwd = 0.0;
+                    let correction = 0.0;
+                    let fwd = 0.2;
                     let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                         + correction * f32::cos(current_yaw * (PI / 180.0));
                     let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
                         + correction * f32::sin(current_yaw * (PI / 180.0));
 
                     let _ = cb
-                        .stability_2_speed_set(
-                            correction,
-                            fwd,
-                            0.0,
-                            0.0,
-                            initial_yaw,
-                            config.depth,
-                        )
+                        .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
                         .await;
                     // DelayAction::new(1.0).execute().await;
                 }
@@ -215,18 +325,18 @@ pub async fn gate_run_procedural<
                         let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
                             + correction * f32::sin(current_yaw * (PI / 180.0));
 
-                            let _ = cb
-                                .stability_2_speed_set(
-                                    correction,
-                                    fwd,
-                                    0.0,
-                                    0.0,
-                                    initial_yaw,
-                                    config.depth,
-                                )
-                                .await;
-                            traversal_timer.execute().await;
-                            break;
+                        let _ = cb
+                            .stability_2_speed_set(
+                                correction,
+                                fwd,
+                                0.0,
+                                0.0,
+                                initial_yaw,
+                                config.depth,
+                            )
+                            .await;
+                        traversal_timer.execute().await;
+                        break;
                     }
                 } else {
                     // Fallback search behavior
@@ -241,14 +351,7 @@ pub async fn gate_run_procedural<
                         + correction * f32::sin(current_yaw * (PI / 180.0));
 
                     let _ = cb
-                        .stability_2_speed_set(
-                            correction,
-                            fwd,
-                            0.0,
-                            0.0,
-                            initial_yaw,
-                            config.depth,
-                        )
+                        .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
                         .await;
                 }
             }

@@ -249,7 +249,7 @@ pub async fn slalom<
 
     loop {
         #[cfg(feature = "logging")]
-        logln!("ATTEMPTING TO DO SLALOM DETECTION PLEASE");
+        logln!("DOING SLALOM DETECTION");
         let detections = vision.execute().await.unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
             logln!("Getting path detection resulted in error: `{e}`\n\tUsing empty detection vec");
@@ -332,10 +332,10 @@ pub async fn slalom<
                 for x in side.iter().map(|d| *d.position().x() as f32) {
                     // If the side poles x coord is greater than the middle pole, it's on the left
                     // Haven't checked if this is actually the right side, it might be flipped
-                    if x > middle_x {
+                    if x < middle_x {
                         sum_l += x;
                         count_l += 1.0;
-                    } else if x < middle_x {
+                    } else if x > middle_x {
                         sum_r += x;
                         count_r += 1.0;
                     }
@@ -370,8 +370,8 @@ pub async fn slalom<
                     #[cfg(feature = "logging")]
                     logln!("Got only middle pole, finished centering");
                     let x = match config.side {
-                        Left => config.speed,
-                        Right => config.speed * -1.0,
+                        Left => config.speed * -0.5,
+                        Right => config.speed,
                     };
 
                     let _ = cb
@@ -398,7 +398,7 @@ pub async fn slalom<
                 let x =
                     side.iter().map(|d| *d.position().x() as f32).sum::<f32>() / side.len() as f32;
                 let _ = cb
-                    .stability_2_speed_set(x, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+                    .stability_2_speed_set(x * -1.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
                     .await;
             }
         }
