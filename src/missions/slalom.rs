@@ -23,6 +23,7 @@ use crate::{
     },
     missions::{
         action::ActionExec,
+        basic::DelayAction,
         vision::{VisionNorm, VisionNormAngle},
     },
 };
@@ -54,10 +55,14 @@ pub async fn slalom<
 
     let mut start_detections = 0;
     let mut end_detections = 0;
+    let mut true_count = 0;
+    let mut traversal_timer = DelayAction::new(5.0); // forward duration in second
+    let mut strafe_timer = DelayAction::new(2.0);
 
     let _ = cb
-        .stability_2_speed_set(0.0, config.speed, 0.0, 0.0, initial_yaw, config.depth)
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
         .await;
+    traversal_timer.execute().await;
 
     #[cfg(feature = "logging")]
     logln!("Starting slalom detection");
@@ -81,12 +86,36 @@ pub async fn slalom<
             end_detections = 0;
 
             let x = *position.x() as f32;
-            if let Err(e) = cb
-                .stability_2_speed_set(x, config.speed, 0.0, 0.0, initial_yaw, config.depth)
-                .await
-            {
+            let error_x = x.abs();
+
+            let mut correction = 0.0;
+            if (x.abs() < 0.2) {
+                true_count += 1;
+                if (true_count >= 4) {
+                    correction = 0.0;
+                    #[cfg(feature = "logging")]
+                    logln!("BEGIN LOGIC");
+
+                    break;
+                } else {
+                    #[cfg(feature = "logging")]
+                    logln!("true_count: {true_count}/4");
+                }
+            } else {
                 #[cfg(feature = "logging")]
-                logln!("SASSIST2 command to cb resulted in error: `{e}`");
+                logln!("AVG_X: {error_x}");
+
+                correction = 0.4 * x;
+                let _ = cb
+                    .stability_2_speed_set(
+                        correction,
+                        config.speed,
+                        0.0,
+                        0.0,
+                        initial_yaw,
+                        config.depth,
+                    )
+                    .await;
             }
         } else {
             if start_detections >= config.start_detections {
@@ -99,6 +128,29 @@ pub async fn slalom<
             }
         }
     }
+    #[cfg(feature = "logging")]
+    logln!("STRAFE");
+
+    let _ = cb
+        .stability_2_speed_set(0.6, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+        .await;
+    strafe_timer.execute().await;
+    #[cfg(feature = "logging")]
+    logln!("GO FORWARD");
+
+    let _ = cb
+        .stability_2_speed_set(0.05, 0.6, 0.0, 0.0, initial_yaw, config.depth)
+        .await;
+    traversal_timer.execute().await;
+    #[cfg(feature = "logging")]
+    logln!("STOP");
+
+    let _ = cb
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+        .await;
+
+    #[cfg(feature = "logging")]
+    logln!("DONE");
 
     let _ = cb
         .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)

@@ -17,6 +17,8 @@ pub enum Target {
     Red,
     LeftPole,
     RightPole,
+    Shark,
+    Sawfish,
     Pole,
     Blue,
     Gate,
@@ -53,8 +55,8 @@ impl TryFrom<i32> for Target {
             // 4 => Ok(Self::Middle),
             0 => Ok(Self::Gate),
             1 => Ok(Self::Middle),
-            2 => Ok(Self::Red),
-            3 => Ok(Self::Blue),
+            2 => Ok(Self::Shark),
+            3 => Ok(Self::Sawfish),
             // 4 => Ok(Self::Pole),
             // 5 => Ok(Self::Pole),
             4 => Ok(Self::LeftPole),
@@ -84,7 +86,7 @@ impl GatePoles<OnnxModel> {
     }
 
     pub fn load_640(threshold: f64) -> Self {
-        let model = load_onnx!("models/2025Gate.onnx", 640, 6);
+        let model = load_onnx!("models/new_gate.onnx", 640, 6);
 
         Self { model, threshold }
     }

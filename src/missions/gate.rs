@@ -68,7 +68,7 @@ pub async fn gate_run_procedural<
         .await;
     let current_yaw = initial_yaw;
 
-    const TOLERANCE: f32 = 0.2;
+    let TOLERANCE = 0.4;
 
     let mut true_count = 0;
 
@@ -79,14 +79,9 @@ pub async fn gate_run_procedural<
             vec![]
         });
 
-        let left_pole = detections
+        let pole = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::LeftPole))
-            .collect_vec();
-
-        let _right_pole = detections
-            .iter()
-            .filter(|d| matches!(d.class().identifier, Target::RightPole))
+            .filter(|d| matches!(d.class().identifier, Target::Pole))
             .collect_vec();
 
         let middle = detections
@@ -94,35 +89,35 @@ pub async fn gate_run_procedural<
             .filter(|d| matches!(d.class().identifier, Target::Middle))
             .collect_vec();
 
-        let red = detections
+        let sawfish = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Blue))
+            .filter(|d| matches!(d.class().identifier, Target::Sawfish))
             .collect_vec();
 
-        let blue = detections
+        let shark = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Red))
+            .filter(|d| matches!(d.class().identifier, Target::Shark))
             .collect_vec();
 
-        let mut _traversal_started = false;
+        let mut traversal_started = false;
         let mut traversal_timer = DelayAction::new(9.5); // forward duration in second
 
         match config.side {
             Side::Left => {
-                if blue.len() > 0 {
+                if shark.len() > 0 {
                     // Center on average x of blue
-                    let avg_x = blue.iter().map(|d| *d.position().x() as f32).sum::<f32>()
-                        / blue.len() as f32;
+                    let avg_x = shark.iter().map(|d| *d.position().x() as f32).sum::<f32>()
+                        / shark.len() as f32;
 
                     #[cfg(feature = "logging")]
-                    logln!("Found SHARK: {}", avg_x);
+                    logln!("SHARK AVG X: {}", avg_x);
 
-                    if avg_x.abs() + 0.4 > TOLERANCE {
-                        let correction = 0.4 * (avg_x + 0.4);
+                    if avg_x.abs() > TOLERANCE {
+                        let correction = 0.4 * avg_x;
                         let fwd = 0.0;
-                        let _x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                             + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let _y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
                             + correction * f32::sin(current_yaw * (PI / 180.0));
 
                         let _ = cb
@@ -138,121 +133,9 @@ pub async fn gate_run_procedural<
                     } else {
                         let fwd = config.speed;
                         let correction = 0.05;
-                        let _x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                             + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let _y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
-                            + correction * f32::sin(current_yaw * (PI / 180.0));
-
-                        true_count += 1;
-
-                        if true_count >= config.true_count {
-                            let _ = cb
-                                .stability_2_speed_set(
-                                    correction,
-                                    fwd,
-                                    0.0,
-                                    0.0,
-                                    initial_yaw,
-                                    config.depth,
-                                )
-                                .await;
-                            traversal_timer.execute().await;
-                            break;
-                        }
-                    }
-                } else if left_pole.len() > 0 && middle.len() > 0 {
-                    let left_avg = left_pole
-                        .iter()
-                        .map(|d| *d.position().x() as f32)
-                        .sum::<f32>()
-                        / left_pole.len() as f32;
-                    let middle_avg = middle.iter().map(|d| *d.position().x() as f32).sum::<f32>()
-                        / middle.len() as f32;
-                    let avg_x = (left_avg + middle_avg as f32) / 2.0;
-
-                    #[cfg(feature = "logging")]
-                    logln!("Found LEFT AND MIDDLE: {}", avg_x);
-
-                    if avg_x.abs() + 0.4 > TOLERANCE {
-                        let correction = 0.4 * (avg_x + 0.4);
-                        let fwd = 0.0;
-                        let _x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
-                            + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let _y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
-                            + correction * f32::sin(current_yaw * (PI / 180.0));
-
-                        let _ = cb
-                            .stability_2_speed_set(
-                                correction,
-                                fwd,
-                                0.0,
-                                0.0,
-                                initial_yaw,
-                                config.depth,
-                            )
-                            .await;
-                    } else {
-                        let fwd = config.speed;
-                        let correction = 0.05;
-                        let _x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
-                            + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let _y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
-                            + correction * f32::sin(current_yaw * (PI / 180.0));
-
-                        true_count += 1;
-
-                        if true_count >= config.true_count {
-                            let _ = cb
-                                .stability_2_speed_set(
-                                    correction,
-                                    fwd,
-                                    0.0,
-                                    0.0,
-                                    initial_yaw,
-                                    config.depth,
-                                )
-                                .await;
-                            traversal_timer.execute().await;
-                            break;
-                        }
-                    }
-                } else if middle.len() > 0 {
-                    let avg_x = middle.iter().map(|d| *d.position().x() as f32).sum::<f32>()
-                        / middle.len() as f32;
-                    // let correction = 0.4 * (avg_x - 0.3);
-                    // let fwd = 0.0;
-
-                    #[cfg(feature = "logging")]
-                    logln!("Found MIDDLE: {}", avg_x);
-
-                    // let _ = cb
-                    //     .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
-                    //     .await;
-
-                    if avg_x.abs() + 0.4 > TOLERANCE {
-                        let correction = 0.4 * (avg_x + 0.4);
-                        let fwd = 0.0;
-                        let _x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
-                            + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let _y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
-                            + correction * f32::sin(current_yaw * (PI / 180.0));
-
-                        let _ = cb
-                            .stability_2_speed_set(
-                                correction,
-                                fwd,
-                                0.0,
-                                0.0,
-                                initial_yaw,
-                                config.depth,
-                            )
-                            .await;
-                    } else {
-                        let fwd = config.speed;
-                        let correction = 0.05;
-                        let _x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
-                            + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let _y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
                             + correction * f32::sin(current_yaw * (PI / 180.0));
 
                         true_count += 1;
@@ -277,11 +160,11 @@ pub async fn gate_run_procedural<
                     #[cfg(feature = "logging")]
                     logln!("LEFT: Missing Features, Fallback");
 
-                    let correction = 0.0;
-                    let fwd = 0.2;
-                    let _x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                    let correction = -0.2;
+                    let fwd = 0.0;
+                    let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                         + correction * f32::cos(current_yaw * (PI / 180.0));
-                    let _y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                    let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
                         + correction * f32::sin(current_yaw * (PI / 180.0));
 
                     let _ = cb
@@ -292,21 +175,25 @@ pub async fn gate_run_procedural<
             }
 
             Side::Right => {
-                if red.len() > 0 {
+                if sawfish.len() > 0 {
                     // Center on average x of blue
-                    let avg_x = red.iter().map(|d| *d.position().x() as f32).sum::<f32>()
-                        / red.len() as f32;
+                    let avg_x = sawfish
+                        .iter()
+                        .map(|d| *d.position().x() as f32)
+                        .sum::<f32>()
+                        / sawfish.len() as f32;
 
                     #[cfg(feature = "logging")]
-                    logln!("AVG X: {}", avg_x);
+                    logln!("SAWFISH AVG X: {}", avg_x);
 
-                    if avg_x.abs() > 0.4 {
-                        let correction = 0.5 * avg_x;
+                    if avg_x.abs() > TOLERANCE {
+                        let correction = 0.4 * avg_x;
                         let fwd = 0.0;
-                        let _x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                             + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let _y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
                             + correction * f32::sin(current_yaw * (PI / 180.0));
+
                         let _ = cb
                             .stability_2_speed_set(
                                 correction,
@@ -319,35 +206,39 @@ pub async fn gate_run_procedural<
                             .await;
                     } else {
                         let fwd = config.speed;
-                        let correction = 0.0;
-                        let _x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                        let correction = 0.05;
+                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                             + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let _y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
                             + correction * f32::sin(current_yaw * (PI / 180.0));
 
-                        let _ = cb
-                            .stability_2_speed_set(
-                                correction,
-                                fwd,
-                                0.0,
-                                0.0,
-                                initial_yaw,
-                                config.depth,
-                            )
-                            .await;
-                        traversal_timer.execute().await;
-                        break;
+                        true_count += 1;
+
+                        if true_count >= config.true_count {
+                            let _ = cb
+                                .stability_2_speed_set(
+                                    correction,
+                                    fwd,
+                                    0.0,
+                                    0.0,
+                                    initial_yaw,
+                                    config.depth,
+                                )
+                                .await;
+                            traversal_timer.execute().await;
+                            break;
+                        }
                     }
                 } else {
                     // Fallback search behavior
                     #[cfg(feature = "logging")]
                     logln!("RIGHT: Missing Features, Fallback");
-                    // DelayAction::new(1.0).execute().await;
+
                     let correction = 0.2;
                     let fwd = 0.0;
-                    let _x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
+                    let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
                         + correction * f32::cos(current_yaw * (PI / 180.0));
-                    let _y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
+                    let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
                         + correction * f32::sin(current_yaw * (PI / 180.0));
 
                     let _ = cb

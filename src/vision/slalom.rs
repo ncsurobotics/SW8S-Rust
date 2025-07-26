@@ -30,9 +30,13 @@ impl Slalom {
 impl Default for Slalom {
     fn default() -> Self {
         Self::new(
-            (Yuv { y: 0, u: 0, v: 175 })..=(Yuv {
-                y: 255,
-                u: 127,
+            (Yuv {
+                y: 20,
+                u: 100,
+                v: 160,
+            })..=(Yuv {
+                y: 220,
+                u: 135,
                 v: 255,
             }),
             Size::from((400, 300)),
@@ -48,7 +52,7 @@ impl VisualDetector<f64> for Slalom {
         &mut self,
         input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
-        const MIN_AREA: f64 = 5000.0;
+        const MIN_AREA: f64 = 400.0;
 
         self.image = resize(input_image, &self.size)?.into();
         let mut yuv_image = Mat::default();
@@ -85,6 +89,9 @@ impl VisualDetector<f64> for Slalom {
 
         if let Some(contour) = max_contour {
             let area = contour_area_def(&contour)?;
+            #[cfg(feature = "logging")]
+            logln!("AREA: {area}");
+
             if area > MIN_AREA {
                 let rect = min_area_rect(&contour)?;
 
