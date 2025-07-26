@@ -3,7 +3,7 @@ use derive_getters::Getters;
 use itertools::Itertools;
 use num_traits::{zero, FromPrimitive, Num};
 use opencv::{
-    core::{MatTraitConst, Point, Rect2d, Scalar, Vector},
+    core::{MatTraitConst, Point, Rect2d, Scalar, VecN, Vector},
     imgproc::{self, LINE_8},
     prelude::Mat,
 };
@@ -25,6 +25,7 @@ pub mod path;
 pub mod path_cv;
 pub mod pca;
 pub mod slalom;
+pub mod slalom_yolo;
 pub mod yolo_model;
 
 pub trait Draw {
@@ -411,3 +412,66 @@ impl From<Vector<Mat>> for VecMatWrapper {
 
 unsafe impl Send for VecMatWrapper {}
 unsafe impl Sync for VecMatWrapper {}
+
+#[derive(Debug, PartialEq)]
+pub struct Yuv {
+    pub y: u8,
+    pub u: u8,
+    pub v: u8,
+}
+
+impl From<&VecN<u8, 3>> for Yuv {
+    fn from(value: &VecN<u8, 3>) -> Self {
+        Self {
+            y: value[0],
+            u: value[1],
+            v: value[2],
+        }
+    }
+}
+
+impl From<&Yuv> for VecN<u8, 3> {
+    fn from(val: &Yuv) -> Self {
+        VecN::from_array([val.y, val.u, val.v])
+    }
+}
+
+#[derive(Debug, Clone, Getters, PartialEq)]
+pub struct PosVector {
+    x: f64,
+    y: f64,
+    z: f64,
+    angle: f64,
+}
+
+impl PosVector {
+    fn new(x: f64, y: f64, z: f64, angle: f64) -> Self {
+        Self { x, y, z, angle }
+    }
+}
+
+impl RelPosAngle for PosVector {
+    type Number = f64;
+
+    fn offset_angle(&self) -> Angle2D<Self::Number> {
+        Angle2D {
+            x: self.x,
+            y: self.y,
+            angle: self.angle,
+        }
+    }
+}
+
+impl Mul<&Mat> for PosVector {
+    type Output = Self;
+
+    fn mul(self, rhs: &Mat) -> Self::Output {
+        let size = rhs.size().unwrap();
+        Self {
+            x: (self.x + 0.5) * (size.width as f64),
+            y: (self.y + 0.5) * (size.height as f64),
+            z: 0.,
+            angle: self.angle,
+        }
+    }
+}

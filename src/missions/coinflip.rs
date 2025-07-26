@@ -62,7 +62,7 @@ pub async fn coinflip_procedural<
             vec![]
         });
 
-        let gate = detections
+        let _gate = detections
             .iter()
             .filter(|d| matches!(d.class().identifier, Target::Gate))
             .collect_vec();

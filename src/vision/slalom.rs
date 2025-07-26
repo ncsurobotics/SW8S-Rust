@@ -1,93 +1,151 @@
-use anyhow::Result;
-use derive_getters::Getters;
-use opencv::{core::Size, prelude::Mat};
-
-use crate::load_onnx;
-
-use super::{
-    nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},
-    yolo_model::YoloProcessor,
+use super::{image_prep::resize, MatWrapper, PosVector, VisualDetection, VisualDetector, Yuv};
+use opencv::{
+    core::{in_range, Point, Scalar, Size, Vector},
+    imgproc::{
+        box_points, contour_area_def, cvt_color_def, find_contours_def, min_area_rect,
+        CHAIN_APPROX_SIMPLE, COLOR_BGR2YUV, RETR_EXTERNAL,
+    },
+    prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
-
-use core::hash::Hash;
-use std::{error::Error, fmt::Display};
-
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
-pub enum Target {
-    Middle,
-    Side,
-}
-
-impl From<YoloClass<Target>> for Target {
-    fn from(value: YoloClass<Target>) -> Self {
-        value.identifier
-    }
-}
+use std::ops::RangeInclusive;
 
 #[derive(Debug)]
-pub struct TargetError {
-    x: i32,
+pub struct Slalom {
+    color_bounds: RangeInclusive<Yuv>,
+    size: Size,
+    image: MatWrapper,
 }
 
-impl Display for TargetError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} is outside known classIDs [0, 1]", self.x)
-    }
-}
-
-impl Error for TargetError {}
-
-impl TryFrom<i32> for Target {
-    type Error = TargetError;
-    fn try_from(value: i32) -> std::result::Result<Self, Self::Error> {
-        match value {
-            0 => Ok(Self::Middle),
-            1 => Ok(Self::Side),
-            x => Err(TargetError { x }),
+impl Slalom {
+    pub fn new(color_bounds: RangeInclusive<Yuv>, size: Size) -> Self {
+        Self {
+            color_bounds,
+            size,
+            image: Mat::default().into(),
         }
     }
 }
 
-impl Display for Target {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-#[derive(Debug, Clone, Getters)]
-pub struct Slalom<T: VisionModel> {
-    model: T,
-    threshold: f64,
-}
-
-impl Slalom<OnnxModel> {
-    pub fn new(model_name: &str, model_size: i32, threshold: f64) -> Result<Self> {
-        let model = OnnxModel::from_file(model_name, model_size, 2)?;
-
-        Ok(Self { model, threshold })
-    }
-
-    pub fn load_640(threshold: f64) -> Self {
-        let model = load_onnx!("models/2025Slalom.onnx", 640, 2);
-
-        Self { model, threshold }
-    }
-}
-
-impl Default for Slalom<OnnxModel> {
+// TODO: Change these to match slalom, not path
+impl Default for Slalom {
     fn default() -> Self {
-        Self::load_640(0.60)
+        Self::new(
+            (Yuv { y: 0, u: 0, v: 175 })..=(Yuv {
+                y: 255,
+                u: 127,
+                v: 255,
+            }),
+            Size::from((400, 300)),
+        )
     }
 }
 
-impl YoloProcessor for Slalom<OnnxModel> {
-    type Target = Target;
+impl VisualDetector<f64> for Slalom {
+    type ClassEnum = bool;
+    type Position = PosVector;
 
-    fn detect_yolo_v5(&mut self, image: &Mat) -> Vec<YoloDetection> {
-        self.model.detect_yolo_v5(image, self.threshold)
+    fn detect(
+        &mut self,
+        input_image: &Mat,
+    ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
+        const MIN_AREA: f64 = 5000.0;
+
+        self.image = resize(input_image, &self.size)?.into();
+        let mut yuv_image = Mat::default();
+
+        cvt_color_def(&self.image.0, &mut yuv_image, COLOR_BGR2YUV)?;
+
+        let color_start = self.color_bounds.start();
+        let color_end = self.color_bounds.end();
+        let lower_red = Scalar::new(
+            color_start.y as f64,
+            color_start.u as f64,
+            color_start.v as f64,
+            0.,
+        );
+        let upper_red = Scalar::new(
+            color_end.y as f64,
+            color_end.u as f64,
+            color_end.v as f64,
+            0.,
+        );
+
+        let mut mask = Mat::default();
+        let _ = in_range(&yuv_image, &lower_red, &upper_red, &mut mask);
+
+        let mut contours = Vector::<Vector<Point>>::new();
+        find_contours_def(&mask, &mut contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE)?;
+
+        let max_contour = contours.iter().max_by(|x, y| {
+            contour_area_def(&x)
+                .unwrap()
+                .partial_cmp(&contour_area_def(&y).unwrap())
+                .unwrap()
+        });
+
+        if let Some(contour) = max_contour {
+            let area = contour_area_def(&contour)?;
+            if area > MIN_AREA {
+                let rect = min_area_rect(&contour)?;
+
+                let mut box_rect = Mat::default();
+                box_points(rect, &mut box_rect)?;
+
+                let box_vec: Vec<Vec<f32>> = box_rect.to_vec_2d()?;
+
+                let zero = box_vec[0].clone();
+                let one = box_vec[1].clone();
+                let two = box_vec[2].clone();
+
+                let edge1 = (one[0] - zero[0], one[1] - zero[1]);
+                let edge2 = (two[0] - one[0], two[1] - one[1]);
+
+                let edge1mag = (edge1.0.powf(2.0) + edge1.1.powf(2.0)).sqrt();
+                let edge2mag = (edge2.0.powf(2.0) + edge2.1.powf(2.0)).sqrt();
+                let longest_edge = if edge2mag > edge1mag { edge2 } else { edge1 };
+
+                let mut angle = (longest_edge.0 / longest_edge.1).atan().to_degrees() * -1.0;
+
+                angle = ((angle + 180.0) % 360.0) - 180.0;
+                if angle < -90.0 {
+                    angle += 180.0;
+                }
+
+                println!("{:?}", angle);
+
+                let center_adjusted_x = rect.center.x as f64;
+                let center_adjusted_y = rect.center.y as f64;
+
+                Ok(vec![VisualDetection {
+                    class: true,
+                    position: PosVector::new(
+                        center_adjusted_x,
+                        center_adjusted_y,
+                        0.,
+                        angle as f64,
+                    ),
+                }])
+            } else {
+                Ok(vec![VisualDetection {
+                    class: false,
+                    position: PosVector::new(0., 0., 0., 0.),
+                }])
+            }
+        } else {
+            Ok(vec![VisualDetection {
+                class: false,
+                position: PosVector::new(0., 0., 0., 0.),
+            }])
+        }
     }
 
-    fn model_size(&self) -> Size {
-        self.model.size()
+    fn normalize(&mut self, pos: &Self::Position) -> Self::Position {
+        let img_size = self.image.size().unwrap();
+        Self::Position::new(
+            ((*pos.x() / (img_size.width as f64)) - 0.5) * 2.0,
+            ((*pos.y() / (img_size.height as f64)) - 0.5) * 2.0,
+            0.,
+            *pos.angle(),
+        )
     }
 }

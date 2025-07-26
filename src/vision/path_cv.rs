@@ -1,58 +1,14 @@
-use std::ops::{Mul, RangeInclusive};
-
-use derive_getters::Getters;
+use super::{image_prep::resize, MatWrapper, PosVector, VisualDetection, VisualDetector, Yuv};
+use crate::vision::Draw;
 use opencv::{
-    core::{in_range, Point, Scalar, Size, VecN, Vector},
+    core::{in_range, Point, Scalar, Size, Vector},
     imgproc::{
         self, contour_area_def, cvt_color_def, find_contours_def, min_area_rect,
         CHAIN_APPROX_SIMPLE, COLOR_BGR2YUV, LINE_8, RETR_EXTERNAL,
     },
     prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
-
-use crate::vision::{Angle2D, Draw, RelPosAngle};
-
-use super::{image_prep::resize, MatWrapper, VisualDetection, VisualDetector};
-
-#[derive(Debug, Clone, Getters, PartialEq)]
-pub struct PosVector {
-    x: f64,
-    y: f64,
-    z: f64,
-    angle: f64,
-}
-
-impl PosVector {
-    fn new(x: f64, y: f64, z: f64, angle: f64) -> Self {
-        Self { x, y, z, angle }
-    }
-}
-
-impl RelPosAngle for PosVector {
-    type Number = f64;
-
-    fn offset_angle(&self) -> Angle2D<Self::Number> {
-        Angle2D {
-            x: self.x,
-            y: self.y,
-            angle: self.angle,
-        }
-    }
-}
-
-impl Mul<&Mat> for PosVector {
-    type Output = Self;
-
-    fn mul(self, rhs: &Mat) -> Self::Output {
-        let size = rhs.size().unwrap();
-        Self {
-            x: (self.x + 0.5) * (size.width as f64),
-            y: (self.y + 0.5) * (size.height as f64),
-            z: 0.,
-            angle: self.angle,
-        }
-    }
-}
+use std::ops::RangeInclusive;
 
 impl Draw for VisualDetection<bool, PosVector> {
     fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
@@ -100,29 +56,6 @@ impl Draw for VisualDetection<bool, PosVector> {
         //     0.1,
         // )?;
         Ok(())
-    }
-}
-
-#[derive(Debug, PartialEq)]
-pub struct Yuv {
-    pub y: u8,
-    pub u: u8,
-    pub v: u8,
-}
-
-impl From<&VecN<u8, 3>> for Yuv {
-    fn from(value: &VecN<u8, 3>) -> Self {
-        Self {
-            y: value[0],
-            u: value[1],
-            v: value[2],
-        }
-    }
-}
-
-impl From<&Yuv> for VecN<u8, 3> {
-    fn from(val: &Yuv) -> Self {
-        VecN::from_array([val.y, val.u, val.v])
     }
 }
 

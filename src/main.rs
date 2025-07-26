@@ -27,7 +27,7 @@ use sw8s_rust_lib::{
         octagon::octagon,
         path_align::path_align_procedural,
         reset_torpedo::ResetTorpedo,
-        slalom::{slalom, slalom_sonar},
+        slalom::slalom,
         sonar::sonar,
         spin::spin,
         vision::PIPELINE_KILL,
@@ -38,7 +38,6 @@ use sw8s_rust_lib::{
 };
 use tokio::{
     io::WriteHalf,
-    runtime::Handle,
     signal,
     sync::{
         mpsc::{self, UnboundedSender},
@@ -158,7 +157,6 @@ async fn main() {
 
     let orig_hook = std::panic::take_hook();
     let mission_ct_clone = mission_ct.clone();
-    let handle = Handle::current();
     std::panic::set_hook(Box::new(move |panic_info| {
         orig_hook(panic_info);
         // Cancel running missions
@@ -395,32 +393,19 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             Ok(())
         }
         "gate_run_coinflip" => {
-            // let _ = gate_run_coinflip(
-            //     &FullActionContext::new(
-            //         control_board().await,
-            //         meb().await,
-            //         front_cam().await,
-            //         bottom_cam().await,
-            //         gate_target().await,
-            //     ),
-            //     &config.missions.gate,
-            // )
-            // .execute()
-            // .await;
-            let context = &FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            );
-            tokio::select! {
-                _ = cancel.cancelled() => Ok(()),
-                _ = gate_run_procedural(
-                    context,
+            cancel
+                .run_until_cancelled(gate_run_procedural(
+                    &FullActionContext::new(
+                        control_board().await,
+                        meb().await,
+                        front_cam().await,
+                        bottom_cam().await,
+                        gate_target().await,
+                    ),
                     &config.missions.gate,
-                ) => Ok(()),
-            }
+                ))
+                .await;
+            Ok(())
         }
         "gate_run_testing" => {
             let _ = gate_run_testing(&FullActionContext::new(
@@ -564,20 +549,19 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             Ok(())
         }
         "slalom" => {
-            let context = &FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            );
-            tokio::select! {
-                _ = cancel.cancelled() => Ok(()),
-                _ = slalom(
-                        context,
-                        &config.missions.slalom,
-                    ) => Ok(()),
-            }
+            cancel
+                .run_until_cancelled(slalom(
+                    &FullActionContext::new(
+                        control_board().await,
+                        meb().await,
+                        front_cam().await,
+                        bottom_cam().await,
+                        gate_target().await,
+                    ),
+                    &config.missions.slalom,
+                ))
+                .await;
+            Ok(())
         }
         "sonar" => {
             let _ = sonar(

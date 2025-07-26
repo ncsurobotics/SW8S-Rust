@@ -30,15 +30,6 @@ pub async fn sonar<
     let cb = context.get_control_board();
     let _ = cb.bno055_periodic_read(true).await;
 
-    let initial_yaw = loop {
-        if let Some(initial_angle) = cb.responses().get_angles().await {
-            break *initial_angle.yaw() as f32;
-        } else {
-            #[cfg(feature = "logging")]
-            logln!("Failed to get initial angle");
-        }
-    };
-
     #[cfg(feature = "logging")]
     logln!("Initializing sonar with: {:?}", cfg.serial_port);
     let port = loop {
@@ -161,7 +152,7 @@ pub async fn sonar<
                     data.push(d);
                     #[cfg(feature = "logging")]
                     logln!("Got data {}", angle_clone);
-                    if (angle_clone >= at.stop_angle) {
+                    if angle_clone >= at.stop_angle {
                         break;
                     }
                 }

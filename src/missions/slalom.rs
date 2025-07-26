@@ -1,45 +1,47 @@
+use hdbscan::{Center, Hdbscan};
 use itertools::Itertools;
-use tokio::io::WriteHalf;
-use tokio::time::{sleep, Duration};
-use tokio_serial::SerialStream;
+use std::f64::consts::PI;
+
+use tokio::{
+    io::WriteHalf,
+    select,
+    time::{sleep, Duration},
+};
+use tokio_serial::{SerialPort, SerialPortBuilderExt, SerialStream};
+use tokio_util::sync::CancellationToken;
 
 use bluerobotics_ping::{
-    common::{DeviceInformationStruct, ProtocolVersionStruct},
     device::{Ping360, PingDevice},
     ping360::AutoDeviceDataStruct,
 };
 
-use tokio::select;
-use tokio_serial::{SerialPort, SerialPortBuilderExt};
-use tokio_util::sync::CancellationToken;
-
-use crate::config::sonar::Config as SonarConfig;
-use std::f64::consts::PI;
-
-use geo::{polygon, ConvexHull, LineString};
-use hdbscan::{Center, Hdbscan};
-
 use super::action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard};
 use crate::{
-    config::slalom::Config,
-    config::slalom::Side::*,
-    missions::{action::ActionExec, vision::VisionNorm},
-    vision::{nn_cv2::OnnxModel, slalom::Slalom, slalom::Target},
+    config::{
+        slalom::{Config, Side::*},
+        sonar::Config as SonarConfig,
+    },
+    missions::{
+        action::ActionExec,
+        vision::{VisionNorm, VisionNormAngle},
+    },
 };
-pub async fn slalom_sonar<
+
+// TODO: Consider filtering detections by angle (poles will always be upright)
+pub async fn slalom<
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
 >(
     context: &Con,
-    slalom_config: &Config,
-    cfg: &SonarConfig,
-    cancel: CancellationToken,
+    config: &Config,
 ) {
-    const INTESNTIY_THRESH: u8 = 100;
-    const MAX_DISTANCE: f64 = 20.0;
-    const SPEED_OF_SOUND: f64 = 1500.0; //m/s
+    use crate::vision::slalom::Slalom;
+    #[cfg(feature = "logging")]
+    logln!("Starting slalom");
 
     let cb = context.get_control_board();
     let _ = cb.bno055_periodic_read(true).await;
+
+    let mut vision = VisionNormAngle::<Con, Slalom, f64>::new(context, Slalom::default());
 
     let initial_yaw = loop {
         if let Some(initial_angle) = cb.responses().get_angles().await {
@@ -50,178 +52,70 @@ pub async fn slalom_sonar<
         }
     };
 
+    let mut start_detections = 0;
+    let mut end_detections = 0;
+
+    let _ = cb
+        .stability_2_speed_set(0.0, config.speed, 0.0, 0.0, initial_yaw, config.depth)
+        .await;
+
     #[cfg(feature = "logging")]
-    logln!("Initializing sonar with: {:?}", cfg.serial_port);
-    let port = loop {
-        match tokio_serial::new(cfg.serial_port.to_string_lossy(), cfg.serial_baud_rate)
-            .open_native_async()
-        {
-            Ok(port) => break port,
-            Err(e) => {
-                #[cfg(feature = "logging")]
-                logln!("Error opening serial port: {}", e);
-            }
-        }
-    };
+    logln!("Starting slalom detection");
 
-    // let mut port_clone = port.try_clone();
-
-    port.clear(tokio_serial::ClearBuffer::All)
-        .unwrap_or_else(|e| {
+    loop {
+        let detections = vision.execute().await.unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
-            logln!("Failed to clear sonar serial port: {}", e);
+            logln!(
+                "Getting slalom detection resulted in error: `{e}`\n\tUsing empty detection vec"
+            );
+            vec![]
         });
 
-    let ping360 = Ping360::new(port);
+        let mut positions = detections
+            .into_iter()
+            .filter_map(|d| d.class().then_some(d.position().clone()));
 
-    // #[cfg(feature = "logging")]
-    // logln!("Reseting sonar unit");
-    // loop {
-    //     if let Err(e) = ping360.reset(cfg.bootloader as u8, 0).await {
-    //         #[cfg(feature = "logging")]
-    //         logln!("Failed to reset sonar unit: {e:#?}");
-    //     } else {
-    //         break;
-    //     }
-    // }
+        // The current implementation is guaranteed to return exactly 1 item
+        if let Some(position) = positions.next() {
+            start_detections += 1;
+            end_detections = 0;
 
-    #[cfg(feature = "logging")]
-    logln!("Reseting MOTOR sonar unit");
-    loop {
-        if let Err(e) = ping360.motor_off().await {
-            #[cfg(feature = "logging")]
-            logln!("Failed to reset sonar unit: {e:#?}");
+            let x = *position.x() as f32;
+            if let Err(e) = cb
+                .stability_2_speed_set(x, config.speed, 0.0, 0.0, initial_yaw, config.depth)
+                .await
+            {
+                #[cfg(feature = "logging")]
+                logln!("SASSIST2 command to cb resulted in error: `{e}`");
+            }
         } else {
-            break;
-        }
-    }
-
-    let (protocol_version, device_information) =
-        tokio::try_join!(ping360.protocol_version(), ping360.device_information())
-            .expect("Failed to get device data!");
-
-    // let _ = cb
-    // .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, -1.25)
-    // .await;
-
-    #[cfg(feature = "logging")]
-    logln!("Starting sonar auto transmit");
-    let at = cfg.auto_transmit;
-    loop {
-        if let Err(e) = ping360
-            .auto_transmit(
-                at.mode,
-                at.gain_setting as u8,
-                at.transmit_duration,
-                at.sample_period,
-                at.transmit_frequency,
-                at.number_of_samples,
-                at.start_angle,
-                at.stop_angle,
-                at.num_steps,
-                at.delay,
-            )
-            .await
-        {
-            #[cfg(feature = "logging")]
-            logln!("Failed to start sonar auto transmit: {e:#?}");
-        } else {
-            break;
-        }
-    }
-
-    let mut data: Vec<AutoDeviceDataStruct> = Vec::new();
-
-    #[cfg(feature = "logging")]
-    logln!("Recording data");
-    loop {
-        select! {
-            _ = cancel.cancelled() => { break; },
-            r = ping360.auto_device_data() => {
-                if let Ok(d) = r {
-                    if (d.angle == 180) {
-                        break;
-                    }
-                    data.push(d);
-                    #[cfg(feature = "logging")]
-                    logln!("Got data");
+            if start_detections >= config.start_detections {
+                end_detections += 1;
+                if end_detections >= config.end_detections {
+                    break;
                 }
+            } else {
+                start_detections = 0;
             }
         }
     }
-    // let _ = port_clone.expect("NO CLONE").set_break();
 
-    let mut points = Vec::new();
-    let mut points_f32 = Vec::new();
-
-    for packet in data {
-        let angle_rad: f64 = ((packet.angle as f64) * (PI / 200.0)).into();
-        #[cfg(feature = "logging")]
-        logln!("Checking Angle {}", &angle_rad * 57.29577951308);
-        let sample_period = (packet.sample_period as f64) * 25e-9;
-        let num_samples = packet.number_of_samples as usize;
-
-        for (i, &intensity) in packet.data.iter().enumerate().take(num_samples) {
-            if intensity < INTESNTIY_THRESH {
-                continue;
-            }
-
-            let range = (i as f64) * sample_period * SPEED_OF_SOUND / 2.0;
-            if range > MAX_DISTANCE || range < 0.75 {
-                continue;
-            }
-
-            let x = range * angle_rad.cos();
-            let y = range * angle_rad.sin();
-
-            let center_vec = vec![x, y];
-            points.push(center_vec);
-            points_f32.push(vec![x as f32, y as f32]);
-        }
-    }
-
-    #[cfg(feature = "logging")]
-    logln!("NUM POINTS: {}", points.len());
-
-    if points.len() < 5 {
-        #[cfg(feature = "logging")]
-        logln!("Not enough points for clustering!");
-        return;
-    }
-
-    let clusterer = Hdbscan::default_hyper_params(&points);
-    let labels = clusterer.cluster().unwrap();
-    let centroids = clusterer.calc_centers(Center::Centroid, &labels).unwrap();
-
-    // let mut label_map: std::collections::HashMap<i32, Vec<[f64; 2]>> =
-    //     std::collections::HashMap::new();
-    // for (i, &label) in labels.iter().enumerate() {
-    //     if label >= 0 {
-    //         label_map.entry(label).or_default().push(points[i]);
-    //     }
-    // }
-
-    for center in centroids {
-        let cluster_x = center[0];
-        let cluster_y = center[1];
-        let cluster_angle = cluster_y.atan2(cluster_x);
-
-        #[cfg(feature = "logging")]
-        logln!(
-            "X: {}, Y: {}, A: {}",
-            cluster_x,
-            cluster_y,
-            cluster_angle * 57.29577951
-        );
-    }
+    let _ = cb
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+        .await;
 }
 
-pub async fn slalom<
+pub async fn slalom_yolo<
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
 >(
     context: &Con,
     config: &Config,
 ) {
+    use crate::vision::{
+        nn_cv2::OnnxModel,
+        slalom_yolo::{Slalom, Target},
+    };
+
     #[cfg(feature = "logging")]
     logln!("Starting slalom");
 
@@ -410,4 +304,184 @@ pub async fn slalom<
 
     #[cfg(feature = "logging")]
     logln!("Finished slalom");
+}
+
+pub async fn slalom_sonar<
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
+>(
+    context: &Con,
+    cfg: &SonarConfig,
+    cancel: CancellationToken,
+) {
+    const INTESNTIY_THRESH: u8 = 100;
+    const MAX_DISTANCE: f64 = 20.0;
+    const SPEED_OF_SOUND: f64 = 1500.0; //m/s
+
+    let cb = context.get_control_board();
+    let _ = cb.bno055_periodic_read(true).await;
+
+    #[cfg(feature = "logging")]
+    logln!("Initializing sonar with: {:?}", cfg.serial_port);
+    let port = loop {
+        match tokio_serial::new(cfg.serial_port.to_string_lossy(), cfg.serial_baud_rate)
+            .open_native_async()
+        {
+            Ok(port) => break port,
+            Err(e) => {
+                #[cfg(feature = "logging")]
+                logln!("Error opening serial port: {}", e);
+            }
+        }
+    };
+
+    // let mut port_clone = port.try_clone();
+
+    port.clear(tokio_serial::ClearBuffer::All)
+        .unwrap_or_else(|e| {
+            #[cfg(feature = "logging")]
+            logln!("Failed to clear sonar serial port: {}", e);
+        });
+
+    let ping360 = Ping360::new(port);
+
+    // #[cfg(feature = "logging")]
+    // logln!("Reseting sonar unit");
+    // loop {
+    //     if let Err(e) = ping360.reset(cfg.bootloader as u8, 0).await {
+    //         #[cfg(feature = "logging")]
+    //         logln!("Failed to reset sonar unit: {e:#?}");
+    //     } else {
+    //         break;
+    //     }
+    // }
+
+    #[cfg(feature = "logging")]
+    logln!("Reseting MOTOR sonar unit");
+    loop {
+        if let Err(e) = ping360.motor_off().await {
+            #[cfg(feature = "logging")]
+            logln!("Failed to reset sonar unit: {e:#?}");
+        } else {
+            break;
+        }
+    }
+
+    let (_protocol_version, _device_information) =
+        tokio::try_join!(ping360.protocol_version(), ping360.device_information())
+            .expect("Failed to get device data!");
+
+    // let _ = cb
+    // .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, -1.25)
+    // .await;
+
+    #[cfg(feature = "logging")]
+    logln!("Starting sonar auto transmit");
+    let at = cfg.auto_transmit;
+    loop {
+        if let Err(e) = ping360
+            .auto_transmit(
+                at.mode,
+                at.gain_setting as u8,
+                at.transmit_duration,
+                at.sample_period,
+                at.transmit_frequency,
+                at.number_of_samples,
+                at.start_angle,
+                at.stop_angle,
+                at.num_steps,
+                at.delay,
+            )
+            .await
+        {
+            #[cfg(feature = "logging")]
+            logln!("Failed to start sonar auto transmit: {e:#?}");
+        } else {
+            break;
+        }
+    }
+
+    let mut data: Vec<AutoDeviceDataStruct> = Vec::new();
+
+    #[cfg(feature = "logging")]
+    logln!("Recording data");
+    loop {
+        select! {
+            _ = cancel.cancelled() => { break; },
+            r = ping360.auto_device_data() => {
+                if let Ok(d) = r {
+                    if d.angle == 180 {
+                        break;
+                    }
+                    data.push(d);
+                    #[cfg(feature = "logging")]
+                    logln!("Got data");
+                }
+            }
+        }
+    }
+    // let _ = port_clone.expect("NO CLONE").set_break();
+
+    let mut points = Vec::new();
+    let mut points_f32 = Vec::new();
+
+    for packet in data {
+        let angle_rad: f64 = ((packet.angle as f64) * (PI / 200.0)).into();
+        #[cfg(feature = "logging")]
+        logln!("Checking Angle {}", &angle_rad * 57.29577951308);
+        let sample_period = (packet.sample_period as f64) * 25e-9;
+        let num_samples = packet.number_of_samples as usize;
+
+        for (i, &intensity) in packet.data.iter().enumerate().take(num_samples) {
+            if intensity < INTESNTIY_THRESH {
+                continue;
+            }
+
+            let range = (i as f64) * sample_period * SPEED_OF_SOUND / 2.0;
+            if range > MAX_DISTANCE || range < 0.75 {
+                continue;
+            }
+
+            let x = range * angle_rad.cos();
+            let y = range * angle_rad.sin();
+
+            let center_vec = vec![x, y];
+            points.push(center_vec);
+            points_f32.push(vec![x as f32, y as f32]);
+        }
+    }
+
+    #[cfg(feature = "logging")]
+    logln!("NUM POINTS: {}", points.len());
+
+    if points.len() < 5 {
+        #[cfg(feature = "logging")]
+        logln!("Not enough points for clustering!");
+        return;
+    }
+
+    let clusterer = Hdbscan::default_hyper_params(&points);
+    let labels = clusterer.cluster().unwrap();
+    let centroids = clusterer.calc_centers(Center::Centroid, &labels).unwrap();
+
+    // let mut label_map: std::collections::HashMap<i32, Vec<[f64; 2]>> =
+    //     std::collections::HashMap::new();
+    // for (i, &label) in labels.iter().enumerate() {
+    //     if label >= 0 {
+    //         label_map.entry(label).or_default().push(points[i]);
+    //     }
+    // }
+
+    for center in centroids {
+        let cluster_x = center[0];
+        let cluster_y = center[1];
+        let cluster_angle = cluster_y.atan2(cluster_x);
+
+        #[cfg(feature = "logging")]
+        logln!(
+            "X: {}, Y: {}, A: {}",
+            cluster_x,
+            cluster_y,
+            cluster_angle * 57.29577951
+        );
+    }
 }
