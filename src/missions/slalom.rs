@@ -1,3 +1,4 @@
+use geo::Within;
 use hdbscan::{Center, Hdbscan};
 use itertools::Itertools;
 use std::f64::consts::PI;
@@ -56,18 +57,30 @@ pub async fn slalom<
     let mut start_detections = 0;
     let mut end_detections = 0;
     let mut true_count = 0;
-    let mut traversal_timer = DelayAction::new(5.0); // forward duration in second
+    let mut false_count = 0;
+    let mut init_timer = DelayAction::new(1.0);
+    let mut traversal_timer = DelayAction::new(6.0); // forward duration in second
     let mut strafe_timer = DelayAction::new(2.0);
 
+    enum SlalomState {
+        ALIGN,
+        APPROACH,
+        STRAFE,
+        FORWARD,
+        KILL,
+    }
+
+    let mut slalom_state = SlalomState::ALIGN;
+
     let _ = cb
-        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+        .stability_2_speed_set(0.05, config.speed, 0.0, 0.0, initial_yaw, config.depth)
         .await;
-    traversal_timer.execute().await;
+    init_timer.execute().await;
 
     #[cfg(feature = "logging")]
     logln!("Starting slalom detection");
 
-    loop {
+    'detections: loop {
         let detections = vision.execute().await.unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
             logln!(
@@ -80,81 +93,129 @@ pub async fn slalom<
             .into_iter()
             .filter_map(|d| d.class().then_some(d.position().clone()));
 
-        // The current implementation is guaranteed to return exactly 1 item
-        if let Some(position) = positions.next() {
-            start_detections += 1;
-            end_detections = 0;
-
-            let x = *position.x() as f32;
-            let error_x = x.abs();
-
-            let mut correction = 0.0;
-            if (x.abs() < 0.2) {
-                true_count += 1;
-                if (true_count >= 4) {
-                    correction = 0.0;
-                    #[cfg(feature = "logging")]
-                    logln!("BEGIN LOGIC");
-
-                    break;
-                } else {
-                    #[cfg(feature = "logging")]
-                    logln!("true_count: {true_count}/4");
-                }
-            } else {
+        match (slalom_state) {
+            SlalomState::ALIGN => {
                 #[cfg(feature = "logging")]
-                logln!("AVG_X: {error_x}");
+                logln!("ALIGN");
 
-                correction = 0.4 * x;
-                let _ = cb
-                    .stability_2_speed_set(
-                        correction,
-                        config.speed,
-                        0.0,
-                        0.0,
-                        initial_yaw,
-                        config.depth,
-                    )
-                    .await;
-            }
-        } else {
-            if start_detections >= config.start_detections {
-                end_detections += 1;
-                if end_detections >= config.end_detections {
-                    break;
+                if let Some(position) = positions.next() {
+                    end_detections = 0;
+
+                    let x = *position.x() as f32;
+                    let error_x = x.abs();
+
+                    let mut correction = 0.0;
+                    if (x.abs() < 0.2) {
+                        true_count += 1;
+                        if (true_count >= 4) {
+                            correction = 0.0;
+                            slalom_state = SlalomState::APPROACH;
+                        } else {
+                            #[cfg(feature = "logging")]
+                            logln!("true_count: {true_count}/4");
+                        }
+                    } else {
+                        #[cfg(feature = "logging")]
+                        logln!("AVG_X: {error_x}");
+
+                        correction = 0.5 * x;
+                        let _ = cb
+                            .stability_2_speed_set(
+                                correction,
+                                0.0,
+                                0.0,
+                                0.0,
+                                initial_yaw,
+                                config.depth,
+                            )
+                            .await;
+                    }
+                } else {
+                    // if start_detections >= config.start_detections {
+                    //     end_detections += 1;
+                    //     if end_detections >= config.end_detections {
+                    //         break;
+                    //     }
+                    // } else {
+                    //     start_detections = 0;
+                    // }
+                    false_count += 1;
+                    if (false_count >= 100) {
+                        break 'detections;
+                    }
                 }
-            } else {
-                start_detections = 0;
+            }
+
+            SlalomState::APPROACH => {
+                #[cfg(feature = "logging")]
+                logln!("APPROACH");
+
+                if let Some(position) = positions.next() {
+                    end_detections = 0;
+
+                    let x = *position.x() as f32;
+                    let error_x = x.abs();
+
+                    let mut correction = 0.0;
+                    correction = 0.5 * x;
+                    let _ = cb
+                        .stability_2_speed_set(
+                            correction,
+                            config.speed,
+                            0.0,
+                            0.0,
+                            initial_yaw as f32,
+                            config.depth,
+                        )
+                        .await;
+                } else {
+                    // if start_detections >= config.start_detections {
+                    //     end_detections += 1;
+                    //     if end_detections >= config.end_detections {
+                    //         break;
+                    //     }
+                    // } else {
+                    //     start_detections = 0;
+                    // }
+                    false_count += 1;
+                    if (false_count >= 4) {
+                        slalom_state = SlalomState::STRAFE;
+                    }
+                }
+            }
+
+            SlalomState::STRAFE => {
+                #[cfg(feature = "logging")]
+                logln!("STRAFE");
+
+                let _ = cb
+                    .stability_2_speed_set(0.6, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+                    .await;
+                strafe_timer.execute().await;
+                slalom_state = SlalomState::FORWARD;
+            }
+
+            SlalomState::FORWARD => {
+                #[cfg(feature = "logging")]
+                logln!("FORWARD");
+
+                let _ = cb
+                    .stability_2_speed_set(0.05, config.speed, 0.0, 0.0, initial_yaw, config.depth)
+                    .await;
+                traversal_timer.execute().await;
+                slalom_state = SlalomState::KILL;
+            }
+
+            SlalomState::KILL => {
+                let _ = cb
+                    .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+                    .await;
+                break 'detections;
             }
         }
+
+        // The current implementation is guaranteed to return exactly 1 item
     }
-    #[cfg(feature = "logging")]
-    logln!("STRAFE");
-
-    let _ = cb
-        .stability_2_speed_set(0.6, 0.0, 0.0, 0.0, initial_yaw, config.depth)
-        .await;
-    strafe_timer.execute().await;
-    #[cfg(feature = "logging")]
-    logln!("GO FORWARD");
-
-    let _ = cb
-        .stability_2_speed_set(0.05, 0.6, 0.0, 0.0, initial_yaw, config.depth)
-        .await;
-    traversal_timer.execute().await;
-    #[cfg(feature = "logging")]
-    logln!("STOP");
-
-    let _ = cb
-        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
-        .await;
-
-    #[cfg(feature = "logging")]
-    logln!("DONE");
-
-    let _ = cb
-        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
-        .await;
 }
 
 pub async fn slalom_yolo<
