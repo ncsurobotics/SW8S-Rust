@@ -1,6 +1,6 @@
 /// Adapted from a script written by Marcus Behel
 use std::{
-    env::{args, current_dir, set_var},
+    env::{args, current_dir, set_var, var},
     fmt::Write,
     fs::read_to_string,
     process::{exit, Command},
@@ -29,8 +29,9 @@ async fn main() -> Result<()> {
     let config_str =
         read_to_string("config.toml").context("Could not read config file config.toml")?;
     let config: Config = toml::from_str(config_str.as_str()).context("Failed to parse config")?;
+    let devshell_mode = var("JETSON_DEVSHELL_MODE").is_ok();
 
-    tools_check()?;
+    tools_check(devshell_mode)?;
 
     let mut system_args = args().skip(1).collect::<Vec<_>>();
     if system_args.is_empty() {
@@ -56,19 +57,23 @@ async fn main() -> Result<()> {
     let multibar_clone = multibar.clone();
 
     // Jetson Nano architecture
-    let toolchain_install = spawn_blocking(move || {
-        // Prevent progress bars from overlapping with toolchain output
-        multibar.set_draw_target(ProgressDrawTarget::hidden());
+    let toolchain_install = if devshell_mode {
+        None
+    } else {
+        Some(spawn_blocking(move || {
+            // Prevent progress bars from overlapping with toolchain output
+            multibar.set_draw_target(ProgressDrawTarget::hidden());
 
-        Command::new("rustup")
-            .args(["target", "add", "aarch64-unknown-linux-gnu"])
-            .spawn()
-            .unwrap()
-            .wait()
-            .unwrap();
+            Command::new("rustup")
+                .args(["target", "add", "aarch64-unknown-linux-gnu"])
+                .spawn()
+                .unwrap()
+                .wait()
+                .unwrap();
 
-        multibar.set_draw_target(ProgressDrawTarget::stdout());
-    });
+            multibar.set_draw_target(ProgressDrawTarget::stdout());
+        }))
+    };
 
     let sysroot_clone = sysroot.clone();
     let config_clone = config.clone();
@@ -139,7 +144,8 @@ async fn main() -> Result<()> {
             "/usr/local/cuda-10.2/targets/aarch64-linux/lib/ -L"
         }
         + sysroot_str
-        + "/usr/lib/aarch64-linux-gnu/";
+        + "/usr/lib/aarch64-linux-gnu/"
+        + " -I /usr/lib/clang/19/include/";
     // Only to clang to compile C code
     let cflags = &shared_flags;
     // Only to clang++ to compile C++ code
@@ -205,13 +211,20 @@ async fn main() -> Result<()> {
             + sysroot
                 .join("./usr/include/opencv4/opencv2")
                 .to_str()
-                .unwrap(),
+                .unwrap()
+            + (if devshell_mode {
+                ",/usr/lib/clang/19/include"
+            } else {
+                ""
+            }),
     );
 
     // Wait for Jetson Nano toolchain
-    toolchain_install
-        .await
-        .context("failure while waiting for Jetson Nano toolchain install")?;
+    if let Some(handle) = toolchain_install {
+        handle
+            .await
+            .context("failure while waiting for Jetson Nano toolchain install")?;
+    }
 
     Command::new("cargo")
         .current_dir(parent_dir.clone())
@@ -235,10 +248,14 @@ async fn main() -> Result<()> {
 }
 
 /// Checks that all required programs are installed
-fn tools_check() -> Result<()> {
-    ["rustup", "cargo", "clang", "lld"]
-        .into_iter()
-        .try_for_each(program_check)
+fn tools_check(devshell_mode: bool) -> Result<()> {
+    let mut tools = vec!["cargo", "clang"];
+    if !devshell_mode {
+        tools.push("rustup");
+        tools.push("ld");
+    }
+
+    tools.into_iter().try_for_each(program_check)
 }
 
 /// Checks that all programs are installed
