@@ -1,4 +1,3 @@
-use geo::Within;
 use hdbscan::{Center, Hdbscan};
 use itertools::Itertools;
 use std::f64::consts::PI;
@@ -93,7 +92,7 @@ pub async fn slalom<
             .into_iter()
             .filter_map(|d| d.class().then_some(d.position().clone()));
 
-        match (slalom_state) {
+        match slalom_state {
             SlalomState::ALIGN => {
                 #[cfg(feature = "logging")]
                 logln!("ALIGN");
@@ -105,9 +104,9 @@ pub async fn slalom<
                     let error_x = x.abs();
 
                     let mut correction = 0.0;
-                    if (x.abs() < 0.2) {
+                    if x.abs() < 0.2 {
                         true_count += 1;
-                        if (true_count >= 4) {
+                        if true_count >= 4 {
                             correction = 0.0;
                             slalom_state = SlalomState::APPROACH;
                         } else {
@@ -140,7 +139,7 @@ pub async fn slalom<
                     //     start_detections = 0;
                     // }
                     false_count += 1;
-                    if (false_count >= 100) {
+                    if false_count >= 100 {
                         break 'detections;
                     }
                 }
@@ -178,7 +177,7 @@ pub async fn slalom<
                     //     start_detections = 0;
                     // }
                     false_count += 1;
-                    if (false_count >= 4) {
+                    if false_count >= 4 {
                         slalom_state = SlalomState::STRAFE;
                     }
                 }

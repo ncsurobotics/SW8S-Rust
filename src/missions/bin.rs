@@ -1,22 +1,12 @@
-use tokio::{
-    io::WriteHalf,
-    select,
-    time::{sleep, Duration},
-};
-use tokio_serial::{SerialPort, SerialPortBuilderExt, SerialStream};
-use tokio_util::sync::CancellationToken;
-
-use bluerobotics_ping::{
-    device::{Ping360, PingDevice},
-    ping360::AutoDeviceDataStruct,
-};
+use tokio::io::WriteHalf;
+use tokio_serial::SerialStream;
 
 use super::action_context::{BottomCamIO, GetControlBoard, GetMainElectronicsBoard};
 use crate::{
     config::bin::Config,
     missions::{action::ActionExec, vision::VisionNormBottom},
     vision::{
-        bin::{Bin, Target},
+        bin::Bin,
         nn_cv2::OnnxModel,
     },
 };

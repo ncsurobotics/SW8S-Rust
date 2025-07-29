@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use itertools::Itertools;
 use tokio::io::WriteHalf;
 use tokio_serial::SerialStream;
@@ -66,9 +64,8 @@ pub async fn gate_run_procedural<
     let _ = cb
         .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
         .await;
-    let current_yaw = initial_yaw;
 
-    let TOLERANCE = 0.4;
+    const TOLERANCE: f32 = 0.4;
 
     let mut true_count = 0;
 
@@ -79,15 +76,15 @@ pub async fn gate_run_procedural<
             vec![]
         });
 
-        let pole = detections
+        /* let pole = detections
             .iter()
             .filter(|d| matches!(d.class().identifier, Target::Pole))
-            .collect_vec();
+            .collect_vec(); */
 
-        let middle = detections
+        /* let middle = detections
             .iter()
             .filter(|d| matches!(d.class().identifier, Target::Middle))
-            .collect_vec();
+            .collect_vec(); */
 
         let sawfish = detections
             .iter()
@@ -99,7 +96,6 @@ pub async fn gate_run_procedural<
             .filter(|d| matches!(d.class().identifier, Target::Shark))
             .collect_vec();
 
-        let mut traversal_started = false;
         let mut traversal_timer = DelayAction::new(9.5); // forward duration in second
 
         match config.side {
@@ -115,10 +111,6 @@ pub async fn gate_run_procedural<
                     if avg_x.abs() > TOLERANCE {
                         let correction = 0.4 * avg_x;
                         let fwd = 0.0;
-                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
-                            + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
-                            + correction * f32::sin(current_yaw * (PI / 180.0));
 
                         let _ = cb
                             .stability_2_speed_set(
@@ -133,11 +125,6 @@ pub async fn gate_run_procedural<
                     } else {
                         let fwd = config.speed;
                         let correction = 0.05;
-                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
-                            + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
-                            + correction * f32::sin(current_yaw * (PI / 180.0));
-
                         true_count += 1;
 
                         if true_count >= config.true_count {
@@ -162,10 +149,6 @@ pub async fn gate_run_procedural<
 
                     let correction = -0.2;
                     let fwd = 0.0;
-                    let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
-                        + correction * f32::cos(current_yaw * (PI / 180.0));
-                    let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
-                        + correction * f32::sin(current_yaw * (PI / 180.0));
 
                     let _ = cb
                         .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
@@ -189,10 +172,6 @@ pub async fn gate_run_procedural<
                     if avg_x.abs() > TOLERANCE {
                         let correction = 0.4 * avg_x;
                         let fwd = 0.0;
-                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
-                            + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
-                            + correction * f32::sin(current_yaw * (PI / 180.0));
 
                         let _ = cb
                             .stability_2_speed_set(
@@ -207,11 +186,6 @@ pub async fn gate_run_procedural<
                     } else {
                         let fwd = config.speed;
                         let correction = 0.05;
-                        let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
-                            + correction * f32::cos(current_yaw * (PI / 180.0));
-                        let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
-                            + correction * f32::sin(current_yaw * (PI / 180.0));
-
                         true_count += 1;
 
                         if true_count >= config.true_count {
@@ -236,10 +210,6 @@ pub async fn gate_run_procedural<
 
                     let correction = 0.2;
                     let fwd = 0.0;
-                    let x_speed = -fwd * f32::sin(current_yaw * (PI / 180.0))
-                        + correction * f32::cos(current_yaw * (PI / 180.0));
-                    let y_speed = fwd * f32::cos(current_yaw * (PI / 180.0))
-                        + correction * f32::sin(current_yaw * (PI / 180.0));
 
                     let _ = cb
                         .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
