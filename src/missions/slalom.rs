@@ -259,7 +259,7 @@ pub async fn slalom_yolo<
         logln!("DOING SLALOM DETECTION");
         let detections = vision.execute().await.unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
-            logln!("Getting path detection resulted in error: `{e}`\n\tUsing empty detection vec");
+            logln!("Getting slalom detection resulted in error: `{e}`\n\tUsing empty detection vec");
             vec![]
         });
 

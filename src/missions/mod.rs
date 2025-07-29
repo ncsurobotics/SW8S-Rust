@@ -21,3 +21,4 @@ pub mod slalom;
 pub mod spin;
 pub mod vision;
 pub mod sonar;
+pub mod bin;

@@ -14,6 +14,7 @@ use std::{
     ops::{Add, Deref, DerefMut, Div, Mul},
 };
 
+pub mod bin;
 pub mod buoy;
 pub mod buoy_model;
 pub mod gate;

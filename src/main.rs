@@ -15,6 +15,7 @@ use sw8s_rust_lib::{
         action_context::FullActionContext,
         align_buoy::{buoy_align, buoy_align_shot},
         basic::descend_and_go_forward,
+        bin::bin,
         circle_buoy::{
             buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
         },
@@ -576,6 +577,21 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
                 cancel,
             )
             .await;
+            Ok(())
+        }
+        "bin" => {
+            cancel
+                .run_until_cancelled(bin(
+                    &FullActionContext::new(
+                        control_board().await,
+                        meb().await,
+                        front_cam().await,
+                        bottom_cam().await,
+                        gate_target().await,
+                    ),
+                    &config.missions.bin,
+                ))
+                .await;
             Ok(())
         }
         x => bail!("Invalid argument: [{x}]"),
