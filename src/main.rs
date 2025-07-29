@@ -551,46 +551,17 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
         }
         "slalom" => {
             cancel
-                .run_until_cancelled(slalom(
-                    &FullActionContext::new(
-                        control_board().await,
-                        meb().await,
-                        front_cam().await,
-                        bottom_cam().await,
-                        gate_target().await,
-                    ),
-                    &config.missions.slalom,
-                ))
+                .run_until_cancelled(slalom(static_context.await, &config.missions.slalom))
                 .await;
             Ok(())
         }
         "sonar" => {
-            let _ = sonar(
-                &FullActionContext::new(
-                    control_board().await,
-                    meb().await,
-                    front_cam().await,
-                    bottom_cam().await,
-                    gate_target().await,
-                ),
-                &config.sonar,
-                cancel,
-            )
-            .await;
+            let _ = sonar(static_context().await, &config.sonar, cancel).await;
             Ok(())
         }
         "bin" => {
             cancel
-                .run_until_cancelled(bin(
-                    &FullActionContext::new(
-                        control_board().await,
-                        meb().await,
-                        front_cam().await,
-                        bottom_cam().await,
-                        gate_target().await,
-                    ),
-                    &config.missions.bin,
-                ))
+                .run_until_cancelled(bin(static_context().await, &config.missions.bin))
                 .await;
             Ok(())
         }
