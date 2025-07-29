@@ -14,6 +14,7 @@ use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
+    Bin,
     ReefShark,
     SawFish,
 }
@@ -41,8 +42,9 @@ impl TryFrom<i32> for Target {
     type Error = TargetError;
     fn try_from(value: i32) -> std::result::Result<Self, Self::Error> {
         match value {
-            0 => Ok(Self::ReefShark),
-            1 => Ok(Self::SawFish),
+            0 => Ok(Self::Bin),
+            1 => Ok(Self::ReefShark),
+            2 => Ok(Self::SawFish),
             x => Err(TargetError { x }),
         }
     }
@@ -68,7 +70,7 @@ impl Bin<OnnxModel> {
     }
 
     pub fn load_640(threshold: f64) -> Self {
-        let model = load_onnx!("models/bins_640.onnx", 640, 2);
+        let model = load_onnx!("models/bin_640.onnx", 640, 3);
 
         Self { model, threshold }
     }
