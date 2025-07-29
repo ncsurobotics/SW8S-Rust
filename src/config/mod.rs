@@ -1,5 +1,6 @@
 pub mod bin;
 pub mod gate;
+pub mod octagon;
 pub mod path_align;
 pub mod slalom;
 pub mod sonar;
@@ -57,4 +58,5 @@ pub struct Missions {
     pub path_align: path_align::Config,
     pub slalom: slalom::Config,
     pub bin: bin::Config,
+    pub octagon: octagon::Config,
 }

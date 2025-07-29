@@ -481,11 +481,15 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             Ok(())
         }
         "octagon" => {
-            let _ = octagon(static_context().await).execute().await;
+            let _ = octagon(static_context().await, &config.missions.octagon)
+                .execute()
+                .await;
             Ok(())
         }
         "fancy_octagon" => {
-            let _ = fancy_octagon(static_context().await).execute().await;
+            let _ = fancy_octagon(static_context().await, &config.missions.octagon)
+                .execute()
+                .await;
             Ok(())
         }
         "buoy_circle" => {
@@ -551,7 +555,7 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
         }
         "slalom" => {
             cancel
-                .run_until_cancelled(slalom(static_context.await, &config.missions.slalom))
+                .run_until_cancelled(slalom(static_context().await, &config.missions.slalom))
                 .await;
             Ok(())
         }

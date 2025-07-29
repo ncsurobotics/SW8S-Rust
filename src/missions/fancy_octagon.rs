@@ -4,6 +4,7 @@ use tokio_serial::SerialStream;
 
 use crate::{
     act_nest,
+    config::octagon::Config,
     missions::{
         action::{ActionChain, ActionDataConditional, ActionSequence, ActionWhile},
         basic::DelayAction,
@@ -56,6 +57,7 @@ pub fn fancy_octagon<
         + Unpin,
 >(
     context: &'static Con,
+    config: &Config,
 ) -> impl ActionExec<()> + 'static {
     const FULL_SPEED_Y: f32 = 0.7;
     const FULL_SPEED_X: f32 = 0.1;
