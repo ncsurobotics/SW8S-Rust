@@ -21,7 +21,6 @@ use sw8s_rust_lib::{
         },
         coinflip::coinflip,
         example::{initial_descent, pid_test},
-        fancy_octagon::fancy_octagon,
         fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
         gate::{gate_run_complex, gate_run_naive, gate_run_procedural, gate_run_testing},
         meb::WaitArm,
@@ -482,12 +481,6 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
         }
         "octagon" => {
             let _ = octagon(static_context().await, &config.missions.octagon)
-                .execute()
-                .await;
-            Ok(())
-        }
-        "fancy_octagon" => {
-            let _ = fancy_octagon(static_context().await, &config.missions.octagon)
                 .execute()
                 .await;
             Ok(())
