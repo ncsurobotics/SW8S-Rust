@@ -144,8 +144,7 @@ async fn main() -> Result<()> {
             "/usr/local/cuda-10.2/targets/aarch64-linux/lib/ -L"
         }
         + sysroot_str
-        + "/usr/lib/aarch64-linux-gnu/"
-        + " -I /usr/lib/clang/19/include/";
+        + "/usr/lib/aarch64-linux-gnu/";
     // Only to clang to compile C code
     let cflags = &shared_flags;
     // Only to clang++ to compile C++ code
