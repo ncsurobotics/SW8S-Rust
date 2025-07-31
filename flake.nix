@@ -35,7 +35,10 @@
             cargo-deny
             cargo-edit
             cargo-watch
+            cargo-expand
+            cargo-info
             rust-analyzer
+            bacon
           ];
         in {
           default =
