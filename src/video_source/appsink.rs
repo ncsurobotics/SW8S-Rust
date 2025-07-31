@@ -1,21 +1,28 @@
 use anyhow::{anyhow, Result};
-use opencv::core::Size;
-use opencv::mod_prelude::ToInputArray;
-use opencv::prelude::Mat;
-use opencv::videoio::VideoCaptureAPIs;
-use opencv::videoio::{
-    VideoCapture, VideoWriter, CAP_GSTREAMER, CAP_PROP_FPS, CAP_PROP_FRAME_HEIGHT,
-    CAP_PROP_FRAME_WIDTH,
+use opencv::{
+    prelude::Mat,
+    videoio::{VideoCapture, VideoCaptureAPIs, VideoCaptureTrait},
 };
-use opencv::videoio::{VideoCaptureTrait, VideoCaptureTraitConst, VideoWriterTrait};
-use std::fs::create_dir_all;
-use std::path::Path;
-use std::sync;
-use std::sync::Arc;
-use std::thread::spawn;
+use std::{fs::create_dir_all, path::Path, sync::Arc, thread::spawn};
 use tokio::sync::Mutex;
 
-use crate::logln;
+#[cfg(feature = "logging")]
+use {
+    crate::logln,
+    opencv::videoio::{VideoCaptureTraitConst, CAP_GSTREAMER},
+};
+#[cfg(feature = "annotated_streams")]
+use {
+    opencv::{
+        core::Size,
+        mod_prelude::ToInputArray,
+        videoio::{
+            VideoWriter, VideoWriterTrait, CAP_PROP_FPS, CAP_PROP_FRAME_HEIGHT,
+            CAP_PROP_FRAME_WIDTH,
+        },
+    },
+    std::sync,
+};
 
 use super::MatSource;
 

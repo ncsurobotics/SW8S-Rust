@@ -46,7 +46,7 @@ pub async fn slalom<
 
     let initial_yaw = loop {
         if let Some(initial_angle) = cb.responses().get_angles().await {
-            break *initial_angle.yaw() as f32;
+            break *initial_angle.yaw();
         } else {
             #[cfg(feature = "logging")]
             logln!("Failed to get initial angle");
@@ -62,14 +62,14 @@ pub async fn slalom<
     let mut strafe_timer = DelayAction::new(2.0);
 
     enum SlalomState {
-        ALIGN,
-        APPROACH,
-        STRAFE,
-        FORWARD,
-        KILL,
+        Align,
+        Approach,
+        Strafe,
+        Forward,
+        Kill,
     }
 
-    let mut slalom_state = SlalomState::ALIGN;
+    let mut slalom_state = SlalomState::Align;
 
     let _ = cb
         .stability_2_speed_set(0.05, config.speed, 0.0, 0.0, initial_yaw, config.depth)
@@ -80,6 +80,7 @@ pub async fn slalom<
     logln!("Starting slalom detection");
 
     'detections: loop {
+        #[allow(unused_variables)]
         let detections = vision.execute().await.unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
             logln!(
@@ -93,7 +94,7 @@ pub async fn slalom<
             .filter_map(|d| d.class().then_some(d.position().clone()));
 
         match slalom_state {
-            SlalomState::ALIGN => {
+            SlalomState::Align => {
                 #[cfg(feature = "logging")]
                 logln!("ALIGN");
 
@@ -108,7 +109,7 @@ pub async fn slalom<
                         true_count += 1;
                         if true_count >= 4 {
                             correction = 0.0;
-                            slalom_state = SlalomState::APPROACH;
+                            slalom_state = SlalomState::Approach;
                         } else {
                             #[cfg(feature = "logging")]
                             logln!("true_count: {true_count}/4");
@@ -145,7 +146,7 @@ pub async fn slalom<
                 }
             }
 
-            SlalomState::APPROACH => {
+            SlalomState::Approach => {
                 #[cfg(feature = "logging")]
                 logln!("APPROACH");
 
@@ -178,12 +179,12 @@ pub async fn slalom<
                     // }
                     false_count += 1;
                     if false_count >= 4 {
-                        slalom_state = SlalomState::STRAFE;
+                        slalom_state = SlalomState::Strafe;
                     }
                 }
             }
 
-            SlalomState::STRAFE => {
+            SlalomState::Strafe => {
                 #[cfg(feature = "logging")]
                 logln!("STRAFE");
 
@@ -191,10 +192,10 @@ pub async fn slalom<
                     .stability_2_speed_set(0.6, 0.0, 0.0, 0.0, initial_yaw, config.depth)
                     .await;
                 strafe_timer.execute().await;
-                slalom_state = SlalomState::FORWARD;
+                slalom_state = SlalomState::Forward;
             }
 
-            SlalomState::FORWARD => {
+            SlalomState::Forward => {
                 #[cfg(feature = "logging")]
                 logln!("FORWARD");
 
@@ -202,10 +203,10 @@ pub async fn slalom<
                     .stability_2_speed_set(0.05, config.speed, 0.0, 0.0, initial_yaw, config.depth)
                     .await;
                 traversal_timer.execute().await;
-                slalom_state = SlalomState::KILL;
+                slalom_state = SlalomState::Kill;
             }
 
-            SlalomState::KILL => {
+            SlalomState::Kill => {
                 let _ = cb
                     .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
                     .await;
@@ -238,7 +239,7 @@ pub async fn slalom_yolo<
 
     let initial_yaw = loop {
         if let Some(initial_angle) = cb.responses().get_angles().await {
-            break *initial_angle.yaw() as f32;
+            break *initial_angle.yaw();
         } else {
             #[cfg(feature = "logging")]
             logln!("Failed to get initial angle");
@@ -256,13 +257,16 @@ pub async fn slalom_yolo<
     loop {
         #[cfg(feature = "logging")]
         logln!("DOING SLALOM DETECTION");
+        #[allow(unused_variables)]
         let detections = vision.execute().await.unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
-            logln!("Getting slalom detection resulted in error: `{e}`\n\tUsing empty detection vec");
+            logln!(
+                "Getting slalom detection resulted in error: `{e}`\n\tUsing empty detection vec"
+            );
             vec![]
         });
 
-        if detections.len() == 0 {
+        if detections.is_empty() {
             #[cfg(feature = "logging")]
             logln!("NO DETECTIONS");
 
@@ -290,24 +294,22 @@ pub async fn slalom_yolo<
                     .await;
             }
             continue;
+        } else if start_detections < config.start_detections {
+            start_detections += 1;
+            #[cfg(feature = "logging")]
+            logln!(
+                "Start count: {}/{}",
+                start_detections,
+                config.start_detections
+            );
         } else {
-            if start_detections < config.start_detections {
-                start_detections += 1;
-                #[cfg(feature = "logging")]
-                logln!(
-                    "Start count: {}/{}",
-                    start_detections,
-                    config.start_detections
-                );
-            } else {
-                #[cfg(feature = "logging")]
-                logln!(
-                    "Resetting end counter from {}/{}",
-                    end_detections,
-                    config.end_detections
-                );
-                end_detections = 0;
-            }
+            #[cfg(feature = "logging")]
+            logln!(
+                "Resetting end counter from {}/{}",
+                end_detections,
+                config.end_detections
+            );
+            end_detections = 0;
         }
 
         let middle = detections
@@ -320,12 +322,12 @@ pub async fn slalom_yolo<
             .filter(|d| matches!(d.class().identifier, Target::Side))
             .collect_vec();
 
-        if middle.len() > 0 {
+        if !middle.is_empty() {
             // Use the average x coord of all middle detections as the middle of slalom
             let middle_x =
                 middle.iter().map(|d| *d.position().x() as f32).sum::<f32>() / middle.len() as f32;
 
-            if side.len() > 0 {
+            if !side.is_empty() {
                 #[cfg(feature = "logging")]
                 logln!("Got middle and side poles");
                 // We have the middle and at least one side pole
@@ -395,18 +397,15 @@ pub async fn slalom_yolo<
                         .await;
                 }
             }
-        } else {
-            if side.len() > 0 {
-                #[cfg(feature = "logging")]
-                logln!("Got only side poles");
-                // We see at least a side pole, but no middle
-                // This means we are probably seeing a side pole, so translate towards it
-                let x =
-                    side.iter().map(|d| *d.position().x() as f32).sum::<f32>() / side.len() as f32;
-                let _ = cb
-                    .stability_2_speed_set(x * -1.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
-                    .await;
-            }
+        } else if !side.is_empty() {
+            #[cfg(feature = "logging")]
+            logln!("Got only side poles");
+            // We see at least a side pole, but no middle
+            // This means we are probably seeing a side pole, so translate towards it
+            let x = side.iter().map(|d| *d.position().x() as f32).sum::<f32>() / side.len() as f32;
+            let _ = cb
+                .stability_2_speed_set(-x, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+                .await;
         }
     }
 
@@ -439,6 +438,7 @@ pub async fn slalom_sonar<
             .open_native_async()
         {
             Ok(port) => break port,
+            #[allow(unused_variables)]
             Err(e) => {
                 #[cfg(feature = "logging")]
                 logln!("Error opening serial port: {}", e);
@@ -448,6 +448,7 @@ pub async fn slalom_sonar<
 
     // let mut port_clone = port.try_clone();
 
+    #[allow(unused_variables)]
     port.clear(tokio_serial::ClearBuffer::All)
         .unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
@@ -469,13 +470,10 @@ pub async fn slalom_sonar<
 
     #[cfg(feature = "logging")]
     logln!("Reseting MOTOR sonar unit");
-    loop {
-        if let Err(e) = ping360.motor_off().await {
-            #[cfg(feature = "logging")]
-            logln!("Failed to reset sonar unit: {e:#?}");
-        } else {
-            break;
-        }
+    #[allow(unused_variables)]
+    while let Err(e) = ping360.motor_off().await {
+        #[cfg(feature = "logging")]
+        logln!("Failed to reset sonar unit: {e:#?}");
     }
 
     let (_protocol_version, _device_information) =
@@ -489,27 +487,24 @@ pub async fn slalom_sonar<
     #[cfg(feature = "logging")]
     logln!("Starting sonar auto transmit");
     let at = cfg.auto_transmit;
-    loop {
-        if let Err(e) = ping360
-            .auto_transmit(
-                at.mode,
-                at.gain_setting as u8,
-                at.transmit_duration,
-                at.sample_period,
-                at.transmit_frequency,
-                at.number_of_samples,
-                at.start_angle,
-                at.stop_angle,
-                at.num_steps,
-                at.delay,
-            )
-            .await
-        {
-            #[cfg(feature = "logging")]
-            logln!("Failed to start sonar auto transmit: {e:#?}");
-        } else {
-            break;
-        }
+    #[allow(unused_variables)]
+    while let Err(e) = ping360
+        .auto_transmit(
+            at.mode,
+            at.gain_setting as u8,
+            at.transmit_duration,
+            at.sample_period,
+            at.transmit_frequency,
+            at.number_of_samples,
+            at.start_angle,
+            at.stop_angle,
+            at.num_steps,
+            at.delay,
+        )
+        .await
+    {
+        #[cfg(feature = "logging")]
+        logln!("Failed to start sonar auto transmit: {e:#?}");
     }
 
     let mut data: Vec<AutoDeviceDataStruct> = Vec::new();
@@ -537,7 +532,7 @@ pub async fn slalom_sonar<
     let mut points_f32 = Vec::new();
 
     for packet in data {
-        let angle_rad: f64 = ((packet.angle as f64) * (PI / 200.0)).into();
+        let angle_rad: f64 = (packet.angle as f64) * (PI / 200.0);
         #[cfg(feature = "logging")]
         logln!("Checking Angle {}", &angle_rad * 57.29577951308);
         let sample_period = (packet.sample_period as f64) * 25e-9;
@@ -549,7 +544,7 @@ pub async fn slalom_sonar<
             }
 
             let range = (i as f64) * sample_period * SPEED_OF_SOUND / 2.0;
-            if range > MAX_DISTANCE || range < 0.75 {
+            if !(0.75..=MAX_DISTANCE).contains(&range) {
                 continue;
             }
 

@@ -19,7 +19,7 @@ impl Draw for VisualDetection<bool, PosVector> {
             Scalar::from((0.0, 0.0, 255.0))
         };
 
-        let angle_rad = (*self.position.angle() as f32) * (3.14152965 / 180.0);
+        let angle_rad = (*self.position.angle() as f32) * (3.1415296 / 180.0);
         let b = (angle_rad.cos() * 640.0) / 2.0;
         let a = (angle_rad.sin() * 480.0) / 2.0;
 
@@ -158,14 +158,14 @@ impl VisualDetector<i32> for PathCV {
                 let edge2mag = (edge2.0.powf(2.0) + edge2.1.powf(2.0)).sqrt();
                 let longest_edge = if edge2mag > edge1mag { edge2 } else { edge1 };
 
-                let mut angle = (longest_edge.0 / longest_edge.1).atan().to_degrees() * -1.0;
+                let mut angle = -(longest_edge.0 / longest_edge.1).atan().to_degrees();
 
                 angle = ((angle + 180.0) % 360.0) - 180.0;
                 if angle < -90.0 {
                     angle += 180.0;
                 }
 
-                println!("{:?}", angle);
+                println!("{angle:?}");
 
                 let center_adjusted_x = rect.center.x as f64;
                 let center_adjusted_y = rect.center.y as f64;
@@ -267,14 +267,14 @@ impl VisualDetector<f64> for PathCV {
                 let edge2mag = (edge2.0.powf(2.0) + edge2.1.powf(2.0)).sqrt();
                 let longest_edge = if edge2mag > edge1mag { edge2 } else { edge1 };
 
-                let mut angle = (longest_edge.0 / longest_edge.1).atan().to_degrees() * -1.0;
+                let mut angle = -(longest_edge.0 / longest_edge.1).atan().to_degrees();
 
                 angle = ((angle + 180.0) % 360.0) - 180.0;
                 if angle < -90.0 {
                     angle += 180.0;
                 }
 
-                println!("{:?}", angle);
+                println!("{angle:?}");
 
                 let center_adjusted_x = rect.center.x as f64;
                 let center_adjusted_y = rect.center.y as f64;

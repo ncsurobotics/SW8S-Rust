@@ -247,11 +247,12 @@ async fn shutdown_handler() -> (UnboundedSender<i32>, CancellationToken) {
             // Cancel running missions
             mission_ct_clone.cancel();
             // Wait for running mission to exit
-            if let Err(_) = timeout(
+            if timeout(
                 Duration::from_secs(SHUTDOWN_TIMEOUT),
                 SHUTDOWN_GUARD.acquire(),
             )
             .await
+            .is_err()
             {
                 logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds")
             }

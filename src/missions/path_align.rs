@@ -26,7 +26,7 @@ pub async fn path_align_procedural<
 
     let initial_yaw = loop {
         if let Some(initial_angle) = cb.responses().get_angles().await {
-            break *initial_angle.yaw() as f32;
+            break *initial_angle.yaw();
         } else {
             #[cfg(feature = "logging")]
             logln!("Failed to get initial angle");
@@ -52,9 +52,10 @@ pub async fn path_align_procedural<
         }
 
         if let Some(current_angle) = cb.responses().get_angles().await {
-            let current_yaw = *current_angle.yaw() as f32;
+            let current_yaw = *current_angle.yaw();
 
             // For the opencv impl of path detection, the returned vector is guaranteed to contain 1 item
+            #[allow(unused_variables)]
             let detections = vision_norm_bottom.execute().await.unwrap_or_else(|e| {
                 #[cfg(feature = "logging")]
                 logln!(
@@ -73,7 +74,7 @@ pub async fn path_align_procedural<
 
             if let Some(position) = positions.next() {
                 x = *position.x() as f32;
-                y = (*position.y() as f32) * -1.0;
+                y = -(*position.y() as f32);
                 yaw = current_yaw + (*position.angle() * -1.0) as f32;
 
                 last_set_yaw = yaw;
@@ -83,6 +84,7 @@ pub async fn path_align_procedural<
                 continue;
             }
 
+            #[allow(unused_variables)]
             if let Err(e) = cb
                 .stability_2_speed_set(x, y, 0.0, 0.0, last_set_yaw, config.depth)
                 .await

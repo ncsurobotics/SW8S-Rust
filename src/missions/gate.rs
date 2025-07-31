@@ -54,7 +54,7 @@ pub async fn gate_run_procedural<
 
     let initial_yaw = loop {
         if let Some(initial_angle) = cb.responses().get_angles().await {
-            break *initial_angle.yaw() as f32;
+            break *initial_angle.yaw();
         } else {
             #[cfg(feature = "logging")]
             logln!("Failed to get initial angle");
@@ -70,6 +70,7 @@ pub async fn gate_run_procedural<
     let mut true_count = 0;
 
     loop {
+        #[allow(unused_variables)]
         let detections = vision.execute().await.unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
             logln!("Getting path detection resulted in error: `{e}`\n\tUsing empty detection vec");
@@ -77,14 +78,14 @@ pub async fn gate_run_procedural<
         });
 
         /* let pole = detections
-            .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Pole))
-            .collect_vec(); */
+        .iter()
+        .filter(|d| matches!(d.class().identifier, Target::Pole))
+        .collect_vec(); */
 
         /* let middle = detections
-            .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Middle))
-            .collect_vec(); */
+        .iter()
+        .filter(|d| matches!(d.class().identifier, Target::Middle))
+        .collect_vec(); */
 
         let sawfish = detections
             .iter()
@@ -100,7 +101,7 @@ pub async fn gate_run_procedural<
 
         match config.side {
             Side::Left => {
-                if shark.len() > 0 {
+                if !shark.is_empty() {
                     // Center on average x of blue
                     let avg_x = shark.iter().map(|d| *d.position().x() as f32).sum::<f32>()
                         / shark.len() as f32;
@@ -158,7 +159,7 @@ pub async fn gate_run_procedural<
             }
 
             Side::Right => {
-                if sawfish.len() > 0 {
+                if !sawfish.is_empty() {
                     // Center on average x of blue
                     let avg_x = sawfish
                         .iter()

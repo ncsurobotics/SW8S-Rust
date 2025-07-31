@@ -175,7 +175,7 @@ impl Statuses {
                 given_crc.to_ne_bytes(),
                 calculated_crc.to_ne_bytes(),
                 payload,
-                payload.iter().map(|byte| format!("{:02x}", byte).to_string()).reduce(|acc, x| acc + &x).unwrap_or("".to_string())
+                payload.iter().map(|byte| format!("{byte:02x}").to_string()).reduce(|acc, x| acc + &x).unwrap_or("".to_string())
             ));
             }
         }).await;

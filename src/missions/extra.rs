@@ -411,20 +411,20 @@ impl<T: Action, U: Action> Action for InOrderFail<T, U> {
                 "In Order",
             );
 
-        body_str.push_str(&(format!("\"{}\" [label = \"All Resolved\", shape = diamond, fontcolor = black, style = dashed];\n", order_tail)));
+        body_str.push_str(&(format!("\"{order_tail}\" [label = \"All Resolved\", shape = diamond, fontcolor = black, style = dashed];\n")));
 
         body_str.push_str(&(first_str.body + &second_str.body));
         first_str
             .head_ids
             .iter()
-            .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", order_head, id)));
+            .for_each(|id| body_str.push_str(&format!("\"{order_head}\" -> \"{id}\";\n")));
         first_str.tail_ids.iter().for_each(|tail_id| {
             second_str.head_ids.iter().for_each(|head_id| {
-                body_str.push_str(&format!("\"{}\" -> \"{}\";\n", tail_id, head_id))
+                body_str.push_str(&format!("\"{tail_id}\" -> \"{head_id}\";\n"))
             })
         });
         second_str.tail_ids.iter().for_each(|tail_id| {
-            body_str.push_str(&format!("\"{}\" -> \"{}\";\n", tail_id, order_tail))
+            body_str.push_str(&format!("\"{tail_id}\" -> \"{order_tail}\";\n"))
         });
 
         body_str.push_str("}\n");

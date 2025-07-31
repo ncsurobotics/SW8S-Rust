@@ -1,5 +1,6 @@
 use core::fmt::Debug;
 use opencv::core::Mat;
+#[cfg(feature = "annotated_streams")]
 use opencv::mod_prelude::ToInputArray;
 use tokio::io::{AsyncWriteExt, WriteHalf};
 use tokio::sync::RwLock;

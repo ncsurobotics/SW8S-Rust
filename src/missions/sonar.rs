@@ -37,6 +37,7 @@ pub async fn sonar<
             .open_native_async()
         {
             Ok(port) => break port,
+            #[allow(unused_variables)]
             Err(e) => {
                 #[cfg(feature = "logging")]
                 logln!("Error opening serial port: {}", e);
@@ -44,6 +45,7 @@ pub async fn sonar<
         }
     };
 
+    #[allow(unused_variables)]
     port.clear(tokio_serial::ClearBuffer::All)
         .unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
@@ -65,13 +67,10 @@ pub async fn sonar<
 
     #[cfg(feature = "logging")]
     logln!("Reseting MOTOR sonar unit");
-    loop {
-        if let Err(e) = ping360.motor_off().await {
-            #[cfg(feature = "logging")]
-            logln!("Failed to reset sonar unit: {e:#?}");
-        } else {
-            break;
-        }
+    #[allow(unused_variables)]
+    while let Err(e) = ping360.motor_off().await {
+        #[cfg(feature = "logging")]
+        logln!("Failed to reset sonar unit: {e:#?}");
     }
 
     let (protocol_version, device_information) =
@@ -116,27 +115,24 @@ pub async fn sonar<
     #[cfg(feature = "logging")]
     logln!("Starting sonar auto transmit");
     let at = cfg.auto_transmit;
-    loop {
-        if let Err(e) = ping360
-            .auto_transmit(
-                at.mode,
-                at.gain_setting as u8,
-                at.transmit_duration,
-                at.sample_period,
-                at.transmit_frequency,
-                at.number_of_samples,
-                at.start_angle,
-                at.stop_angle,
-                at.num_steps,
-                at.delay,
-            )
-            .await
-        {
-            #[cfg(feature = "logging")]
-            logln!("Failed to start sonar auto transmit: {e:#?}");
-        } else {
-            break;
-        }
+    #[allow(unused_variables)]
+    while let Err(e) = ping360
+        .auto_transmit(
+            at.mode,
+            at.gain_setting as u8,
+            at.transmit_duration,
+            at.sample_period,
+            at.transmit_frequency,
+            at.number_of_samples,
+            at.start_angle,
+            at.stop_angle,
+            at.num_steps,
+            at.delay,
+        )
+        .await
+    {
+        #[cfg(feature = "logging")]
+        logln!("Failed to start sonar auto transmit: {e:#?}");
     }
 
     let mut data: Vec<AutoDeviceDataStruct> = Vec::new();
@@ -148,7 +144,7 @@ pub async fn sonar<
             _ = cancel.cancelled() => { break; },
             r = ping360.auto_device_data() => {
                 if let Ok(d) = r {
-                    let angle_clone = d.angle.clone();
+                    let angle_clone = d.angle;
                     data.push(d);
                     #[cfg(feature = "logging")]
                     logln!("Got data {}", angle_clone);

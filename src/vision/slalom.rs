@@ -112,14 +112,14 @@ impl VisualDetector<f64> for Slalom {
                 let edge2mag = (edge2.0.powf(2.0) + edge2.1.powf(2.0)).sqrt();
                 let longest_edge = if edge2mag > edge1mag { edge2 } else { edge1 };
 
-                let mut angle = (longest_edge.0 / longest_edge.1).atan().to_degrees() * -1.0;
+                let mut angle = -(longest_edge.0 / longest_edge.1).atan().to_degrees();
 
                 angle = ((angle + 180.0) % 360.0) - 180.0;
                 if angle < -90.0 {
                     angle += 180.0;
                 }
 
-                println!("{:?}", angle);
+                println!("{angle:?}");
 
                 let center_adjusted_x = rect.center.x as f64;
                 let center_adjusted_y = rect.center.y as f64;

@@ -1,14 +1,13 @@
-use std::{fs::create_dir_all, ops::RangeInclusive};
-
+use super::{image_prep::resize, MatWrapper, Offset2D, VisualDetection, VisualDetector};
 use opencv::{
     core::{in_range, Point, Size, VecN, Vector},
-    imgcodecs::imwrite,
     imgproc::{find_contours, CHAIN_APPROX_SIMPLE, RETR_TREE},
     prelude::{Mat, MatTraitConst},
 };
-use uuid::Uuid;
+use std::ops::RangeInclusive;
 
-use super::{image_prep::resize, MatWrapper, Offset2D, VisualDetection, VisualDetector};
+#[cfg(feature = "logging")]
+use {opencv::imgcodecs::imwrite, std::fs::create_dir_all, uuid::Uuid};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Rgb {
@@ -123,7 +122,7 @@ impl VisualDetector<f64> for Octagon {
             .unwrap();
         }
 
-        println!("MASK: {:#?}", mask);
+        println!("MASK: {mask:#?}");
 
         let mut contours_out: Vector<Vector<Point>> = Vector::new();
         find_contours(

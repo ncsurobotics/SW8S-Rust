@@ -44,7 +44,7 @@ pub async fn coinflip_procedural<
 
     let initial_yaw = loop {
         if let Some(initial_angle) = cb.responses().get_angles().await {
-            break *initial_angle.yaw() as f32;
+            break *initial_angle.yaw();
         } else {
             #[cfg(feature = "logging")]
             logln!("Failed to get initial angle");
@@ -56,6 +56,7 @@ pub async fn coinflip_procedural<
         .await;
 
     loop {
+        #[allow(unused_variables)]
         let detections = vision.execute().await.unwrap_or_else(|e| {
             #[cfg(feature = "logging")]
             logln!("Getting path detection resulted in error: `{e}`\n\tUsing empty detection vec");
