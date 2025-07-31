@@ -262,12 +262,17 @@ async fn shutdown_handler() -> (UnboundedSender<i32>, CancellationToken) {
 }
 
 async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
+    /// Wrapper for missions that do not directly use the cancellation token
+    macro_rules! ctwrap {
+        ($fut:expr) => {{
+            let _ = cancel.run_until_cancelled($fut).await;
+            Ok(())
+        }};
+    }
+
     let config = config().await;
     let res = match mission.to_lowercase().as_str() {
-        "arm" => {
-            WaitArm::new(static_context().await).execute().await;
-            Ok(())
-        }
+        "arm" => ctwrap!(WaitArm::new(static_context().await).execute()),
         "empty" => {
             let control_board = control_board().await;
             control_board
@@ -356,69 +361,48 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             logln!("Finished travel");
             Ok(())
         }
-        "descend" | "forward" => {
-            let _ = descend_and_go_forward(&FullActionContext::new(
+        "descend" | "forward" => ctwrap!(descend_and_go_forward(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "gate_run_naive" => ctwrap!(gate_run_naive(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "gate_run_complex" => ctwrap!(gate_run_complex(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "gate_run_coinflip" => ctwrap!(gate_run_procedural(
+            &FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
                 gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "gate_run_naive" => {
-            let _ = gate_run_naive(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "gate_run_complex" => {
-            let _ = gate_run_complex(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "gate_run_coinflip" => {
-            cancel
-                .run_until_cancelled(gate_run_procedural(
-                    &FullActionContext::new(
-                        control_board().await,
-                        meb().await,
-                        front_cam().await,
-                        bottom_cam().await,
-                        gate_target().await,
-                    ),
-                    &config.missions.gate,
-                ))
-                .await;
-            Ok(())
-        }
-        "gate_run_testing" => {
-            let _ = gate_run_testing(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
+            ),
+            &config.missions.gate,
+        )),
+        "gate_run_testing" => ctwrap!(gate_run_testing(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
         "start_cam" => {
             // This has not been tested
             logln!("Opening camera");
@@ -427,96 +411,45 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             logln!("Opened camera");
             Ok(())
         }
-        "path_align" => {
-            let _ = path_align_procedural(
-                &FullActionContext::new(
-                    control_board().await,
-                    meb().await,
-                    front_cam().await,
-                    bottom_cam().await,
-                    gate_target().await,
-                ),
-                &config.missions.path_align,
-            )
-            .await;
-            Ok(())
-        }
-        /*
-        "buoy_circle" => {
-            bail!("TODO");
-            let _ = gate_run(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        */
-        "example" => {
-            let _ = initial_descent(&FullActionContext::new(
+        "path_align" => ctwrap!(path_align_procedural(
+            &FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
                 gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "pid_test" => {
-            let _ = pid_test(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "octagon" => {
-            let _ = octagon(static_context().await, &config.missions.octagon)
-                .execute()
-                .await;
-            Ok(())
-        }
-        "buoy_circle" => {
-            let _ = buoy_circle_sequence(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "buoy_model" => {
-            let _ = buoy_circle_sequence_model(static_context().await)
-                .execute()
-                .await;
-            Ok(())
-        }
-        "buoy_blind" => {
-            let _ = buoy_circle_sequence_blind(static_context().await)
-                .execute()
-                .await;
-            Ok(())
-        }
-        "buoy_align" => {
-            let _ = buoy_align(static_context().await).execute().await;
-            Ok(())
-        }
-        "spin" => {
-            let _ = spin(static_context().await).execute().await;
-            Ok(())
-        }
+            ),
+            &config.missions.path_align,
+        )),
+        "example" => ctwrap!(initial_descent(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "pid_test" => ctwrap!(pid_test(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "octagon" => ctwrap!(octagon(static_context().await, &config.missions.octagon).execute()),
+        "buoy_circle" => ctwrap!(buoy_circle_sequence(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "buoy_model" => ctwrap!(buoy_circle_sequence_model(static_context().await).execute()),
+        "buoy_blind" => ctwrap!(buoy_circle_sequence_blind(static_context().await).execute()),
+        "buoy_align" => ctwrap!(buoy_align(static_context().await).execute()),
+        "spin" => ctwrap!(spin(static_context().await).execute()),
         "torpedo" | "fire_torpedo" => {
             let _ = buoy_align_shot(static_context().await).execute().await;
             Ok(())
@@ -528,10 +461,7 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             FireLeftTorpedo::new(static_context().await).execute().await;
             Ok(())
         }
-        "coinflip" => {
-            let _ = coinflip(static_context().await).execute().await;
-            Ok(())
-        }
+        "coinflip" => ctwrap!(coinflip(static_context().await).execute()),
         // Just stall out forever
         "forever" | "infinite" => loop {
             while control_board().await.raw_speed_set([0.0; 8]).await.is_err() {}
@@ -546,22 +476,12 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             .unwrap();
             Ok(())
         }
-        "slalom" => {
-            cancel
-                .run_until_cancelled(slalom(static_context().await, &config.missions.slalom))
-                .await;
-            Ok(())
-        }
+        "slalom" => ctwrap!(slalom(static_context().await, &config.missions.slalom)),
         "sonar" => {
             let _ = sonar(static_context().await, &config.sonar, cancel).await;
             Ok(())
         }
-        "bin" => {
-            cancel
-                .run_until_cancelled(bin(static_context().await, &config.missions.bin))
-                .await;
-            Ok(())
-        }
+        "bin" => ctwrap!(bin(static_context().await, &config.missions.bin)),
         x => bail!("Invalid argument: [{x}]"),
     };
 
