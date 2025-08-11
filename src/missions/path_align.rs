@@ -101,7 +101,7 @@ pub async fn path_align_procedural<
         logln!("Positive detection count: {consec_detections}");
     }
     let _ = cb
-        .stability_2_speed_set(0.0, 1.0, 0.0, 0.0, last_set_yaw, config.depth)
+        .stability_2_speed_set(1.0, 0.3, 0.0, 0.0, last_set_yaw, config.depth)
         .await;
     sleep(Duration::from_secs(1)).await;
 }

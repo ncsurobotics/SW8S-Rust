@@ -110,10 +110,13 @@ pub fn coinflip<
                 ),
                 act_nest!(
                     wrap_action(ActionConcurrent::new, FirstValid::new),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::LeftPole),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::RightPole),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Shark),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Sawfish),
+
                 ),
                 CountTrue::new(TRUE_COUNT),
             ),
