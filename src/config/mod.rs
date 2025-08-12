@@ -7,8 +7,11 @@ pub mod sonar;
 
 use std::fs::read_to_string;
 
+use crate::vision::Yuv;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::ops::RangeInclusive;
 
 pub const SHUTDOWN_TIMEOUT: u64 = 5;
 
@@ -29,12 +32,20 @@ pub struct Config {
     pub bottom_cam_path: String,
     pub sonar: sonar::Config,
     pub missions: Missions,
+    pub color_profile: String,
+    pub color_profiles: HashMap<String, ColorProfile>,
 }
 
 impl Config {
     pub fn new() -> Result<Self> {
         let config_string = read_to_string(CONFIG_FILE)?;
         Ok(toml::from_str(&config_string)?)
+    }
+}
+
+impl Config {
+    pub fn get_color_profile(&self) -> Option<&ColorProfile> {
+        self.color_profiles.get(&self.color_profile)
     }
 }
 
@@ -48,6 +59,8 @@ impl Default for Config {
             bottom_cam_path: BOTTOM_CAM.to_string(),
             sonar: sonar::Config::default(),
             missions: Missions::default(),
+            color_profile: "".to_string(),
+            color_profiles: HashMap::new(),
         }
     }
 }
@@ -59,4 +72,12 @@ pub struct Missions {
     pub slalom: slalom::Config,
     pub bin: bin::Config,
     pub octagon: octagon::Config,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ColorProfile {
+    pub red: RangeInclusive<Yuv>,
+    pub orange: RangeInclusive<Yuv>,
+    pub yellow: RangeInclusive<Yuv>,
+    pub purple: RangeInclusive<Yuv>,
 }

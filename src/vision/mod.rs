@@ -7,6 +7,7 @@ use opencv::{
     imgproc::{self, LINE_8},
     prelude::Mat,
 };
+use serde::{Deserialize, Serialize};
 use std::{
     fmt::Debug,
     hash::Hash,
@@ -414,7 +415,7 @@ impl From<Vector<Mat>> for VecMatWrapper {
 unsafe impl Send for VecMatWrapper {}
 unsafe impl Sync for VecMatWrapper {}
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Copy)]
 pub struct Yuv {
     pub y: u8,
     pub u: u8,

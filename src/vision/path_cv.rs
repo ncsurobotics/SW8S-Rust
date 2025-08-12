@@ -1,5 +1,5 @@
 use super::{image_prep::resize, MatWrapper, PosVector, VisualDetection, VisualDetector, Yuv};
-use crate::vision::Draw;
+use crate::{config::ColorProfile, vision::Draw};
 use opencv::{
     core::{in_range, Point, Scalar, Size, Vector},
     imgproc::{
@@ -73,6 +73,10 @@ impl PathCV {
 }
 
 impl PathCV {
+    pub fn from_color_profile(color_profile: &ColorProfile) -> Self {
+        Self::new(color_profile.orange.clone(), Size::from((400, 300)))
+    }
+
     pub fn new(color_bounds: RangeInclusive<Yuv>, size: Size) -> Self {
         Self {
             color_bounds,

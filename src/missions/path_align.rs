@@ -3,6 +3,7 @@ use tokio::time::{sleep, Duration};
 use tokio_serial::SerialStream;
 
 use crate::config::path_align::Config;
+use crate::config::ColorProfile;
 use crate::{missions::vision::VisionNormBottomAngle, vision::path_cv::PathCV};
 
 use super::{
@@ -15,14 +16,17 @@ pub async fn path_align_procedural<
 >(
     context: &Con,
     config: &Config,
+    color_profile: &ColorProfile,
 ) {
     #[cfg(feature = "logging")]
     logln!("Starting path align");
 
     let cb = context.get_control_board();
     let _ = cb.bno055_periodic_read(true).await;
-    let mut vision_norm_bottom =
-        VisionNormBottomAngle::<Con, PathCV, f64>::new(context, PathCV::default());
+    let mut vision_norm_bottom = VisionNormBottomAngle::<Con, PathCV, f64>::new(
+        context,
+        PathCV::from_color_profile(color_profile),
+    );
 
     let initial_yaw = loop {
         if let Some(initial_angle) = cb.responses().get_angles().await {

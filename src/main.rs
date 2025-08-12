@@ -3,6 +3,7 @@ use std::env::temp_dir;
 
 use std::env;
 use std::process::exit;
+use std::time::Duration;
 use sw8s_rust_lib::{
     comms::{
         control_board::{ControlBoard, SensorStatuses},
@@ -47,8 +48,6 @@ use tokio::{
 };
 use tokio_serial::SerialStream;
 use tokio_util::sync::CancellationToken;
-pub mod config;
-use std::time::Duration;
 
 static CONFIG_CELL: OnceCell<Config> = OnceCell::const_new();
 async fn config() -> &'static Config {
@@ -421,6 +420,7 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
                 gate_target().await,
             ),
             &config.missions.path_align,
+            &config.get_color_profile().unwrap(),
         )),
         "example" => ctwrap!(initial_descent(&FullActionContext::new(
             control_board().await,
