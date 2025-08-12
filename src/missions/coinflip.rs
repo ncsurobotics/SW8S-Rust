@@ -4,6 +4,7 @@ use tokio_serial::SerialStream;
 
 use crate::{
     act_nest,
+    config::coinflip::Config,
     missions::{
         extra::AlwaysTrue,
         meb::WaitArm,
@@ -33,6 +34,7 @@ pub async fn coinflip_procedural<
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
 >(
     context: &Con,
+    config: &Config,
 ) {
     #[cfg(feature = "logging")]
     logln!("Starting path align");
@@ -51,9 +53,16 @@ pub async fn coinflip_procedural<
         }
     };
 
+    let DEPTH = config.depth;
+
     let _ = cb
-        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, 0.0)
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, DEPTH)
         .await;
+
+    let mut true_count = 0;
+    let max_true_count = config.true_count;
+    let mut target_yaw = initial_yaw;
+    let angle_correction = config.angle_correction;
 
     loop {
         #[allow(unused_variables)]
@@ -63,10 +72,33 @@ pub async fn coinflip_procedural<
             vec![]
         });
 
-        let _gate = detections
+        let gate = detections
             .iter()
             .filter(|d| matches!(d.class().identifier, Target::Gate))
             .collect_vec();
+        let shark = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::Shark))
+            .collect_vec();
+        let sawfish = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::Sawfish))
+            .collect_vec();
+
+        if (gate.len() > 0 || shark.len() > 0 || sawfish.len() > 0) {
+            if true_count > max_true_count {
+                let _ = cb
+                    .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, DEPTH)
+                    .await;
+            } else {
+                true_count += 1;
+            }
+        } else {
+            target_yaw += angle_correction;
+            let _ = cb
+                .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, target_yaw, DEPTH)
+                .await;
+        }
     }
 }
 
@@ -113,10 +145,11 @@ pub fn coinflip<
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Gate),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::LeftPole),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::RightPole),
+                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
+                        Target::RightPole
+                    ),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Shark),
                     DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Sawfish),
-
                 ),
                 CountTrue::new(TRUE_COUNT),
             ),

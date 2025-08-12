@@ -1,4 +1,5 @@
 pub mod bin;
+pub mod coinflip;
 pub mod gate;
 pub mod octagon;
 pub mod path_align;
@@ -76,6 +77,7 @@ pub struct Missions {
     pub slalom: slalom::Config,
     pub bin: bin::Config,
     pub octagon: octagon::Config,
+    pub coinflip: coinflip::Config,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
