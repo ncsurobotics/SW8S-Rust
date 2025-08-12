@@ -1,3 +1,4 @@
+use super::Side;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -23,10 +24,4 @@ impl Default for Config {
             dumb_strafe_secs: 2,
         }
     }
-}
-
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
-pub enum Side {
-    Right,
-    Left,
 }

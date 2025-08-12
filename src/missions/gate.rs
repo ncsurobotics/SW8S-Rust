@@ -4,7 +4,7 @@ use tokio_serial::SerialStream;
 
 use crate::{
     act_nest,
-    config::gate::{Config, Side},
+    config::{gate::Config, Side},
     missions::{
         action::{ActionConcurrentSplit, ActionDataConditional},
         basic::descend_depth_and_go_forward,

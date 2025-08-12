@@ -17,11 +17,7 @@ use bluerobotics_ping::{
 
 use super::action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard};
 use crate::{
-    config::{
-        slalom::{Config, Side::*},
-        sonar::Config as SonarConfig,
-        ColorProfile,
-    },
+    config::{slalom::Config, sonar::Config as SonarConfig, ColorProfile, Side::*},
     missions::{
         action::ActionExec,
         basic::DelayAction,

@@ -34,6 +34,8 @@ pub struct Config {
     pub missions: Missions,
     pub color_profile: String,
     pub color_profiles: HashMap<String, ColorProfile>,
+    pub shark: Side,
+    pub saw_fish: Side,
 }
 
 impl Config {
@@ -61,6 +63,8 @@ impl Default for Config {
             missions: Missions::default(),
             color_profile: "".to_string(),
             color_profiles: HashMap::new(),
+            shark: Side::default(),
+            saw_fish: Side::default(),
         }
     }
 }
@@ -80,4 +84,16 @@ pub struct ColorProfile {
     pub orange: RangeInclusive<Yuv>,
     pub yellow: RangeInclusive<Yuv>,
     pub purple: RangeInclusive<Yuv>,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
+pub enum Side {
+    Right,
+    Left,
+}
+
+impl Default for Side {
+    fn default() -> Self {
+        Self::Right
+    }
 }

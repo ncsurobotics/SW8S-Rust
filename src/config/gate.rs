@@ -1,3 +1,4 @@
+use super::Side;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -18,17 +19,5 @@ impl Default for Config {
             false_count: 1,
             side: Side::default(),
         }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
-pub enum Side {
-    Right,
-    Left,
-}
-
-impl Default for Side {
-    fn default() -> Self {
-        Self::Right
     }
 }
