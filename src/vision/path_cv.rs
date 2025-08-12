@@ -73,16 +73,16 @@ impl PathCV {
 }
 
 impl PathCV {
-    pub fn from_color_profile(color_profile: &ColorProfile) -> Self {
-        Self::new(color_profile.orange.clone(), Size::from((400, 300)))
-    }
-
     pub fn new(color_bounds: RangeInclusive<Yuv>, size: Size) -> Self {
         Self {
             color_bounds,
             size,
             image: Mat::default().into(),
         }
+    }
+
+    pub fn from_color_profile(color_profile: &ColorProfile) -> Self {
+        Self::new(color_profile.orange.clone(), Size::from((400, 300)))
     }
 }
 

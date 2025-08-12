@@ -20,6 +20,7 @@ use crate::{
     config::{
         slalom::{Config, Side::*},
         sonar::Config as SonarConfig,
+        ColorProfile,
     },
     missions::{
         action::ActionExec,
@@ -34,6 +35,7 @@ pub async fn slalom<
 >(
     context: &Con,
     config: &Config,
+    color_profile: &ColorProfile,
 ) {
     use crate::vision::slalom::Slalom;
     #[cfg(feature = "logging")]
@@ -42,7 +44,10 @@ pub async fn slalom<
     let cb = context.get_control_board();
     let _ = cb.bno055_periodic_read(true).await;
 
-    let mut vision = VisionNormAngle::<Con, Slalom, f64>::new(context, Slalom::default());
+    let mut vision = VisionNormAngle::<Con, Slalom, f64>::new(
+        context,
+        Slalom::from_color_profile(color_profile),
+    );
 
     let initial_yaw = loop {
         if let Some(initial_angle) = cb.responses().get_angles().await {

@@ -3,7 +3,7 @@ use tokio_serial::SerialStream;
 
 use crate::{
     act_nest,
-    config::octagon::Config,
+    config::{octagon::Config, ColorProfile},
     missions::{
         action::{
             ActionChain, ActionConcurrent, ActionDataConditional, ActionSequence, ActionWhile,
@@ -43,6 +43,7 @@ pub fn octagon<
 >(
     context: &'static Con,
     config: &Config,
+    color_profile: &ColorProfile,
 ) -> impl ActionExec<()> + 'static {
     const FULL_SPEED_Y: f32 = 0.7;
     const FULL_SPEED_X: f32 = 0.0;

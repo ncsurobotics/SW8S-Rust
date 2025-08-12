@@ -438,7 +438,12 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             gate_target().await,
         ))
         .execute()),
-        "octagon" => ctwrap!(octagon(static_context().await, &config.missions.octagon).execute()),
+        "octagon" => ctwrap!(octagon(
+            static_context().await,
+            &config.missions.octagon,
+            &config.get_color_profile().unwrap()
+        )
+        .execute()),
         "buoy_circle" => ctwrap!(buoy_circle_sequence(&FullActionContext::new(
             control_board().await,
             meb().await,
@@ -477,7 +482,11 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             .unwrap();
             Ok(())
         }
-        "slalom" => ctwrap!(slalom(static_context().await, &config.missions.slalom)),
+        "slalom" => ctwrap!(slalom(
+            static_context().await,
+            &config.missions.slalom,
+            &config.get_color_profile().unwrap()
+        )),
         "sonar" => {
             let _ = sonar(static_context().await, &config.sonar, cancel).await;
             Ok(())

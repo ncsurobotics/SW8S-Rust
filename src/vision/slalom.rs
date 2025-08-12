@@ -1,3 +1,5 @@
+use crate::config::ColorProfile;
+
 use super::{image_prep::resize, MatWrapper, PosVector, VisualDetection, VisualDetector, Yuv};
 use opencv::{
     core::{in_range, Point, Scalar, Size, Vector},
@@ -23,6 +25,10 @@ impl Slalom {
             size,
             image: Mat::default().into(),
         }
+    }
+
+    pub fn from_color_profile(color_profile: &ColorProfile) -> Self {
+        Self::new(color_profile.orange.clone(), Size::from((400, 300)))
     }
 }
 
