@@ -77,24 +77,24 @@ pub async fn gate_run_procedural<
             vec![]
         });
 
-        /* let pole = detections
-        .iter()
-        .filter(|d| matches!(d.class().identifier, Target::Pole))
-        .collect_vec(); */
+        let rightPole = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::RightPole))
+            .collect_vec();
 
         /* let middle = detections
         .iter()
         .filter(|d| matches!(d.class().identifier, Target::Middle))
         .collect_vec(); */
 
-        let sawfish = detections
-            .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Sawfish))
-            .collect_vec();
-
         let shark = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Shark))
+            .filter(|d| matches!(d.class().identifier, Target::LeftPole))
+            .collect_vec();
+
+        let sawfish = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::RightPole))
             .collect_vec();
 
         let mut traversal_timer = DelayAction::new(9.5); // forward duration in second
@@ -149,7 +149,7 @@ pub async fn gate_run_procedural<
                     logln!("LEFT: Missing Features, Fallback");
 
                     let correction = -0.2;
-                    let fwd = 0.0;
+                    let fwd = 0.05;
 
                     let _ = cb
                         .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
@@ -161,18 +161,18 @@ pub async fn gate_run_procedural<
             Side::Right => {
                 if !sawfish.is_empty() {
                     // Center on average x of blue
-                    let avg_x = sawfish
+                    let avg_x = (sawfish
                         .iter()
                         .map(|d| *d.position().x() as f32)
                         .sum::<f32>()
-                        / sawfish.len() as f32;
+                        / sawfish.len() as f32);
 
                     #[cfg(feature = "logging")]
                     logln!("SAWFISH AVG X: {}", avg_x);
 
                     if avg_x.abs() > TOLERANCE {
                         let correction = 0.4 * avg_x;
-                        let fwd = 0.0;
+                        let fwd = 0.05;
 
                         let _ = cb
                             .stability_2_speed_set(
@@ -210,7 +210,7 @@ pub async fn gate_run_procedural<
                     logln!("RIGHT: Missing Features, Fallback");
 
                     let correction = 0.2;
-                    let fwd = 0.0;
+                    let fwd = 0.05;
 
                     let _ = cb
                         .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)

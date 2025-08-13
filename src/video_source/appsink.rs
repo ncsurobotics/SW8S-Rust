@@ -48,10 +48,11 @@ impl Camera {
         let rtsp_string = "h264. ! queue ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! rtspclientsink location=rtsp://127.0.0.1:8554/".to_string()
                         + camera_name + ".mp4 ";
 
+        // unsharp luma-radius-2.0 luma-amount=2.5 chroma-radius=2.0 chroma-amount=2.5 !
         let capture_string =
             pipeline_head(camera_path, camera_dimensions.0, camera_dimensions.1, 30)
                 + " ! jpegdec ! tee name=raw "
-                + "raw. ! queue  ! videoconvert ! videobalance brightness=0.0  ! appsink "
+                + "raw. ! queue  ! videoconvert ! videobalance brightness=-0.6 ! appsink "
                 + "raw. ! queue  ! videoconvert ! "
                 + &h264_enc_pipeline(2048000)
                 + " ! tee name=h264 "
@@ -151,7 +152,7 @@ fn pipeline_head(device_name: &str, width: u32, height: u32, framerate: u32) -> 
     return format!("mfvideosrc device-index={device_name} ! image/jpeg, width={width}, height={height}, framerate={framerate}/1");
 
     #[cfg(not(target_os = "windows"))]
-    return format!("v4l2src device={device_name} exposure=50 ! image/jpeg, width={width}, height={height}, framerate={framerate}/1");
+    return format!("v4l2src device={device_name} exposure=25 ! image/jpeg, width={width}, height={height}, framerate={framerate}/1");
 }
 
 fn h264_enc_pipeline(bitrate: u32) -> String {

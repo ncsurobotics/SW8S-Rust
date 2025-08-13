@@ -1,5 +1,6 @@
 use itertools::Itertools;
 use tokio::io::WriteHalf;
+use tokio::time::{sleep, Duration};
 use tokio_serial::SerialStream;
 
 use crate::{
@@ -56,7 +57,7 @@ pub async fn coinflip_procedural<
     let DEPTH = config.depth;
 
     let _ = cb
-        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, DEPTH)
+        .stability_1_speed_set(0.0, 0.0, config.angle_correction, 0.0, 0.0, DEPTH)
         .await;
 
     let mut true_count = 0;
@@ -72,10 +73,10 @@ pub async fn coinflip_procedural<
             vec![]
         });
 
-        let gate = detections
-            .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Gate))
-            .collect_vec();
+        // let gate = detections
+        //     .iter()
+        //     .filter(|d| matches!(d.class().identifier, Target::Gate))
+        //     .collect_vec();
         let shark = detections
             .iter()
             .filter(|d| matches!(d.class().identifier, Target::Shark))
@@ -85,19 +86,27 @@ pub async fn coinflip_procedural<
             .filter(|d| matches!(d.class().identifier, Target::Sawfish))
             .collect_vec();
 
-        if (gate.len() > 0 || shark.len() > 0 || sawfish.len() > 0) {
+        let leftPole = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::LeftPole))
+            .collect_vec();
+
+        let rightPole = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::RightPole))
+            .collect_vec();
+
+        if (shark.len() > 0 || sawfish.len() > 0 || !leftPole.is_empty()) {
             if true_count > max_true_count {
                 let _ = cb
-                    .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, DEPTH)
+                    .stability_1_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, DEPTH)
                     .await;
+                break;
             } else {
                 true_count += 1;
             }
         } else {
-            target_yaw += angle_correction;
-            let _ = cb
-                .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, target_yaw, DEPTH)
-                .await;
+            true_count = 0;
         }
     }
 }
