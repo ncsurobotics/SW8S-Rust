@@ -59,8 +59,8 @@ impl TryFrom<i32> for Target {
             3 => Ok(Self::Sawfish),
             // 4 => Ok(Self::Pole),
             // 5 => Ok(Self::Pole),
-            4 => Ok(Self::LeftPole),
-            5 => Ok(Self::RightPole),
+            5 => Ok(Self::LeftPole),
+            4 => Ok(Self::RightPole),
             x => Err(TargetError { x }),
         }
     }

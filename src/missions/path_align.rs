@@ -38,7 +38,7 @@ pub async fn path_align_procedural<
     };
 
     let _ = cb
-        .stability_2_speed_set(0.0, config.speed, 0.0, 0.0, initial_yaw, config.depth)
+        .stability_1_speed_set(config.speed, 0.0, 0.0, 0.0, 0.0, config.depth)
         .await;
 
     let mut last_set_yaw = initial_yaw;
@@ -105,7 +105,7 @@ pub async fn path_align_procedural<
         logln!("Positive detection count: {consec_detections}");
     }
     let _ = cb
-        .stability_2_speed_set(1.0, 0.3, 0.0, 0.0, last_set_yaw, config.depth)
+        .stability_2_speed_set(0.0, 1.0, 0.0, 0.0, last_set_yaw, config.depth)
         .await;
     sleep(Duration::from_secs(1)).await;
 }
