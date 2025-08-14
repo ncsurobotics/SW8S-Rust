@@ -1,6 +1,16 @@
 use anyhow::Result;
 use derive_getters::Getters;
-use opencv::{core::Size, prelude::Mat};
+use itertools::MergeJoinBy;
+use opencv::core::{multiply, multiply_def, MatTraitManual, BORDER_CONSTANT, CV_8U};
+use opencv::imgproc::{get_structuring_element, morphology_default_border_value, MORPH_RECT};
+use opencv::{
+    core::{in_range, merge, split, Point, Scalar, Size, Vector},
+    imgproc::{
+        self, contour_area_def, cvt_color_def, dilate, find_contours_def, min_area_rect,
+        CHAIN_APPROX_SIMPLE, COLOR_BGR2YUV, LINE_8, RETR_EXTERNAL,
+    },
+    prelude::{Mat, MatTraitConst, MatTraitConstManual},
+};
 
 use crate::load_onnx;
 
@@ -102,7 +112,40 @@ impl YoloProcessor for GatePoles<OnnxModel> {
     type Target = Target;
 
     fn detect_yolo_v5(&mut self, image: &Mat) -> Vec<YoloDetection> {
-        self.model.detect_yolo_v5(image, self.threshold)
+        let mut channels = Vector::<Mat>::new();
+        let _ = split(image, &mut channels).unwrap();
+        let b = channels.get(0).unwrap();
+        let g = channels.get(1).unwrap();
+        let r = channels.get(2).unwrap();
+        let mut mult_b = Mat::default();
+        let _ = multiply(&b, &1.0, &mut mult_b, 1.0, -1).unwrap();
+        let values = Vector::<Mat>::from_iter(vec![b, g, r]);
+        let mut output_img = Mat::default();
+        let _ = merge(&values, &mut output_img).unwrap();
+        let mut dilated = Mat::default();
+        // let kernel = Vector::<Vector<i32>>::from_iter(vec![
+        //     Vector::<i32>::from_iter(vec![1, 1, 1]),
+        //     Vector::<i32>::from_iter(vec![1, 1, 1]),
+        //     Vector::<i32>::from_iter(vec![1, 1, 1]),
+        // ]);
+        // let kernel =
+        //     get_structuring_element(MORPH_RECT, Size::new(3, 3), Point::new(-1, -1)).unwrap();
+        let kernel = Mat::ones_size(Size::new(3, 3), CV_8U).unwrap();
+        let _ = dilate(
+            &output_img,
+            &mut dilated,
+            &kernel,
+            Point::new(-1, -1),
+            1,
+            BORDER_CONSTANT,
+            morphology_default_border_value().unwrap(),
+        )
+        .unwrap();
+
+        dbg!(image.dims());
+        dbg!(dilated.dims());
+
+        self.model.detect_yolo_v5(&dilated, self.threshold)
     }
 
     fn model_size(&self) -> Size {
