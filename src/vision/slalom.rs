@@ -58,7 +58,7 @@ impl VisualDetector<f64> for Slalom {
         &mut self,
         input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
-        const MIN_AREA: f64 = 100.0;
+        const MIN_AREA: f64 = 1000.0;
         const MAX_AREA: f64 = 11000.0;
 
         self.image = resize(input_image, &self.size)?.into();

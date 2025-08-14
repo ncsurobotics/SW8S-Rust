@@ -106,7 +106,7 @@ impl GatePoles<OnnxModel> {
 
 impl Default for GatePoles<OnnxModel> {
     fn default() -> Self {
-        Self::load_640(0.5)
+        Self::load_640(0.75)
     }
 }
 
@@ -120,7 +120,7 @@ impl YoloProcessor for GatePoles<OnnxModel> {
         let g = channels.get(1).unwrap();
         let r = channels.get(2).unwrap();
         let mut mult_b = Mat::default();
-        let _ = multiply(&b, &1.0, &mut mult_b, 1.0, -1).unwrap();
+        let _ = multiply(&b, &1.1, &mut mult_b, 1.0, -1).unwrap();
         let values = Vector::<Mat>::from_iter(vec![b, g, r]);
         let mut output_img = Mat::default();
         let _ = merge(&values, &mut output_img).unwrap();

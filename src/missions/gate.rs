@@ -65,7 +65,7 @@ pub async fn gate_run_procedural<
         .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
         .await;
 
-    const TOLERANCE: f32 = 0.4;
+    const TOLERANCE: f32 = 0.3;
 
     let mut true_count = 0;
 
@@ -89,15 +89,15 @@ pub async fn gate_run_procedural<
 
         let shark = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Sawfish))
+            .filter(|d| matches!(d.class().identifier, Target::Shark))
             .collect_vec();
 
         let sawfish = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Shark))
+            .filter(|d| matches!(d.class().identifier, Target::Sawfish))
             .collect_vec();
 
-        let mut traversal_timer = DelayAction::new(7.5); // forward duration in second
+        let mut traversal_timer = DelayAction::new(8.0); // forward duration in second
 
         match config.side {
             Side::Left => {
@@ -139,6 +139,10 @@ pub async fn gate_run_procedural<
                                     config.depth,
                                 )
                                 .await;
+                            // let _ = cb
+                            //     .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
+                            //     .await;
+
                             traversal_timer.execute().await;
                             break;
                         }
@@ -154,7 +158,11 @@ pub async fn gate_run_procedural<
                     let _ = cb
                         .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
                         .await;
-                    // DelayAction::new(1.0).execute().await;
+                    // let _ = cb
+                    // .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
+                    // .await;
+
+                    DelayAction::new(1.0).execute().await;
                 }
             }
 
@@ -184,6 +192,9 @@ pub async fn gate_run_procedural<
                                 config.depth,
                             )
                             .await;
+                        // let _ = cb
+                        //     .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
+                        //     .await;
                     } else {
                         let fwd = config.speed;
                         let correction = 0.05;
@@ -200,6 +211,10 @@ pub async fn gate_run_procedural<
                                     config.depth,
                                 )
                                 .await;
+                            // let _ = cb
+                            // .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
+                            // .await;
+
                             traversal_timer.execute().await;
                             break;
                         }
@@ -215,6 +230,9 @@ pub async fn gate_run_procedural<
                     let _ = cb
                         .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
                         .await;
+                    // let _ = cb
+                    //     .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
+                    //     .await;
                 }
             }
         }

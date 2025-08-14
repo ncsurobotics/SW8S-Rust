@@ -24,8 +24,8 @@ pub fn spin<
 >(
     context: &Con,
 ) -> impl ActionExec<()> + '_ {
-    const GATE_DEPTH: f32 = -1.75;
-    const DEPTH: f32 = -1.75;
+    const GATE_DEPTH: f32 = -2.0;
+    const DEPTH: f32 = -2.0;
     const Z_TARGET: f32 = 0.0;
     const FORWARD_SPEED: f32 = 1.0;
     const SPIN_SPEED: f32 = 1.0;
@@ -39,7 +39,7 @@ pub fn spin<
             ),
             OutputType::<()>::new(),
         ),
-        DelayAction::new(6.0),
+        DelayAction::new(1.0),
         ActionWhile::new(TupleSecond::new(ActionConcurrent::new(
             act_nest!(
                 ActionSequence::new,
@@ -55,6 +55,7 @@ pub fn spin<
             SpinCounter::new(4, context)
         ))),
         ZeroMovement::new(context, DEPTH),
+        DelayAction::new(3.0),
         OutputType::<()>::new(),
     )
 }
