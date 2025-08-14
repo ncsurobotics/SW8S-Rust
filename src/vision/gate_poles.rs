@@ -2,7 +2,9 @@ use anyhow::Result;
 use derive_getters::Getters;
 use itertools::MergeJoinBy;
 use opencv::core::{multiply, multiply_def, MatTraitManual, BORDER_CONSTANT, CV_8U};
-use opencv::imgproc::{get_structuring_element, morphology_default_border_value, MORPH_RECT};
+use opencv::imgproc::{
+    dilate_def, get_structuring_element, morphology_default_border_value, MORPH_RECT,
+};
 use opencv::{
     core::{in_range, merge, split, Point, Scalar, Size, Vector},
     imgproc::{

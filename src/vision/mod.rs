@@ -291,16 +291,20 @@ impl RelPos for DrawRect2d {
 
 impl Draw for DrawRect2d {
     fn draw(&self, canvas: &mut Mat) -> Result<()> {
-        imgproc::rectangle(
-            canvas,
-            self.inner
-                .to()
-                .ok_or(anyhow!("f64 outside bounds of i32"))?,
-            Scalar::from((0.0, 0.0, 255.0)),
-            2,
-            LINE_8,
-            0,
-        )?;
+        // imgproc::rectangle(
+        //     canvas,
+        //     self.inner
+        //         .to()
+        //         .ok_or(anyhow!("f64 outside bounds of i32"))?,
+        //     Scalar::from((0.0, 0.0, 255.0)),
+        //     2,
+        //     LINE_8,
+        //     0,
+        // )?;
+
+        let center = Point::new((self.x as i32), (self.y as i32));
+
+        imgproc::circle_def(canvas, center, 5, Scalar::from((0.0, 0.0, 255.0)))?;
         Ok(())
     }
 }

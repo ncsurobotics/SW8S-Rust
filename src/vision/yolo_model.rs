@@ -85,6 +85,7 @@ impl<T: Display> Draw for VisualDetection<YoloClass<T>, DrawRect2d> {
             LINE_AA,
             false,
         )?;
+
         Ok(())
     }
 }
