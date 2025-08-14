@@ -66,11 +66,32 @@ impl Camera {
                 + ".mp4\" ";
 
         #[cfg(feature = "annotated_streams")]
+        let rtsp_string = "h264. ! queue ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! rtspclientsink location=rtsp://127.0.0.1:8554/".to_string()
+                        + camera_name + "_annotated.mp4 ";
+        #[cfg(feature = "annotated_streams")]
         let output_string = "appsrc ! videoconvert ! ".to_string()
             + &h264_enc_pipeline(2048000)
-            + " ! mpegtsmux ! rtspclientsink location=rtspt://127.0.0.1:8554/"
+            // + " ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au"
+            + " ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au !"
+            + " rtspclientsink location=rtsp://127.0.0.1:8554/"
             + camera_name
             + "_annotated.mp4 ";
+        dbg!(&output_string);
+        // pipeline_head(camera_path, camera_dimensions.0, camera_dimensions.1, 30)
+        // "appsrc ! image/jpeg, width=480, height=640, framerate=30/1".to_string()
+        //     + " ! jpegdec ! tee name=raw "
+        //     + "raw. ! queue  ! videoconvert ! videobalance brightness=0.0 ! appsink "
+        //     + "raw. ! queue  ! videoconvert ! "
+        //     + &h264_enc_pipeline(2048000)
+        //     + " ! tee name=h264 "
+        //     + if rtsp { &rtsp_string } else { "" }
+        //     + "h264. ! queue ! mpegtsmux ! filesink location=\""
+        //     + filesink
+        //         .to_str()
+        //         .ok_or(anyhow!("filesink_dir is not a string"))?
+        //     + "/"
+        //     + camera_name
+        //     + "_annotated.mp4\" ";
 
         let frame: Arc<Mutex<Option<Mat>>> = Arc::default();
         let frame_copy = frame.clone();
@@ -152,7 +173,7 @@ fn pipeline_head(device_name: &str, width: u32, height: u32, framerate: u32) -> 
     return format!("mfvideosrc device-index={device_name} ! image/jpeg, width={width}, height={height}, framerate={framerate}/1");
 
     #[cfg(not(target_os = "windows"))]
-    return format!("v4l2src device={device_name} exposure=30 ! image/jpeg, width={width}, height={height}, framerate={framerate}/1");
+    return format!("v4l2src device={device_name} exposure=50 ! image/jpeg, width={width}, height={height}, framerate={framerate}/1");
 }
 
 fn h264_enc_pipeline(bitrate: u32) -> String {
