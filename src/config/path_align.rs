@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     pub depth: f32,
     pub speed: f32,
+    pub forward_speed: f32,
     pub detections: u8,
 }
 
@@ -12,6 +13,7 @@ impl Default for Config {
         Self {
             depth: -1.25,
             speed: 0.3,
+            forward_speed: 0.3,
             detections: 10,
         }
     }
