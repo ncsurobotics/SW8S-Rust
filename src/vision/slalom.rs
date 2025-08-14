@@ -5,7 +5,7 @@ use opencv::{
     core::{in_range, Point, Scalar, Size, Vector},
     imgproc::{
         box_points, contour_area_def, cvt_color_def, find_contours_def, min_area_rect,
-        CHAIN_APPROX_SIMPLE, COLOR_BGR2YUV, RETR_EXTERNAL,
+        CHAIN_APPROX_SIMPLE, COLOR_BGR2HSV, RETR_EXTERNAL,
     },
     prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
@@ -64,7 +64,7 @@ impl VisualDetector<f64> for Slalom {
         self.image = resize(input_image, &self.size)?.into();
         let mut yuv_image = Mat::default();
 
-        cvt_color_def(&self.image.0, &mut yuv_image, COLOR_BGR2YUV)?;
+        cvt_color_def(&self.image.0, &mut yuv_image, COLOR_BGR2HSV)?;
 
         let color_start = self.color_bounds.start();
         let color_end = self.color_bounds.end();

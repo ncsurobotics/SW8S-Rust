@@ -487,9 +487,16 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             .unwrap();
             Ok(())
         }
-        "slalom" => ctwrap!(slalom(
+        "slalom_left" => ctwrap!(slalom(
             static_context().await,
             &config.missions.slalom,
+            false,
+            &config.get_color_profile().unwrap()
+        )),
+        "slalom_right" => ctwrap!(slalom(
+            static_context().await,
+            &config.missions.slalom,
+            true,
             &config.get_color_profile().unwrap()
         )),
         "sonar" => {
