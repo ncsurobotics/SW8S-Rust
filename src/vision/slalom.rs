@@ -28,7 +28,7 @@ impl Slalom {
     }
 
     pub fn from_color_profile(color_profile: &ColorProfile) -> Self {
-        Self::new(color_profile.orange.clone(), Size::from((400, 300)))
+        Self::new(color_profile.red.clone(), Size::from((400, 300)))
     }
 }
 

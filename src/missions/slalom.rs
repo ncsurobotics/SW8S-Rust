@@ -56,6 +56,7 @@ pub async fn slalom<
 
     let mut start_detections = 0;
     let mut end_detections = 0;
+    let mut yaw_target = 0.0;
     let mut true_count = 0;
     let mut false_count = 0;
     let mut init_timer = DelayAction::new(1.0);
@@ -72,10 +73,10 @@ pub async fn slalom<
 
     let mut slalom_state = SlalomState::Align;
 
-    let _ = cb
-        .stability_2_speed_set(0.05, config.speed, 0.0, 0.0, initial_yaw, config.depth)
-        .await;
-    init_timer.execute().await;
+    // let _ = cb
+    //     .stability_2_speed_set(0.05, config.speed, 0.0, 0.0, initial_yaw, config.depth)
+    //     .await;
+    // init_timer.execute().await;
 
     #[cfg(feature = "logging")]
     logln!("Starting slalom detection");
@@ -111,6 +112,10 @@ pub async fn slalom<
                         if true_count >= 4 {
                             correction = 0.0;
                             slalom_state = SlalomState::Approach;
+                            if let Some(current_angle) = cb.responses().get_angles().await {
+                                let current_yaw = *current_angle.yaw();
+                                yaw_target = current_yaw;
+                            }
                         } else {
                             #[cfg(feature = "logging")]
                             logln!("true_count: {true_count}/4");
@@ -121,15 +126,19 @@ pub async fn slalom<
 
                         correction = 0.5 * x;
                         let _ = cb
-                            .stability_2_speed_set(
-                                correction,
-                                0.0,
-                                0.0,
-                                0.0,
-                                initial_yaw,
-                                config.depth,
-                            )
+                            .stability_1_speed_set(0.0, 0.0, correction, 0.0, 0.0, config.depth)
                             .await;
+
+                        // let _ = cb
+                        //     .stability_2_speed_set(
+                        //         correction,
+                        //         0.0,
+                        //         0.0,
+                        //         0.0,
+                        //         initial_yaw,
+                        //         config.depth,
+                        //     )
+                        //     .await;
                     }
                 } else {
                     // if start_detections >= config.start_detections {
@@ -151,38 +160,24 @@ pub async fn slalom<
                 #[cfg(feature = "logging")]
                 logln!("APPROACH");
 
-                if let Some(position) = positions.next() {
-                    end_detections = 0;
+                let _ = cb
+                    .stability_2_speed_set(
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                        (yaw_target + 15.0) as f32,
+                        config.depth,
+                    )
+                    .await;
 
-                    let x = *position.x() as f32;
-                    let error_x = x.abs();
+                init_timer.execute().await;
 
-                    let mut correction = 0.0;
-                    correction = 0.5 * x;
-                    let _ = cb
-                        .stability_2_speed_set(
-                            correction,
-                            config.speed,
-                            0.0,
-                            0.0,
-                            initial_yaw as f32,
-                            config.depth,
-                        )
-                        .await;
-                } else {
-                    // if start_detections >= config.start_detections {
-                    //     end_detections += 1;
-                    //     if end_detections >= config.end_detections {
-                    //         break;
-                    //     }
-                    // } else {
-                    //     start_detections = 0;
-                    // }
-                    false_count += 1;
-                    if false_count >= 4 {
-                        slalom_state = SlalomState::Strafe;
-                    }
-                }
+                let _ = cb
+                    .stability_2_speed_set(0.0, config.speed, 0.0, 0.0, 0.0, config.depth)
+                    .await;
+
+                strafe_timer.execute().await;
             }
 
             SlalomState::Strafe => {
