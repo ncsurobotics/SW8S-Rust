@@ -1,3 +1,5 @@
+use std::ops::RangeInclusive;
+
 use super::Side;
 use serde::{Deserialize, Serialize};
 
@@ -15,6 +17,8 @@ pub struct Config {
     pub traversal_duration: f32,
     pub yaw_adjustment: f32,
     pub yaw_speed: f32,
+    pub area_bounds: RangeInclusive<f64>,
+    pub correction_factor: f32,
 }
 
 impl Default for Config {
@@ -32,6 +36,8 @@ impl Default for Config {
             traversal_duration: 6.0,
             yaw_adjustment: 15.0,
             yaw_speed: 0.2,
+            area_bounds: 1000.0..=11000.0,
+            correction_factor: 0.4,
         }
     }
 }

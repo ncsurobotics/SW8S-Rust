@@ -173,7 +173,7 @@ fn pipeline_head(device_name: &str, width: u32, height: u32, framerate: u32) -> 
     return format!("mfvideosrc device-index={device_name} ! image/jpeg, width={width}, height={height}, framerate={framerate}/1");
 
     #[cfg(not(target_os = "windows"))]
-    return format!("v4l2src device={device_name} exposure=30 ! image/jpeg, width={width}, height={height}, framerate={framerate}/1");
+    return format!("v4l2src device={device_name} ! image/jpeg, width={width}, height={height}, framerate={framerate}/1");
 }
 
 fn h264_enc_pipeline(bitrate: u32) -> String {

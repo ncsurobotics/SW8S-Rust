@@ -14,21 +14,34 @@ use std::ops::RangeInclusive;
 #[derive(Debug)]
 pub struct Slalom {
     color_bounds: RangeInclusive<Yuv>,
+    area_bounds: RangeInclusive<f64>,
     size: Size,
     image: MatWrapper,
 }
 
 impl Slalom {
-    pub fn new(color_bounds: RangeInclusive<Yuv>, size: Size) -> Self {
+    pub fn new(
+        color_bounds: RangeInclusive<Yuv>,
+        area_bounds: RangeInclusive<f64>,
+        size: Size,
+    ) -> Self {
         Self {
             color_bounds,
+            area_bounds,
             size,
             image: Mat::default().into(),
         }
     }
 
-    pub fn from_color_profile(color_profile: &ColorProfile) -> Self {
-        Self::new(color_profile.red.clone(), Size::from((400, 300)))
+    pub fn from_color_profile(
+        color_profile: &ColorProfile,
+        area_bounds: RangeInclusive<f64>,
+    ) -> Self {
+        Self::new(
+            color_profile.red.clone(),
+            area_bounds,
+            Size::from((400, 300)),
+        )
     }
 }
 
@@ -45,6 +58,7 @@ impl Default for Slalom {
                 u: 135,
                 v: 255,
             }),
+            1000.0..=11000.0,
             Size::from((400, 300)),
         )
     }
