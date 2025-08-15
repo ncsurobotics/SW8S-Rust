@@ -112,12 +112,16 @@ pub async fn slalom<
                 logln!("ALIGN");
 
                 if let Some(position) = positions.next() {
+                    false_count = 0;
                     let x = *position.x() as f32;
+                    dbg!(&x);
                     let mut correction = 0.0;
                     if x.abs() < 0.2 {
                         true_count += 1;
                         if true_count >= 4 {
                             correction = 0.0;
+                            #[cfg(feature = "logging")]
+                            logln!("ALIGNED");
                             slalom_state = SlalomState::Approach;
                             if let Some(current_angle) = cb.responses().get_angles().await {
                                 let current_yaw = *current_angle.yaw();
@@ -128,14 +132,18 @@ pub async fn slalom<
                             logln!("true_count: {true_count}/4");
                         }
                     } else {
-                        correction = 0.5 * x;
+                        correction = dbg!(-0.2 * x);
                         let _ = cb
                             .stability_1_speed_set(0.0, 0.0, correction, 0.0, 0.0, config.depth)
                             .await;
                     }
                 } else {
                     false_count += 1;
+                    #[cfg(feature = "logging")]
+                    logln!("NO DETECTIONS");
                     if false_count >= 100 {
+                        #[cfg(feature = "logging")]
+                        logln!("KILLED NO DET");
                         break 'detections;
                     }
                 }
@@ -145,29 +153,27 @@ pub async fn slalom<
                 #[cfg(feature = "logging")]
                 logln!("APPROACH");
 
+                yaw_target = (yaw_target
+                    + (if let Left = config.side {
+                        config.yaw_adjustment
+                    } else {
+                        -config.yaw_adjustment
+                    }));
                 let _ = cb
-                    .stability_2_speed_set(
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                        (yaw_target
-                            + (if let Left = config.side {
-                                -config.yaw_adjustment
-                            } else {
-                                config.yaw_adjustment
-                            })) as f32,
-                        config.depth,
-                    )
+                    .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, yaw_target, config.depth)
                     .await;
 
-                init_timer.execute().await;
+                sleep(Duration::from_secs(config.init_duration as u64)).await;
+
+                // init_timer.execute().await;
 
                 let _ = cb
-                    .stability_2_speed_set(0.0, config.speed, 0.0, 0.0, 0.0, config.depth)
+                    .stability_1_speed_set(0.0, config.speed, 0.0, 0.0, 0.0, config.depth)
                     .await;
 
-                traversal_timer.execute().await;
+                // traversal_timer.execute().await;
+                sleep(Duration::from_secs(config.traversal_duration as u64)).await;
+
                 break 'detections;
             }
         }
