@@ -89,12 +89,12 @@ pub async fn gate_run_procedural<
 
         let shark = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Shark))
+            .filter(|d| matches!(d.class().identifier, Target::Sawfish))
             .collect_vec();
 
         let sawfish = detections
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Sawfish))
+            .filter(|d| matches!(d.class().identifier, Target::Shark))
             .collect_vec();
 
         let mut traversal_timer = DelayAction::new(8.0); // forward duration in second

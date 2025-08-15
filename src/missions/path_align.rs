@@ -125,3 +125,50 @@ pub async fn path_align_procedural<
         .await;
     sleep(Duration::from_secs(1)).await;
 }
+
+pub async fn static_align_procedural<
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + BottomCamIO,
+>(
+    context: &Con,
+    config: &Config,
+) {
+    #[cfg(feature = "logging")]
+    logln!("Starting static align");
+
+    let cb = context.get_control_board();
+    let _ = cb.bno055_periodic_read(true).await;
+
+    let initial_yaw = loop {
+        if let Some(initial_angle) = cb.responses().get_angles().await {
+            break *initial_angle.yaw();
+        } else {
+            #[cfg(feature = "logging")]
+            logln!("Failed to get initial angle");
+        }
+    };
+
+    let target_yaw = initial_yaw + config.yaw_angle;
+
+    let _ = cb
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+        .await;
+
+    sleep(Duration::from_secs(config.yaw_wait)).await;
+
+    let _ = cb
+        .stability_2_speed_set(
+            config.strafe_speed,
+            config.forward_speed,
+            0.0,
+            0.0,
+            target_yaw,
+            config.depth,
+        )
+        .await;
+
+    sleep(Duration::from_secs(config.forward_duration)).await;
+
+    let _ = cb
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, target_yaw, config.depth)
+        .await;
+}

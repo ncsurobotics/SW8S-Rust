@@ -26,7 +26,7 @@ use sw8s_rust_lib::{
         gate::{gate_run_complex, gate_run_naive, gate_run_procedural, gate_run_testing},
         meb::WaitArm,
         octagon::octagon,
-        path_align::path_align_procedural,
+        path_align::{path_align_procedural, static_align_procedural},
         reset_torpedo::ResetTorpedo,
         slalom::slalom,
         sonar::sonar,
@@ -421,6 +421,16 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             ),
             &config.missions.path_align,
             &config.get_color_profile().unwrap(),
+        )),
+        "static_align" => ctwrap!(static_align_procedural(
+            &FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ),
+            &config.missions.path_align,
         )),
         "example" => ctwrap!(initial_descent(&FullActionContext::new(
             control_board().await,
