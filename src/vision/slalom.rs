@@ -72,8 +72,9 @@ impl VisualDetector<f64> for Slalom {
         &mut self,
         input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
-        const MIN_AREA: f64 = 1000.0;
-        const MAX_AREA: f64 = 11000.0;
+        let areas = self.area_bounds.clone();
+        let MIN_AREA = areas.start();
+        let MAX_AREA = areas.end();
 
         self.image = resize(input_image, &self.size)?.into();
         let mut yuv_image = Mat::default();
@@ -113,7 +114,7 @@ impl VisualDetector<f64> for Slalom {
             #[cfg(feature = "logging")]
             logln!("AREA: {area}");
 
-            if area > MIN_AREA && area < MAX_AREA {
+            if area > *MIN_AREA && area < *MAX_AREA {
                 let rect = min_area_rect(&contour)?;
 
                 let mut box_rect = Mat::default();
