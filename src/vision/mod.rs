@@ -19,6 +19,7 @@ pub mod bin;
 pub mod buoy;
 pub mod buoy_model;
 pub mod gate;
+pub mod gate_cv;
 pub mod gate_poles;
 pub mod image_prep;
 pub mod nn_cv2;

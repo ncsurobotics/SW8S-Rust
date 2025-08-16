@@ -86,6 +86,7 @@ pub struct ColorProfile {
     pub orange: RangeInclusive<Yuv>,
     pub yellow: RangeInclusive<Yuv>,
     pub purple: RangeInclusive<Yuv>,
+    pub black: RangeInclusive<Yuv>,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]

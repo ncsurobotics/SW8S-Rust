@@ -15,6 +15,7 @@ use crate::{
         vision::{MidPoint, OffsetClass},
     },
     vision::{
+        gate_cv::GateCV,
         gate_poles::{GatePoles, Target},
         nn_cv2::{OnnxModel, YoloClass},
         Offset2D,
@@ -36,6 +37,208 @@ use super::{
     },
     vision::{DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
 };
+
+pub async fn gate_run_cv_procedural<
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
+>(
+    context: &Con,
+    config: &Config,
+) {
+    #[cfg(feature = "logging")]
+    logln!("Starting Procedural Gate");
+
+    let cb = context.get_control_board();
+    let _ = cb.bno055_periodic_read(true).await;
+
+    let mut vision =
+        VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default());
+
+    let initial_yaw = loop {
+        if let Some(initial_angle) = cb.responses().get_angles().await {
+            break *initial_angle.yaw();
+        } else {
+            #[cfg(feature = "logging")]
+            logln!("Failed to get initial angle");
+        }
+    };
+
+    let _ = cb
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+        .await;
+
+    const TOLERANCE: f32 = 0.3;
+
+    let mut true_count = 0;
+
+    loop {
+        #[allow(unused_variables)]
+        let detections = vision.execute().await.unwrap_or_else(|e| {
+            #[cfg(feature = "logging")]
+            logln!("Getting path detection resulted in error: `{e}`\n\tUsing empty detection vec");
+            vec![]
+        });
+
+        let rightPole = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::RightPole))
+            .collect_vec();
+
+        /* let middle = detections
+        .iter()
+        .filter(|d| matches!(d.class().identifier, Target::Middle))
+        .collect_vec(); */
+
+        let shark = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::Sawfish))
+            .collect_vec();
+
+        let sawfish = detections
+            .iter()
+            .filter(|d| matches!(d.class().identifier, Target::Shark))
+            .collect_vec();
+
+        let mut traversal_timer = DelayAction::new(8.0); // forward duration in second
+
+        match config.side {
+            Side::Left => {
+                if !shark.is_empty() {
+                    // Center on average x of blue
+                    let avg_x = shark.iter().map(|d| *d.position().x() as f32).sum::<f32>()
+                        / shark.len() as f32;
+
+                    #[cfg(feature = "logging")]
+                    logln!("SHARK AVG X: {}", avg_x);
+
+                    if avg_x.abs() > TOLERANCE {
+                        let correction = 0.4 * avg_x;
+                        let fwd = 0.0;
+
+                        let _ = cb
+                            .stability_2_speed_set(
+                                correction,
+                                fwd,
+                                0.0,
+                                0.0,
+                                initial_yaw,
+                                config.depth,
+                            )
+                            .await;
+                    } else {
+                        let fwd = config.speed;
+                        let correction = 0.05;
+                        true_count += 1;
+
+                        if true_count >= config.true_count {
+                            let _ = cb
+                                .stability_2_speed_set(
+                                    correction,
+                                    fwd,
+                                    0.0,
+                                    0.0,
+                                    initial_yaw,
+                                    config.depth,
+                                )
+                                .await;
+                            // let _ = cb
+                            //     .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
+                            //     .await;
+
+                            traversal_timer.execute().await;
+                            break;
+                        }
+                    }
+                } else {
+                    // Fallback search behavior
+                    #[cfg(feature = "logging")]
+                    logln!("LEFT: Missing Features, Fallback");
+
+                    let correction = -0.2;
+                    let fwd = 0.05;
+
+                    let _ = cb
+                        .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
+                        .await;
+                    // let _ = cb
+                    // .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
+                    // .await;
+
+                    DelayAction::new(1.0).execute().await;
+                }
+            }
+
+            Side::Right => {
+                if !sawfish.is_empty() {
+                    // Center on average x of blue
+                    let avg_x = (sawfish
+                        .iter()
+                        .map(|d| *d.position().x() as f32)
+                        .sum::<f32>()
+                        / sawfish.len() as f32);
+
+                    #[cfg(feature = "logging")]
+                    logln!("SAWFISH AVG X: {}", avg_x);
+
+                    if avg_x.abs() > TOLERANCE {
+                        let correction = 0.4 * avg_x;
+                        let fwd = 0.05;
+
+                        let _ = cb
+                            .stability_2_speed_set(
+                                correction,
+                                fwd,
+                                0.0,
+                                0.0,
+                                initial_yaw,
+                                config.depth,
+                            )
+                            .await;
+                        // let _ = cb
+                        //     .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
+                        //     .await;
+                    } else {
+                        let fwd = config.speed;
+                        let correction = 0.05;
+                        true_count += 1;
+
+                        if true_count >= config.true_count {
+                            let _ = cb
+                                .stability_2_speed_set(
+                                    correction,
+                                    fwd,
+                                    0.0,
+                                    0.0,
+                                    initial_yaw,
+                                    config.depth,
+                                )
+                                .await;
+                            // let _ = cb
+                            // .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
+                            // .await;
+
+                            traversal_timer.execute().await;
+                            break;
+                        }
+                    }
+                } else {
+                    // Fallback search behavior
+                    #[cfg(feature = "logging")]
+                    logln!("RIGHT: Missing Features, Fallback");
+
+                    let correction = 0.2;
+                    let fwd = 0.05;
+
+                    let _ = cb
+                        .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
+                        .await;
+                    // let _ = cb
+                    //     .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
+                    //     .await;
+                }
+            }
+        }
+    }
+}
 
 pub async fn gate_run_procedural<
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
