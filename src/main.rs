@@ -24,8 +24,8 @@ use sw8s_rust_lib::{
         example::{initial_descent, pid_test},
         fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
         gate::{
-            gate_run_complex, gate_run_cv_procedural, gate_run_naive, gate_run_procedural,
-            gate_run_testing,
+            gate_run_complex, gate_run_cv_procedural, gate_run_dead_reckon, gate_run_naive,
+            gate_run_procedural, gate_run_testing,
         },
         meb::WaitArm,
         octagon::octagon,
@@ -389,6 +389,27 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
         ))
         .execute()),
         "gate_run_coinflip" => ctwrap!(gate_run_cv_procedural(
+            &FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ),
+            &config.missions.gate,
+            &config.get_color_profile().unwrap(),
+        )),
+        "gate_run_yolo" => ctwrap!(gate_run_procedural(
+            &FullActionContext::new(
+                control_board().await,
+                meb().await,
+                front_cam().await,
+                bottom_cam().await,
+                gate_target().await,
+            ),
+            &config.missions.gate
+        )),
+        "gate_run_reckon" => ctwrap!(gate_run_dead_reckon(
             &FullActionContext::new(
                 control_board().await,
                 meb().await,

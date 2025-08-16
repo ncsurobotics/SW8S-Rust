@@ -129,7 +129,7 @@ impl<T: 'static + AsyncWriteExt + Unpin + Send> ControlBoard<T> {
             .await?;
         self.stability_assist_pid_tune('Y', 2.0, 0.0, 0.0, 0.1, false)
             .await?;
-        self.stability_assist_pid_tune('Z', 6.0, 0.0, 0.0, 1.0, false)
+        self.stability_assist_pid_tune('Z', 4.0, 0.0, 0.0, 1.0, false)
             .await?;
         self.stability_assist_pid_tune('D', 1.5, 0.0, 0.0, 1.0, false)
             .await

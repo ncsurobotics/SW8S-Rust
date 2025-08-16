@@ -76,6 +76,7 @@ impl Camera {
             + " rtspclientsink location=rtsp://127.0.0.1:8554/"
             + camera_name
             + "_annotated.mp4 ";
+        #[cfg(feature = "annotated_streams")]
         dbg!(&output_string);
         // pipeline_head(camera_path, camera_dimensions.0, camera_dimensions.1, 30)
         // "appsrc ! image/jpeg, width=480, height=640, framerate=30/1".to_string()

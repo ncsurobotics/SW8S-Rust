@@ -39,6 +39,63 @@ use super::{
     vision::{DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
 };
 
+pub async fn gate_run_dead_reckon<
+    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
+>(
+    context: &Con,
+    config: &Config,
+    color_profile: &ColorProfile,
+) {
+    #[cfg(feature = "logging")]
+    logln!("Starting Procedural Gate");
+
+    let cb = context.get_control_board();
+    let _ = cb.bno055_periodic_read(true).await;
+
+    let initial_yaw = loop {
+        if let Some(initial_angle) = cb.responses().get_angles().await {
+            break *initial_angle.yaw();
+        } else {
+            #[cfg(feature = "logging")]
+            logln!("Failed to get initial angle");
+        }
+    };
+
+    // let _ = cb
+    //     .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+    //     .await;
+
+    // sleep(Duration::from_secs_f32(config.init_duration)).await;
+    // let mut mult = 1.0;
+    // if let Side::Left = config.side {
+    //     mult = -1.0;
+    // } else {
+    //     mult = 1.0;
+    // }
+    // let _ = cb
+    //     .stability_2_speed_set(
+    //         config.strafe_speed * mult,
+    //         0.0,
+    //         0.0,
+    //         0.0,
+    //         initial_yaw,
+    //         config.depth,
+    //     )
+    //     .await;
+
+    // sleep(Duration::from_secs_f32(config.strafe_duration)).await;
+
+    let _ = cb
+        .stability_2_speed_set(0.0, config.speed, 0.0, 0.0, initial_yaw, config.depth)
+        .await;
+
+    sleep(Duration::from_secs_f32(config.traversal_duration)).await;
+
+    let _ = cb
+        .stability_1_speed_set(0.0, 0.0, 0.0, 0.0, 0.0, config.depth)
+        .await;
+}
+
 pub async fn gate_run_cv_procedural<
     Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
 >(

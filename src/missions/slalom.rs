@@ -151,7 +151,7 @@ pub async fn slalom<
                     false_count += 1;
                     #[cfg(feature = "logging")]
                     logln!("NO DETECTIONS");
-                    if false_count >= 100 {
+                    if false_count >= 500 {
                         #[cfg(feature = "logging")]
                         logln!("KILLED NO DET");
                         break 'detections;
