@@ -1,10 +1,11 @@
 use itertools::Itertools;
 use tokio::io::WriteHalf;
+use tokio::time::{sleep, Duration};
 use tokio_serial::SerialStream;
 
 use crate::{
     act_nest,
-    config::{gate::Config, Side},
+    config::{gate::Config, ColorProfile, Side},
     missions::{
         action::{ActionConcurrentSplit, ActionDataConditional},
         basic::descend_depth_and_go_forward,
@@ -43,6 +44,7 @@ pub async fn gate_run_cv_procedural<
 >(
     context: &Con,
     config: &Config,
+    color_profile: &ColorProfile,
 ) {
     #[cfg(feature = "logging")]
     logln!("Starting Procedural Gate");
@@ -50,8 +52,9 @@ pub async fn gate_run_cv_procedural<
     let cb = context.get_control_board();
     let _ = cb.bno055_periodic_read(true).await;
 
+    // let mut vision = VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GateCV::default());
     let mut vision =
-        VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default());
+        VisionNorm::<Con, GateCV, f64>::new(context, GateCV::from_color_profile(color_profile));
 
     let initial_yaw = loop {
         if let Some(initial_angle) = cb.responses().get_angles().await {
@@ -68,7 +71,10 @@ pub async fn gate_run_cv_procedural<
 
     const TOLERANCE: f32 = 0.3;
 
+    let mut gate_state = GateState::Align;
+    let mut yaw_target = 0.0;
     let mut true_count = 0;
+    let mut false_count = 0;
 
     loop {
         #[allow(unused_variables)]
@@ -78,163 +84,163 @@ pub async fn gate_run_cv_procedural<
             vec![]
         });
 
-        let rightPole = detections
+        let leftPole = detections.iter().filter(|d| *d.class()).collect_vec();
+        let leftPole_avg_x = leftPole
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::RightPole))
-            .collect_vec();
+            .map(|d| *d.position().x() as f32)
+            .sum::<f32>();
 
-        /* let middle = detections
-        .iter()
-        .filter(|d| matches!(d.class().identifier, Target::Middle))
-        .collect_vec(); */
-
-        let shark = detections
+        let rightPole = detections.iter().filter(|d| !*d.class()).collect_vec();
+        let rightPole_avg_x = rightPole
             .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Sawfish))
-            .collect_vec();
+            .map(|d| *d.position().x() as f32)
+            .sum::<f32>();
 
-        let sawfish = detections
-            .iter()
-            .filter(|d| matches!(d.class().identifier, Target::Shark))
-            .collect_vec();
-
-        let mut traversal_timer = DelayAction::new(8.0); // forward duration in second
-
-        match config.side {
-            Side::Left => {
-                if !shark.is_empty() {
-                    // Center on average x of blue
-                    let avg_x = shark.iter().map(|d| *d.position().x() as f32).sum::<f32>()
-                        / shark.len() as f32;
-
-                    #[cfg(feature = "logging")]
-                    logln!("SHARK AVG X: {}", avg_x);
-
-                    if avg_x.abs() > TOLERANCE {
-                        let correction = 0.4 * avg_x;
-                        let fwd = 0.0;
+        match gate_state {
+            GateState::Align => match config.side {
+                Side::Left => {
+                    if leftPole.len() > 0 {
+                        false_count = 0;
+                        let mut correction;
+                        if leftPole_avg_x < 0.2 {
+                            true_count += 1;
+                            if true_count >= config.true_count {
+                                #[cfg(feature = "logging")]
+                                logln!("ALIGNED");
+                                if let Some(current_angle) = cb.responses().get_angles().await {
+                                    let current_yaw = *current_angle.yaw();
+                                    yaw_target = current_yaw;
+                                }
+                                gate_state = GateState::Approach;
+                            } else {
+                                #[cfg(feature = "logging")]
+                                logln!("true_count: {true_count}/4");
+                            }
+                        } else {
+                            correction = dbg!(config.correction_factor * leftPole_avg_x);
+                            let _ = cb
+                                .stability_1_speed_set(0.0, 0.0, correction, 0.0, 0.0, config.depth)
+                                .await;
+                        }
+                    } else {
+                        #[cfg(feature = "logging")]
+                        logln!("SEARCHING");
 
                         let _ = cb
-                            .stability_2_speed_set(
-                                correction,
-                                fwd,
+                            .stability_1_speed_set(
                                 0.0,
                                 0.0,
-                                initial_yaw,
+                                -config.yaw_speed,
+                                0.0,
+                                0.0,
                                 config.depth,
                             )
                             .await;
-                    } else {
-                        let fwd = config.speed;
-                        let correction = 0.05;
-                        true_count += 1;
 
-                        if true_count >= config.true_count {
-                            let _ = cb
-                                .stability_2_speed_set(
-                                    correction,
-                                    fwd,
-                                    0.0,
-                                    0.0,
-                                    initial_yaw,
-                                    config.depth,
-                                )
-                                .await;
-                            // let _ = cb
-                            //     .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
-                            //     .await;
-
-                            traversal_timer.execute().await;
+                        false_count += 1;
+                        #[cfg(feature = "logging")]
+                        logln!("NO DETECTIONS");
+                        if false_count >= 100 {
+                            #[cfg(feature = "logging")]
+                            logln!("KILLED NO DET");
                             break;
                         }
                     }
-                } else {
-                    // Fallback search behavior
-                    #[cfg(feature = "logging")]
-                    logln!("LEFT: Missing Features, Fallback");
-
-                    let correction = -0.2;
-                    let fwd = 0.05;
-
-                    let _ = cb
-                        .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
-                        .await;
-                    // let _ = cb
-                    // .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
-                    // .await;
-
-                    DelayAction::new(1.0).execute().await;
                 }
-            }
 
-            Side::Right => {
-                if !sawfish.is_empty() {
-                    // Center on average x of blue
-                    let avg_x = (sawfish
-                        .iter()
-                        .map(|d| *d.position().x() as f32)
-                        .sum::<f32>()
-                        / sawfish.len() as f32);
-
-                    #[cfg(feature = "logging")]
-                    logln!("SAWFISH AVG X: {}", avg_x);
-
-                    if avg_x.abs() > TOLERANCE {
-                        let correction = 0.4 * avg_x;
-                        let fwd = 0.05;
+                Side::Right => {
+                    if rightPole.len() > 0 {
+                        false_count = 0;
+                        let mut correction;
+                        if rightPole_avg_x < 0.2 {
+                            true_count += 1;
+                            if true_count >= config.true_count {
+                                #[cfg(feature = "logging")]
+                                logln!("ALIGNED");
+                                if let Some(current_angle) = cb.responses().get_angles().await {
+                                    let current_yaw = *current_angle.yaw();
+                                    yaw_target = current_yaw;
+                                }
+                                gate_state = GateState::Approach;
+                            } else {
+                                #[cfg(feature = "logging")]
+                                logln!("true_count: {true_count}/4");
+                            }
+                        } else {
+                            correction = dbg!(config.correction_factor * rightPole_avg_x);
+                            let _ = cb
+                                .stability_1_speed_set(0.0, 0.0, correction, 0.0, 0.0, config.depth)
+                                .await;
+                        }
+                    } else {
+                        #[cfg(feature = "logging")]
+                        logln!("SEARCHING");
 
                         let _ = cb
-                            .stability_2_speed_set(
-                                correction,
-                                fwd,
+                            .stability_1_speed_set(
                                 0.0,
                                 0.0,
-                                initial_yaw,
+                                config.yaw_speed,
+                                0.0,
+                                0.0,
                                 config.depth,
                             )
                             .await;
-                        // let _ = cb
-                        //     .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
-                        //     .await;
-                    } else {
-                        let fwd = config.speed;
-                        let correction = 0.05;
-                        true_count += 1;
 
-                        if true_count >= config.true_count {
-                            let _ = cb
-                                .stability_2_speed_set(
-                                    correction,
-                                    fwd,
-                                    0.0,
-                                    0.0,
-                                    initial_yaw,
-                                    config.depth,
-                                )
-                                .await;
-                            // let _ = cb
-                            // .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
-                            // .await;
-
-                            traversal_timer.execute().await;
+                        false_count += 1;
+                        #[cfg(feature = "logging")]
+                        logln!("NO DETECTIONS");
+                        if false_count >= 100 {
+                            #[cfg(feature = "logging")]
+                            logln!("KILLED NO DET");
                             break;
                         }
                     }
-                } else {
-                    // Fallback search behavior
-                    #[cfg(feature = "logging")]
-                    logln!("RIGHT: Missing Features, Fallback");
-
-                    let correction = 0.2;
-                    let fwd = 0.05;
-
-                    let _ = cb
-                        .stability_2_speed_set(correction, fwd, 0.0, 0.0, initial_yaw, config.depth)
-                        .await;
-                    // let _ = cb
-                    //     .stability_1_speed_set(correction, fwd, 0.0, 0.0, 0.0, config.depth)
-                    //     .await;
                 }
+            },
+            GateState::Approach => {
+                #[cfg(feature = "logging")]
+                logln!("APPROACH");
+
+                let strafe_direction = if let Side::Left = config.side {
+                    -1.0
+                } else {
+                    1.0
+                };
+
+                let _ = cb
+                    .stability_2_speed_set(
+                        config.strafe_speed * strafe_direction,
+                        0.0,
+                        0.0,
+                        0.0,
+                        yaw_target,
+                        config.depth,
+                    )
+                    .await;
+
+                sleep(Duration::from_secs(config.strafe_duration as u64)).await;
+
+                yaw_target = (yaw_target
+                    + (if let Side::Left = config.side {
+                        config.yaw_adjustment
+                    } else {
+                        -config.yaw_adjustment
+                    }));
+
+                let _ = cb
+                    .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, yaw_target, config.depth)
+                    .await;
+
+                sleep(Duration::from_secs(config.init_duration as u64)).await;
+
+                let _ = cb
+                    .stability_2_speed_set(0.0, config.speed, 0.0, 0.0, yaw_target, config.depth)
+                    .await;
+
+                sleep(Duration::from_secs(config.traversal_duration as u64)).await;
+
+                break;
             }
         }
     }
@@ -670,4 +676,9 @@ pub fn gate_run_testing<
 ) -> impl ActionExec<()> + '_ {
     let depth: f32 = -1.0;
     adjust_logic(context, depth, CountTrue::new(3))
+}
+
+enum GateState {
+    Align,
+    Approach,
 }

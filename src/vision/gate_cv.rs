@@ -15,7 +15,6 @@ use std::ops::RangeInclusive;
 pub struct GateCV {
     color_bounds_red: RangeInclusive<Yuv>,
     color_bounds_black: RangeInclusive<Yuv>,
-    area_bounds: RangeInclusive<f64>,
     size: Size,
     image: MatWrapper,
 }
@@ -24,26 +23,20 @@ impl GateCV {
     pub fn new(
         color_bounds_red: RangeInclusive<Yuv>,
         color_bounds_black: RangeInclusive<Yuv>,
-        area_bounds: RangeInclusive<f64>,
         size: Size,
     ) -> Self {
         Self {
             color_bounds_red,
             color_bounds_black,
-            area_bounds,
             size,
             image: Mat::default().into(),
         }
     }
 
-    pub fn from_color_profile(
-        color_profile: &ColorProfile,
-        area_bounds: RangeInclusive<f64>,
-    ) -> Self {
+    pub fn from_color_profile(color_profile: &ColorProfile) -> Self {
         Self::new(
             color_profile.red.clone(),
             color_profile.black.clone(),
-            area_bounds,
             Size::from((400, 300)),
         )
     }
@@ -71,7 +64,6 @@ impl Default for GateCV {
                 u: 135,
                 v: 255,
             }),
-            1000.0..=11000.0,
             Size::from((400, 300)),
         )
     }
@@ -85,10 +77,6 @@ impl VisualDetector<f64> for GateCV {
         &mut self,
         input_image: &Mat,
     ) -> anyhow::Result<Vec<VisualDetection<Self::ClassEnum, Self::Position>>> {
-        let areas = self.area_bounds.clone();
-        let MIN_AREA = areas.start();
-        let MAX_AREA = areas.end();
-
         self.image = resize(input_image, &self.size)?.into();
         let mut yuv_image = Mat::default();
 
@@ -170,49 +158,23 @@ impl VisualDetector<f64> for GateCV {
                     if (red_x - black_x).abs() < 50.0 {
                         let side;
                         if black_y > red_y {
-                            side = Side::Right;
+                            // Right
+                            side = false;
                         } else {
-                            side = Side::Left;
+                            // Left
+                            side = true;
                         }
-                        let pole_x = (red_x + black_x) / 2;
-                        let pole_y = (red_y + black_y) / 2;
+                        let pole_x = (red_x + black_x) / 2.0;
+                        let pole_y = (red_y + black_y) / 2.0;
+                        return Ok(vec![VisualDetection {
+                            class: side,
+                            position: PosVector::new(pole_x as f64, pole_y as f64, 0.0, 0.0),
+                        }]);
                     }
                 }
             }
-        //     let area = contour_area_def(&contour_red)?;
-        //     #[cfg(feature = "logging")]
-        //     logln!("AREA: {area}");
-
-        //     if area > *MIN_AREA && area < *MAX_AREA {
-        //         let rect = min_area_rect(&contour_red)?;
-
-        //         let mut box_rect = Mat::default();
-        //         box_points(rect, &mut box_rect)?;
-
-        //         let center_adjusted_x = rect.center.x as f64;
-        //         let center_adjusted_y = rect.center.y as f64;
-
-        //         Ok(vec![VisualDetection {
-        //             class: true,
-        //             position: PosVector::new(
-        //                 center_adjusted_x,
-        //                 center_adjusted_y,
-        //                 0.,
-        //                 angle as f64,
-        //             ),
-        //         }])
-        //     } else {
-        //         Ok(vec![VisualDetection {
-        //             class: false,
-        //             position: PosVector::new(0., 0., 0., 0.),
-        //         }])
-        //     }
-        } else {
-            Ok(vec![VisualDetection {
-                class: false,
-                position: PosVector::new(0., 0., 0., 0.),
-            }])
         }
+        Ok(vec![])
     }
 
     fn normalize(&mut self, pos: &Self::Position) -> Self::Position {

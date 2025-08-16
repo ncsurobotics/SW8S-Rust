@@ -24,7 +24,7 @@
                 inherit opencv4;
               };
             };
-          in with pkgs; [ opencv gtk2 python312 ] ++
+          in with pkgs; [ gtk2 python312 ] ++
             (with pkgs.gst_all_1; [
               gstreamer
               gst-plugins-base
