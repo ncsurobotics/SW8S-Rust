@@ -1,4 +1,4 @@
-use crate::config::ColorProfile;
+use crate::config::{ColorProfile, Side};
 
 use super::{image_prep::resize, MatWrapper, PosVector, VisualDetection, VisualDetector, Yuv};
 use opencv::{
@@ -153,57 +153,60 @@ impl VisualDetector<f64> for GateCV {
                 .unwrap()
         });
 
-        if let Some(contour) = max_contour_red {
-            let area = contour_area_def(&contour)?;
-            #[cfg(feature = "logging")]
-            logln!("AREA: {area}");
+        if let Some(contour_red) = max_contour_red {
+            if let Some(contour_black) = max_contour_black {
+                let red_rect = min_area_rect(&contour_red).unwrap();
+                let black_rect = min_area_rect(&contour_black).unwrap();
+                let center_red = red_rect.center;
+                let center_black = black_rect.center;
 
-            if area > *MIN_AREA && area < *MAX_AREA {
-                let rect = min_area_rect(&contour)?;
-
-                let mut box_rect = Mat::default();
-                box_points(rect, &mut box_rect)?;
-
-                let box_vec: Vec<Vec<f32>> = box_rect.to_vec_2d()?;
-
-                let zero = box_vec[0].clone();
-                let one = box_vec[1].clone();
-                let two = box_vec[2].clone();
-
-                let edge1 = (one[0] - zero[0], one[1] - zero[1]);
-                let edge2 = (two[0] - one[0], two[1] - one[1]);
-
-                let edge1mag = (edge1.0.powf(2.0) + edge1.1.powf(2.0)).sqrt();
-                let edge2mag = (edge2.0.powf(2.0) + edge2.1.powf(2.0)).sqrt();
-                let longest_edge = if edge2mag > edge1mag { edge2 } else { edge1 };
-
-                let mut angle = -(longest_edge.0 / longest_edge.1).atan().to_degrees();
-
-                angle = ((angle + 180.0) % 360.0) - 180.0;
-                if angle < -90.0 {
-                    angle += 180.0;
+                let red_angle = red_rect.angle;
+                let black_angle = black_rect.angle;
+                if (red_angle - black_angle).abs() > 20.0 {
+                    let red_x = center_red.x;
+                    let black_x = center_black.x;
+                    let red_y = center_red.y;
+                    let black_y = center_black.y;
+                    if (red_x - black_x).abs() < 50.0 {
+                        let side;
+                        if black_y > red_y {
+                            side = Side::Right;
+                        } else {
+                            side = Side::Left;
+                        }
+                        let pole_x = (red_x + black_x) / 2;
+                        let pole_y = (red_y + black_y) / 2;
+                    }
                 }
-
-                println!("{angle:?}");
-
-                let center_adjusted_x = rect.center.x as f64;
-                let center_adjusted_y = rect.center.y as f64;
-
-                Ok(vec![VisualDetection {
-                    class: true,
-                    position: PosVector::new(
-                        center_adjusted_x,
-                        center_adjusted_y,
-                        0.,
-                        angle as f64,
-                    ),
-                }])
-            } else {
-                Ok(vec![VisualDetection {
-                    class: false,
-                    position: PosVector::new(0., 0., 0., 0.),
-                }])
             }
+        //     let area = contour_area_def(&contour_red)?;
+        //     #[cfg(feature = "logging")]
+        //     logln!("AREA: {area}");
+
+        //     if area > *MIN_AREA && area < *MAX_AREA {
+        //         let rect = min_area_rect(&contour_red)?;
+
+        //         let mut box_rect = Mat::default();
+        //         box_points(rect, &mut box_rect)?;
+
+        //         let center_adjusted_x = rect.center.x as f64;
+        //         let center_adjusted_y = rect.center.y as f64;
+
+        //         Ok(vec![VisualDetection {
+        //             class: true,
+        //             position: PosVector::new(
+        //                 center_adjusted_x,
+        //                 center_adjusted_y,
+        //                 0.,
+        //                 angle as f64,
+        //             ),
+        //         }])
+        //     } else {
+        //         Ok(vec![VisualDetection {
+        //             class: false,
+        //             position: PosVector::new(0., 0., 0., 0.),
+        //         }])
+        //     }
         } else {
             Ok(vec![VisualDetection {
                 class: false,
