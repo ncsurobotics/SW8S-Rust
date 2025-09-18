@@ -1,20 +1,22 @@
-use std::{fs::create_dir_all, ops::RangeInclusive};
-
-use itertools::Itertools;
-use opencv::{
-    core::{in_range, AlgorithmHint, Size, VecN, Vector},
-    imgcodecs::imwrite,
-    imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
-    prelude::{Mat, MatTraitConst, MatTraitConstManual},
-};
-use uuid::Uuid;
-
-use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
-
 use super::{
     image_prep::{kmeans, resize},
     pca::PosVector,
     MatWrapper, VisualDetection, VisualDetector,
+};
+use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
+use itertools::Itertools;
+use opencv::{
+    core::{in_range, AlgorithmHint, Size, VecN},
+    imgproc::{cvt_color, COLOR_RGB2YUV, COLOR_YUV2RGB},
+    prelude::{Mat, MatTraitConst, MatTraitConstManual},
+};
+use std::ops::RangeInclusive;
+
+#[cfg(feature = "logging")]
+use {
+    opencv::{core::Vector, imgcodecs::imwrite},
+    std::fs::create_dir_all,
+    uuid::Uuid,
 };
 
 static FORWARD: (f64, f64) = (0.0, -1.0);

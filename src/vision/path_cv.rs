@@ -1,70 +1,14 @@
-use std::{
-    fs::create_dir_all,
-    ops::{Mul, RangeInclusive},
-};
-
-use derive_getters::Getters;
-use itertools::Itertools;
+use super::{image_prep::resize, MatWrapper, PosVector, VisualDetection, VisualDetector, Yuv};
+use crate::{config::ColorProfile, vision::Draw};
 use opencv::{
-    core::{in_range, Point, Scalar, Size, VecN, Vector},
-    imgcodecs::imwrite,
+    core::{in_range, Point, Scalar, Size, Vector},
     imgproc::{
-        self, box_points, circle, contour_area_def, cvt_color_def, find_contours_def,
-        min_area_rect, CHAIN_APPROX_SIMPLE, COLOR_BGR2YUV, COLOR_YUV2BGR, LINE_8, RETR_EXTERNAL,
+        self, contour_area_def, cvt_color_def, find_contours_def, min_area_rect,
+        CHAIN_APPROX_SIMPLE, COLOR_BGR2YUV, LINE_8, RETR_EXTERNAL,
     },
     prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
-use uuid::Uuid;
-
-use crate::vision::image_prep::{binary_pca, cvt_binary_to_points};
-use crate::vision::{Angle2D, Draw, Offset2D, RelPosAngle};
-
-use super::{
-    image_prep::{kmeans, resize},
-    MatWrapper, VisualDetection, VisualDetector,
-};
-
-static FORWARD: (f64, f64) = (0.0, -1.0);
-
-#[derive(Debug, Clone, Getters, PartialEq)]
-pub struct PosVector {
-    x: f64,
-    y: f64,
-    z: f64,
-    angle: f64,
-}
-
-impl PosVector {
-    fn new(x: f64, y: f64, z: f64, angle: f64) -> Self {
-        Self { x, y, z, angle }
-    }
-}
-
-impl RelPosAngle for PosVector {
-    type Number = f64;
-
-    fn offset_angle(&self) -> Angle2D<Self::Number> {
-        Angle2D {
-            x: self.x,
-            y: self.y,
-            angle: self.angle,
-        }
-    }
-}
-
-impl Mul<&Mat> for PosVector {
-    type Output = Self;
-
-    fn mul(self, rhs: &Mat) -> Self::Output {
-        let size = rhs.size().unwrap();
-        Self {
-            x: (self.x + 0.5) * (size.width as f64),
-            y: (self.y + 0.5) * (size.height as f64),
-            z: 0.,
-            angle: self.angle,
-        }
-    }
-}
+use std::ops::RangeInclusive;
 
 impl Draw for VisualDetection<bool, PosVector> {
     fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
@@ -75,7 +19,7 @@ impl Draw for VisualDetection<bool, PosVector> {
             Scalar::from((0.0, 0.0, 255.0))
         };
 
-        let angle_rad = (*self.position.angle() as f32) * (3.14152965 / 180.0);
+        let angle_rad = (*self.position.angle() as f32) * (3.1415296 / 180.0);
         let b = (angle_rad.cos() * 640.0) / 2.0;
         let a = (angle_rad.sin() * 480.0) / 2.0;
 
@@ -115,47 +59,10 @@ impl Draw for VisualDetection<bool, PosVector> {
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub struct Yuv {
-    pub y: u8,
-    pub u: u8,
-    pub v: u8,
-}
-
-impl From<&VecN<u8, 3>> for Yuv {
-    fn from(value: &VecN<u8, 3>) -> Self {
-        Self {
-            y: value[0],
-            u: value[1],
-            v: value[2],
-        }
-    }
-}
-
-impl From<&Yuv> for VecN<u8, 3> {
-    fn from(val: &Yuv) -> Self {
-        VecN::from_array([val.y, val.u, val.v])
-    }
-}
-
-impl Yuv {
-    fn in_range(&self, range: &RangeInclusive<Self>) -> bool {
-        self.y >= range.start().y
-            && self.u >= range.start().u
-            && self.v >= range.start().v
-            && self.y <= range.end().y
-            && self.u <= range.end().u
-            && self.v <= range.end().v
-    }
-}
-
 #[derive(Debug)]
 pub struct PathCV {
     color_bounds: RangeInclusive<Yuv>,
-    width_bounds: RangeInclusive<f64>,
-    num_regions: i32,
     size: Size,
-    attempts: i32,
     image: MatWrapper,
 }
 
@@ -166,21 +73,16 @@ impl PathCV {
 }
 
 impl PathCV {
-    pub fn new(
-        color_bounds: RangeInclusive<Yuv>,
-        width_bounds: RangeInclusive<f64>,
-        num_regions: i32,
-        size: Size,
-        attempts: i32,
-    ) -> Self {
+    pub fn new(color_bounds: RangeInclusive<Yuv>, size: Size) -> Self {
         Self {
             color_bounds,
-            width_bounds,
-            num_regions,
             size,
-            attempts,
             image: Mat::default().into(),
         }
+    }
+
+    pub fn from_color_profile(color_profile: &ColorProfile) -> Self {
+        Self::new(dbg!(color_profile.orange.clone()), Size::from((400, 300)))
     }
 }
 
@@ -192,19 +94,9 @@ impl Default for PathCV {
                 u: 127,
                 v: 255,
             }),
-            20.0..=800.0,
-            4,
             Size::from((400, 300)),
-            3,
         )
     }
-}
-
-fn compute_angle(v1: (f64, f64), v2: (f64, f64)) -> f64 {
-    let dot = (v1.0 * v2.0) + (v1.1 * v2.1);
-    let norm = |vec: (f64, f64)| ((vec.0 * vec.0) + (vec.1 * vec.1)).sqrt();
-    let norm_combined = norm(v1) * norm(v2);
-    (dot / norm_combined).acos()
 }
 
 impl VisualDetector<i32> for PathCV {
@@ -236,7 +128,7 @@ impl VisualDetector<i32> for PathCV {
         );
 
         let mut mask = Mat::default();
-        in_range(&yuv_image, &lower_orange, &upper_orange, &mut mask);
+        let _ = in_range(&yuv_image, &lower_orange, &upper_orange, &mut mask);
 
         let mut contours = Vector::<Vector<Point>>::new();
         find_contours_def(&mask, &mut contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE)?;
@@ -252,18 +144,15 @@ impl VisualDetector<i32> for PathCV {
             let area = contour_area_def(&contour)?;
             if area > 5000.0 {
                 let rect = min_area_rect(&contour)?;
-                let mut angle = rect.angle as f64;
-                let width = rect.size.width;
-                let height = rect.size.height;
 
-                let mut boxRect = Mat::default();
-                imgproc::box_points(rect, &mut boxRect)?;
+                let mut box_rect = Mat::default();
+                imgproc::box_points(rect, &mut box_rect)?;
 
-                let boxVec: Vec<Vec<f32>> = boxRect.to_vec_2d()?;
+                let box_vec: Vec<Vec<f32>> = box_rect.to_vec_2d()?;
 
-                let zero = boxVec[0].clone();
-                let one = boxVec[1].clone();
-                let two = boxVec[2].clone();
+                let zero = box_vec[0].clone();
+                let one = box_vec[1].clone();
+                let two = box_vec[2].clone();
 
                 let edge1 = (one[0] - zero[0], one[1] - zero[1]);
                 let edge2 = (two[0] - one[0], two[1] - one[1]);
@@ -273,14 +162,14 @@ impl VisualDetector<i32> for PathCV {
                 let edge2mag = (edge2.0.powf(2.0) + edge2.1.powf(2.0)).sqrt();
                 let longest_edge = if edge2mag > edge1mag { edge2 } else { edge1 };
 
-                let mut angle = (longest_edge.0 / longest_edge.1).atan().to_degrees() * -1.0;
+                let mut angle = -(longest_edge.0 / longest_edge.1).atan().to_degrees();
 
                 angle = ((angle + 180.0) % 360.0) - 180.0;
                 if angle < -90.0 {
                     angle += 180.0;
                 }
 
-                println!("{:?}", angle);
+                println!("{angle:?}");
 
                 let center_adjusted_x = rect.center.x as f64;
                 let center_adjusted_y = rect.center.y as f64;
@@ -348,7 +237,7 @@ impl VisualDetector<f64> for PathCV {
         );
 
         let mut mask = Mat::default();
-        in_range(&yuv_image, &lower_orange, &upper_orange, &mut mask);
+        let _ = in_range(&yuv_image, &lower_orange, &upper_orange, &mut mask);
 
         let mut contours = Vector::<Vector<Point>>::new();
         find_contours_def(&mask, &mut contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE)?;
@@ -364,18 +253,15 @@ impl VisualDetector<f64> for PathCV {
             let area = contour_area_def(&contour)?;
             if area > 5000.0 {
                 let rect = min_area_rect(&contour)?;
-                let mut angle = rect.angle as f64;
-                let width = rect.size.width;
-                let height = rect.size.height;
 
-                let mut boxRect = Mat::default();
-                imgproc::box_points(rect, &mut boxRect)?;
+                let mut box_rect = Mat::default();
+                imgproc::box_points(rect, &mut box_rect)?;
 
-                let boxVec: Vec<Vec<f32>> = boxRect.to_vec_2d()?;
+                let box_vec: Vec<Vec<f32>> = box_rect.to_vec_2d()?;
 
-                let zero = boxVec[0].clone();
-                let one = boxVec[1].clone();
-                let two = boxVec[2].clone();
+                let zero = box_vec[0].clone();
+                let one = box_vec[1].clone();
+                let two = box_vec[2].clone();
 
                 let edge1 = (one[0] - zero[0], one[1] - zero[1]);
                 let edge2 = (two[0] - one[0], two[1] - one[1]);
@@ -385,14 +271,14 @@ impl VisualDetector<f64> for PathCV {
                 let edge2mag = (edge2.0.powf(2.0) + edge2.1.powf(2.0)).sqrt();
                 let longest_edge = if edge2mag > edge1mag { edge2 } else { edge1 };
 
-                let mut angle = (longest_edge.0 / longest_edge.1).atan().to_degrees() * -1.0;
+                let mut angle = -(longest_edge.0 / longest_edge.1).atan().to_degrees();
 
                 angle = ((angle + 180.0) % 360.0) - 180.0;
                 if angle < -90.0 {
                     angle += 180.0;
                 }
 
-                println!("{:?}", angle);
+                println!("{angle:?}");
 
                 let center_adjusted_x = rect.center.x as f64;
                 let center_adjusted_y = rect.center.y as f64;

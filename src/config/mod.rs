@@ -1,15 +1,20 @@
+pub mod bin;
+pub mod coinflip;
 pub mod gate;
+pub mod octagon;
 pub mod path_align;
+pub mod slalom;
+pub mod sonar;
 
-use std::{
-    fs::{read_to_string, write},
-    ops::{Deref, DerefMut},
-    path::PathBuf,
-};
+use std::fs::read_to_string;
 
+use crate::vision::Yuv;
 use anyhow::Result;
-use crossbeam::epoch::CompareAndSetOrdering;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::ops::RangeInclusive;
+
+pub const SHUTDOWN_TIMEOUT: u64 = 5;
 
 // Default values
 const CONFIG_FILE: &str = "config.toml";
@@ -26,13 +31,24 @@ pub struct Config {
     pub meb_path: String,
     pub front_cam_path: String,
     pub bottom_cam_path: String,
+    pub sonar: sonar::Config,
     pub missions: Missions,
+    pub color_profile: String,
+    pub color_profiles: HashMap<String, ColorProfile>,
+    pub shark: Side,
+    pub saw_fish: Side,
 }
 
 impl Config {
     pub fn new() -> Result<Self> {
         let config_string = read_to_string(CONFIG_FILE)?;
         Ok(toml::from_str(&config_string)?)
+    }
+}
+
+impl Config {
+    pub fn get_color_profile(&self) -> Option<&ColorProfile> {
+        self.color_profiles.get(&self.color_profile)
     }
 }
 
@@ -44,7 +60,12 @@ impl Default for Config {
             meb_path: MEB_PATH.to_string(),
             front_cam_path: FRONT_CAM.to_string(),
             bottom_cam_path: BOTTOM_CAM.to_string(),
+            sonar: sonar::Config::default(),
             missions: Missions::default(),
+            color_profile: "".to_string(),
+            color_profiles: HashMap::new(),
+            shark: Side::default(),
+            saw_fish: Side::default(),
         }
     }
 }
@@ -53,4 +74,29 @@ impl Default for Config {
 pub struct Missions {
     pub gate: gate::Config,
     pub path_align: path_align::Config,
+    pub slalom: slalom::Config,
+    pub bin: bin::Config,
+    pub octagon: octagon::Config,
+    pub coinflip: coinflip::Config,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ColorProfile {
+    pub red: RangeInclusive<Yuv>,
+    pub orange: RangeInclusive<Yuv>,
+    pub yellow: RangeInclusive<Yuv>,
+    pub purple: RangeInclusive<Yuv>,
+    pub black: RangeInclusive<Yuv>,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Hash, Clone)]
+pub enum Side {
+    Right,
+    Left,
+}
+
+impl Default for Side {
+    fn default() -> Self {
+        Self::Right
+    }
 }

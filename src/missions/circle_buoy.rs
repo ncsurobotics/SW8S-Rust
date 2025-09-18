@@ -21,7 +21,7 @@ use crate::{
 
 use super::{
     action::{ActionExec, ActionSequence},
-    action_context::{GetControlBoard, FrontCamIO, GetMainElectronicsBoard},
+    action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard},
     basic::DelayAction,
     movement::ZeroMovement,
 };
@@ -99,7 +99,7 @@ pub fn buoy_circle_sequence_model<
         + Unpin,
 >(
     context: &'static Con,
-) -> impl ActionExec<()> + '_ {
+) -> impl ActionExec<()> + 'static {
     const BUOY_X_SPEED: f32 = -0.0;
     const BUOY_Y_SPEED: f32 = 0.0;
     const DEPTH: f32 = -1.0;
@@ -148,7 +148,7 @@ pub fn buoy_circle_sequence_blind<
         + Unpin,
 >(
     context: &'static Con,
-) -> impl ActionExec<()> + '_ {
+) -> impl ActionExec<()> + 'static {
     const BUOY_X_SPEED: f32 = 0.4;
     const BUOY_Y_SPEED: f32 = 0.15;
     const BUOY_YAW_SPEED: f32 = 12.0;

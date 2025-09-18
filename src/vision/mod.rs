@@ -3,10 +3,11 @@ use derive_getters::Getters;
 use itertools::Itertools;
 use num_traits::{zero, FromPrimitive, Num};
 use opencv::{
-    core::{MatTraitConst, Point, Rect, Rect2d, Scalar, Vector},
+    core::{MatTraitConst, Point, Rect2d, Scalar, VecN, Vector},
     imgproc::{self, LINE_8},
     prelude::Mat,
 };
+use serde::{Deserialize, Serialize};
 use std::{
     fmt::Debug,
     hash::Hash,
@@ -14,9 +15,11 @@ use std::{
     ops::{Add, Deref, DerefMut, Div, Mul},
 };
 
+pub mod bin;
 pub mod buoy;
 pub mod buoy_model;
 pub mod gate;
+pub mod gate_cv;
 pub mod gate_poles;
 pub mod image_prep;
 pub mod nn_cv2;
@@ -24,6 +27,8 @@ pub mod octagon;
 pub mod path;
 pub mod path_cv;
 pub mod pca;
+pub mod slalom;
+pub mod slalom_yolo;
 pub mod yolo_model;
 
 pub trait Draw {
@@ -287,16 +292,20 @@ impl RelPos for DrawRect2d {
 
 impl Draw for DrawRect2d {
     fn draw(&self, canvas: &mut Mat) -> Result<()> {
-        imgproc::rectangle(
-            canvas,
-            self.inner
-                .to()
-                .ok_or(anyhow!("f64 outside bounds of i32"))?,
-            Scalar::from((0.0, 0.0, 255.0)),
-            2,
-            LINE_8,
-            0,
-        )?;
+        // imgproc::rectangle(
+        //     canvas,
+        //     self.inner
+        //         .to()
+        //         .ok_or(anyhow!("f64 outside bounds of i32"))?,
+        //     Scalar::from((0.0, 0.0, 255.0)),
+        //     2,
+        //     LINE_8,
+        //     0,
+        // )?;
+
+        let center = Point::new((self.x as i32), (self.y as i32));
+
+        imgproc::circle_def(canvas, center, 5, Scalar::from((0.0, 0.0, 255.0)))?;
         Ok(())
     }
 }
@@ -410,3 +419,66 @@ impl From<Vector<Mat>> for VecMatWrapper {
 
 unsafe impl Send for VecMatWrapper {}
 unsafe impl Sync for VecMatWrapper {}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, Copy)]
+pub struct Yuv {
+    pub y: u8,
+    pub u: u8,
+    pub v: u8,
+}
+
+impl From<&VecN<u8, 3>> for Yuv {
+    fn from(value: &VecN<u8, 3>) -> Self {
+        Self {
+            y: value[0],
+            u: value[1],
+            v: value[2],
+        }
+    }
+}
+
+impl From<&Yuv> for VecN<u8, 3> {
+    fn from(val: &Yuv) -> Self {
+        VecN::from_array([val.y, val.u, val.v])
+    }
+}
+
+#[derive(Debug, Clone, Getters, PartialEq)]
+pub struct PosVector {
+    x: f64,
+    y: f64,
+    z: f64,
+    angle: f64,
+}
+
+impl PosVector {
+    fn new(x: f64, y: f64, z: f64, angle: f64) -> Self {
+        Self { x, y, z, angle }
+    }
+}
+
+impl RelPosAngle for PosVector {
+    type Number = f64;
+
+    fn offset_angle(&self) -> Angle2D<Self::Number> {
+        Angle2D {
+            x: self.x,
+            y: self.y,
+            angle: self.angle,
+        }
+    }
+}
+
+impl Mul<&Mat> for PosVector {
+    type Output = Self;
+
+    fn mul(self, rhs: &Mat) -> Self::Output {
+        let size = rhs.size().unwrap();
+        Self {
+            x: (self.x + 0.5) * (size.width as f64),
+            y: (self.y + 0.5) * (size.height as f64),
+            z: 0.,
+            angle: self.angle,
+        }
+    }
+}

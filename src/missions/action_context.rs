@@ -1,5 +1,6 @@
 use core::fmt::Debug;
 use opencv::core::Mat;
+#[cfg(feature = "annotated_streams")]
 use opencv::mod_prelude::ToInputArray;
 use tokio::io::{AsyncWriteExt, WriteHalf};
 use tokio::sync::RwLock;
@@ -137,7 +138,7 @@ impl FrontCamIO for EmptyActionContext {
         todo!()
     }
     #[cfg(feature = "annotated_streams")]
-    async fn annotate_front_camera(&self, image: &impl ToInputArray) {
+    async fn annotate_front_camera(&self, _image: &impl ToInputArray) {
         todo!();
     }
     async fn get_desired_buoy_gate(&self) -> Target {
@@ -153,7 +154,7 @@ impl BottomCamIO for EmptyActionContext {
         todo!()
     }
     #[cfg(feature = "annotated_streams")]
-    async fn annotate_bottom_camera(&self, image: &impl ToInputArray) {
+    async fn annotate_bottom_camera(&self, _image: &impl ToInputArray) {
         todo!();
     }
 }

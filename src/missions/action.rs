@@ -102,17 +102,15 @@ impl<V: Action, W: Action, X: Action> Action for ActionConditional<V, W, X> {
 
         let mut combined_str = true_str.body + &false_str.body + &condition_str.body;
         for tail_id in condition_str.tail_ids {
-            combined_str.push_str(&format!("\"{}\" [shape = diamond];\n", tail_id));
+            combined_str.push_str(&format!("\"{tail_id}\" [shape = diamond];\n"));
             for head_id in &true_str.head_ids {
                 combined_str.push_str(&format!(
-                    "\"{}\" -> \"{}\" [label = \"True\"];\n",
-                    tail_id, head_id,
+                    "\"{tail_id}\" -> \"{head_id}\" [label = \"True\"];\n"
                 ));
             }
             for head_id in &false_str.head_ids {
                 combined_str.push_str(&format!(
-                    "\"{}\" -> \"{}\" [label = \"False\"];\n",
-                    tail_id, head_id,
+                    "\"{tail_id}\" -> \"{head_id}\" [label = \"False\"];\n",
                 ));
             }
         }
@@ -176,25 +174,22 @@ impl<V: Action, W: Action, X: Action, T, Y> Action for ActionDataConditional<V, 
 
         let mut combined_str = true_str.body + &false_str.body + &condition_str.body;
         for tail_id in &condition_str.tail_ids {
-            combined_str.push_str(&format!("\"{}\" [shape = diamond];\n", tail_id));
+            combined_str.push_str(&format!("\"{tail_id}\" [shape = diamond];\n"));
             for head_id in &true_str.head_ids {
                 combined_str.push_str(&format!(
-                    "\"{}\" -> \"{}\" [color = purple, fontcolor = purple, label = \"True (Pass Data)\"];\n",
-                    tail_id, head_id,
+                    "\"{tail_id}\" -> \"{head_id}\" [color = purple, fontcolor = purple, label = \"True (Pass Data)\"];\n"
                 ));
             }
             for head_id in &false_str.head_ids {
                 combined_str.push_str(&format!(
-                    "\"{}\" -> \"{}\" [label = \"False\"];\n",
-                    tail_id, head_id,
+                    "\"{tail_id}\" -> \"{head_id}\" [label = \"False\"];\n"
                 ));
             }
         }
         for condition_head_id in &condition_str.head_ids {
             for head_id in &false_str.head_ids {
                 combined_str.push_str(&format!(
-                    "\"{}\" -> \"{}\" [color = purple, fontcolor = purple, label = \"Pass Data\"];\n",
-                    condition_head_id, head_id,
+                    "\"{condition_head_id}\" -> \"{head_id}\" [color = purple, fontcolor = purple, label = \"Pass Data\"];\n"
                 ));
             }
         }
@@ -300,11 +295,11 @@ impl<T: Action, U: Action> Action for RaceAction<T, U> {
             [&first_str.head_ids, &second_str.head_ids]
                 .into_iter()
                 .flatten()
-                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", race_id, id)));
+                .for_each(|id| body_str.push_str(&format!("\"{race_id}\" -> \"{id}\";\n")));
             [&first_str.tail_ids, &second_str.tail_ids]
                 .into_iter()
                 .flatten()
-                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, resolve_id)));
+                .for_each(|id| body_str.push_str(&format!("\"{id}\" -> \"{resolve_id}\";\n")));
             body_str.push_str("}\n");
 
             DotString {
@@ -366,21 +361,19 @@ impl<T: Action, U: Action> Action for DualAction<T, U> {
             }
         } else {
             let mut body_str = format!(
-            "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{}\" [label = \"Dual\", shape = box, fontcolor = blue, style = dashed];\n",
-            Uuid::new_v4(),
-            dual_head
-        ) + &format!("{}\" [label = \"Collect\", shape = box, fontcolor = blue, style = dashed];\n", dual_tail) +
+            "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = blue;\n\"{dual_head}\" [label = \"Dual\", shape = box, fontcolor = blue, style = dashed];\n",
+            Uuid::new_v4()) + &format!("{dual_tail}\" [label = \"Collect\", shape = box, fontcolor = blue, style = dashed];\n") +
             &first_str.body
             + &second_str.body;
 
             vec![first_str.head_ids, second_str.head_ids]
                 .into_iter()
                 .flatten()
-                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", dual_head, id)));
+                .for_each(|id| body_str.push_str(&format!("\"{dual_head}\" -> \"{id}\";\n")));
             vec![first_str.tail_ids, second_str.tail_ids]
                 .into_iter()
                 .flatten()
-                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, dual_tail)));
+                .for_each(|id| body_str.push_str(&format!("\"{id}\" -> \"{dual_tail}\";\n")));
             body_str.push_str("}\n");
 
             DotString {
@@ -434,10 +427,7 @@ impl<T, V: Action, W: Action> Action for ActionChain<T, V, W> {
         let mut body_str = first_str.body + &second_str.body;
         for tail in &first_str.tail_ids {
             for head in &second_str.head_ids {
-                body_str.push_str(&format!(
-                    "\"{}\" -> \"{}\" [color = purple, fontcolor = purple, label = \"Pass Data\"];\n",
-                    tail, head
-                ))
+                body_str.push_str(&format!("\"{tail}\" -> \"{head}\" [color = purple, fontcolor = purple, label = \"Pass Data\"];\n"))
             }
         }
 
@@ -497,7 +487,7 @@ impl<T, V: Action, W: Action> Action for ActionSequence<T, V, W> {
         let mut body_str = first_str.body + &second_str.body;
         for tail in &first_str.tail_ids {
             for head in &second_str.head_ids {
-                body_str.push_str(&format!("\"{}\" -> \"{}\" {};\n", tail, head, label))
+                body_str.push_str(&format!("\"{tail}\" -> \"{head}\" {label};\n"))
             }
         }
 
@@ -578,25 +568,19 @@ impl<V: Action, W: Action> Action for ActionParallel<V, W> {
                 color = "darkgreen";
             }
 
-            let mut body_str = format!(
-                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {};\n\"{}\" [label = \"{}\", shape = box, fontcolor = {}, style = dashed];\n",
-                Uuid::new_v4(),
-                color,
-                par_head,
-                name,
-                color,
-            ) + &format!("{}\" [label = \"Collect\", shape = box, fontcolor = {}, style = dashed];\n", par_tail, color) +
-            &first_str.body
-            + &second_str.body;
+            let mut body_str = format!("subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {color};\n\"{par_head}\" [label = \"{name}\", shape = box, fontcolor = {color}, style = dashed];\n", Uuid::new_v4())
+                + &format!("{par_tail}\" [label = \"Collect\", shape = box, fontcolor = {color}, style = dashed];\n")
+                + &first_str.body
+                + &second_str.body;
 
             vec![first_str.head_ids, second_str.head_ids]
                 .into_iter()
                 .flatten()
-                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", par_head, id)));
+                .for_each(|id| body_str.push_str(&format!("\"{par_head}\" -> \"{id}\";\n")));
             vec![first_str.tail_ids, second_str.tail_ids]
                 .into_iter()
                 .flatten()
-                .for_each(|id| body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, par_tail)));
+                .for_each(|id| body_str.push_str(&format!("\"{id}\" -> \"{par_tail}\";\n")));
             body_str.push_str("}\n");
 
             DotString {
@@ -693,17 +677,15 @@ impl<V: Action, W: Action> Action for ActionConcurrent<V, W> {
             vec![first_str.head_ids, second_str.head_ids]
                 .into_iter()
                 .flatten()
-                .for_each(|id| {
-                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id))
-                });
+                .for_each(|id| body_str.push_str(&format!("\"{concurrent_head}\" -> \"{id}\";\n")));
 
             let tail_ids = if parent != "TupleSecond" {
-                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = {}, style = dashed];\n", concurrent_tail, color)));
+                body_str.push_str(&(format!("\"{concurrent_tail}\" [label = \"Converge\", shape = box, fontcolor = {color}, style = dashed];\n")));
                 vec![first_str.tail_ids, second_str.tail_ids.clone()]
                     .into_iter()
                     .flatten()
                     .for_each(|id| {
-                        body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
+                        body_str.push_str(&format!("\"{id}\" -> \"{concurrent_tail}\";\n"))
                     });
                 vec![concurrent_tail]
             } else {
@@ -783,30 +765,21 @@ impl<V: Action, W: Action> Action for ActionConcurrentSplit<V, W> {
                 color = "darkgreen";
             }
 
-            let mut body_str = format!(
-                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {};\n\"{}\" [label = \"{}\", shape = box, fontcolor = {}, style = dashed];\n",
-                Uuid::new_v4(),
-                color,
-                concurrent_head,
-                name,
-                color,
-            );
+            let mut body_str = format!("subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {color};\n\"{concurrent_head}\" [label = \"{name}\", shape = box, fontcolor = {color}, style = dashed];\n", Uuid::new_v4());
 
             body_str.push_str(&(first_str.body + &second_str.body));
             vec![first_str.head_ids, second_str.head_ids]
                 .into_iter()
                 .flatten()
-                .for_each(|id| {
-                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id))
-                });
+                .for_each(|id| body_str.push_str(&format!("\"{concurrent_head}\" -> \"{id}\";\n")));
 
             let tail_ids = if parent != "TupleSecond" {
-                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = {}, style = dashed];\n", concurrent_tail, color)));
+                body_str.push_str(&(format!("\"{concurrent_tail}\" [label = \"Converge\", shape = box, fontcolor = {color}, style = dashed];\n")));
                 vec![first_str.tail_ids, second_str.tail_ids.clone()]
                     .into_iter()
                     .flatten()
                     .for_each(|id| {
-                        body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
+                        body_str.push_str(&format!("\"{id}\" -> \"{concurrent_tail}\";\n"))
                     });
                 vec![concurrent_tail]
             } else {
@@ -866,11 +839,10 @@ impl<T: Action> Action for ActionUntil<T> {
 
         let mut body_str = action_str.body;
         for head in &action_str.head_ids {
-            body_str.push_str(&format!("\"{}\" [shape = diamond];\n", head));
+            body_str.push_str(&format!("\"{head}\" [shape = diamond];\n"));
             for tail in &action_str.tail_ids {
                 body_str.push_str(&format!(
-                    "\"{}\":sw -> \"{}\":nw [label = \"Fail Within Count\"];\n",
-                    tail, head
+                    "\"{tail}\":sw -> \"{head}\":nw [label = \"Fail Within Count\"];\n"
                 ))
             }
         }
@@ -916,11 +888,8 @@ impl<T: Action> Action for ActionWhile<T> {
         let mut body_str = action_str.body;
         for head in &action_str.head_ids {
             for tail in &action_str.tail_ids {
-                body_str.push_str(&format!("\"{}\" [shape = diamond];\n", tail));
-                body_str.push_str(&format!(
-                    "\"{}\" -> \"{}\" [label = \"True\"];\n",
-                    tail, head
-                ))
+                body_str.push_str(&format!("\"{tail}\" [shape = diamond];\n"));
+                body_str.push_str(&format!("\"{tail}\" -> \"{head}\" [label = \"True\"];\n"))
             }
         }
 
@@ -1091,30 +1060,21 @@ impl<V: Action, W: Action> Action for ActionSelect<V, W> {
                 color = "darkgreen";
             }
 
-            let mut body_str = format!(
-                "subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {};\n\"{}\" [label = \"{}\", shape = box, fontcolor = {}, style = dashed];\n",
-                Uuid::new_v4(),
-                color,
-                concurrent_head,
-                name,
-                color,
-            );
+            let mut body_str = format!("subgraph \"cluster_{}\" {{\nstyle = dashed;\ncolor = {color};\n\"{concurrent_head}\" [label = \"{name}\", shape = box, fontcolor = {color}, style = dashed];\n", Uuid::new_v4());
 
             body_str.push_str(&(first_str.body + &second_str.body));
             vec![first_str.head_ids, second_str.head_ids]
                 .into_iter()
                 .flatten()
-                .for_each(|id| {
-                    body_str.push_str(&format!("\"{}\" -> \"{}\";\n", concurrent_head, id))
-                });
+                .for_each(|id| body_str.push_str(&format!("\"{concurrent_head}\" -> \"{id}\";\n")));
 
             let tail_ids = if parent != "TupleSecond" {
-                body_str.push_str(&(format!("\"{}\" [label = \"Converge\", shape = box, fontcolor = {}, style = dashed];\n", concurrent_tail, color)));
+                body_str.push_str(&(format!("\"{concurrent_tail}\" [label = \"Converge\", shape = box, fontcolor = {color}, style = dashed];\n")));
                 vec![first_str.tail_ids, second_str.tail_ids.clone()]
                     .into_iter()
                     .flatten()
                     .for_each(|id| {
-                        body_str.push_str(&format!("\"{}\" -> \"{}\";\n", id, concurrent_tail))
+                        body_str.push_str(&format!("\"{id}\" -> \"{concurrent_tail}\";\n"))
                     });
                 vec![concurrent_tail]
             } else {

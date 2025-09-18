@@ -1,21 +1,28 @@
 use anyhow::{anyhow, Result};
-use opencv::core::Size;
-use opencv::mod_prelude::ToInputArray;
-use opencv::prelude::Mat;
-use opencv::videoio::VideoCaptureAPIs;
-use opencv::videoio::{
-    VideoCapture, VideoWriter, CAP_GSTREAMER, CAP_PROP_FPS, CAP_PROP_FRAME_HEIGHT,
-    CAP_PROP_FRAME_WIDTH,
+use opencv::{
+    prelude::Mat,
+    videoio::{VideoCapture, VideoCaptureAPIs, VideoCaptureTrait},
 };
-use opencv::videoio::{VideoCaptureTrait, VideoCaptureTraitConst, VideoWriterTrait};
-use std::fs::create_dir_all;
-use std::path::Path;
-use std::sync;
-use std::sync::Arc;
-use std::thread::spawn;
+use std::{fs::create_dir_all, path::Path, sync::Arc, thread::spawn};
 use tokio::sync::Mutex;
 
-use crate::logln;
+#[cfg(feature = "logging")]
+use {
+    crate::logln,
+    opencv::videoio::{VideoCaptureTraitConst, CAP_GSTREAMER},
+};
+#[cfg(feature = "annotated_streams")]
+use {
+    opencv::{
+        core::Size,
+        mod_prelude::ToInputArray,
+        videoio::{
+            VideoWriter, VideoWriterTrait, CAP_PROP_FPS, CAP_PROP_FRAME_HEIGHT,
+            CAP_PROP_FRAME_WIDTH,
+        },
+    },
+    std::sync,
+};
 
 use super::MatSource;
 
@@ -41,10 +48,11 @@ impl Camera {
         let rtsp_string = "h264. ! queue ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! rtspclientsink location=rtsp://127.0.0.1:8554/".to_string()
                         + camera_name + ".mp4 ";
 
+        // unsharp luma-radius-2.0 luma-amount=2.5 chroma-radius=2.0 chroma-amount=2.5 !
         let capture_string =
             pipeline_head(camera_path, camera_dimensions.0, camera_dimensions.1, 30)
                 + " ! jpegdec ! tee name=raw "
-                + "raw. ! queue  ! videoconvert ! appsink "
+                + "raw. ! queue  ! videoconvert ! videobalance brightness=0.0 ! appsink "
                 + "raw. ! queue  ! videoconvert ! "
                 + &h264_enc_pipeline(2048000)
                 + " ! tee name=h264 "
@@ -58,11 +66,33 @@ impl Camera {
                 + ".mp4\" ";
 
         #[cfg(feature = "annotated_streams")]
+        let rtsp_string = "h264. ! queue ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! rtspclientsink location=rtsp://127.0.0.1:8554/".to_string()
+                        + camera_name + "_annotated.mp4 ";
+        #[cfg(feature = "annotated_streams")]
         let output_string = "appsrc ! videoconvert ! ".to_string()
             + &h264_enc_pipeline(2048000)
-            + " ! mpegtsmux ! rtspclientsink location=rtspt://127.0.0.1:8554/"
+            // + " ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au"
+            + " ! h264parse config_interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au !"
+            + " rtspclientsink location=rtsp://127.0.0.1:8554/"
             + camera_name
             + "_annotated.mp4 ";
+        #[cfg(feature = "annotated_streams")]
+        dbg!(&output_string);
+        // pipeline_head(camera_path, camera_dimensions.0, camera_dimensions.1, 30)
+        // "appsrc ! image/jpeg, width=480, height=640, framerate=30/1".to_string()
+        //     + " ! jpegdec ! tee name=raw "
+        //     + "raw. ! queue  ! videoconvert ! videobalance brightness=0.0 ! appsink "
+        //     + "raw. ! queue  ! videoconvert ! "
+        //     + &h264_enc_pipeline(2048000)
+        //     + " ! tee name=h264 "
+        //     + if rtsp { &rtsp_string } else { "" }
+        //     + "h264. ! queue ! mpegtsmux ! filesink location=\""
+        //     + filesink
+        //         .to_str()
+        //         .ok_or(anyhow!("filesink_dir is not a string"))?
+        //     + "/"
+        //     + camera_name
+        //     + "_annotated.mp4\" ";
 
         let frame: Arc<Mutex<Option<Mat>>> = Arc::default();
         let frame_copy = frame.clone();
@@ -121,10 +151,11 @@ impl Camera {
         Camera::new(camera_path, camera_name, filesink_dir, (640, 480), true)
     }
 
+    #[cfg(feature = "annotated_streams")]
     pub fn push_annotated_frame(&self, image: &impl ToInputArray) {
         let writer = self.output.clone();
         let mut writer = writer.lock().unwrap();
-        writer.write(image);
+        let _ = writer.write(image);
     }
 }
 

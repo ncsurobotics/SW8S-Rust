@@ -1,0 +1,99 @@
+control_board_path = "/dev/ttyACM0"
+control_board_backup_path = "/dev/ttyACM4"
+meb_path = "/dev/ttyACM2"
+front_cam_path = "/dev/video0"
+bottom_cam_path = "/dev/video1"
+color_profile = "Night Testing"
+shark = "Left"
+saw_fish = "Right"
+
+[missions.gate]
+depth = -1.0
+speed = 1.0
+true_count = 4
+false_count = 1
+side = "Right"
+
+[missions.path_align]
+depth = -1.0
+speed = -0.0
+forward_speed = 0.2
+detections = 8
+
+[missions.slalom]
+depth = -0.75
+speed = 0.4
+start_detections = 5
+end_detections = 10
+side = "Right"
+centered_threshold = 0.0
+dumb_strafe_secs = 1
+init_duration = 4.0
+strafe_duration = 2.0
+traversal_duration = 6.0
+yaw_adjustment = 20.0
+yaw_speed = -0.2
+area_bounds = { start = 630.0, end = 11000.0 }
+correction_factor = -0.4
+
+
+[missions.coinflip]
+depth = -1.15
+angle_correction = 0.2
+true_count = 2
+
+[missions.octagon]
+
+[missions.bin]
+depth = -1.0
+speed = 0.3
+
+[sonar]
+serial_port = "/dev/ttyUSB0"
+serial_baud_rate = 115200
+bootloader = "Skip"
+[sonar.auto_transmit]
+mode = 1
+gain_setting = "Low"
+transmit_duration = 80
+sample_period = 500
+transmit_frequency = 750
+number_of_samples = 1024
+start_angle = 0
+stop_angle = 399
+num_steps = 1
+delay = 0
+
+[color_profiles."Night Testing".red]
+start = { y = 107, u = 92, v = 100 }
+end = { y = 167, u = 160, v = 128 }
+
+[color_profiles."Night Testing".orange]
+start = { y = 73, u = 87, v = 137 }
+end = { y = 189, u = 136, v = 222 }
+
+[color_profiles."Night Testing".purple]
+start = { y = 0, u = 131, v = 117 }
+end = { y = 139, u = 255, v = 255 }
+
+[color_profiles."Night Testing".yellow]
+start = { y = 0, u = 0, v = 111 }
+end = { y = 144, u = 114, v = 255 }
+
+[color_profiles."B2 Day".red]
+start = { y = 77, u = 101, v = 113 }
+end = { y = 200, u = 170, v = 210 }
+
+[color_profiles."B2 Day".orange]
+start = { y = 111, u = 55, v = 134 }
+end = { y = 255, u = 112, v = 194 }
+
+[color_profiles."B2 Day".purple]
+start = { y = 0, u = 131, v = 117 }
+end = { y = 139, u = 255, v = 255 }
+
+[color_profiles."B2 Day".yellow]
+start = { y = 0, u = 0, v = 111 }
+end = { y = 144, u = 114, v = 255 }
+
+

@@ -1,6 +1,18 @@
 use anyhow::Result;
 use derive_getters::Getters;
-use opencv::{core::Size, prelude::Mat};
+use itertools::MergeJoinBy;
+use opencv::core::{multiply, multiply_def, MatTraitManual, BORDER_CONSTANT, CV_8U};
+use opencv::imgproc::{
+    dilate_def, get_structuring_element, morphology_default_border_value, MORPH_RECT,
+};
+use opencv::{
+    core::{in_range, merge, split, Point, Scalar, Size, Vector},
+    imgproc::{
+        self, contour_area_def, cvt_color_def, dilate, find_contours_def, min_area_rect,
+        CHAIN_APPROX_SIMPLE, COLOR_BGR2YUV, LINE_8, RETR_EXTERNAL,
+    },
+    prelude::{Mat, MatTraitConst, MatTraitConstManual},
+};
 
 use crate::load_onnx;
 
@@ -15,6 +27,10 @@ use std::{error::Error, fmt::Display};
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Target {
     Red,
+    LeftPole,
+    RightPole,
+    Shark,
+    Sawfish,
     Pole,
     Blue,
     Gate,
@@ -44,11 +60,19 @@ impl TryFrom<i32> for Target {
     type Error = TargetError;
     fn try_from(value: i32) -> std::result::Result<Self, Self::Error> {
         match value {
-            0 => Ok(Self::Red),
-            1 => Ok(Self::Pole),
-            2 => Ok(Self::Blue),
-            3 => Ok(Self::Gate),
-            4 => Ok(Self::Middle),
+            // 0 => Ok(Self::Red),
+            // 1 => Ok(Self::Pole),
+            // 2 => Ok(Self::Blue),
+            // 3 => Ok(Self::Gate),
+            // 4 => Ok(Self::Middle),
+            0 => Ok(Self::Gate),
+            1 => Ok(Self::Middle),
+            2 => Ok(Self::Shark),
+            3 => Ok(Self::Sawfish),
+            // 4 => Ok(Self::Pole),
+            // 5 => Ok(Self::Pole),
+            5 => Ok(Self::LeftPole),
+            4 => Ok(Self::RightPole),
             x => Err(TargetError { x }),
         }
     }
@@ -56,7 +80,7 @@ impl TryFrom<i32> for Target {
 
 impl Display for Target {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -74,7 +98,7 @@ impl GatePoles<OnnxModel> {
     }
 
     pub fn load_640(threshold: f64) -> Self {
-        let model = load_onnx!("models/gate_new_640.onnx", 640, 5);
+        let model = load_onnx!("models/new_gate.onnx", 640, 6);
 
         Self { model, threshold }
     }
@@ -82,7 +106,7 @@ impl GatePoles<OnnxModel> {
 
 impl Default for GatePoles<OnnxModel> {
     fn default() -> Self {
-        Self::load_640(0.5)
+        Self::load_640(0.75)
     }
 }
 
@@ -90,7 +114,40 @@ impl YoloProcessor for GatePoles<OnnxModel> {
     type Target = Target;
 
     fn detect_yolo_v5(&mut self, image: &Mat) -> Vec<YoloDetection> {
-        self.model.detect_yolo_v5(image, self.threshold)
+        let mut channels = Vector::<Mat>::new();
+        let _ = split(image, &mut channels).unwrap();
+        let b = channels.get(0).unwrap();
+        let g = channels.get(1).unwrap();
+        let r = channels.get(2).unwrap();
+        let mut mult_b = Mat::default();
+        let _ = multiply(&b, &1.0, &mut mult_b, 1.0, -1).unwrap();
+        let values = Vector::<Mat>::from_iter(vec![b, g, r]);
+        let mut output_img = Mat::default();
+        let _ = merge(&values, &mut output_img).unwrap();
+        let mut dilated = Mat::default();
+        // let kernel = Vector::<Vector<i32>>::from_iter(vec![
+        //     Vector::<i32>::from_iter(vec![1, 1, 1]),
+        //     Vector::<i32>::from_iter(vec![1, 1, 1]),
+        //     Vector::<i32>::from_iter(vec![1, 1, 1]),
+        // ]);
+        // let kernel =
+        //     get_structuring_element(MORPH_RECT, Size::new(3, 3), Point::new(-1, -1)).unwrap();
+        let kernel = Mat::ones_size(Size::new(3, 3), CV_8U).unwrap();
+        let _ = dilate(
+            &output_img,
+            &mut dilated,
+            &kernel,
+            Point::new(-1, -1),
+            1,
+            BORDER_CONSTANT,
+            morphology_default_border_value().unwrap(),
+        )
+        .unwrap();
+
+        dbg!(image.dims());
+        dbg!(dilated.dims());
+
+        self.model.detect_yolo_v5(&dilated, self.threshold)
     }
 
     fn model_size(&self) -> Size {

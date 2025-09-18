@@ -1,8 +1,7 @@
 use anyhow::Result;
 use derive_getters::Getters;
-use itertools::Itertools;
 use opencv::{
-    core::{MatTraitConstManual, Rect2d, Scalar, Size, VecN, Vector, CV_32F},
+    core::{Rect2d, Scalar, Size, VecN, Vector, CV_32F},
     dnn::{blob_from_image, read_net_from_onnx, read_net_from_onnx_buffer, Net},
     prelude::{Mat, MatTraitConst, NetTrait, NetTraitConst},
 };

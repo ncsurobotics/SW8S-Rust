@@ -1,6 +1,5 @@
+// Implementing <https://mb3hel.github.io/AUVControlBoard/user_guide/comm_protocol/>
 use std::{error::Error, fmt::Display};
-
-/// Implementing <https://mb3hel.github.io/AUVControlBoard/user_guide/comm_protocol/>
 
 pub const START_BYTE: u8 = 253;
 pub const END_BYTE: u8 = 254;
@@ -50,7 +49,7 @@ pub enum AcknowledgeErr {
 
 impl Display for AcknowledgeErr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 

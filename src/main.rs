@@ -1,33 +1,38 @@
 use anyhow::{bail, Result};
-use crossbeam::epoch::Pointable;
 use std::env::temp_dir;
 
 use std::env;
 use std::process::exit;
+use std::time::Duration;
 use sw8s_rust_lib::{
     comms::{
         control_board::{ControlBoard, SensorStatuses},
         meb::MainElectronicsBoard,
     },
-    config::Config,
+    config::{Config, SHUTDOWN_TIMEOUT},
     logln,
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
         align_buoy::{buoy_align, buoy_align_shot},
         basic::descend_and_go_forward,
+        bin::bin,
         circle_buoy::{
             buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
         },
-        coinflip::coinflip,
+        coinflip::{coinflip, coinflip_procedural},
         example::{initial_descent, pid_test},
-        fancy_octagon::fancy_octagon,
         fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
-        gate::{gate_run_coinflip, gate_run_complex, gate_run_naive, gate_run_testing},
+        gate::{
+            gate_run_complex, gate_run_cv_procedural, gate_run_dead_reckon, gate_run_naive,
+            gate_run_procedural, gate_run_testing,
+        },
         meb::WaitArm,
         octagon::octagon,
-        path_align::path_align_procedural,
+        path_align::{path_align_procedural, static_align_procedural},
         reset_torpedo::ResetTorpedo,
+        slalom::slalom,
+        sonar::sonar,
         spin::spin,
         vision::PIPELINE_KILL,
     },
@@ -40,13 +45,12 @@ use tokio::{
     signal,
     sync::{
         mpsc::{self, UnboundedSender},
-        OnceCell, RwLock,
+        OnceCell, RwLock, Semaphore,
     },
     time::{sleep, timeout},
 };
 use tokio_serial::SerialStream;
-pub mod config;
-use std::time::Duration;
+use tokio_util::sync::CancellationToken;
 
 static CONFIG_CELL: OnceCell<Config> = OnceCell::const_new();
 async fn config() -> &'static Config {
@@ -147,13 +151,29 @@ async fn static_context() -> &'static FullActionContext<'static, WriteHalf<Seria
         .await
 }
 
+static SHUTDOWN_GUARD: Semaphore = Semaphore::const_new(1);
+
 #[tokio::main]
 async fn main() {
-    let shutdown_tx = shutdown_handler().await;
+    let (shutdown_tx, mission_ct) = shutdown_handler().await;
 
     let orig_hook = std::panic::take_hook();
+    let mission_ct_clone = mission_ct.clone();
     std::panic::set_hook(Box::new(move |panic_info| {
         orig_hook(panic_info);
+        // Cancel running missions
+        mission_ct_clone.cancel();
+        // Wait for running mission to exit
+        // handle.block_on(async {
+        //     if let Err(_) = timeout(
+        //         Duration::from_secs(SHUTDOWN_TIMEOUT),
+        //         SHUTDOWN_GUARD.acquire(),
+        //     )
+        //     .await
+        //     {
+        //         logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds")
+        //     }
+        // });
         exit(1);
     }));
 
@@ -175,7 +195,8 @@ async fn main() {
     });
 
     for arg in env::args().skip(1).collect::<Vec<String>>() {
-        run_mission(&arg).await.unwrap();
+        let _guard = SHUTDOWN_GUARD.acquire().await.unwrap();
+        run_mission(&arg, mission_ct.clone()).await.unwrap();
     }
 
     // Send shutdown signal
@@ -183,15 +204,22 @@ async fn main() {
 }
 
 /// Graceful shutdown, see <https://tokio.rs/tokio/topics/shutdown>
-async fn shutdown_handler() -> UnboundedSender<i32> {
+async fn shutdown_handler() -> (UnboundedSender<i32>, CancellationToken) {
     let (shutdown_tx, mut shutdown_rx) = mpsc::unbounded_channel::<i32>();
+    let mission_ct = CancellationToken::new();
+    let mission_ct_clone = mission_ct.clone();
     tokio::spawn(async move {
         // Wait for shutdown signal
-        let exit_status = tokio::select! {_ = signal::ctrl_c() => {
-        logln!("CTRL-C RECV");
-        1 }, Some(x) = shutdown_rx.recv() => {
-            logln!("SHUTDOWN SIGNAL RECV");
-            x }};
+        let exit_status = tokio::select! {
+            _ = signal::ctrl_c() => {
+                logln!("CTRL-C RECV");
+                1
+            },
+            Some(x) = shutdown_rx.recv() => {
+                logln!("SHUTDOWN SIGNAL RECV");
+                x
+            }
+        };
 
         let status = control_board().await.sensor_status_query().await;
 
@@ -216,21 +244,38 @@ async fn shutdown_handler() -> UnboundedSender<i32> {
         // Reset Torpedo
         ResetTorpedo::new(static_context().await).execute().await;
 
-        // If shutdown is unexpected, immediately exit nonzero
+        // If shutdown is unexpected, cancel running missions and exit nonzero
         if exit_status != 0 {
+            // Cancel running missions
+            mission_ct_clone.cancel();
+            // Wait for running mission to exit
+            if timeout(
+                Duration::from_secs(SHUTDOWN_TIMEOUT),
+                SHUTDOWN_GUARD.acquire(),
+            )
+            .await
+            .is_err()
+            {
+                logln!("Missions did not exit within {SHUTDOWN_TIMEOUT} seconds")
+            }
             exit(exit_status)
         };
     });
-    shutdown_tx
+    (shutdown_tx, mission_ct)
 }
 
-async fn run_mission(mission: &str) -> Result<()> {
+async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
+    /// Wrapper for missions that do not directly use the cancellation token
+    macro_rules! ctwrap {
+        ($fut:expr) => {{
+            let _ = cancel.run_until_cancelled($fut).await;
+            Ok(())
+        }};
+    }
+
     let config = config().await;
     let res = match mission.to_lowercase().as_str() {
-        "arm" => {
-            WaitArm::new(static_context().await).execute().await;
-            Ok(())
-        }
+        "arm" => ctwrap!(WaitArm::new(static_context().await).execute()),
         "empty" => {
             let control_board = control_board().await;
             control_board
@@ -319,69 +364,70 @@ async fn run_mission(mission: &str) -> Result<()> {
             logln!("Finished travel");
             Ok(())
         }
-        "descend" | "forward" => {
-            let _ = descend_and_go_forward(&FullActionContext::new(
+        "descend" | "forward" => ctwrap!(descend_and_go_forward(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "gate_run_naive" => ctwrap!(gate_run_naive(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "gate_run_complex" => ctwrap!(gate_run_complex(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "gate_run_coinflip" => ctwrap!(gate_run_cv_procedural(
+            &FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
                 gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "gate_run_naive" => {
-            let _ = gate_run_naive(&FullActionContext::new(
+            ),
+            &config.missions.gate,
+            &config.get_color_profile().unwrap(),
+        )),
+        "gate_run_yolo" => ctwrap!(gate_run_procedural(
+            &FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
                 gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "gate_run_complex" => {
-            let _ = gate_run_complex(&FullActionContext::new(
+            ),
+            &config.missions.gate
+        )),
+        "gate_run_reckon" => ctwrap!(gate_run_dead_reckon(
+            &FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
                 gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "gate_run_coinflip" => {
-            let _ = gate_run_coinflip(
-                &FullActionContext::new(
-                    control_board().await,
-                    meb().await,
-                    front_cam().await,
-                    bottom_cam().await,
-                    gate_target().await,
-                ),
-                &config.missions.gate,
-            )
-            .execute()
-            .await;
-            Ok(())
-        }
-        "gate_run_testing" => {
-            let _ = gate_run_testing(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
+            ),
+            &config.missions.gate,
+            &config.get_color_profile().unwrap(),
+        )),
+        "gate_run_testing" => ctwrap!(gate_run_testing(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
         "start_cam" => {
             // This has not been tested
             logln!("Opening camera");
@@ -390,98 +436,61 @@ async fn run_mission(mission: &str) -> Result<()> {
             logln!("Opened camera");
             Ok(())
         }
-        "path_align" => {
-            let _ = path_align_procedural(
-                &FullActionContext::new(
-                    control_board().await,
-                    meb().await,
-                    front_cam().await,
-                    bottom_cam().await,
-                    gate_target().await,
-                ),
-                &config.missions.path_align,
-            )
-            .await;
-            Ok(())
-        }
-        /*
-        "buoy_circle" => {
-            bail!("TODO");
-            let _ = gate_run(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        */
-        "example" => {
-            let _ = initial_descent(&FullActionContext::new(
+        "path_align" => ctwrap!(path_align_procedural(
+            &FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
                 gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "pid_test" => {
-            let _ = pid_test(&FullActionContext::new(
+            ),
+            &config.missions.path_align,
+            &config.get_color_profile().unwrap(),
+        )),
+        "static_align" => ctwrap!(static_align_procedural(
+            &FullActionContext::new(
                 control_board().await,
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
                 gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "octagon" => {
-            let _ = octagon(static_context().await).execute().await;
-            Ok(())
-        }
-        "fancy_octagon" => {
-            let _ = fancy_octagon(static_context().await).execute().await;
-            Ok(())
-        }
-        "buoy_circle" => {
-            let _ = buoy_circle_sequence(&FullActionContext::new(
-                control_board().await,
-                meb().await,
-                front_cam().await,
-                bottom_cam().await,
-                gate_target().await,
-            ))
-            .execute()
-            .await;
-            Ok(())
-        }
-        "buoy_model" => {
-            let _ = buoy_circle_sequence_model(static_context().await)
-                .execute()
-                .await;
-            Ok(())
-        }
-        "buoy_blind" => {
-            let _ = buoy_circle_sequence_blind(static_context().await)
-                .execute()
-                .await;
-            Ok(())
-        }
-        "buoy_align" => {
-            let _ = buoy_align(static_context().await).execute().await;
-            Ok(())
-        }
-        "spin" => {
-            let _ = spin(static_context().await).execute().await;
-            Ok(())
-        }
+            ),
+            &config.missions.path_align,
+        )),
+        "example" => ctwrap!(initial_descent(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "pid_test" => ctwrap!(pid_test(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "octagon" => ctwrap!(octagon(
+            static_context().await,
+            &config.missions.octagon,
+            &config.get_color_profile().unwrap()
+        )
+        .execute()),
+        "buoy_circle" => ctwrap!(buoy_circle_sequence(&FullActionContext::new(
+            control_board().await,
+            meb().await,
+            front_cam().await,
+            bottom_cam().await,
+            gate_target().await,
+        ))
+        .execute()),
+        "buoy_model" => ctwrap!(buoy_circle_sequence_model(static_context().await).execute()),
+        "buoy_blind" => ctwrap!(buoy_circle_sequence_blind(static_context().await).execute()),
+        "buoy_align" => ctwrap!(buoy_align(static_context().await).execute()),
+        "spin" => ctwrap!(spin(static_context().await).execute()),
         "torpedo" | "fire_torpedo" => {
             let _ = buoy_align_shot(static_context().await).execute().await;
             Ok(())
@@ -494,8 +503,10 @@ async fn run_mission(mission: &str) -> Result<()> {
             Ok(())
         }
         "coinflip" => {
-            let _ = coinflip(static_context().await).execute().await;
-            Ok(())
+            ctwrap!(coinflip_procedural(
+                static_context().await,
+                &config.missions.coinflip
+            ))
         }
         // Just stall out forever
         "forever" | "infinite" => loop {
@@ -511,6 +522,23 @@ async fn run_mission(mission: &str) -> Result<()> {
             .unwrap();
             Ok(())
         }
+        "slalom_left" => ctwrap!(slalom(
+            static_context().await,
+            &config.missions.slalom,
+            false,
+            &config.get_color_profile().unwrap()
+        )),
+        "slalom_right" => ctwrap!(slalom(
+            static_context().await,
+            &config.missions.slalom,
+            true,
+            &config.get_color_profile().unwrap()
+        )),
+        "sonar" => {
+            let _ = sonar(static_context().await, &config.sonar, cancel).await;
+            Ok(())
+        }
+        "bin" => ctwrap!(bin(static_context().await, &config.missions.bin)),
         x => bail!("Invalid argument: [{x}]"),
     };
 
