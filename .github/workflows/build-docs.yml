@@ -22,27 +22,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-
-      - name: Update Ubuntu Packages
-        run: sudo apt-get update
-
-      - uses: awalsh128/cache-apt-pkgs-action@v1
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
         with:
-          packages: llvm \
-            clang \
-            libclang-dev \
-            libopencv-dev
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
       - uses: Swatinem/rust-cache@v2
 
       - name: Build docs
-        run: cargo doc --features logging,graphing
+        run: nix develop ./#noFHS --command cargo doc --features logging,graphing
 
       - name: Add redirect
         run: echo '<meta http-equiv="refresh" content="0;url=sw8s_rust_lib/index.html">' > target/doc/index.html

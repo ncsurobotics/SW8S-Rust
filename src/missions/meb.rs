@@ -2,8 +2,6 @@ use std::time::Duration;
 
 use tokio::time::sleep;
 
-use crate::logln;
-
 use super::{
     action::{Action, ActionExec},
     action_context::GetMainElectronicsBoard,

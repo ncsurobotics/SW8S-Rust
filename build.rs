@@ -125,14 +125,14 @@ mod graphing {
             })
             .for_each(|(path, file, actions)| {
                 let actions_str =
-                    "pub fn graph_actions<T: GraphActionContext::GetMainElectronicsBoard + GraphActionContext::GetControlBoard<tokio::io::WriteHalf<tokio_serial::SerialStream>> + GraphActionContext::GetFrontCamMat + GraphActionContext::GetBottomCamMat + Send + Sync + std::marker::Unpin>(context: &'static T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
+                    "pub fn graph_actions<T: GraphActionContext::GetMainElectronicsBoard + GraphActionContext::GetControlBoard<tokio::io::WriteHalf<tokio_serial::SerialStream>> + GraphActionContext::FrontCamIO + GraphActionContext::BottomCamIO + Send + Sync + std::marker::Unpin>(context: &'static T) -> Vec<(String, Box<dyn GraphAction + '_>)> { vec!["
                         .to_string()
                         + &actions
                             .into_iter()
                             .fold("".to_string(), |acc, x| acc + &format!("(\"{x}\".to_string(), Box::new({x}(context))),"))
                         + "]}";
                 let file_contents =
-                    quote! { use sw8s_rust_lib::missions::action::Action as GraphAction; use sw8s_rust_lib::missions::action::ActionExec as GraphActionExec; use sw8s_rust_lib::missions::action_context as GraphActionContext; #file };
+                    quote! { use sw8s_rust_lib::missions::action::Action as GraphAction; use sw8s_rust_lib::missions::action::ActionExec as GraphActionExec; use sw8s_rust_lib::missions::action_context as GraphActionContext; use sw8s_rust_lib::logln; #file };
                 let output_loc = out_path.join(path.strip_prefix::<PathBuf>("src/missions".into()).unwrap());
                 create_dir_all(output_loc.parent().unwrap()).unwrap();
                 write(

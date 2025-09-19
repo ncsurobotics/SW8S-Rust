@@ -4,8 +4,6 @@ use std::marker::PhantomData;
 use anyhow::{anyhow, bail};
 use uuid::Uuid;
 
-use crate::logln;
-
 use super::{
     action::{Action, ActionExec, ActionMod},
     graph::{stripped_fn, stripped_type, DotString},

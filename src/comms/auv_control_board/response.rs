@@ -5,7 +5,6 @@ use tokio::io::AsyncReadExt;
 use tokio::{fs::OpenOptions, io::AsyncWriteExt, sync::Mutex};
 
 use super::util::{END_BYTE, ESCAPE_BYTE, START_BYTE};
-use crate::logln;
 
 #[cfg(feature = "logging")]
 static LOG_NAMES: Mutex<Vec<String>> = Mutex::const_new(Vec::new());
@@ -194,7 +193,7 @@ mod tests {
             )
             .collect::<Vec<Vec<u8>>>()
             .await,
-            vec![vec![]]
+            Vec::<Vec<u8>>::from([vec![]])
         );
 
         assert_eq!(
