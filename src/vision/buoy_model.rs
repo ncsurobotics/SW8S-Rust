@@ -2,7 +2,7 @@ use anyhow::Result;
 use derive_getters::Getters;
 use opencv::{core::Rect2d, core::Size, prelude::Mat};
 
-use crate::{load_onnx, logln};
+use crate::load_onnx;
 
 use super::{
     nn_cv2::{OnnxModel, VisionModel, YoloClass, YoloDetection},

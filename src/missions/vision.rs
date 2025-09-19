@@ -7,7 +7,6 @@ use std::{iter::Sum, marker::PhantomData};
 use super::action::{Action, ActionExec, ActionMod};
 use super::action_context::BottomCamIO;
 use super::graph::DotString;
-use crate::logln;
 use crate::vision::{
     Angle2D, Draw, DrawRect2d, Offset2D, RelPos, RelPosAngle, VisualDetection, VisualDetector,
 };

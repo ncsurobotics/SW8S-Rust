@@ -16,7 +16,6 @@ use self::{
 };
 
 use super::auv_control_board::{AUVControlBoard, MessageId};
-use crate::logln;
 
 pub mod response;
 pub mod util;

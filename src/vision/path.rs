@@ -371,7 +371,7 @@ mod tests {
         imgcodecs::{imread, imwrite, IMREAD_COLOR},
     };
 
-    use crate::{logln, vision::Draw};
+    use crate::vision::Draw;
 
     use super::*;
 

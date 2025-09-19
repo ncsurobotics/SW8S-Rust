@@ -1,6 +1,5 @@
 use crate::comms::control_board::ControlBoard;
 use crate::comms::control_board::LAST_YAW;
-use crate::logln;
 use crate::vision::DrawRect2d;
 use crate::vision::Offset2D;
 use crate::vision::RelPos;

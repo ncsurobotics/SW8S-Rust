@@ -7,8 +7,6 @@ use opencv::{
     prelude::Mat,
 };
 
-use crate::logln;
-
 use super::{Angle2D, Draw, Offset2D, RelPosAngle, VisualDetection};
 
 #[derive(Debug, Clone, Getters)]
