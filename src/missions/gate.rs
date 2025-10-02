@@ -105,7 +105,7 @@ pub async fn gate_run_cv_procedural<
         .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
         .await;
 
-    const TOLERANCE: f32 = 0.3;
+    // const TOLERANCE: f32 = 0.3;
 
     let mut gate_state = GateState::Align;
     let mut yaw_target = 0.0;
@@ -120,14 +120,14 @@ pub async fn gate_run_cv_procedural<
             vec![]
         });
 
-        let leftPole = detections.iter().filter(|d| *d.class()).collect_vec();
-        let leftPole_avg_x = leftPole
+        let left_pole = detections.iter().filter(|d| *d.class()).collect_vec();
+        let left_pole_avg_x = left_pole
             .iter()
             .map(|d| *d.position().x() as f32)
             .sum::<f32>();
 
-        let rightPole = detections.iter().filter(|d| !*d.class()).collect_vec();
-        let rightPole_avg_x = rightPole
+        let right_pole = detections.iter().filter(|d| !*d.class()).collect_vec();
+        let right_pole_avg_x = right_pole
             .iter()
             .map(|d| *d.position().x() as f32)
             .sum::<f32>();
@@ -135,10 +135,10 @@ pub async fn gate_run_cv_procedural<
         match gate_state {
             GateState::Align => match config.side {
                 Side::Left => {
-                    if leftPole.len() > 0 {
+                    if left_pole.len() > 0 {
                         false_count = 0;
-                        let mut correction;
-                        if leftPole_avg_x < 0.2 {
+                        let correction;
+                        if left_pole_avg_x < 0.2 {
                             true_count += 1;
                             if true_count >= config.true_count {
                                 #[cfg(feature = "logging")]
@@ -153,7 +153,7 @@ pub async fn gate_run_cv_procedural<
                                 logln!("true_count: {true_count}/4");
                             }
                         } else {
-                            correction = dbg!(config.correction_factor * leftPole_avg_x);
+                            correction = dbg!(config.correction_factor * left_pole_avg_x);
                             let _ = cb
                                 .stability_1_speed_set(0.0, 0.0, correction, 0.0, 0.0, config.depth)
                                 .await;
@@ -185,10 +185,10 @@ pub async fn gate_run_cv_procedural<
                 }
 
                 Side::Right => {
-                    if rightPole.len() > 0 {
+                    if right_pole.len() > 0 {
                         false_count = 0;
-                        let mut correction;
-                        if rightPole_avg_x < 0.2 {
+                        let correction;
+                        if right_pole_avg_x < 0.2 {
                             true_count += 1;
                             if true_count >= config.true_count {
                                 #[cfg(feature = "logging")]
@@ -203,7 +203,7 @@ pub async fn gate_run_cv_procedural<
                                 logln!("true_count: {true_count}/4");
                             }
                         } else {
-                            correction = dbg!(config.correction_factor * rightPole_avg_x);
+                            correction = dbg!(config.correction_factor * right_pole_avg_x);
                             let _ = cb
                                 .stability_1_speed_set(0.0, 0.0, correction, 0.0, 0.0, config.depth)
                                 .await;
@@ -322,10 +322,10 @@ pub async fn gate_run_procedural<
             vec![]
         });
 
-        let rightPole = detections
-            .iter()
-            .filter(|d| matches!(d.class().identifier, Target::RightPole))
-            .collect_vec();
+        // let right_pole = detections
+        //     .iter()
+        //     .filter(|d| matches!(d.class().identifier, Target::RightPole))
+        //     .collect_vec();
 
         /* let middle = detections
         .iter()

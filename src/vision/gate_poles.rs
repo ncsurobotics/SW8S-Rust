@@ -1,10 +1,10 @@
 use anyhow::Result;
 use derive_getters::Getters;
 use opencv::core::{multiply, BORDER_CONSTANT, CV_8U};
-use opencv::imgproc::morphology_default_border_value;
+use opencv::imgproc::{dilate, morphology_default_border_value};
 use opencv::{
-    core::imerge, split, Point, Scalar, Size, Vector},
-    prelude::{Mat, MatTraitConst, MatTraitConstManual},
+    core::{merge, split, Point, Size, Vector},
+    prelude::{Mat, MatTraitConst},
 };
 
 use crate::load_onnx;

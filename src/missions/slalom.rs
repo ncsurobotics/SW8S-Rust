@@ -7,7 +7,7 @@ use tokio_serial::SerialStream;
 use super::action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard};
 use crate::{
     config::{slalom::Config, ColorProfile, Side::*},
-    missions::{action::ActionExec, basic::DelayAction, vision::VisionNormAngle},
+    missions::{action::ActionExec, vision::VisionNormAngle},
 };
 
 // TODO: Consider filtering detections by angle (poles will always be upright)
@@ -90,10 +90,12 @@ pub async fn slalom<
                     let x = *position.x() as f32;
                     dbg!(&x);
                     let mut correction = 0.0;
+                    let _ = correction;
                     if x.abs() < 0.2 {
                         true_count += 1;
                         if true_count >= 4 {
                             correction = 0.0;
+                            let _ = correction;
                             #[cfg(feature = "logging")]
                             logln!("ALIGNED");
                             slalom_state = SlalomState::Approach;

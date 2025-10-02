@@ -37,10 +37,12 @@ pub async fn spin<
     let mut spin_count = 0;
     let mut in_spin = false;
 
-    cb.stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+    let _ = cb
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
         .await;
     sleep(Duration::from_secs(1)).await;
-    cb.global_speed_set(0.0, 0.0, 0.0, 0.0, config.spin_speed, 0.0)
+    let _ = cb
+        .global_speed_set(0.0, 0.0, 0.0, 0.0, config.spin_speed, 0.0)
         .await;
 
     loop {
@@ -75,6 +77,7 @@ pub async fn spin<
             break;
         }
     }
-    cb.stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
+    let _ = cb
+        .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
         .await;
 }

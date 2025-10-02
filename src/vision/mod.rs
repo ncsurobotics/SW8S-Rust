@@ -478,3 +478,24 @@ impl Mul<&Mat> for PosVector {
         }
     }
 }
+
+impl Draw for VisualDetection<bool, Offset2D<f64>> {
+    fn draw(&self, canvas: &mut Mat) -> anyhow::Result<()> {
+        let color = if self.class {
+            Scalar::from((0.0, 255.0, 0.0))
+        } else {
+            Scalar::from((0.0, 0.0, 255.0))
+        };
+
+        imgproc::circle(
+            canvas,
+            Point::new(*self.position.x() as i32, *self.position.y() as i32),
+            10,
+            color,
+            2,
+            LINE_8,
+            0,
+        )?;
+        Ok(())
+    }
+}
