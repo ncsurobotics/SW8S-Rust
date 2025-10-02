@@ -105,7 +105,7 @@ where
         }
         */
 
-        #[cfg(all(feature = "logging", not(feature = "unblocked_logging")))]
+        #[cfg(all(feature = "logging"))]
         {
             write_log(&[buffer.clone()], dump_file).await;
         }

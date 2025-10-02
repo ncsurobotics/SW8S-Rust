@@ -1,16 +1,9 @@
 use anyhow::Result;
 use derive_getters::Getters;
-use itertools::MergeJoinBy;
-use opencv::core::{multiply, multiply_def, MatTraitManual, BORDER_CONSTANT, CV_8U};
-use opencv::imgproc::{
-    dilate_def, get_structuring_element, morphology_default_border_value, MORPH_RECT,
-};
+use opencv::core::{multiply, BORDER_CONSTANT, CV_8U};
+use opencv::imgproc::morphology_default_border_value;
 use opencv::{
-    core::{in_range, merge, split, Point, Scalar, Size, Vector},
-    imgproc::{
-        self, contour_area_def, cvt_color_def, dilate, find_contours_def, min_area_rect,
-        CHAIN_APPROX_SIMPLE, COLOR_BGR2YUV, LINE_8, RETR_EXTERNAL,
-    },
+    core::imerge, split, Point, Scalar, Size, Vector},
     prelude::{Mat, MatTraitConst, MatTraitConstManual},
 };
 

@@ -1,28 +1,13 @@
-use hdbscan::{Center, Hdbscan};
-use itertools::Itertools;
-use std::f64::consts::PI;
-
 use tokio::{
     io::WriteHalf,
-    select,
     time::{sleep, Duration},
 };
-use tokio_serial::{SerialPort, SerialPortBuilderExt, SerialStream};
-use tokio_util::sync::CancellationToken;
-
-use bluerobotics_ping::{
-    device::{Ping360, PingDevice},
-    ping360::AutoDeviceDataStruct,
-};
+use tokio_serial::SerialStream;
 
 use super::action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard};
 use crate::{
-    config::{slalom::Config, sonar::Config as SonarConfig, ColorProfile, Side::*},
-    missions::{
-        action::ActionExec,
-        basic::DelayAction,
-        vision::{VisionNorm, VisionNormAngle},
-    },
+    config::{slalom::Config, ColorProfile, Side::*},
+    missions::{action::ActionExec, basic::DelayAction, vision::VisionNormAngle},
 };
 
 // TODO: Consider filtering detections by angle (poles will always be upright)
@@ -64,9 +49,6 @@ pub async fn slalom<
     let mut yaw_target = 0.0;
     let mut true_count = 0;
     let mut false_count = 0;
-    let mut init_timer = DelayAction::new(config.init_duration);
-    let mut traversal_timer = DelayAction::new(config.traversal_duration); // forward duration in second
-    let mut strafe_timer = DelayAction::new(config.strafe_duration);
 
     enum SlalomState {
         Align,
@@ -178,12 +160,12 @@ pub async fn slalom<
 
                 sleep(Duration::from_secs(config.strafe_duration as u64)).await;
 
-                yaw_target = (yaw_target
+                yaw_target = yaw_target
                     + (if let Left = config.side {
                         config.yaw_adjustment
                     } else {
                         -config.yaw_adjustment
-                    }));
+                    });
 
                 let _ = cb
                     .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, yaw_target, config.depth)

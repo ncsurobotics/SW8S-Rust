@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use derive_getters::Getters;
 use itertools::Itertools;
 use num_traits::{zero, FromPrimitive, Num};
@@ -16,17 +16,13 @@ use std::{
 };
 
 pub mod bin;
-pub mod buoy;
-pub mod buoy_model;
 pub mod gate;
 pub mod gate_cv;
 pub mod gate_poles;
 pub mod image_prep;
 pub mod nn_cv2;
 pub mod octagon;
-pub mod path;
 pub mod path_cv;
-pub mod pca;
 pub mod slalom;
 pub mod slalom_yolo;
 pub mod yolo_model;
@@ -303,7 +299,7 @@ impl Draw for DrawRect2d {
         //     0,
         // )?;
 
-        let center = Point::new((self.x as i32), (self.y as i32));
+        let center = Point::new(self.x as i32, self.y as i32);
 
         imgproc::circle_def(canvas, center, 5, Scalar::from((0.0, 0.0, 255.0)))?;
         Ok(())

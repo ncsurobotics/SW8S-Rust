@@ -1,13 +1,13 @@
-use crate::config::{ColorProfile, Side};
+use crate::config::ColorProfile;
 
 use super::{image_prep::resize, MatWrapper, PosVector, VisualDetection, VisualDetector, Yuv};
 use opencv::{
     core::{in_range, Point, Scalar, Size, Vector},
     imgproc::{
-        box_points, contour_area_def, cvt_color_def, find_contours_def, min_area_rect,
-        CHAIN_APPROX_SIMPLE, COLOR_BGR2YUV, RETR_EXTERNAL,
+        contour_area_def, cvt_color_def, find_contours_def, min_area_rect, CHAIN_APPROX_SIMPLE,
+        COLOR_BGR2YUV, RETR_EXTERNAL,
     },
-    prelude::{Mat, MatTraitConst, MatTraitConstManual},
+    prelude::{Mat, MatTraitConst},
 };
 use std::ops::RangeInclusive;
 
