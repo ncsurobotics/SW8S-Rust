@@ -21,6 +21,7 @@ use crate::{
     write_stream_mutexed,
 };
 
+use crate::get_recording;
 use crate::comms::auv_control_board::util::AcknowledgeErr;
 
 use super::util::Angles;
@@ -130,6 +131,9 @@ impl ResponseMap {
                 } else if message_body.get(0..7) == Some(&BNO055D) {
                     static mut PREV_YAW_PRINT: SystemTime = SystemTime::UNIX_EPOCH;
                     let new_status = message_body[7..].try_into().unwrap();
+
+                    let yaw = Angles::from_raw(new_status).yaw()
+                    crate::get_recording().log("yaw", yaw).unwrap();
                     
                     let now = SystemTime::now();
                     unsafe {

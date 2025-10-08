@@ -52,6 +52,13 @@ use tokio::{
 use tokio_serial::SerialStream;
 use tokio_util::sync::CancellationToken;
 
+use rerun::RecordingStream;
+
+/// Get the global RecordingStream for rerun
+pub fn get_recording() -> RecordingStream {
+    RecordingStream::global(rerun::StoreKind::Recording).except("Rerun is not initialized")
+}
+
 static CONFIG_CELL: OnceCell<Config> = OnceCell::const_new();
 async fn config() -> &'static Config {
     CONFIG_CELL
@@ -156,6 +163,13 @@ static SHUTDOWN_GUARD: Semaphore = Semaphore::const_new(1);
 #[tokio::main]
 async fn main() {
     let (shutdown_tx, mission_ct) = shutdown_handler().await;
+
+    let stream = rerun::RecordingStreamBuilder::new("SWS8")
+        .connect_grpc_opts("rerun+http://0.0.0.0:9876/proxy")
+        .unwrap();
+
+    // Set global recording stream, ignoring previous recording (there should not be one)
+    let _ = rerun::RecordingStream::set_global(rerun::StoreKind::Recording, stream);
 
     let orig_hook = std::panic::take_hook();
     let mission_ct_clone = mission_ct.clone();
