@@ -132,8 +132,8 @@ impl ResponseMap {
                     static mut PREV_YAW_PRINT: SystemTime = SystemTime::UNIX_EPOCH;
                     let new_status = message_body[7..].try_into().unwrap();
 
-                    let yaw = Angles::from_raw(new_status).yaw()
-                    crate::get_recording().log("yaw", yaw).unwrap();
+                    let yaw = Angles::from_raw(new_status).yaw();
+                    crate::get_recording().log("yaw", rerun::Scalars::single(&yaw)).unwrap();
                     
                     let now = SystemTime::now();
                     unsafe {
