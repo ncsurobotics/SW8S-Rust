@@ -7,10 +7,7 @@ use std::{fs::create_dir_all, path::Path, sync::Arc, thread::spawn};
 use tokio::sync::Mutex;
 
 #[cfg(feature = "logging")]
-use {
-    crate::logln,
-    opencv::videoio::{VideoCaptureTraitConst, CAP_GSTREAMER},
-};
+use crate::logln;
 #[cfg(feature = "annotated_streams")]
 use {
     opencv::{

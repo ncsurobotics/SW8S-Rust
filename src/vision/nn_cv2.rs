@@ -12,9 +12,6 @@ use std::{
     sync::Mutex,
 };
 
-#[cfg(feature = "cuda_min_max_loc")]
-use opencv::cudaarithm::min_max_loc as cuda_min_max_loc;
-
 #[derive(Debug, Clone, Getters, PartialEq)]
 pub struct YoloDetection {
     class_id: i32,

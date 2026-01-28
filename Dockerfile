@@ -29,7 +29,7 @@ RUN apt-get install nano
 # User setup
 USER aquapack
 WORKDIR /home/aquapack
-RUN  \
+# RUN  \
   # Install Rust via rustup (apt's Rust is too old)
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
   && . "$HOME/.cargo/env" && echo '. "$HOME/.cargo/env"' >> ~/.bashrc \

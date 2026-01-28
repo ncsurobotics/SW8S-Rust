@@ -4,39 +4,19 @@ use tokio::time::{sleep, Duration};
 use tokio_serial::SerialStream;
 
 use crate::{
-    act_nest,
     config::{gate::Config, ColorProfile, Side},
-    missions::{
-        action::{ActionConcurrentSplit, ActionDataConditional},
-        basic::descend_depth_and_go_forward,
-        extra::{AlwaysFalse, AlwaysTrue, Terminal},
-        movement::{
-            AdjustType, ClampX, FlipX, InvertX, ReplaceX, SetSideBlue, SetSideRed, SetX, SetY,
-        },
-        vision::{MidPoint, OffsetClass},
-    },
     vision::{
         gate_cv::GateCV,
         gate_poles::{GatePoles, Target},
-        nn_cv2::{OnnxModel, YoloClass},
-        Offset2D,
+        nn_cv2::OnnxModel,
     },
 };
 
 use super::{
-    action::{
-        wrap_action, ActionChain, ActionConcurrent, ActionExec, ActionMod, ActionSequence,
-        ActionWhile, FirstValid, TupleSecond,
-    },
+    action::ActionExec,
     action_context::{FrontCamIO, GetControlBoard, GetMainElectronicsBoard},
-    basic::{descend_and_go_forward, DelayAction},
-    comms::StartBno055,
-    extra::{CountFalse, CountTrue, OutputType},
-    movement::{
-        AdjustMovementAngle, LinearYawFromX, OffsetToPose, Stability2Adjust, Stability2Movement,
-        Stability2Pos, ZeroMovement,
-    },
-    vision::{DetectTarget, ExtractPosition, VisionNorm, VisionNormOffset},
+    basic::DelayAction,
+    vision::VisionNorm,
 };
 
 pub async fn gate_run_dead_reckon<
@@ -44,7 +24,6 @@ pub async fn gate_run_dead_reckon<
 >(
     context: &Con,
     config: &Config,
-    color_profile: &ColorProfile,
 ) {
     #[cfg(feature = "logging")]
     logln!("Starting Procedural Gate");
@@ -126,7 +105,7 @@ pub async fn gate_run_cv_procedural<
         .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, initial_yaw, config.depth)
         .await;
 
-    const TOLERANCE: f32 = 0.3;
+    // const TOLERANCE: f32 = 0.3;
 
     let mut gate_state = GateState::Align;
     let mut yaw_target = 0.0;
@@ -141,14 +120,14 @@ pub async fn gate_run_cv_procedural<
             vec![]
         });
 
-        let leftPole = detections.iter().filter(|d| *d.class()).collect_vec();
-        let leftPole_avg_x = leftPole
+        let left_pole = detections.iter().filter(|d| *d.class()).collect_vec();
+        let left_pole_avg_x = left_pole
             .iter()
             .map(|d| *d.position().x() as f32)
             .sum::<f32>();
 
-        let rightPole = detections.iter().filter(|d| !*d.class()).collect_vec();
-        let rightPole_avg_x = rightPole
+        let right_pole = detections.iter().filter(|d| !*d.class()).collect_vec();
+        let right_pole_avg_x = right_pole
             .iter()
             .map(|d| *d.position().x() as f32)
             .sum::<f32>();
@@ -156,10 +135,10 @@ pub async fn gate_run_cv_procedural<
         match gate_state {
             GateState::Align => match config.side {
                 Side::Left => {
-                    if leftPole.len() > 0 {
+                    if left_pole.len() > 0 {
                         false_count = 0;
-                        let mut correction;
-                        if leftPole_avg_x < 0.2 {
+                        let correction;
+                        if left_pole_avg_x < 0.2 {
                             true_count += 1;
                             if true_count >= config.true_count {
                                 #[cfg(feature = "logging")]
@@ -174,7 +153,7 @@ pub async fn gate_run_cv_procedural<
                                 logln!("true_count: {true_count}/4");
                             }
                         } else {
-                            correction = dbg!(config.correction_factor * leftPole_avg_x);
+                            correction = dbg!(config.correction_factor * left_pole_avg_x);
                             let _ = cb
                                 .stability_1_speed_set(0.0, 0.0, correction, 0.0, 0.0, config.depth)
                                 .await;
@@ -206,10 +185,10 @@ pub async fn gate_run_cv_procedural<
                 }
 
                 Side::Right => {
-                    if rightPole.len() > 0 {
+                    if right_pole.len() > 0 {
                         false_count = 0;
-                        let mut correction;
-                        if rightPole_avg_x < 0.2 {
+                        let correction;
+                        if right_pole_avg_x < 0.2 {
                             true_count += 1;
                             if true_count >= config.true_count {
                                 #[cfg(feature = "logging")]
@@ -224,7 +203,7 @@ pub async fn gate_run_cv_procedural<
                                 logln!("true_count: {true_count}/4");
                             }
                         } else {
-                            correction = dbg!(config.correction_factor * rightPole_avg_x);
+                            correction = dbg!(config.correction_factor * right_pole_avg_x);
                             let _ = cb
                                 .stability_1_speed_set(0.0, 0.0, correction, 0.0, 0.0, config.depth)
                                 .await;
@@ -278,12 +257,12 @@ pub async fn gate_run_cv_procedural<
 
                 sleep(Duration::from_secs(config.strafe_duration as u64)).await;
 
-                yaw_target = (yaw_target
+                yaw_target = yaw_target
                     + (if let Side::Left = config.side {
                         config.yaw_adjustment
                     } else {
                         -config.yaw_adjustment
-                    }));
+                    });
 
                 let _ = cb
                     .stability_2_speed_set(0.0, 0.0, 0.0, 0.0, yaw_target, config.depth)
@@ -343,10 +322,10 @@ pub async fn gate_run_procedural<
             vec![]
         });
 
-        let rightPole = detections
-            .iter()
-            .filter(|d| matches!(d.class().identifier, Target::RightPole))
-            .collect_vec();
+        // let right_pole = detections
+        //     .iter()
+        //     .filter(|d| matches!(d.class().identifier, Target::RightPole))
+        //     .collect_vec();
 
         /* let middle = detections
         .iter()
@@ -435,11 +414,11 @@ pub async fn gate_run_procedural<
             Side::Right => {
                 if !sawfish.is_empty() {
                     // Center on average x of blue
-                    let avg_x = (sawfish
+                    let avg_x = sawfish
                         .iter()
                         .map(|d| *d.position().x() as f32)
                         .sum::<f32>()
-                        / sawfish.len() as f32);
+                        / sawfish.len() as f32;
 
                     #[cfg(feature = "logging")]
                     logln!("SAWFISH AVG X: {}", avg_x);
@@ -503,236 +482,6 @@ pub async fn gate_run_procedural<
             }
         }
     }
-}
-
-pub fn gate_run_naive<
-    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
->(
-    context: &Con,
-) -> impl ActionExec<()> + '_ {
-    let depth: f32 = -1.5;
-
-    ActionSequence::new(
-        ActionConcurrent::new(descend_and_go_forward(context), StartBno055::new(context)),
-        ActionSequence::new(
-            ActionWhile::new(ActionChain::new(
-                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
-                    context,
-                    GatePoles::default(),
-                ),
-                TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovementAngle::new(context, depth),
-                    CountTrue::new(3),
-                )),
-            )),
-            ActionWhile::new(ActionChain::new(
-                VisionNormOffset::<Con, GatePoles<OnnxModel>, f64>::new(
-                    context,
-                    GatePoles::default(),
-                ),
-                TupleSecond::new(ActionConcurrent::new(
-                    AdjustMovementAngle::new(context, depth),
-                    CountFalse::new(10),
-                )),
-            )),
-        ),
-    )
-}
-
-pub fn gate_run_complex<
-    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
->(
-    context: &Con,
-) -> impl ActionExec<anyhow::Result<()>> + '_ {
-    let depth: f32 = -1.40;
-
-    act_nest!(
-        ActionSequence::new,
-        DelayAction::new(3.0),
-        ActionConcurrent::new(
-            descend_depth_and_go_forward(context, depth),
-            StartBno055::new(context),
-        ),
-        act_nest!(
-            ActionSequence::new,
-            adjust_logic(context, depth, CountTrue::new(4)),
-            adjust_logic(context, depth, CountFalse::new(4)),
-            ActionChain::new(
-                Stability2Movement::new(
-                    context,
-                    Stability2Pos::new(0.0, 1.0, 0.0, 0.0, None, depth),
-                ),
-                OutputType::<()>::default()
-            ),
-            DelayAction::new(3.0),
-            ZeroMovement::new(context, depth),
-        ),
-    )
-}
-
-pub fn gate_run_coinflip<
-    'a,
-    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
->(
-    context: &'a Con,
-    config: &Config,
-) -> impl ActionExec<anyhow::Result<()>> + 'a {
-    let depth = config.depth;
-
-    act_nest!(
-        ActionSequence::new,
-        ActionConcurrent::new(
-            ActionChain::new(
-                Stability2Movement::new(
-                    context,
-                    Stability2Pos::new(0.0, 0.5, 0.0, 0.0, None, depth),
-                ),
-                OutputType::<()>::default()
-            ),
-            StartBno055::new(context),
-        ),
-        act_nest!(
-            ActionSequence::new,
-            adjust_logic(context, depth, CountTrue::new(config.true_count)),
-            // adjust_logic(context, depth, CountFalse::new(10)),
-            ActionChain::new(
-                Stability2Movement::new(
-                    context,
-                    Stability2Pos::new(0.0, 0.5, 0.0, 0.0, None, depth),
-                ),
-                OutputType::<()>::default()
-            ),
-            ActionWhile::new(act_nest!(
-                ActionChain::new,
-                VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
-                act_nest!(
-                    wrap_action(ActionConcurrent::new, FirstValid::new),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Middle),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
-                ),
-                CountFalse::new(config.false_count),
-            )),
-            ActionChain::new(
-                Stability2Movement::new(
-                    context,
-                    Stability2Pos::new(0.0, 0.0, 0.0, 0.0, None, depth),
-                ),
-                OutputType::<()>::default()
-            ),
-            DelayAction::new(0.0),
-            ZeroMovement::new(context, depth),
-        ),
-    )
-}
-
-pub fn adjust_logic<
-    'a,
-    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
-    X: 'a + ActionMod<bool> + ActionExec<anyhow::Result<()>>,
->(
-    context: &'a Con,
-    depth: f32,
-    end_condition: X,
-) -> impl ActionExec<()> + 'a {
-    const GATE_TRAVERSAL_SPEED: f32 = 0.2;
-
-    ActionWhile::new(ActionChain::new(
-        VisionNorm::<Con, GatePoles<OnnxModel>, f64>::new(context, GatePoles::default()),
-        ActionChain::new(
-            TupleSecond::new(ActionConcurrent::new(
-                ActionDataConditional::new(
-                    //act_nest!(
-                    //wrap_action(ActionConcurrent::new, FirstValid::new),
-                    DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
-                    //DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
-                    //Target::Middle
-                    //),
-                    //),
-                    ActionSequence::new(SetSideBlue::new(), Terminal::new()),
-                    ActionDataConditional::new(
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
-                        ActionSequence::new(SetSideRed::new(), Terminal::new()),
-                        Terminal::new(),
-                    ),
-                ),
-                ActionDataConditional::new(
-                    act_nest!(
-                        wrap_action(ActionConcurrent::new, FirstValid::new),
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Blue),
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(
-                            Target::Middle
-                        ),
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Red),
-                    ),
-                    act_nest!(
-                        ActionConcurrent::new,
-                        act_nest!(
-                            ActionChain::new,
-                            OffsetClass::new(Target::Middle, Offset2D::<f64>::new(-0.05, 0.0)),
-                            //OffsetClass::new(Target::Blue, Offset2D::<f64>::new(-0.1, 0.0)),
-                            ExtractPosition::new(),
-                            MidPoint::new(),
-                            OffsetToPose::default(),
-                            LinearYawFromX::<Stability2Adjust>::new(5.0),
-                            ClampX::new(0.2),
-                            SetY::<Stability2Adjust>::new(AdjustType::Adjust(0.02)),
-                            FlipX::default(),
-                        ),
-                        AlwaysTrue::new(),
-                    ),
-                    ActionDataConditional::new(
-                        DetectTarget::<Target, YoloClass<Target>, Offset2D<f64>>::new(Target::Pole),
-                        act_nest!(
-                            ActionConcurrent::new,
-                            act_nest!(
-                                ActionChain::new,
-                                ExtractPosition::new(),
-                                MidPoint::new(),
-                                OffsetToPose::default(),
-                                InvertX::new(),
-                                LinearYawFromX::<Stability2Adjust>::new(-7.0),
-                                //ClampX::new(0.8),
-                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.2)),
-                                ReplaceX::new(),
-                            ),
-                            AlwaysTrue::new(),
-                        ),
-                        ActionConcurrent::new(
-                            act_nest!(
-                                ActionSequence::new,
-                                Terminal::new(),
-                                SetY::<Stability2Adjust>::new(AdjustType::Replace(0.4)),
-                                SetX::<Stability2Adjust>::new(AdjustType::Replace(0.0)),
-                            ),
-                            AlwaysFalse::new(),
-                        ),
-                    ),
-                ),
-            )),
-            TupleSecond::new(ActionConcurrentSplit::new(
-                act_nest!(
-                    ActionChain::new,
-                    Stability2Movement::new(
-                        context,
-                        Stability2Pos::new(0.0, GATE_TRAVERSAL_SPEED, 0.0, 0.0, None, depth),
-                    ),
-                    OutputType::<()>::new(),
-                ),
-                end_condition,
-            )),
-        ),
-    ))
-}
-
-pub fn gate_run_testing<
-    Con: Send + Sync + GetControlBoard<WriteHalf<SerialStream>> + GetMainElectronicsBoard + FrontCamIO,
->(
-    context: &Con,
-) -> impl ActionExec<()> + '_ {
-    let depth: f32 = -1.0;
-    adjust_logic(context, depth, CountTrue::new(3))
 }
 
 enum GateState {

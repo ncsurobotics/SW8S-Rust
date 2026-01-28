@@ -14,19 +14,12 @@ use sw8s_rust_lib::{
     missions::{
         action::ActionExec,
         action_context::FullActionContext,
-        align_buoy::{buoy_align, buoy_align_shot},
         basic::descend_and_go_forward,
         bin::bin,
-        circle_buoy::{
-            buoy_circle_sequence, buoy_circle_sequence_blind, buoy_circle_sequence_model,
-        },
-        coinflip::{coinflip, coinflip_procedural},
+        coinflip::coinflip_procedural,
         example::{initial_descent, pid_test},
         fire_torpedo::{FireLeftTorpedo, FireRightTorpedo},
-        gate::{
-            gate_run_complex, gate_run_cv_procedural, gate_run_dead_reckon, gate_run_naive,
-            gate_run_procedural, gate_run_testing,
-        },
+        gate::{gate_run_cv_procedural, gate_run_dead_reckon, gate_run_procedural},
         meb::WaitArm,
         octagon::octagon,
         path_align::{path_align_procedural, static_align_procedural},
@@ -37,7 +30,6 @@ use sw8s_rust_lib::{
         vision::PIPELINE_KILL,
     },
     video_source::appsink::Camera,
-    vision::buoy::Target,
     TIMESTAMP,
 };
 use tokio::{
@@ -45,7 +37,7 @@ use tokio::{
     signal,
     sync::{
         mpsc::{self, UnboundedSender},
-        OnceCell, RwLock, Semaphore,
+        OnceCell, Semaphore,
     },
     time::{sleep, timeout},
 };
@@ -129,13 +121,6 @@ async fn bottom_cam() -> &'static Camera {
         .await
 }
 
-static GATE_TARGET: OnceCell<RwLock<Target>> = OnceCell::const_new();
-async fn gate_target() -> &'static RwLock<Target> {
-    GATE_TARGET
-        .get_or_init(|| async { RwLock::new(Target::Earth1) })
-        .await
-}
-
 static STATIC_CONTEXT: OnceCell<FullActionContext<WriteHalf<SerialStream>>> = OnceCell::const_new();
 async fn static_context() -> &'static FullActionContext<'static, WriteHalf<SerialStream>> {
     STATIC_CONTEXT
@@ -145,7 +130,6 @@ async fn static_context() -> &'static FullActionContext<'static, WriteHalf<Seria
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
-                gate_target().await,
             )
         })
         .await
@@ -369,23 +353,6 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             meb().await,
             front_cam().await,
             bottom_cam().await,
-            gate_target().await,
-        ))
-        .execute()),
-        "gate_run_naive" => ctwrap!(gate_run_naive(&FullActionContext::new(
-            control_board().await,
-            meb().await,
-            front_cam().await,
-            bottom_cam().await,
-            gate_target().await,
-        ))
-        .execute()),
-        "gate_run_complex" => ctwrap!(gate_run_complex(&FullActionContext::new(
-            control_board().await,
-            meb().await,
-            front_cam().await,
-            bottom_cam().await,
-            gate_target().await,
         ))
         .execute()),
         "gate_run_coinflip" => ctwrap!(gate_run_cv_procedural(
@@ -394,7 +361,6 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
-                gate_target().await,
             ),
             &config.missions.gate,
             &config.get_color_profile().unwrap(),
@@ -405,7 +371,6 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
-                gate_target().await,
             ),
             &config.missions.gate
         )),
@@ -415,19 +380,9 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
-                gate_target().await,
             ),
             &config.missions.gate,
-            &config.get_color_profile().unwrap(),
         )),
-        "gate_run_testing" => ctwrap!(gate_run_testing(&FullActionContext::new(
-            control_board().await,
-            meb().await,
-            front_cam().await,
-            bottom_cam().await,
-            gate_target().await,
-        ))
-        .execute()),
         "start_cam" => {
             // This has not been tested
             logln!("Opening camera");
@@ -442,7 +397,6 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
-                gate_target().await,
             ),
             &config.missions.path_align,
             &config.get_color_profile().unwrap(),
@@ -453,7 +407,6 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
                 meb().await,
                 front_cam().await,
                 bottom_cam().await,
-                gate_target().await,
             ),
             &config.missions.path_align,
         )),
@@ -462,7 +415,6 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             meb().await,
             front_cam().await,
             bottom_cam().await,
-            gate_target().await,
         ))
         .execute()),
         "pid_test" => ctwrap!(pid_test(&FullActionContext::new(
@@ -470,7 +422,6 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             meb().await,
             front_cam().await,
             bottom_cam().await,
-            gate_target().await,
         ))
         .execute()),
         "octagon" => ctwrap!(octagon(
@@ -479,22 +430,7 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             &config.get_color_profile().unwrap()
         )
         .execute()),
-        "buoy_circle" => ctwrap!(buoy_circle_sequence(&FullActionContext::new(
-            control_board().await,
-            meb().await,
-            front_cam().await,
-            bottom_cam().await,
-            gate_target().await,
-        ))
-        .execute()),
-        "buoy_model" => ctwrap!(buoy_circle_sequence_model(static_context().await).execute()),
-        "buoy_blind" => ctwrap!(buoy_circle_sequence_blind(static_context().await).execute()),
-        "buoy_align" => ctwrap!(buoy_align(static_context().await).execute()),
-        "spin" => ctwrap!(spin(static_context().await).execute()),
-        "torpedo" | "fire_torpedo" => {
-            let _ = buoy_align_shot(static_context().await).execute().await;
-            Ok(())
-        }
+        "spin" => ctwrap!(spin(static_context().await, &config.missions.spin)),
         "torpedo_only" => {
             FireRightTorpedo::new(static_context().await)
                 .execute()
@@ -538,7 +474,7 @@ async fn run_mission(mission: &str, cancel: CancellationToken) -> Result<()> {
             let _ = sonar(static_context().await, &config.sonar, cancel).await;
             Ok(())
         }
-        "bin" => ctwrap!(bin(static_context().await, &config.missions.bin)),
+        "bin" => ctwrap!(bin(static_context().await)),
         x => bail!("Invalid argument: [{x}]"),
     };
 

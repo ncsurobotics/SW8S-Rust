@@ -5,6 +5,7 @@ pub mod octagon;
 pub mod path_align;
 pub mod slalom;
 pub mod sonar;
+pub mod spin;
 
 use std::fs::read_to_string;
 
@@ -78,6 +79,7 @@ pub struct Missions {
     pub bin: bin::Config,
     pub octagon: octagon::Config,
     pub coinflip: coinflip::Config,
+    pub spin: spin::Config,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

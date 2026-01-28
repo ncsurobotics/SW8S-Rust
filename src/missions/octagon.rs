@@ -45,6 +45,8 @@ pub fn octagon<
     config: &Config,
     color_profile: &ColorProfile,
 ) -> impl ActionExec<()> + 'static {
+    let _ = config;
+    let _ = color_profile;
     const FULL_SPEED_Y: f32 = 0.7;
     const FULL_SPEED_X: f32 = 0.0;
     const FULL_SPEED_PITCH: f32 = -45.0 / 4.0;
